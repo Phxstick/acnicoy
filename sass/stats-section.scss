@@ -1,0 +1,107 @@
+@import "base";
+
+// TODO: Use header font instead of small caps everywhere?
+
+#content {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: auto;
+}
+
+div#general-stats {
+  margin: 20px;
+  background-color: darkred;
+
+  div#top {
+    height: 60%;
+    display: flex;
+    padding: 10px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    span:first-child {
+      font-size: 120%;
+      font-variant: small-caps;
+      text-shadow: 0 0 2px white;
+      margin-bottom: 10px;
+      color: white;
+    }
+
+    span#total-score {
+      font-size: 350%;
+      color: white;
+      font-family: $gui-font;
+    }
+  }
+  div#bottom {
+    height: 40%;
+    border-top: 1px solid white;
+    display: flex;
+    flex-direction: row;
+    
+    div {
+      flex: 1;
+      width: 100px;
+      padding: 10px;
+      border-left: 1px solid white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      span:first-child {
+        font-size: 120%;
+        font-variant: small-caps;
+        text-shadow: 0 0 2px white;
+        margin-bottom: 10px;
+        color: white;
+      }
+      span:nth-child(2) {
+        font-size: 200%;
+        color: white;
+        font-family: $gui-font;
+      }
+    }
+    div:first-child {
+      border-left: 0;
+    }
+  }
+}
+
+#kanji-diagrams {
+  height: 200px;
+  display: flex;
+  flex-direction: row;
+  .kanji-frame {
+    flex: 1;
+    margin: 20px;
+    margin-top: 0;
+    background-color: darkred;
+    display: flex;
+    flex-direction: column;
+    .kanji-header {
+      font-family: $header-font;
+      padding: 10px;
+      text-align: center;
+      color: white;
+      font-size: 120%;
+      text-shadow: 0 0 2px white;
+    }
+    .kanji-diagram {
+      --width: 100%;
+      --height: 100%;
+      flex: 1;
+      --bar-border-width: 0;
+      // --bar-border-color: white;
+      --bar-background: white;
+      --top-line-color: white;
+      --bottom-line-color: white;
+      --label-color: white;
+    }
+  }
+  #jlpt-kanji-frame {
+    margin-left: 0px;
+  }
+}

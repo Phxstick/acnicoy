@@ -1,0 +1,26 @@
+@import "../base";
+
+:host {
+  display: flex;
+}
+
+span {
+  flex: 1;
+  background-color: lightgrey;
+  color: grey;
+  box-shadow: none;
+  border: 1px solid grey;
+
+  @extend .button;
+  padding: 8px;
+  // display: inline-block;
+  transition: background .15s ease-out, color .15s ease-out,
+              box-shadow .15s ease-out, border-color .15s ease-out;
+}
+
+.pushed {
+  background-color: greenyellow;
+  color: black;
+  box-shadow: 0 0 10px greenyellow;
+  border: 1px solid lime;
+}

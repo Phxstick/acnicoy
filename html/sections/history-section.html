@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <title>History Section</title>
+  <meta name="description" content="View log of changes to the dictionary">
+  <meta name="author" content="Daniel Bindemann">
+  <meta charset="UTF-8">
+  <script src="../../js/history-section.js"></script>
+</head>
+<body>
+
+<div id="content">
+<template id="styles">
+<style>@import "./css/history-section.css";</style>
+</template>
+<div id="window">
+<header>
+<div id="filter-label-div">Filters</div>
+<table id="filter-table">
+  <tr>
+    <td>
+      Filter by type:
+    </td>
+    <td>
+      <switch-bar>
+        <switch-button id="added-filter">added</switch-button>
+        <switch-button id="deleted-filter">deleted</switch-button>
+        <switch-button id="modified-filter">modified</switch-button>
+      </switch-bar>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Filter by data:
+    </td>
+    <td>
+      <switch-bar>
+        <switch-button id="entry-filter">entry</switch-button>
+        <switch-button id="translation-filter">translation</switch-button>
+        <switch-button id="reading-filter">reading</switch-button>
+      </switch-bar>
+    </td>
+  </tr>
+</table>
+</header>
+
+<table id="history">
+  <thead>
+    <tr>
+      <th>Time</th>
+      <th>Type</th>
+      <th>Field</th>
+      <th>Entry</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody id="table-body">
+  </tbody>
+</table>
+</div>
+
+<script id="row-template" type="text/x-jsrender">
+  <tr class="{{:type}} {{:column}}">
+    <td>{{:time}}</td>
+    <td>{{:type}}</td>
+    <td>{{:column}}</td>
+    <td>{{:entry}}</td>
+    <td>{{:details}}</td>
+  </tr>
+</script>
+<div>
+</body>
+</html>

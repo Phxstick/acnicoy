@@ -1,0 +1,49 @@
+<html>
+<head>
+  <title>Stats Section</title>
+  <meta name="description" content="View stats and achievements for a language">
+  <meta name="author" value="Daniel Bindemann">
+  <meta charset="UTF-8">
+  <!--link rel="import" href="../widgets/pinwall-note.html"-->
+  <script src="../../js/stats-section.js"></script>
+</head>
+<body>
+<div id="content">
+<template id="styles">
+  <style>@import "./css/stats-section.css";</style>
+  <!--style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style-->
+</template>
+<div id="general-stats">
+  <div id="top">
+    <span>Mastery score</span>
+    <span id="total-score"></span>
+  </div>
+  <div id="bottom">
+    <div>
+      <span>Words added</span>
+      <span id="words-added"></span>
+    </div>
+    <div>
+      <span>Kanji added</span>
+      <span id="kanji-added"></span>
+    </div>
+    <div>
+      <span>Items tested</span>
+      <span id="items-tested"></span>
+    </div>
+  </div>
+</div>
+<div id="kanji-diagrams">
+  <div id="jouyou-kanji-frame" class="kanji-frame">
+    <div class="kanji-header">Jouyou Kanji per grade</div>
+    <svg-bar-diagram id="jouyou-kanji" class="kanji-diagram"></svg-bar-diagram>
+  </div>
+  <div id="jlpt-kanji-frame" class="kanji-frame">
+    <div class="kanji-header">Kanji per JLPT level</div>
+    <svg-bar-diagram id="jlpt-kanji" class="kanji-diagram"></svg-bar-diagram>
+  </div>
+</div>
+</div>
+</div>
+</body>
+</html>

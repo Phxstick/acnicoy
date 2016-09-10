@@ -1,0 +1,34 @@
+:host {
+  display: flex;
+}
+
+svg {
+  background-color: var(--background-color, transparent);
+  width: var(--width, 400px);
+  flex: 1;
+
+  rect.bar {
+    stroke: var(--bar-border-color, dimgray);
+    stroke-width: var(--bar-border-width, 1);
+    fill: var(--bar-background, limegreen);
+    // TODO: Make this customizable
+    fill-opacity: 0.6;
+    &:hover {
+      fill-opacity: 1;
+    }
+  }
+
+  text.label {
+    text-anchor: middle;
+    font-size: var(--label-size, 80%);
+    fill: var(--label-color, dimgray);
+  }
+
+  line#top-line {
+    stroke: var(--top-line-color, dimgray);
+  }
+
+  line#bottom-line {
+    stroke: var(--bottom-line-color, dimgray);
+  }
+}

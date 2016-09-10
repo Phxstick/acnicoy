@@ -1,0 +1,169 @@
+@import "base";
+
+body {
+  height: 100vh;
+}
+
+#menu-bar {
+  height: 10%;
+  background-color: indianred;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  z-index: 500;
+  box-sizing: border-box;
+  border-bottom: 1px solid gray;
+}
+
+#language-popup {
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+#menu {
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  & > i {
+    @extend .button;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 50px;
+    background: darkred;
+    color: whitesmoke;
+    font-size: 140%;
+    font-family: $gui-font;
+    transition: 0.15s;
+    border-left: 2px solid lighten(darkred, 30%);
+   
+    &:hover {
+      background: crimson;
+      border-left: 6px solid whitesmoke;
+    }
+  }
+}
+
+div#status-bar {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  #status-text {
+    color: #E5E5E5;
+    font-size: 130%;
+    text-shadow: 0px 0px 1px white;
+    text-align: center;
+  }
+}
+
+#side-bar {
+  // width: 130px;
+  // TODO: Use flexbox to stretch so that width-directive works properly
+  width: 20%;
+  height: 85%;
+  float: left;
+  display: flex;
+  flex-direction: column;
+
+  #test-button {
+    flex: 1.4;
+    font-size: 220%;
+
+    #num-srs-items {
+      margin-top: 20px;
+      font-size: 50%;
+      color: #DEDEDE;
+      text-shadow: 0 0 2px white;
+      font-family: $gui-font;
+    }
+  }
+
+  div {
+    @extend .button;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0px;
+    background-color: darkred;
+    color: white;
+    font-size: 150%;
+    font-stretch: expanded;
+    flex: 1;
+    border: none;
+    border-bottom: 1px solid grey;
+    transition: background 0.1s linear;
+    box-shadow: 2px 0 3px dimgray;
+    font-family: $gui-font;
+    font-weight: bold;
+    z-index: 100;
+
+    &:hover {
+      background: crimson;
+    }
+  }
+}
+
+#section-window {
+  width: 80%;
+  height: 85%;
+  float: right;
+  position: relative;
+  z-index: 0;
+  // transition: filter .6s;
+}
+
+div#filter {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.6);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: none;
+}
+
+footer {
+  height: 5%;
+  font-size: 80%;
+  clear: both;
+  background-color: indianred;
+  color: white;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  z-index: 500;
+}
+
+.section {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.panel {
+  width: 400px;  // TODO: Use max-width instead and adjust sliding
+  position: absolute;
+  left: -400px;
+  top: 0px;
+  bottom: 0px;
+  background-color: whitesmoke;
+  // box-shadow: 2px 0 3px black1;
+}
+
+#kanji-info-panel {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 200px;
+}

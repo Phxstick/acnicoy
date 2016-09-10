@@ -1,0 +1,27 @@
+.container {
+  cursor: pointer;
+}
+
+.stroke {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: yellow;
+
+  .hovering {
+    background-color: var(--cross-color);
+  }
+}
+
+#padding {
+  width: 36px;
+  height: 20px;
+}
+
+#stroke1 {
+  transform: translate(0, 11px) rotate(-45deg);
+}
+
+#stroke2 {
+  transform: translate(1px, -13px) rotate(45deg);
+}

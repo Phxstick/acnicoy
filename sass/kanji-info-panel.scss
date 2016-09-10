@@ -1,0 +1,317 @@
+@import "base";
+
+#window {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  flex-direction: row;
+
+  background-color: whitesmoke;
+  border-top: 1px solid dimgray;
+  box-shadow: 0 -3px 3px #333333;
+}
+
+#controls-frame {
+  margin-right: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  div {
+    border-right: 1px solid grey;
+  }
+  #kanji-frame {
+    position: relative;  // Allow anchoring svg diagram to this element
+    border-right: 0;
+  }
+  svg#complete-kanji {
+    border-right: 1px solid grey;
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    path {
+      stroke: black;
+      stroke-width: 5;
+      stroke-linecap: round;
+      fill: transparent;
+      &.highlighted {
+        stroke: red;
+      }
+    }
+  }
+  #kanji {
+    font-size: 450%;
+    text-shadow: -1px -1px 1px $color;
+    padding: 15px;
+    padding-bottom: 0;
+    white-space: nowrap;
+  }
+  #added-label {
+    flex: 1;
+    @extend .button;
+    padding: 5px;
+    font-family: $header-font;
+    text-align: center;
+    color: darken(limegreen, 20%);
+    &:hover {
+      text-shadow: 0 0 1px lawngreen;
+    }
+  }
+  #add-button {
+    flex: 1;
+    @extend .button;
+    padding: 5px;
+    font-family: $header-font;
+    text-align: center;
+    color: darkred;
+    &:hover {
+      text-shadow: 0 0 1px coral;
+      background: $view-hover-background;
+    }
+    &:active {
+      background-color: darken($view-hover-background, 10%);
+    }
+  }
+  .control-button {
+    @extend .button;
+    font-family: $header-font;
+    padding: 6px;
+    display: block;
+    text-align: center;
+    &:hover {
+      background-color: $view-hover-background;
+      border-top: 1px solid darken($view-hover-background, 10%);
+      border-bottom: 1px solid darken($view-hover-background, 10%);
+      padding: 5px;
+    }
+    // &:active {
+    //   background-color: darken($view-hover-background, 10%);
+    // }
+    &.selected {
+      background-color: whitesmoke;
+      border-top: 1px solid grey;
+      border-bottom: 1px solid grey;
+      padding: 5px;
+      border-right: 1px solid transparent;
+      &:last-child {
+        border-bottom: 1px solid transparent;
+      }
+    }
+  }
+}
+
+#content-frame {
+  flex: 1;
+  position: relative;
+  > div {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 50px;  // Space for close button
+    // TODO: Remove this space to allow wider window? Raise close button instead
+  }
+  #info-frame {
+    #meanings {
+      font-size: 150%;
+      padding: 10px;
+    }
+    #details-frame {
+      padding: 10px;
+      span {
+        white-space: nowrap;  // Not working :'(
+        font-size: 90%;
+        border-radius: 5px;
+        margin-right: 10px;
+        border: 1px solid lightgrey;
+        color: dimgray;
+        padding: 4px;
+        &:hover {
+          background-color: $view-hover-background;
+          border: 1px solid darken($view-hover-background, 10%);
+          color: $view-hover-color;
+        }
+      }
+    }
+    #on-frame, #kun-frame {
+      padding: 10px;
+      .header {
+        font-weight: bold;
+        padding-right: 15px;
+      }
+      #on-readings, #kun-readings {
+        font-size: 120%;
+      }
+    }
+    #number-frame {
+      padding: 10px;
+      #number-label {
+        margin-left: 10px;
+        margin-right: 10px;
+        font-size: 120%;
+      }
+      #number-details {
+        color: dimgray;
+        font-size: 90%;
+      }
+    }
+    #counter-frame {
+      padding: 10px;
+      #counter-label {
+        margin-left: 15px;
+        font-size: 120%;
+      }
+    }
+  }
+  #strokes-frame {
+    display: flex;
+    flex-direction: column;
+    #strokes-info-bar {
+      padding-top: 5px;
+      padding-bottom: 5px;
+      .strokes-info-block {
+        white-space: nowrap;
+        margin-right: 15px;
+        &:last-child {
+          margin-right: 0;
+        }
+        .strokes-info-header {
+          color: dimgray;
+          font-family: $header-font;
+          margin-right: 6px;
+        }
+        #stroke-count, #radical {
+          font-size: 150%;
+        }
+        #kanji-parts {
+          white-space: nowrap;
+          span {
+            font-size: 150%;
+            margin-right: 3px;
+            &:last-child {
+              margin-right: 0;
+            }
+            &:hover {
+              text-shadow: 0 0 2px lightsalmon;
+              color: darkred;
+            }
+          }
+        }
+        #radical {
+          margin-right: 5px;
+        }
+      }
+    }
+    #stroke-graphics {
+      // white-space: nowrap;
+      overflow-y: auto;
+      background: lightgrey;
+      padding: 2px;
+      svg {
+        width: 89px;
+        height: 89px;
+        margin-right: 2px;
+        &:last-child { margin-right: 0 };
+        background-color: white;
+        display: inline;
+        path {
+          stroke: #888888;
+          stroke-width: 5;
+          stroke-linecap: round;
+          fill: transparent;
+          &.last-stroke {
+            stroke: black;
+          }
+          &.middle-marker {
+            stroke: #E5E5E5;
+            stroke-width: 2;
+            stroke-linecap: square;
+            stroke-dasharray: 5;
+          }
+        }
+        .brush-start {
+          stroke-width: 0;
+          fill: red;
+          opacity: 0.6;
+        }
+      }
+    }
+  }
+  #examples-frame {
+    #example-words-table {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      border-collapse: collapse;
+      th, td {
+        &:nth-child(1) {
+          width: 10px;
+          padding: 0px;
+        }
+        &:nth-child(2) {
+          min-width: 80px;
+        }
+        &:nth-child(3) {
+          min-width: 110px;
+        }
+      }
+      td {
+        &:nth-child(1) {
+          background-color: $view-background;
+          div {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            height: 100%;
+          }
+        }
+      }
+      thead {
+        display: block;
+        th {
+          font-weight: normal;
+          padding-top: 3px;
+          padding-bottom: 3px;
+        }
+      }
+      tbody {
+        flex: 1;
+        display: block;
+        background-color: $view-background;
+        color: $view-color;
+        border-top: 1px solid dimgray;
+        border-bottom: 1px solid dimgray;
+        margin: 5px;
+        tr {
+          border-bottom: 1px solid lightgrey;
+          &:last-child {
+            border-bottom: 0;
+          }
+          &:nth-child(even) {
+            background-color: darken($view-background, 5%);
+          }
+          td {
+            font-size: 100%;
+            padding: 3px;
+          }
+        }
+        overflow: auto;
+      }
+    }
+  }
+}
+
+#close-button {
+  position: absolute;
+  top: 8px;
+  right: 20px;
+  color: lightcoral;
+  font-size: 250%;
+  opacity: 0.4;
+  &:hover {
+    opacity: 1;
+  }
+}

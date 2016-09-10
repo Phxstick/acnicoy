@@ -1,0 +1,22 @@
+{
+  "name": "vocabulary-trainer",
+  "version": "1.0.0",
+  "description": "An tool for learning languages",
+  "main": "main.js",
+  "author": "Daniel Bindemann",
+  "devDependencies": {
+    "autoprefixer": "^6.3.4",
+    "electron-localshortcut": "^0.6.0",
+    "electron-prebuilt": "^0.37.3",
+    "gulp": "^3.9.1",
+    "gulp-postcss": "^6.0.1",
+    "gulp-sass": "^2.1.1",
+    "gulp-sourcemaps": "^1.6.0",
+    "jsrender": "^0.9.73"
+  },
+  "dependencies": {
+    "electron-localshortcut": "^0.6.0",
+    "random-js": "^1.0.8",
+    "sqlite3": "^3.1.1"
+  }
+}

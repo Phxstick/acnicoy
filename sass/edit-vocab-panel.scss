@@ -1,0 +1,139 @@
+@import "base";
+
+#window {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+#header-frame {
+  display: flex;
+  background-color: #dddddd;
+  flex-direction: row;
+
+  #header {
+    color: dimgray;
+    flex: 1;
+    font-size: 165%;
+    display: flex;
+    align-items: center;
+    font-family: $gui-font;
+    margin-left: 10px;
+  }
+  #close-button {
+    margin-right: 10px;
+    color: lightcoral;
+    opacity: 0.4;
+    font-size: 300%;
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+#main-frame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  flex-basis: 0;
+  padding: 15px;
+
+  #word-frame {
+    display: flex;
+    flex-direction: row;
+    #word {
+      font-size: 150%;
+      flex: 1;
+      padding: 4px;
+      overflow-x: auto;
+    }
+    #level-header {
+      font-size: 80%;
+      margin-bottom: 3px;
+    }
+  }
+  #translations-frame, #readings-frame, #vocab-lists-frame {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  #translations-header, #readings-header, #vocab-lists-header {
+    background-color: darkred;
+    color: whitesmoke;
+    padding: 3px;
+    margin-top: 5px;
+  }
+  #translations, #readings, #vocab-lists {
+    flex: 1;
+    background-color: $view-background;
+    color: $view-color;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid dimgray;
+    padding: 3px;
+  }
+  #vocab-list-select-frame {
+    display: flex;
+    flex-direction: row;
+    #vocab-list-select {
+      flex: 1;
+    }
+    #vocab-list-select-button {
+      background-color: darkred;
+      padding-left: 7px;
+      padding-right: 7px;
+      padding-bottom: -2px;
+      display: flex;
+      align-items: center;
+      &:hover {
+        background-color: red;
+      }
+      i {
+        color: white;
+      }
+    }
+  }
+}
+
+#edit-input {
+  border: 0px;
+  padding: 2px;
+}
+
+#button-frame {
+  display: flex;
+  flex-direction: row;
+
+  button {
+    @extend .styled-button;
+    flex: 1;
+    font-size: 120%;
+    padding-top: 25px;
+    padding-bottom: 25px;
+    border-top: 1px solid crimson;
+    &:first-child {
+      border-right: 1px solid crimson;
+    }
+  }
+}
+
+.list-entry {
+  display: flex;
+  flex-direction: column;
+  border-radius: 3px;
+  padding: 2px;
+  &:hover {
+    // background-color: #dddddd;
+    background-color: $view-hover-background;
+  }
+}
+
+#srs-level {
+  background-color: $button-background;
+  height: 40px;
+  width: 40px;
+}

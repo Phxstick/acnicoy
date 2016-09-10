@@ -1,0 +1,70 @@
+@import "../variables";
+
+#window {
+  background-color: #dddddd;
+  position: relative;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  margin: 20px;
+  float: left;
+  #content-frame {
+    height: 100%;
+  }
+  #control-frame {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: none;
+    opacity: 0.95;
+    #widget-name {
+      height: 30%;
+      background-color: goldenrod;
+      font: $gui-font;
+      font-style: bold;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 140%;
+      user-select: none;
+    }
+    #control-buttons {
+      height: 70%;
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      background-color: black;
+      #reposition-button {
+        @extend .button;
+        background-color: lightgreen;
+        color: white;
+        font-size:  150%;
+        font: $gui-font;
+        font-style: bold;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        &:hover {
+          background-color: darken(lightgreen, 15%);
+        }
+      }
+      #remove-button {
+        @extend .button;
+        background-color: coral;
+        color: white;
+        font-size: 150%;
+        font: $gui-font;
+        font-style: bold;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        &:hover {
+          background-color: darken(coral, 10%);
+        }
+      }
+    }
+  }
+}

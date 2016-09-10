@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <title>Edit Vocab Panel</title>
+  <meta name="description" content="Edit words from the SRS items">
+  <meta name="author" content="Daniel Bindemann">
+  <meta charset="UTF-8">
+</head>
+<body>
+<div id="content">
+  <template id="styles">
+  <style>@import "./css/edit-vocab-panel.css";</style>
+  <style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
+  </template>
+  <div id="window">
+    <div id="header-frame">
+      <div id="header">Edit panel</div>
+      <i id="close-button" class="fa fa-angle-double-left"></i>
+    </div>
+    <div id="main-frame">
+      <div id="word-frame">
+        <div id="word"></div>
+        <div>
+          <div id="level-header">Level:</div>
+          <popup-stack id="srs-level"></popup-stack>
+        </div>
+      </div>
+      <div id="translations-frame">
+        <div id="translations-header">Translations</div>
+        <div id="translations"></div>
+      </div>
+      <div id="readings-frame">
+        <div id="readings-header">Readings</div>
+        <div id="readings"></div>
+      </div>
+      <div id="vocab-lists-frame">
+        <div id="vocab-lists-header">Vocabulary lists</div>
+        <div id="vocab-lists"></div>
+        <div id="vocab-list-select-frame">
+          <select id="vocab-list-select"></select>
+          <div id="vocab-list-select-button">
+            <i class="fa fa-plus fa-1g"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="button-frame">
+      <button id="save-button">Save</button>
+      <button id="cancel-button">Cancel</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+<script src="../../js/edit-vocab-panel.js"></script>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <title>Add Vocab Section</title>
+  <meta name="description" content="Add words to the SRS items">
+  <meta name="author" content="Daniel Bindemann">
+  <meta charset="UTF-8">
+</head>
+<body>
+<div id="content">
+  <template id="styles">
+  <style>@import "./css/add-vocab-panel.css";</style>
+  <style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
+  </template>
+  <div id="window">
+    <div id="header-frame">
+      <div id="header">Add word</div>
+      <i id="close-button" class="fa fa-angle-double-left"></i>
+    </div>
+    <div id="main-frame">
+      <textarea name="word" column="1"></textarea>
+      <textarea name="translations"></textarea>
+      <textarea name="readings" placeholder="Enter readings here"></textarea>
+      <select name="vocab-list"></select>
+      <div id="level-div">
+        <span>Choose an SRS level:</span>
+        <popup-stack id="srs-level"></popup-stack>
+      </div>
+    </div>
+    <div id="button-frame">
+      <button id="save-button">Save</button>
+      <button id="cancel-button">Cancel</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+<script src="../../js/add-vocab-panel.js"></script>

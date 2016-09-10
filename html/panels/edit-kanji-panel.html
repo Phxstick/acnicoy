@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <title>Edit Kanji Panel</title>
+  <meta name="description" content="Edit kanji SRS items">
+  <meta name="author" content="Daniel Bindemann">
+  <meta charset="UTF-8">
+</head>
+<body>
+<div id="content">
+  <template id="styles">
+  <style>@import "./css/edit-kanji-panel.css";</style>
+  <style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
+  </template>
+  <div id="window">
+    <div id="header-frame">
+      <div id="header">Edit kanji</div>
+      <i id="close-button" class="fa fa-angle-double-left"></i>
+    </div>
+    <div id="main-frame">
+      <div id="kanji-frame">
+        <span id="kanji"></span>
+      </div>
+      <div id="meanings-frame">
+        <div id="meanings-header">Meanings</div>
+        <div class="detail-row">
+          <div id="meanings"></div>
+          <popup-stack id="srs-level-meanings"></popup-stack>
+        </div>
+      </div>
+      <div id="on-yomi-frame">
+        <div id="on-yomi-header">On Yomi</div>
+        <div class="detail-row">
+          <div id="on-yomi"></div>
+          <popup-stack id="srs-level-on-yomi"></popup-stack>
+        </div>
+      </div>
+      <div id="kun-yomi-frame">
+        <div id="kun-yomi-header">Kun Yomi</div>
+        <div class="detail-row">
+          <div id="kun-yomi"></div>
+          <popup-stack id="srs-level-kun-yomi"></popup-stack>
+        </div>
+      </div>
+      <div id="all-levels-div">
+        <span>Set all SRS levels at once:</span>
+        <popup-stack id="all-srs-levels"></popup-stack>
+      </div>
+    </div>
+    <div id="button-frame">
+      <button id="save-button">Save</button>
+      <button id="cancel-button">Cancel</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+<script src="../../js/edit-kanji-panel.js"></script>

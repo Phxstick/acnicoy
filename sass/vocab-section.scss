@@ -1,0 +1,60 @@
+@import "base";
+
+#window {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: row;
+
+  & > div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 3px;
+
+    #all-words, #all-lists, #list-contents {
+      flex: 1;
+    }
+  }
+}
+
+#edit-input {
+  border: 0px;
+  padding: 2px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dragging-over {
+  background-color: $view-hover-background;
+  box-shadow: 0 0 4px peachpuff;
+}
+
+.already-in-list {
+  color: darkgrey;
+}
+
+.search-entry {
+  margin-bottom: 5px;
+}
+
+
+#test-on-list-button {
+  padding: 3px;
+  font-size: large;
+}
+
+#all-lists-button-frame {
+  display: flex;
+  flex-direction:row;
+  button {
+    flex: 1;
+    padding: 2px;
+    i {
+      font-size: 150%;
+    }
+  }
+}

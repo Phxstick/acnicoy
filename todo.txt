@@ -1,0 +1,184 @@
+__ BUGFIXES __
+- Fix switchbutton bars in history section
+- Use different random generator? Seed always generates about same sequence?
+- Make sure Japanese-only stuff is closed when changing to other language
+- Make edit panel inputs unpack when clicking somewhere else
+- Issue with database modification speed? Or is it the JS overhead afterwards?
+- Replace added-button in opened kanji-info-panel if kanji has been added
+- details bar in kanji info panel does not wrap at all or incorrectly.
+- info in details bar should properly be compressed if there are many readings
+  or meanings
+- Use utility.finishEventQueue where sizes are not returned correctly!!
+
+__ Fundamentals (Data) __
+- [Consider overhaul of data storage --> Primarily use IDs for words?]
+- [Consider making kanji-modes into one with 2 to 3 parts for each kanji]
+  ( --> Very problematic for partly added kanji)
+- Add additional field to kanjiData database for "hidden acceptable meanings",
+  containg synonyms or words with similar meaning
+  --> Show option in test settings to turn hidden meanings on or off
+  --> Allow displaying hidden meanings in kanji info
+
+__ General __
+- Find dictionary of monolingual descriptions (display in test after answer?)
+- Create a proper pointer cursor. Create better normal cursor as well
+- Add icons to the left of status message aswell?
+- Find a way to implement loading screen, then add loading animation
+- Also use border gradients for shadowing
+- Allow temporary entries to be closed by clicking anywhere else
+- Differentiate between dark button and light button?
+- Where to put all the tons of update logic from eventEmitters?
+- Make popupstack have expandable shadow when popping up to see borders clearly
+- Show interval time when hovering above SRS level somewhere
+- If there's no content for a language, make contentLoaded-promise return error?
+- Possible trainer name: Agnicoy/Acnicoy
+- Display srs counts for each language in language popup panel
+  --> Requires restructuring of dataManager...?
+- Make overlay window widget for init/help section.
+- Use inset shadows and class animations to design switch-buttons!
+- Use new version of custom elements (See resources)
+- For the time being, implement a little vocabulary backup system in order
+  to not do this manually anymore.
+- Updgrade electron to latest version (1.0) and check out new features?
+- Have one global popupmenu object (so that only one is always active)
+- Allow filling popupmenu with an array of options (allows storing configs)
+
+__ Code __
+- Use CSS variables for all widget styling
+- Replace .button with actual button element (both in css and html)
+- Stop using things like 110% font everywhere - Use as standard font size in
+  _base file instead or in some classes there
+- Make file with all z-index layers of the program
+- Put font-awesome import in _base scss?
+- Don't change event listeners in converter.js but change callback var instead?
+- Put common code for panels in _panel.scss file and import everywhere?
+- Put common panel code in TrainerPanel class and inherit everywhere?
+- Remove inconsistencies in code, e.g. unify glossary ("word" <-> "entry")
+- Make special function where all update logic is defined to keep code clean?
+- Rewrite all sections like history sections so that custom elements work
+- Rework edit-vocab-panel like edit-kanji-panel (only one function call for
+  all the changes, everything logged in dataManager.vocab.editWord)!
+--> Especially logging should be done by the datamanger since it's triggered
+    by data changes and doesn't depend on the interface!!
+- Try to generalize as much scss as possibly and extend _base file.
+  Split parts of _base file into smaller parts.
+
+__ Init section __
+- Open if dataPath in settings is empty
+  => Require setting a data path then (use electrons file dialog here)
+  => If data is found at fiven path, return, otherwise proceed to set first lang
+- Have second part of init section to set first language
+  => Also open if directory in dataPath is empty
+
+__ Home section __
+- When vocabulary is empty, write very small manual info card into intro section
+- When vocabulary is not empty, display SRS table
+- Make SRS table as bar diagram for more visual and quick information?
+- Make changelog widget for pinwall
+- Make widget-adder a widget aswell (only movable then)?
+- Display adder-widget only when ctrl is pressed with cursor above section?
+
+__ Popup-Menu __
+- Make width of popupmenu the width of largest item?
+
+__ Test __
+- Also construct extended solutions in _createTest already ?
+- Properly handle overflow if correct-answer-frame gets too large
+  --> Try to fade out items at bottom if list is too large,
+      remove fading when bottom reached
+- Possibly round up appearance time to e.g. 15 minutes
+  ==> New stuff appears in batches, and a counter can be shown in intro section
+- Write changed db entries async in small intervals to prevent data loss
+- Show where the entry goes
+- Animate everything (and have setting to to toggle that)
+- Have invisible translations for synonyms/unnecessary words (e.g. AE <-> BE)
+
+__ Kanji __
+- Use bottom-animation to slide open kanji info panel (better performance)?
+- Use selection colors when hovering over added kanji?
+- Make add-kanji button in a brighter color (less distracting)?
+- Possibly make mapping from kanji parts to actual parts in SVG drawing
+  to make sure all parts are properly highlighted
+
+__ Content __
+- Contains a database of custom info cards
+- Allow uploading and sharing vocabulary lists
+- Offer small coding environment for creating cards with HTML/CSS/JS
+
+__ Edit vocab panel __
+- Remove lists from select element where the word is already in?
+  (How to do this most efficiently?)
+
+__ Edit vocab panel __
+- Create dataManager.kanji.add function for this
+
+__ Vocab __
+- Allow testing oneself on vocabulary lists (add test button in the section)
+- Make sure changes to vocab lists are reflected in add vocab panel (events!)
+
+__ Svg Bar Diagram __
+- Terminology: Descriptions/Labels??
+
+__ Stats/Achievements __
+- Use single-bar diagram for kanji progress to display relative to total!
+- Display earned achievement in status bar and make it glow golden to highlight
+- Daily stats diagrams below the general stats, next to each other
+    --> One for mastery points, one for new vocab/kanji added
+    --> Allow displaying daily and cumulative progress for each daigram
+    --> Also color each bar in two colors according to kanji and vocab progress
+- Bar diagrams showing kanji learned by grade and JLPT next to each other
+- Update at least general stats when words/kanji are added
+
+
+
+List of settings:
+
+[Data/General settings]
+- [File-Dialog] Change data path
+
+[Language settings]
+- [Widget] Import/Download other language content data
+- [Widget] Add/Remove/Rename Languages
+
+[Test Settings]
+- [Checkbox] Display test progress
+- [Checkbox] Display score gained (Necessary?)
+- [Checkbox] Color test item background according to test item type?
+             (word, reading, on, kun, kanji meaning)
+- [Widget] Setting SRS options
+- [Checkbox] Allow ignoring answer per shortcut
+     [Shortcut-Widget] Choose shortcut for ignoring answer
+
+[Design Settings]
+- [Checkbox] Animate test items
+- [Checkbox] Fade test section background (only if colored-option is set)
+- [Checkbox] Animate panels
+- [Checkbox] Animate Popup stacks
+- [Checkbox] Color Menu buttons
+       --> If so: use menu colors in CSS-tricks.com for menu buttons
+- [Listbox] Cursor selection (Some maybe habe to be unlocked)
+       --> Especially drill cursor for large achievement (e.g. 1000 kanji)
+- [Widget] Possibly color settings by changing and recompiling Sass
+
+[Shortcuts]
+- [Shortcut-Widget] Ignoring answer in test section
+- [Shortcut-Widgets] Shortcuts for opening sections or panels
+
+
+__ Resources __
+- http://www.tanos.co.uk/jlpt/skills/vocab/  (New JLPT stuff)
+- http://pj.ninjal.ac.jp/corpus_center/bccwj/en/freq-list.html  (Frequencies)
+- http://hiramatu-hifuka.com/onyak/onyak2/josu-ta.html  (Counters)
+- Kanji textbook/Internet frequencies?
+
+- http://www.levelup99.net/businessmanner/cate3post24.html
+  (5 types of honorific language, for content section)
+
+- http://usabilitypost.com/2012/01/10/pressed-button-state-with-css3/#
+  --> Use inset shadow to style <button>?
+https://developers.google.com/web/fundamentals/primers/customelements/
+
+- https://www.thebalance.com/free-cloud-storage-1356638
+  Free cloud storage services to save trainer resources and data!
+- For server hosting: 1. RedHat OpenShift, 2. Heroku, 3. 000webhost (PHP)
+  --> Use flask(python) or express(nodejs)

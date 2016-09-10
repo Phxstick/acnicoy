@@ -1,0 +1,33 @@
+@import "../base";
+
+table#srs-counts {
+  background-color: $view-background;
+  padding: 10px;
+  border-collapse: collapse;
+  border: 1px solid #ddd;
+  tr {
+    &:first-child {
+      font-size: 110%;
+      font-family: "Century Gothic";
+    }
+    td {
+      padding: 5px;
+      margin: 2px;
+      text-align: center;
+      color: $view-color;
+      border-bottom: 1px solid #ddd;
+      &:first-child {
+        font-size: 110%;
+        border-bottom: none;
+      }
+    }
+  }
+  #reload-srs {
+    // border: none;
+    color: #f7baba;
+    font-size: 120%;
+    &:hover {
+      color: #f07575;
+    }
+  }
+}

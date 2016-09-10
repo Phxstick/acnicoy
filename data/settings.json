@@ -1,0 +1,33 @@
+{
+    "test": {
+        "kanji_flag": 0,
+        "kana_flag": 0,
+        "progress_flag": 1,
+        "stats_flag": 1,
+        "font_size": 16
+    },
+    "SRS": {
+        "fill": "random",
+        "threshold": 30,
+        "show_lists": false,
+        "counter": 0,
+        "spacing": [0, 14400, 28800, 72000, 201600, 590400,
+                    2404800, 7761600, 31104000, 1000000000000]
+    },
+    "languages": {
+        "standard": ""
+    },
+    "print": {
+        "sort": 2,
+        "pad": ".",
+        "readings_flag": 0
+    },
+    "add": {
+        "separator": ","
+    },
+    "design": {
+        "font1": { "family": "Helvetica", "size": 11 },
+        "font2": { "family": "Century Gothic", "size": 12 },
+        "colors": null
+    }
+}

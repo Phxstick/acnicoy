@@ -1,0 +1,155 @@
+@import "variables";
+@import "base";
+
+$buttonBorderColor: white;
+
+#window {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+#top {
+  height: 60%;
+  display: flex;
+  flex-direction: column;
+  background-color: dimgray;
+  color: whitesmoke;
+  align-items: center;
+}
+
+#bottom {
+  flex-direction: column;
+  height: 40%;
+  display: flex;
+  align-items: center;
+}
+
+div#status {
+  margin-top: 30px;
+  color: whitesmoke;
+  font-size: 120%;
+}
+
+#items {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  #test-item {
+    font-size: 300%;
+    color: whitesmoke;
+  }
+
+  #correct-answers {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 25px;
+    overflow-y: auto;
+
+    div {
+      color: whitesmoke;
+      font-size: 120%;
+      padding: 2px;
+    }
+  }
+}
+
+input#answer {
+  color: $view-color;
+  background-color: darken($view-background, 5%);
+  border: 1px solid dimgray;
+  padding: 5px;
+  transition: .4s;
+  font-size: 130%;
+  margin-top: 30px;
+  text-align: center;
+  width: 40%;
+  &:focus {
+    outline: none !important;
+    // box-shadow: 0 0 5px dimgray;
+    background-color: $view-background;
+  }
+  // &:placeholder-shown {
+  //   color: lighten($view-color, 30%);
+  // }
+  box-sizing: border-box;
+}
+
+button#continue {
+  border: 1px solid dimgray;
+  background-color: darken($view-background, 10%);
+  color: $view-color;
+  &:focus {
+    outline: none !important;
+    // box-shadow: 0 0 5px dimgray;
+    background-color: $view-background;
+  }
+  &:hover {
+    background-color: $view-background;
+  }
+  border: 1px solid dimgray;
+  padding: 5px;
+  font-size: 130%;
+  margin-top: 30px;
+  width: 40%;
+  box-sizing: border-box;
+}
+
+#button-bar {
+  display: flex;
+  flex-direction: row;
+  height: 35px;
+  width: 70%;
+  font-size: 90%;
+  border-top: 1px solid transparent;
+  border-bottom: 0px;
+  border-image: linear-gradient(to left, transparent, $buttonBorderColor, transparent) 1 1%;
+
+  button {
+    @extend .button;
+    // TODO: Add vertical gradient to inner button on hover,
+    //       and a diagonal gradient on first-last-child buttons on hover
+    flex: 1;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center top;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-right: 1px solid transparent;
+    border-left: 0;
+    border-top: 0;
+    border-image: linear-gradient(lighten($buttonBorderColor, 15%), transparent) 1 100%;
+    &:hover {
+      background-image: linear-gradient(to bottom, darken($buttonBorderColor,
+      40%), transparent 75%);
+      text-shadow: 0 0 1px $buttonBorderColor;
+    }
+    &:first-child {
+      border-left: 0;
+      &:hover {
+        background-image: linear-gradient(to bottom left, darken($buttonBorderColor, 40%), transparent, transparent);
+      }
+    }
+    &:last-child {
+      border-right: 0;
+      &:hover {
+        background-image: linear-gradient(to bottom right, darken($buttonBorderColor, 40%), transparent, transparent);
+      }
+    }
+    &:disabled {
+      color: #999999;
+      &:hover {
+        text-shadow: none;
+        background-image: none;
+      }
+    }
+  }
+}

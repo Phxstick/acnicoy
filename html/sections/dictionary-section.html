@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <title>Dictionary Section</title>
+  <meta name="description" content="Search the dictionary">
+  <meta name="author" content="Daniel Bindemann">
+  <meta charset="UTF-8">
+  <script src="../../js/dictionary-section.js"></script>
+</head>
+<body>
+
+<template id="template">
+<style>@import "./css/dictionary-section.css";</style>
+<style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
+<div id="window">
+  <div id="filters">
+    <input id="entry-filter" placeholder="Filter by entry"></input>
+    <input id="meanings-filter" placeholder="Filter by meanings"></input>
+    <input id="readings-filter" placeholder="Filter by readings"></input>
+  </div>
+  <div id="status-bar">
+    <div id="search-status">Enter queries into one of the inputs above and
+       press Return.</div>
+    <button id="load-more-results">Load more results</button>
+  </div>
+  <table id="results-table">
+    <thead>
+      <tr>
+        <th>Entry</th>
+        <th>Meanings</th>
+        <th>Readings</th>
+      </tr>
+    </thead>
+    <tbody id="results">
+    </tbody>
+  </table>
+</div>
+</template>
+</body>
+</html>

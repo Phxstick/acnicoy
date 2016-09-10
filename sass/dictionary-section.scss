@@ -1,0 +1,71 @@
+@import "base";
+
+#window {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#filters {
+  display: flex;
+  flex-direction: row;
+
+  input {
+    flex: 1;
+  }
+}
+
+#status-bar {
+  display: flex;
+  flex-direction: row;
+  #search-status {
+    flex: 1;
+    padding: 8px;
+  }
+  #load-more-results {
+    padding: 8px;
+  }
+}
+
+#results-table {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: dimGray;
+  border-spacing: 1px;
+  overflow-y: auto;
+  thead {
+    display: block;
+    table-layout: fixed;
+  }
+  tbody {
+    flex: 1;
+    display: block;
+    overflow-y: auto;
+  }
+  th {
+    background: dimgray;
+    color: white;
+    text-shadow: 0px 0px 1px white;
+    padding: 20px 5px 20px 5px;
+  }
+  td {
+    padding: 5px;
+    background-color: $view-background;
+  }
+}
+
+.kanji-info-link {
+  &:hover {
+    text-shadow: 0 0 2px lightsalmon;
+    color: darkred;
+  }
+}
+
+.alternative-writing > * {
+  color: darkgrey;
+}

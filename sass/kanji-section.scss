@@ -1,0 +1,56 @@
+@import "base";
+
+#kanji-container {
+  display: none;
+}
+
+#window {
+  overflow: auto;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+dt {
+  font-size: 130%;
+  margin: 10px;
+  margin-top: 18px;
+  font-variant: small-caps;
+}
+
+dd {
+  padding: 10px;
+  margin-right: 28px;
+  background: gainsboro;
+  box-shadow: 0px 0px 2px darkred;
+}
+
+.kanji {
+  display: inline-block;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  padding: 3px;
+  font-size: 140%;
+  color: darkred;
+
+  &:hover {
+    @extend .kanji-selected;
+  }
+}
+
+.added {
+  color: darkgrey;
+}
+
+.kanji-selected {
+    color: $select-color;
+    background: $select-background;
+    border-radius: 3px;
+}
+
+.statistic-label {
+  font-size: 60%;
+  margin-left: 10px;
+}

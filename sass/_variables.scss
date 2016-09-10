@@ -1,0 +1,44 @@
+@font-face {
+  font-family: OpenSans-Light;
+  src: url(../fonts/OpenSans-Light.woff);
+}
+
+@font-face {
+  font-family: TakaoPGothic;
+  src: url(../fonts/TakaoPGothic.ttf);
+}
+
+@font-face {
+  font-family: Questrial;
+  src: url(../fonts/Questrial-Regular.otf) format("opentype");
+}
+
+$font: TakaoPGothic, Helvetica, Verdana, sans-serif;
+$gui-font: OpenSans-Light;
+$header-font: Questrial;
+
+$normal-cursor: url(../img/test_cursor.png), auto;
+$pointer-cursor: url(../img/test_cursor.png), pointer;
+
+// Colors
+$background-color: lightcoral;
+$background: $background-color;
+$color: #303030;
+$select-color: white;
+$select-background: firebrick;
+
+$view-color: #303030;
+$view-background: #FFFFFF;
+$view-hover-color: black;
+$view-hover-background: peachpuff;
+$view-select-color: $select-color;
+$view-select-background: $select-background;
+
+$button-color: whitesmoke;
+$button-background: darkred;
+$button-hover-color: whitesmoke;
+$button-hover-background: lighten($button-background, 10%);  //crimson;
+$button-active-color: whitesmoke;
+$button-active-background: lighten($button-background, 15%);  //crimson;
+$button-disabled-color: gray;
+$button-disabled-background: #dddddd;

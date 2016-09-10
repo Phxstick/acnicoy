@@ -1,0 +1,24 @@
+Standard SRS scheme:
+
+1. 4 hours
+2. 8 hours
+3. 1 day
+4. 3 days
+5. 7 days
+6. 14 days
+7. 30 days (1 month)
+8. 60 days (2 months)
+9. 120 days (4 months)
+
+Mastery percentage for total time:
+1 day: 5%;
+7 days: 10%
+14 days: 20%
+30 days: 30%
+60 days: 40%
+90 days: 50%
+120 days: 60%
+150 days: 75%
+180 days: 90%
+360 days: 95%
+540 days: 99%

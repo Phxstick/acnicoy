@@ -1,0 +1,33 @@
+@import "../base";
+
+#window {
+  width: 189px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  resize: both;
+  box-sizing: border-box;
+}
+
+#text-div {
+  flex: 1;
+  color: $view-color;
+  background-color:  darken($view-background, 5%);
+  padding: 5px;
+  resize: both;
+  border: 1px solid #a9a9a9;
+  overflow: auto;
+  white-space: pre;
+}
+
+#edit-mode {
+  flex: 1;
+  flex-direction: column;
+  display: none;
+  #text-entry {
+    flex: 1;
+  }
+  #save-button {
+  }
+}
+
