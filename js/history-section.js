@@ -67,27 +67,30 @@ class HistorySection extends TrainerSection {
     }
     // TODO: Differentiate term "rows" (database rows <-> table rows)...
     createTableRows(entries) {
-        const fragment = document.createDocumentFragment();
-        const template = this.root.getElementById("row-template").innerHTML;
-        const rowTemplate = jsrender.templates(template);
+        const htmlStrings = [];
         for (let entry of entries) {
-            const time = new Date(Math.floor(parseInt(entry.time) * 1000));
-            const data = { time: time.toDateString(), column: entry.column,
+            const date = new Date(Math.floor(parseInt(entry.time) * 1000));
+            const data = { time: utility.getShortDateString(date),
+                           column: entry.column,
                            entry: entry.old_entry };
             switch (entry.type) {
                 case "A":
                     data.type = "added";
                     switch (entry.column) {
                         case "entry":
-                            data.details = `【${entry.new_readings}】 ` + 
+                            const readings = entry.new_readings.length > 0 ?
+                                `【${entry.new_readings}】 ` : "";
+                            data.details = `${readings}` + 
                                            `${entry.new_translations}`;
                             data.entry = entry.new_entry;
                             break;
                         case "translation":
-                            data.details = `[+] ${entry.new_translations}`;
+                            data.details = `<i class="fa fa-plus"></i>` +
+                                `<span>${entry.new_translations}</span>`;
                             break;
                         case "reading":
-                            data.details = `[+] ${entry.new_readings}`;
+                            data.details = `<i class="fa fa-plus"></i>` +
+                                `<span>${entry.new_readings}</span>`;
                             break;
                     }
                     break;
@@ -95,14 +98,18 @@ class HistorySection extends TrainerSection {
                     data.type = "deleted";
                     switch (entry.column) {
                         case "entry":
-                            data.details = `【${entry.old_readings}】 ` +
+                            const readings = entry.old_readings.length > 0 ?
+                                `【${entry.old_readings}】 ` : "";
+                            data.details = `${readings}` + 
                                            `${entry.old_translations}`;
                             break;
                         case "translation":
-                            data.details = `[-] ${entry.old_translations}`;
+                            data.details = `<i class="fa fa-minus"></i>` +
+                                `<span>${entry.old_translations}</span>`;
                             break;
                         case "reading":
-                            data.details = `[-] ${entry.old_readings}`;
+                            data.details = `<i class="fa fa-minus"></i>` +
+                                `<span>${entry.old_readings}</span>`;
                             break;
                     }
                     break;
@@ -110,24 +117,34 @@ class HistorySection extends TrainerSection {
                     data.type = "modified";
                     switch (entry.column) {
                         case "entry":
-                            data.details = `Changed to ${entry.new_entry}`; 
+                            data.details = `<i class="fa fa-arrow-right">
+                                            <span>${entry.new_entry}</span>`; 
                             break;
                         case "translation":
-                            data.details = `${entry.old_translations} --> ` +
-                                           `${entry.new_translations}`;
+                            data.details =
+                                `<span>${entry.old_translations}</span>` +
+                                `<i class="fa fa-arrow-right"></i>` +
+                                `<span>${entry.new_translations}</span>`;
                             break;
                         case "reading":
-                            data.details = `${entry.old_readings} --> ` +
-                                           `${entry.new_readings}`;
+                            data.details =
+                                `<span>${entry.old_readings}</span>` +
+                                `<i class="fa fa-arrow-right"></i>` +
+                                `<span>${entry.new_readings}</span>`;
                             break;
                     }
                     break;
             }
             // Construct the row
             // TODO: Store ID as invisible table data
-            const newNode = $(rowTemplate.render(data))[0];
-            this.popupMenu.attachTo(newNode);
-            fragment.appendChild(newNode);
+            htmlStrings.push(`<tr class="${data.type} ${data.column}"><td>${data.time}</td><td>${data.type}</td><td>${data.column}</td><td>${data.entry}</td><td>${data.details}</td></tr>`);
+        }
+        const fragment = document.createDocumentFragment();
+        const rows = $(htmlStrings.join(''));
+        for (let i = 0; i < rows.length; ++i) {
+            const row = rows[i];
+            this.popupMenu.attachTo(row);
+            fragment.appendChild(row);
         }
         return fragment;
     }

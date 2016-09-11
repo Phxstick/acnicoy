@@ -1,9 +1,5 @@
 @import "base";
 
-header {
-  padding: 40px 10px 40px 10px;
-}
-
 #window {
   position: absolute;
   top: 0;
@@ -18,40 +14,62 @@ table#history {
   display: flex;
   flex-direction: column;
   flex: 1;
-  background: dimGray;
-  border-spacing: 1px;
+  background: $view-background;
+  border-collapse: collapse;
+  // border-spacing: 1px;
   thead {
     display: block;
     table-layout: fixed;
+    width: 100%;
+    background-color: dimgray;
   }
   tbody {
     flex: 1;
     display: block;
     overflow-y: auto;
     tr {
+      border-width: 0 0 0 20px;
+      border-style: solid;
       &.deleted {
-        background-color: salmon;
-        &:hover { background-color: lighten(salmon, 10%); }
+        border-color: salmon;
+        // &:hover { background-color: lighten(salmon, 10%); }
       }
       &.added {
-        background-color: yellowGreen;
-        &:hover { background-color: lighten(yellowgreen, 15%); }
+        border-color: yellowGreen;
+        // &:hover { background-color: lighten(yellowgreen, 15%); }
       }
       &.modified {
-        background-color: khaki;
-        &:hover { background-color: lighten(khaki, 10%); }
+        border-color: khaki;
+        // &:hover { background-color: lighten(khaki, 10%); }
       }
     }
   }
   th {
-    background: dimgray;
     color: white;
-    padding: 20px 0px 20px 0px;
+    padding: 5px 0px 5px 0px;
     font-family: $header-font;
     font-size: 120%;
+    font-weight: normal;
   }
   td {
+    border: 1px solid darken($view-background, 10%);
     padding: 5px;
+
+    .fa-plus {
+      color: darkgreen;
+      margin-right: 10px;
+    }
+
+    .fa-minus {
+      color: darkred;
+      margin-right: 10px;
+    }
+
+    .fa-arrow-right {
+      color: darkgoldenrod;
+      margin-right: 8px;
+      margin-left: 8px;
+    }
   }
 }
 
@@ -61,14 +79,17 @@ header {
   padding: 0px;
 }
 
-#filter-label-div {
-  float: left;
-  padding: 25px;
-  background: indianred;
-  color: white;
-  font-size: 130%;
+#filter-frame {
+  display: flex;
+  flex-direction: row;
+
+  #filters {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    switch-bar {
+      flex: 1;
+    }
+  }
 }
 
-#filter-table {
-  float: right;
-}

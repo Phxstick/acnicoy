@@ -6,6 +6,9 @@
 
 span {
   flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background-color: lightgrey;
   color: grey;
   box-shadow: none;

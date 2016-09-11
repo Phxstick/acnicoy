@@ -8,6 +8,14 @@ function getTime() {
     return parseInt(date.getTime() / 1000);
 }
 
+/**
+ * Given a date object, return date as string of form "yyyy/mm/dd".
+ */
+function getShortDateString(date) {
+    return date.getUTCFullYear() + "/" +
+           ("0" + (date.getUTCMonth() + 1)).slice(-2) + "/" +
+           ("0" + (date.getUTCDate() + 1)).slice(-2);
+}
 
 /**
 **  Return a promise which is fulfilled when the current event queue is empty.
@@ -358,9 +366,10 @@ function removeEntryFromSortedList(listNode, text) {
 }
 
 
+module.exports.getTime = getTime;
+module.exports.getShortDateString = getShortDateString;
 module.exports.setEqual = setEqual;
 module.exports.finishEventQueue = finishEventQueue;
-module.exports.getTime = getTime;
 module.exports.calculateED = calculateED;
 module.exports.getStringForNumber = getStringForNumber;
 module.exports.getOrdinalNumberString = getOrdinalNumberString;
