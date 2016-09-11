@@ -42,6 +42,7 @@ __ General __
 - Updgrade electron to latest version (1.0) and check out new features?
 - Have one global popupmenu object (so that only one is always active)
 - Allow filling popupmenu with an array of options (allows storing configs)
+- Make language content optional and provide language packs for download?
 
 __ Code __
 - Use CSS variables for all widget styling

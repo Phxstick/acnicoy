@@ -14,16 +14,17 @@ module.exports.exports = {
 
     loaded: { },
 
+    // TODO: Properly involve secondary language aswell?
     load: function(language) {
         if (language === "Japanese") {
+          const cPath = path.resolve(contentPath, "Japanese-English")
           const tPath = path.resolve(langPath, "Japanese", "Vocabulary.sqlite");
-          const kPath = path.resolve(contentPath, "Japanese-English.sqlite3");
-          const strokesPath = path.resolve(contentPath, "kanji-strokes.json");
-          const numbersPath = path.resolve(contentPath, "numeric-kanji.json");
-          const countersPath =
-              path.resolve(contentPath, "counter-kanji.json");
+          const dbPath = path.resolve(cPath, "Japanese-English.sqlite3");
+          const strokesPath = path.resolve(cPath, "kanji-strokes.json");
+          const numbersPath = path.resolve(cPath, "numeric-kanji.json");
+          const countersPath = path.resolve(cPath, "counter-kanji.json");
           this.loaded["Japanese"] = new Promise((resolve) => {
-              const db = new sqlite3.Database(kPath, () => {
+              const db = new sqlite3.Database(dbPath, () => {
                   const query = function(query, ...params) {
                       return new Promise((resolve, reject) => {
                           db.all(query, ...params,

@@ -7,8 +7,9 @@ const sqlite3 = require("sqlite3");
 /*/
 const home = process.env[process.platform == "win32" ? "USERPROFILE" : "HOME"];
 const dataPath = path.resolve(home, "Documents", "TrainerData");
-const contentPath = path.resolve("data");
+const contentPath = path.resolve("data", "language-content");
 const langPath = path.resolve(dataPath, "Languages");
+
 const globalSettingsPath = path.resolve(dataPath, "settings.json");
 const scoreCalculationPath = path.resolve("data", "scoreCalculation.json");
 const dataManagersPath = path.resolve("js", "lib", "data-managers");
