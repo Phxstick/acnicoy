@@ -42,10 +42,12 @@ class KanjiSection extends TrainerSection {
             });
         });
 
-        dataManager.content.getKanjiList().then((rows) => {
-            this.createKanji(rows);
-            this.displayKanji("grade");
-            eventEmitter.emit("done-loading");
+        Promise.all(dataManager.content.allLoaded).then(() => {
+            dataManager.content.getKanjiList().then((rows) => {
+                this.createKanji(rows);
+                this.displayKanji("grade");
+                eventEmitter.emit("done-loading");
+            });
         });
     }
     createKanji(rows) {
@@ -147,13 +149,12 @@ class KanjiSection extends TrainerSection {
      * @returns {Promise}
      */
     updateAddedPerGradeCounter(grade) {
-        return dataManager.content.loaded["Japanese"].then((content) => {
-            return dataManager.kanji.getAmountAddedForGrade(grade)
-            .then((added) => {
-                const total = content.numKanjiPerGrade[grade];
-                this.addedPerGradeCounters[grade].textContent =
-                    `( ${added} / ${total} )`;
-            });
+        const numKanjiPerGrade =
+            dataManager.content.dataMap["Japanese"].numKanjiPerGrade;
+        return dataManager.kanji.getAmountAddedForGrade(grade).then((added) => {
+            const total = numKanjiPerGrade[grade];
+            this.addedPerGradeCounters[grade].textContent =
+                `( ${added} / ${total} )`;
         });
     }
 }

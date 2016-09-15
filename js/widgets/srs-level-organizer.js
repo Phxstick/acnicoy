@@ -1,5 +1,6 @@
 "use strict";
 
+// Do I only have access to the "paths" global if this is in a function...?
 (function() {
 const importDoc = document.currentScript.ownerDocument;
 importDoc.addEventListener("DOMContentLoaded", () => {
@@ -13,8 +14,8 @@ class SrsLevelOrganizer extends TrainerSection {
         this.root.appendChild(docContent.cloneNode(true));
         const style = document.createElement("style");
         style.textContent =
-            `@import url(${getStylePath("srs-level-organizer")});
-             @import url(${getFontAwesomePath()});`;
+            `@import url(${paths.css("srs-level-organizer")});
+             @import url(${paths.fontAwesome});`;
         this.root.appendChild(style);
     }
     adjustToLanguage(language, secondary) {

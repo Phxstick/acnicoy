@@ -8,7 +8,7 @@ class PopupMenu extends HTMLElement {
         this.root = this.createShadowRoot();
         this.menuWindow = document.createElement("div");
         const style = document.createElement("style");
-        style.textContent = `@import url(${getStylePath("popup-menu")})`;
+        style.textContent = `@import url(${paths.css("popup-menu")})`;
         this.root.appendChild(this.menuWindow);
         this.root.appendChild(style);
         document.body.appendChild(this);

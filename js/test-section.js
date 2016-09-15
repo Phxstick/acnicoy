@@ -1,5 +1,8 @@
 "use strict";
 
+const Random = require("random-js");
+const random = new Random(Random.engines.nativeMath);
+
 utility.processDocument(document.currentScript.ownerDocument, (docContent) => {
 class TestSection extends TrainerSection {
     createdCallback() {

@@ -1,48 +1,49 @@
 "use strict";
 
-let vocab;
-let kanji;
+module.exports = function (paths, modules) {
+    const test = {};
 
-module.exports.internals = {
-    set vocab(obj) { vocab = obj; },
-    set kanji(obj) { kanji = obj; }
-};
+    test.modes = [];
 
-module.exports.exports = {
-    modes: [],
-
-    mode: {
+    test.mode = {
         WORDS: "WORDS",
         KANJI_MEANINGS: "KANJI_MEANINGS",
         KANJI_ON_YOMI: "KANJI_ON_YOMI",
         KANJI_KUN_YOMI: "KANJI_KUN_YOMI"
-    },
+    };
 
-    modeToTable: function(mode) {
+    test.modeToTable = function (mode) {
         switch (mode) {
-            case this.mode.WORDS: return "vocabulary";
-            case this.mode.KANJI_MEANINGS: return "kanji_meanings_test";
-            case this.mode.KANJI_ON_YOMI: return "kanji_on_test";
-            case this.mode.KANJI_KUN_YOMI: return "kanji_kun_test";
+            case test.mode.WORDS: return "vocabulary";
+            case test.mode.KANJI_MEANINGS: return "kanji_meanings_test";
+            case test.mode.KANJI_ON_YOMI: return "kanji_on_test";
+            case test.mode.KANJI_KUN_YOMI: return "kanji_kun_test";
         }
-    },
+    };
 
-    getSolutions: function(item, mode, part) {
+    test.getSolutions = function (item, mode, part) {
         switch (mode) {
-            case this.mode.WORDS:
-                if (part === "solutions") return vocab.getTranslations(item);
-                else if (part === "readings") return vocab.getReadings(item);
-            case this.mode.KANJI_MEANINGS: return kanji.getMeanings(item);
-            case this.mode.KANJI_ON_YOMI: return kanji.getOnYomi(item);
-            case this.mode.KANJI_KUN_YOMI: return kanji.getKunYomi(item);
+            case test.mode.WORDS:
+                if (part === "solutions")
+                    return modules.vocab.getTranslations(item);
+                else if (part === "readings")
+                    return modules.vocab.getReadings(item);
+            case test.mode.KANJI_MEANINGS:
+                return modules.kanji.getMeanings(item);
+            case test.mode.KANJI_ON_YOMI:
+                return modules.kanji.getOnYomi(item);
+            case test.mode.KANJI_KUN_YOMI:
+                return modules.kanji.getKunYomi(item);
         }
-    },
+    };
 
-    load: function(language) {
+    test.setLanguage = function (language) {
         if (language === "Japanese")
-            this.modes = [this.mode.WORDS, this.mode.KANJI_MEANINGS,
-                          this.mode.KANJI_ON_YOMI, this.mode.KANJI_KUN_YOMI];
+            test.modes = [test.mode.WORDS, test.mode.KANJI_MEANINGS,
+                          test.mode.KANJI_ON_YOMI, test.mode.KANJI_KUN_YOMI];
         else
-            this.modes = [this.mode.WORDS];
-    }
+            test.modes = [test.mode.WORDS];
+    };
+
+    return test;
 };

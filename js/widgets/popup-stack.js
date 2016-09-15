@@ -13,7 +13,7 @@ class PopupStack extends HTMLDivElement {
         // Create widget tree
         this.root = this.createShadowRoot();
         const style = document.createElement("style");
-        style.textContent = `@import url(${getStylePath("popup-stack")})`;
+        style.textContent = `@import url(${paths.css("popup-stack")})`;
         this.root.appendChild(style);
         this.itemContainer = document.createElement("div");
         this.itemContainer.id = "container";

@@ -1,5 +1,10 @@
+TODO next:
+- Adapt remaining sections
+- Adapt index.js correctly
+- Make sections wait until all content has loaded?
+==> Test and commit
+
 __ BUGFIXES __
-- Fix switchbutton bars in history section
 - Use different random generator? Seed always generates about same sequence?
 - Make sure Japanese-only stuff is closed when changing to other language
 - Make edit panel inputs unpack when clicking somewhere else
@@ -31,7 +36,7 @@ __ General __
 - Make popupstack have expandable shadow when popping up to see borders clearly
 - Show interval time when hovering above SRS level somewhere
 - If there's no content for a language, make contentLoaded-promise return error?
-- Possible trainer name: Agnicoy/Acnicoy
+- Possible trainer name: Acnicoy
 - Display srs counts for each language in language popup panel
   --> Requires restructuring of dataManager...?
 - Make overlay window widget for init/help section.
@@ -39,12 +44,16 @@ __ General __
 - Use new version of custom elements (See resources)
 - For the time being, implement a little vocabulary backup system in order
   to not do this manually anymore.
-- Updgrade electron to latest version (1.0) and check out new features?
+- Updgrade electron to latest version (1.35) and check out new features?
 - Have one global popupmenu object (so that only one is always active)
 - Allow filling popupmenu with an array of options (allows storing configs)
 - Make language content optional and provide language packs for download?
+- Check if there is something selected and adjust popupwindow for copying etc.
+  --> Make other copy options more detailed, e.g. "Copy kanji", "Copy word"
+- Remove "data" from content section and always access with "dataMap[...]"?
 
 __ Code __
+- Also split js and css into sections/widgets/panels?
 - Use CSS variables for all widget styling
 - Replace .button with actual button element (both in css and html)
 - Stop using things like 110% font everywhere - Use as standard font size in
@@ -56,7 +65,7 @@ __ Code __
 - Put common panel code in TrainerPanel class and inherit everywhere?
 - Remove inconsistencies in code, e.g. unify glossary ("word" <-> "entry")
 - Make special function where all update logic is defined to keep code clean?
-- Rewrite all sections like history sections so that custom elements work
+- Rewrite all sections like history section so that custom elements work
 - Rework edit-vocab-panel like edit-kanji-panel (only one function call for
   all the changes, everything logged in dataManager.vocab.editWord)!
 --> Especially logging should be done by the datamanger since it's triggered
@@ -74,10 +83,12 @@ __ Init section __
 __ Home section __
 - When vocabulary is empty, write very small manual info card into intro section
 - When vocabulary is not empty, display SRS table
-- Make SRS table as bar diagram for more visual and quick information?
+- Create SRS bar diagram for more visual and quick information?
+- Allow collapsing columns in SRS table (--> No partitioning by modes)
 - Make changelog widget for pinwall
 - Make widget-adder a widget aswell (only movable then)?
 - Display adder-widget only when ctrl is pressed with cursor above section?
+- Customizable bar diagram showing when new items for testing become available
 
 __ Popup-Menu __
 - Make width of popupmenu the width of largest item?
@@ -100,6 +111,8 @@ __ Kanji __
 - Make add-kanji button in a brighter color (less distracting)?
 - Possibly make mapping from kanji parts to actual parts in SVG drawing
   to make sure all parts are properly highlighted
+- Show info for kanji that are part of the Chinese zodiac
+- Show info for kanji that symbolize a country
 
 __ Content __
 - Contains a database of custom info cards
@@ -119,6 +132,10 @@ __ Vocab __
 
 __ Svg Bar Diagram __
 - Terminology: Descriptions/Labels??
+
+__ History __
+- Completely rework history section?
+  --> Only display added entries and kanji?
 
 __ Stats/Achievements __
 - Use single-bar diagram for kanji progress to display relative to total!
@@ -155,6 +172,7 @@ List of settings:
 - [Checkbox] Fade test section background (only if colored-option is set)
 - [Checkbox] Animate panels
 - [Checkbox] Animate Popup stacks
+- [Checkbox] Compress side bar into icons
 - [Checkbox] Color Menu buttons
        --> If so: use menu colors in CSS-tricks.com for menu buttons
 - [Listbox] Cursor selection (Some maybe habe to be unlocked)
@@ -178,6 +196,8 @@ __ Resources __
 - http://usabilitypost.com/2012/01/10/pressed-button-state-with-css3/#
   --> Use inset shadow to style <button>?
 https://developers.google.com/web/fundamentals/primers/customelements/
+- http://stackoverflow.com/questions/13151693/passing-arguments-to-require-when-loading-module
+  --> Use for parameterizing datamanagers?
 
 - https://www.thebalance.com/free-cloud-storage-1356638
   Free cloud storage services to save trainer resources and data!

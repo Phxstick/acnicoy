@@ -1,46 +1,32 @@
 "use strict";
 
-const electron = require("electron");
-window.$ = window.jQuery = require("./js/lib/jquery-2.1.4.min.js");
-const ipcRenderer = electron.ipcRenderer;
-// Put these into main?
-// ... Also allow adding new callbacks to a shortcut ?
+// Load node modules
+const ipcRenderer = require("electron").ipcRenderer;
+const clipboard = require("clipboard");
+const EventEmitter = require("events");
+
+// Define functions for registering shortcuts (Put these into main later?)
 const registerShortcut = (shortcut, callback) => {
     unregisterShortcut(shortcut);
     ipcRenderer.send("shortcut", shortcut, true);
     ipcRenderer.on(shortcut, callback);
 };
-
 const unregisterShortcut = (shortcut) => {
     ipcRenderer.send("shortcut", shortcut, false);
 };
-
 // Define a shortcut to force exit as early as possible
 registerShortcut("Ctrl+Esc", () => ipcRenderer.send("close-now"));
 
+// Load libraries
+const paths = require("./js/lib/path-manager.js")(__dirname);
+const dataManager = require(paths.lib.dataManager)(paths);
+const utility = require(paths.lib.utility);  // Extends some objects
+require(paths.lib.converter);  // Extends String, Input and TextArea
+window.$ = window.jQuery = require(paths.lib.jQuery);
+const dialogWindow = require(paths.lib.dialogWindow);
 
-const utility = require("./js/lib/utility.js");  // Extends some objects
-require("./js/lib/converter.js");  // Extends String, Input and TextArea
-
-const rootDirectory = __dirname.replace(/\\/g, "/");
-const getStylePath = (name) => rootDirectory + "/css/" + name + ".css";
-const getFontAwesomePath = () =>
-        rootDirectory + "/font-awesome-4.5.0/css/font-awesome.min.css";
-
-const clipboard = require("clipboard");
-const path = require("path");
-// const async = require("async");
-const EventEmitter = require("events");
-const eventEmitter = new EventEmitter(); // TODO: Put this into main class
-// const sqlite3 = require("sqlite3");
-const jsrender = require("jsrender");
-const fs = require("fs");
-const Random = require("random-js");
-const random = new Random(Random.engines.nativeMath);
-
+// Load widgets
 const TrainerSection = require("./js/trainer-section.js");
-const dataManager = require("./js/lib/data-manager.js");
-const dialogWindow = require("./js/lib/dialog-window.js");
 const PopupMenu = require("./js/widgets/popup-menu.js");
 const CloseButton = require("./js/widgets/close-button.js");
 const PopupStack = require("./js/widgets/popup-stack.js");
@@ -50,21 +36,24 @@ const PopupList = require("./js/widgets/popup-list.js");
 const SvgBarDiagram = require("./js/widgets/svg-bar-diagram.js");
 
 
+const eventEmitter = new EventEmitter(); // TODO: Put this into main class
+
 class TrainerMain {
     constructor() {
+        // TODO: Get rid of this (Use when instantiating instead?)
         $(document).ready(() => {
             // Store important DOM elements as members
             this.statusText = document.getElementById("status-text");
             this.filter = document.getElementById("filter");
             this.numSrsItemsLabel = document.getElementById("num-srs-items");
             // Language stuff
-            const languages = dataManager.findLanguages();
+            const languages = dataManager.languages.find();
             if (languages.length === 0) {
                 alert("No languages registered! Open init section!");
                 process.exit();
             }
             for (let language of languages) {
-                dataManager.content.load(language);
+                dataManager.languages.load(language);
             }
             // Register sections
             this.sections = {};
@@ -247,7 +236,7 @@ class TrainerMain {
             if (!this.sections[this.currentSection].confirmClose()) return;
             this.sections[this.currentSection].close();
         }
-        dataManager.loadLanguage(language);
+        dataManager.languages.setCurrent(language);
         this.language = language;
         this.language2 = dataManager.languageSettings.secondaryLanguage;
         this.adjustToLanguage(this.language, this.language2);

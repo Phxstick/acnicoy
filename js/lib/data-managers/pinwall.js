@@ -1,30 +1,38 @@
 "use strict";
 
-module.exports = {
+const fs = require("fs");
 
-    _widgets: null,
-    _path: null,
-    _language: null,
+module.exports = function(paths, modules) {
+    const pinwall = {};
+    const dataMap = {};
 
-    load: function(path, language) {
-        this._widgets = require(path);
-        this._path = path;
-        this._language = language;
-    },
+    let widgets;
+    let path;
 
-    save: function() {
-        fs.writeFileSync(this._path, JSON.stringify(this._widgets, null, 4));
-    },
+    pinwall.load = function (language) {
+        dataMap[language] = require(paths.languageData(language).pinwall);
+    };
 
-    clear: function() {
-        this._widgets.length = 0;
-    },
+    pinwall.setLanguage = function (language) {
+        path = paths.languageData(language).pinwall;
+        widgets = dataMap[language];
+    };
 
-    addWidget: function(widget) {
-        this._widgets.push(widget);
-    },
+    pinwall.save = function () {
+        fs.writeFileSync(path, JSON.stringify(widgets, null, 4));
+    };
 
-    getWidgets: function() {
-        return this._widgets;
-    }
+    pinwall.clear = function () {
+        widgets.length = 0;
+    };
+
+    pinwall.addWidget = function (widget) {
+        widgets.push(widget);
+    };
+
+    pinwall.getWidgets = function () {
+        return widgets;
+    };
+
+    return pinwall;
 };

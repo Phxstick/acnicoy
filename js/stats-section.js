@@ -56,41 +56,39 @@ class StatsSection extends TrainerSection {
                 this.kanjiAdded.textContent = amount;
             }));
             // Display percentages of jouyou kanjj per grade in bar diagram
-            dataManager.content.loaded["Japanese"].then((content) => {
-                dataManager.kanji.getAmountsAddedPerGrade().then((amounts) => {
-                    const values = [];
-                    const maxValues = [];
-                    const descriptions = [];
-                    for (let grade = 1; grade <= 6; ++grade) {
-                        values.push(amounts[grade]);
-                        maxValues.push(content.numKanjiPerGrade[grade]);
-                        descriptions.push(
-                            utility.getOrdinalNumberString(grade));
-                    }
-                    values.push(amounts[8]);
-                    maxValues.push(content.numKanjiPerGrade[8]);
-                    descriptions.push("Sec");
-                    utility.finishEventQueue()
-                    .then(() => this.jouyouKanjiDiagram.draw(
-                            values, maxValues, descriptions));
-                });
+            const numKanjiPerGrade = dataManager.content.data.numKanjiPerGrade;
+            dataManager.kanji.getAmountsAddedPerGrade().then((amounts) => {
+                const values = [];
+                const maxValues = [];
+                const descriptions = [];
+                for (let grade = 1; grade <= 6; ++grade) {
+                    values.push(amounts[grade]);
+                    maxValues.push(numKanjiPerGrade[grade]);
+                    descriptions.push(
+                        utility.getOrdinalNumberString(grade));
+                }
+                values.push(amounts[8]);
+                maxValues.push(numKanjiPerGrade[8]);
+                descriptions.push("Sec");
+                utility.finishEventQueue()
+                .then(() => this.jouyouKanjiDiagram.draw(
+                        values, maxValues, descriptions));
             });
             // Display percentages of kanji per jlpt level in bar diagram
-            dataManager.content.loaded["Japanese"].then((content) => {
-                dataManager.kanji.getAmountsAddedPerJlptLevel()
-                .then((amounts) => {
-                    const values = [];
-                    const maxValues = [];
-                    const descriptions = [];
-                    for (let level = 5; level >= 1; --level) {
-                        values.push(amounts[level]);
-                        maxValues.push(content.numKanjiPerJlptLevel[level]);
-                        descriptions.push(`N${level}`);
-                    }
-                    utility.finishEventQueue()
-                    .then(() => this.jlptKanjiDiagram.draw(
-                            values, maxValues, descriptions));
-                });
+            const numKanjiPerJlptLevel =
+                dataManager.content.data.numKanjiPerJlptLevel;
+            dataManager.kanji.getAmountsAddedPerJlptLevel().then((amounts) => {
+                const values = [];
+                const maxValues = [];
+                const descriptions = [];
+                for (let level = 5; level >= 1; --level) {
+                    values.push(amounts[level]);
+                    maxValues.push(numKanjiPerJlptLevel[level]);
+                    descriptions.push(`N${level}`);
+                }
+                utility.finishEventQueue()
+                .then(() => this.jlptKanjiDiagram.draw(
+                        values, maxValues, descriptions));
             });
         }
         return Promise.all(promises);

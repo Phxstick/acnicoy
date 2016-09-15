@@ -22,7 +22,7 @@ class SwitchButton extends HTMLElement {
         this.root.appendChild(this.span);
         this.span.textContent = this.textContent;
         const style = document.createElement("style");
-        style.textContent = `@import url(${getStylePath("switch-button")})`;
+        style.textContent = `@import url(${paths.css("switch-button")})`;
         this.root.appendChild(style);
         this.callback = () => {};
         if (this.state) this.span.classList.add("pushed");

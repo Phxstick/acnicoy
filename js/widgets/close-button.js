@@ -16,7 +16,7 @@ class CloseButton extends HTMLElement {
         $(this).on("click", () => { });
         // Do some styling
         const style = document.createElement("style");
-        style.textContent = `@import url(${getStylePath("close-button")})`;
+        style.textContent = `@import url(${paths.css("close-button")})`;
         this.root.appendChild(style);
         // const color = "#f3c6c6"; // "lightcoral"; // TODO: $(this).css("color");
         // this.$stroke1.css("background-color", color);

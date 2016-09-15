@@ -16,7 +16,7 @@ class PopupList extends HTMLElement {
         // Create widget tree
         this.root = this.createShadowRoot();
         const style = document.createElement("style");
-        style.textContent = `@import url(${getStylePath("popup-list")})`;
+        style.textContent = `@import url(${paths.css("popup-list")})`;
         // const style2 = document.createElement("style");
         // style2.textContent = `#container span { width: ${this.itemWidth}px;
         //                                         height: ${this.itemHeight}px;}`;

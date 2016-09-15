@@ -324,7 +324,7 @@ $(document).ready(function() {
                                 word, oldContent));
                     } else if (type === "reading") {
                         this.changes.push(
-                            () => dataManager.vocab.deleteReading(
+                            () => dataManager.vocab.removeReading(
                                 word, oldContent));
                     }
                 } else {

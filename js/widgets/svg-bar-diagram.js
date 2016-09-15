@@ -4,7 +4,7 @@ class SvgBarDiagram extends HTMLElement {
     createdCallback () {
         this.root = this.createShadowRoot();
         const style = document.createElement("style");
-        style.textContent = `@import url(${getStylePath("svg-bar-diagram")})`;
+        style.textContent = `@import url(${paths.css("svg-bar-diagram")})`;
         this.root.appendChild(style);
         this.svg = utility.createSvgNode("svg");
         this.root.appendChild(this.svg);

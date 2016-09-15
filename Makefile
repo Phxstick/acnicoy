@@ -1,7 +1,7 @@
 PYTHON = python3
 DATA_SCRIPT_PATH = ./createJapaneseData.py
 RESOURCE_PATH = ~/TrainerResources
-OUTPUT_PATH = ./data/language-content
+OUTPUT_PATH = ./data/language-content/Japanese-English
 
 VOCAB_PATH = $(RESOURCE_PATH)/JMdict.xml
 RADICALS_PATH = $(RESOURCE_PATH)/radical.utf8.txt

@@ -21,18 +21,17 @@ class DictionarySection extends TrainerSection {
             this.displayMoreResults(loadAmount));
         const getSearchCallback = (query, input) => (event) => {
             if (event.keyCode !== 13) return;
-            dataManager.content.loaded["Japanese"].then((content) => {
-                content.data.all(query, input.value.trim() + "%", (error, rows) => {
-                    this.lastResult = [];
-                    this.lastIndex = 0;
-                    rows.forEach((row) => this.lastResult.push(row.id));
-                    this.resultsTable.empty();
-                    if (this.lastResult.length === 0) {
-                        this.searchStatus.textContent = "No matches found.";
-                    } else {
-                        this.displayMoreResults(loadAmount);
-                    }
-                });
+            dataManager.content.data.query(query, input.value.trim() + "%")
+            .then((rows) => {
+                this.lastResult = [];
+                this.lastIndex = 0;
+                rows.forEach((row) => this.lastResult.push(row.id));
+                this.resultsTable.empty();
+                if (this.lastResult.length === 0) {
+                    this.searchStatus.textContent = "No matches found.";
+                } else {
+                    this.displayMoreResults(loadAmount);
+                }
             });
         };
         this.entryFilter.addEventListener("keypress", getSearchCallback(
@@ -71,78 +70,78 @@ class DictionarySection extends TrainerSection {
         eventEmitter.emit("done-loading");
     }
     insertTableRow(entryId) {
-        dataManager.content.loaded["Japanese"].then((content) => {
-            content.data.get(
-                    `SELECT words, translations, readings FROM dictionary
-                     WHERE id = ?`, entryId, (error, row) => {
-                const words = row.words.split(";");
-                const meanings = row.translations.split(";")
-                meanings.forEach(
-                    (val, ind, arr) => arr[ind] = val.split(",").join(", "));
-                const readings = row.readings.split(";");
-                const tableRow = document.createElement("tr");
-                tableRow.entryId = entryId;
-                // Process words
-                const wData = document.createElement("td");
-                for (let i = 0; i < words.length; ++i) {
-                    const el = document.createElement("div");
-                    // Make every kanji character a link to open info panel
-                    for (let character of words[i]) {
-                        el.appendChild(this.createCharSpan(character));
-                    }
-                    // el.textContent = words[i];
-                    if (words.length > 1 && i === 0) {
-                        el.style.marginBottom = "10px";
-                    }
-                    if (i > 0) {
-                        el.style.marginBottom = "2px";
-                        el.classList.add("alternative-writing");
-                    }
-                    wData.appendChild(el);
+        dataManager.content.data.query(
+            `SELECT words, translations, readings FROM dictionary
+             WHERE id = ?`, entryId)
+        .then((rows) => {
+            const words = rows[0].words.split(";");
+            const meanings = rows[0].translations.split(";")
+            meanings.forEach(
+                (val, ind, arr) => arr[ind] = val.split(",").join(", "));
+            const readings = rows[0].readings.split(";");
+            const tableRow = document.createElement("tr");
+            tableRow.entryId = entryId;
+            // Process words
+            const wData = document.createElement("td");
+            for (let i = 0; i < words.length; ++i) {
+                const el = document.createElement("div");
+                // Make every kanji character a link to open info panel
+                for (let character of words[i]) {
+                    el.appendChild(this.createCharSpan(character));
                 }
-                tableRow.appendChild(wData);
-                // Process meanings
-                const mData = document.createElement("td");
-                for (let i = 0; i < meanings.length; ++i) {
-                    const el = document.createElement("div");
-                    el.textContent = meanings[i];
-                    if (meanings.length > 1) {
-                        el.textContent = `${i + 1}. ${meanings[i]}`;
-                        el.style.marginBottom = "3px";
-                    } else {
-                        el.textContent = meanings[i];
-                    }
-                    mData.appendChild(el);
+                // el.textContent = words[i];
+                if (words.length > 1 && i === 0) {
+                    el.style.marginBottom = "10px";
                 }
-                tableRow.appendChild(mData);
-                // Process readings
-                const rData = document.createElement("td");
-                for (let reading of readings) {
-                    const el = document.createElement("div");
-                    el.textContent = reading;
+                if (i > 0) {
+                    el.style.marginBottom = "2px";
+                    el.classList.add("alternative-writing");
+                }
+                wData.appendChild(el);
+            }
+            tableRow.appendChild(wData);
+            // Process meanings
+            const mData = document.createElement("td");
+            for (let i = 0; i < meanings.length; ++i) {
+                const el = document.createElement("div");
+                el.textContent = meanings[i];
+                if (meanings.length > 1) {
+                    el.textContent = `${i + 1}. ${meanings[i]}`;
                     el.style.marginBottom = "3px";
-                    rData.appendChild(el);
+                } else {
+                    el.textContent = meanings[i];
                 }
-                tableRow.appendChild(rData);
-                this.resultsTable.appendChild(tableRow);
-            });
+                mData.appendChild(el);
+            }
+            tableRow.appendChild(mData);
+            // Process readings
+            const rData = document.createElement("td");
+            for (let reading of readings) {
+                const el = document.createElement("div");
+                el.textContent = reading;
+                el.style.marginBottom = "3px";
+                rData.appendChild(el);
+            }
+            tableRow.appendChild(rData);
+            this.resultsTable.appendChild(tableRow);
         });
     }
     createCharSpan(character) {
         const charSpan = document.createElement("span");
         charSpan.textContent = character;
-        dataManager.content.loaded["Japanese"].then((content) => {
-            content.data.get("SELECT count(entry) AS containsChar FROM kanji " +
-                     "WHERE entry = ?", character, (error, row) => {
-                if (row.containsChar) {
-                    charSpan.classList.add("kanji-info-link");
-                    charSpan.addEventListener("click", () => {
-                        main.kanjiInfoPanel.load(character);
-                        main.kanjiInfoPanel.open();
-                    });
-                    this.kanjiPopup.attachTo(charSpan);
-                }
-            });
+        dataManager.content.data.query(
+            "SELECT count(entry) AS containsChar FROM kanji WHERE entry = ?",
+            character)
+        .then((rows) => {
+            const row = rows[0];
+            if (row.containsChar) {
+                charSpan.classList.add("kanji-info-link");
+                charSpan.addEventListener("click", () => {
+                    main.kanjiInfoPanel.load(character);
+                    main.kanjiInfoPanel.open();
+                });
+                this.kanjiPopup.attachTo(charSpan);
+            }
         });
         return charSpan;
     }

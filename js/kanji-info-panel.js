@@ -191,41 +191,41 @@ $(document).ready(function() {
                 // TODO: Add info if kanji is kokuji
                 // Add info if kanji is a counter
                 this.counterFrame.style.display = "none";
-                dataManager.content.loaded["Japanese"].then((content) => {
-                    if (!(kanji in content.counterKanji)) return;
+                const counterKanji = dataManager.content.data.counterKanji;
+                if (kanji in counterKanji) {
                     // Display small info label in details bar
                     const counterLabel = document.createElement("span");
                     counterLabel.textContent = "Counter";
                     this.detailsFrame.appendChild(counterLabel);
                     // Display list of objects counted in kanji description
                     this.counterLabel.textContent =
-                        content.counterKanji[kanji].join(", ");
+                        counterKanji[kanji].join(", ");
                     this.counterFrame.style.display = "block";
-                });
+                }
                 // Add info if kanji is a numeral
                 this.numberFrame.style.display = "none";
-                dataManager.content.loaded["Japanese"].then((content) => {
-                    if (!(kanji in content.numericKanji.kanjiToNumber)) return;
+                const numericKanji = dataManager.content.data.numericKanji;
+                if (kanji in numericKanji.kanjiToNumber) {
                     // Display small info label in details bar
                     const numberLabel = document.createElement("span");
                     numberLabel.textContent = "Numeral";
                     this.detailsFrame.appendChild(numberLabel);
                     // Display represented number in kanji description
                     this.numberLabel.textContent = utility.getStringForNumber(
-                        content.numericKanji.kanjiToNumber[kanji].number);
+                        numericKanji.kanjiToNumber[kanji].number);
                     this.numberFrame.style.display = "block";
                     // If kanji is only used in legal docs and/or obsolete,
                     // display this info after the represented number
-                    if (content.numericKanji.kanjiToNumber[kanji].legal) {
+                    if (numericKanji.kanjiToNumber[kanji].legal) {
                         this.numberDetails.textContent = 
                             "(For use in legal documents";
-                        if (content.numericKanji.kanjiToNumber[kanji].obsolete)
+                        if (numericKanji.kanjiToNumber[kanji].obsolete)
                             this.numberDetails.textContent += ", now obsolete";
                         this.numberDetails.textContent += ")";
                     } else {
                         this.numberDetails.textContent = "";
                     }
-                });
+                }
                 // Display 'added' sign or button for adding the kanji
                 this.addedLabel.style.display =
                     info.added ? "block" : "none";
@@ -316,93 +316,93 @@ $(document).ready(function() {
             return fragment;
         }
         displayStrokeGraphics() {
-            dataManager.content.loaded["Japanese"].then((content) => {
-                const strokes = content.kanjiStrokes[this.currentKanji];
-                this.strokeGraphics.empty();
-                while (this.completeSvg.lastChild !== null) {
-                    this.completeSvg.removeChild(this.completeSvg.lastChild);
+            const kanjiStrokes = dataManager.content.data.kanjiStrokes;
+            this.strokeGraphics.empty();
+            // If no stroke info is available, display a note
+            if (!kanjiStrokes.hasOwnProperty(this.currentKanji)) {
+                const span = document.createElement("span");
+                // TODO: Make this message a bit more stylish (center, ...)
+                span.textContent = "No stroke info available!";
+                this.strokeGraphics.appendChild(span);
+                return;
+            }
+            const strokes = kanjiStrokes[this.currentKanji];
+            while (this.completeSvg.lastChild !== null) {
+                this.completeSvg.removeChild(this.completeSvg.lastChild);
+            }
+            // Adjust svg diagram for the whole kanji
+            this.completeSvg.setAttribute(
+                    "width", `${this.kanji.offsetWidth - 1}px`);
+            this.completeSvg.setAttribute(
+                    "height", `${this.kanji.offsetHeight}px`);
+            this.completeSvg.setAttribute("viewBox", "0 0 109 109");
+            // Draw the complete kanji into the complete-kanji-svg
+            const partToPath = {};
+            for (let s of strokes) {
+                const path = utility.createSvgNode(
+                    "path", { d: s.stroke });
+                this.completeSvg.appendChild(path);
+                // Also create a mapping from kanji part to path elements
+                for (let part of s.parts) {
+                    if (!(part in partToPath)) {
+                        partToPath[part] = [];
+                    }
+                    partToPath[part].push(path);
                 }
-                // Adjust svg diagram for the whole kanji
-                this.completeSvg.setAttribute(
-                        "width", `${this.kanji.offsetWidth - 1}px`);
-                this.completeSvg.setAttribute(
-                        "height", `${this.kanji.offsetHeight}px`);
-                this.completeSvg.setAttribute("viewBox", "0 0 109 109");
-                // Draw the complete kanji into the complete-kanji svg
-                const partToPath = {};
-                for (let s of strokes) {
+            }
+            // Show kanji diagram with highlighted strokes when hovering
+            // over the kanji part corresponding to these strokes
+            for (let i = 0; i < this.kanjiParts.children.length; ++i) {
+                const part = this.kanjiParts.children[i].textContent;
+                this.kanjiParts.children[i].addEventListener("mouseover",
+                () => {
+                    this.completeSvg.style.visibility = "visible";
+                    this.kanji.style.visibility = "hidden";
+                    if (!(part in partToPath)) return;
+                    for (let path of partToPath[part]) {
+                        path.classList.add("highlighted");
+                        // path.setAttribute("stroke", "red");
+                    }
+                });
+                this.kanjiParts.children[i].addEventListener("mouseout",
+                () => {
+                    this.completeSvg.style.visibility = "hidden";
+                    this.kanji.style.visibility = "visible";
+                    if (!(part in partToPath)) return;
+                    for (let path of partToPath[part]) {
+                        path.classList.remove("highlighted");
+                        // path.setAttribute("stroke", "black");
+                    }
+                });
+                    
+            }
+            // For each stroke, create an svg diagram
+            for (let i = 0; i < strokes.length; ++i) {
+                const svg = utility.createSvgNode(
+                        "svg", { //width: "90", height: "90",
+                                 viewBox: "0 0 109 109"});
+                // Create lightgrey stippled bars in the middle
+                const stippledLines = utility.createSvgNode("path",
+                    { d: "M 50.5,0  v 109  M 0,50.5  h 109" });
+                stippledLines.classList.add("middle-marker");
+                svg.appendChild(stippledLines);
+                // Display all previous strokes in gray, current in black
+                for (let j = 0; j <= i; ++j) {
                     const path = utility.createSvgNode(
-                        "path", { d: s.stroke });
-                    this.completeSvg.appendChild(path);
-                    // Also create a mapping from kanji part to path elements
-                    for (let part of s.parts) {
-                        if (!(part in partToPath)) {
-                            partToPath[part] = [];
-                        }
-                        partToPath[part].push(path);
-                    }
+                        "path", { d: strokes[j].stroke });
+                    if (j == i) path.classList.add("last-stroke");
+                    svg.appendChild(path);
                 }
-                // Show kanji diagram with highlighted strokes when hovering
-                // over the kanji part corresponding to these strokes
-                for (let i = 0; i < this.kanjiParts.children.length; ++i) {
-                    const part = this.kanjiParts.children[i].textContent;
-                    this.kanjiParts.children[i].addEventListener("mouseover",
-                    () => {
-                        this.completeSvg.style.visibility = "visible";
-                        this.kanji.style.visibility = "hidden";
-                        if (!(part in partToPath)) return;
-                        for (let path of partToPath[part]) {
-                            path.classList.add("highlighted");
-                            // path.setAttribute("stroke", "red");
-                        }
-                    });
-                    this.kanjiParts.children[i].addEventListener("mouseout",
-                    () => {
-                        this.completeSvg.style.visibility = "hidden";
-                        this.kanji.style.visibility = "visible";
-                        if (!(part in partToPath)) return;
-                        for (let path of partToPath[part]) {
-                            path.classList.remove("highlighted");
-                            // path.setAttribute("stroke", "black");
-                        }
-                    });
-                        
-                }
-                // If no stroke info is available, display a note
-                if (!content.kanjiStrokes.hasOwnProperty(this.currentKanji)) {
-                    const span = document.createElement("span");
-                    span.textContent = "No stroke info available!";
-                    this.strokeGraphics.appendChild(span);
-                    return;
-                }
-                // For each stroke, create an svg diagram
-                for (let i = 0; i < strokes.length; ++i) {
-                    const svg = utility.createSvgNode(
-                            "svg", { //width: "90", height: "90",
-                                     viewBox: "0 0 109 109"});
-                    // Create lightgrey stippled bars in the middle
-                    const stippledLines = utility.createSvgNode("path",
-                        { d: "M 50.5,0  v 109  M 0,50.5  h 109" });
-                    stippledLines.classList.add("middle-marker");
-                    svg.appendChild(stippledLines);
-                    // Display all previous strokes in gray, current in black
-                    for (let j = 0; j <= i; ++j) {
-                        const path = utility.createSvgNode(
-                            "path", { d: strokes[j].stroke });
-                        if (j == i) path.classList.add("last-stroke");
-                        svg.appendChild(path);
-                    }
-                    const lastStroke = strokes[i].stroke;
-                    // Display a red dot where the current stroke begins
-                    const dotPos = lastStroke.match(/^M\s?([-\d.]+),([-\d.]+)/);
-                    const brushStart = utility.createSvgNode("circle",
-                        { cx: dotPos[1], cy: dotPos[2], r: "5" });
-                    brushStart.classList.add("brush-start");
-                    svg.appendChild(brushStart);
-                    this.strokeGraphics.appendChild(svg);
-                }
-                this.strokeGraphics.scrollToLeft();
-            });
+                const lastStroke = strokes[i].stroke;
+                // Display a red dot where the current stroke begins
+                const dotPos = lastStroke.match(/^M\s?([-\d.]+),([-\d.]+)/);
+                const brushStart = utility.createSvgNode("circle",
+                    { cx: dotPos[1], cy: dotPos[2], r: "5" });
+                brushStart.classList.add("brush-start");
+                svg.appendChild(brushStart);
+                this.strokeGraphics.appendChild(svg);
+            }
+            this.strokeGraphics.scrollToLeft();
         }
     }
     document.registerElement("kanji-info-panel",
