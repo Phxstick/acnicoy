@@ -5,12 +5,8 @@ const fs = require("fs");
 module.exports = function (paths, modules) {
     const languageManager = {};
 
+    // Return list of all registered languages. Create folder if doesn't exist
     languageManager.find = function() {
-        try {
-            fs.readdirSync(paths.data);
-        } catch (error) {
-            if (error.errno === -2) fs.mkdirSync(paths.data);
-        }
         try {
             return fs.readdirSync(paths.languages);
         } catch (error) {
@@ -19,6 +15,7 @@ module.exports = function (paths, modules) {
         }
     };
 
+    // Load content and user data for given language
     languageManager.load = function (language) {
         const languageDataModules = [
             modules.languageSettings, modules.content, modules.database,
@@ -37,6 +34,7 @@ module.exports = function (paths, modules) {
             module.setLanguage(language);
     };
 
+    // Register a new language with given configuration
     languageManager.add = function (language, settings) {
         // TODO
     };

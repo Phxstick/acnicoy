@@ -127,7 +127,6 @@ module.exports = function (paths, modules) {
 
     content.getKanjiList = function () {
         // TODO: Don't retrieve too much info? Or store info in kanji instead?
-        console.log(content);
         return dataMap["Japanese"].query(
             `SELECT k.entry AS entry,
                     k.grade AS grade,

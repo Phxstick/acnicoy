@@ -1,5 +1,6 @@
 "use strict";
 
+const startTime = performance.now();
 // Load node modules
 const ipcRenderer = require("electron").ipcRenderer;
 const clipboard = require("clipboard");
@@ -19,7 +20,6 @@ registerShortcut("Ctrl+Esc", () => ipcRenderer.send("close-now"));
 
 // Load libraries
 const paths = require("./js/lib/path-manager.js")(__dirname);
-const dataManager = require(paths.lib.dataManager)(paths);
 const utility = require(paths.lib.utility);  // Extends some objects
 require(paths.lib.converter);  // Extends String, Input and TextArea
 window.$ = window.jQuery = require(paths.lib.jQuery);
@@ -35,6 +35,33 @@ const SwitchBar = require("./js/widgets/switch-bar.js");
 const PopupList = require("./js/widgets/popup-list.js");
 const SvgBarDiagram = require("./js/widgets/svg-bar-diagram.js");
 
+const totalTime = performance.now() - startTime;
+console.log("Loaded all required modules after %f ms", totalTime);
+
+// Load data path. If it doesn't exist, let user choose it
+if (!paths.getDataPath()) {
+    // TODO: Path could not be found, let user set data path
+    // Set to paths.standardDataPathPrefix by default
+    let newPath = null;
+    paths.setDataPath(newPath);
+}
+
+// Load list of registered languages. If none exist, let user register one
+const dataManager = require(paths.lib.dataManager)(paths);
+const languages = dataManager.languages.find();
+if (languages.length === 0) {
+    // TODO: Let user register a language
+    alert("No languages registered! Open init section!");
+    process.exit();
+}
+
+// Load data for all languages
+const start = performance.now();
+for (let language of languages) {
+    dataManager.languages.load(language);
+}
+const total = performance.now() - startTime;
+console.log("Loaded all language data after %f ms", total);
 
 const eventEmitter = new EventEmitter(); // TODO: Put this into main class
 
@@ -46,15 +73,6 @@ class TrainerMain {
             this.statusText = document.getElementById("status-text");
             this.filter = document.getElementById("filter");
             this.numSrsItemsLabel = document.getElementById("num-srs-items");
-            // Language stuff
-            const languages = dataManager.languages.find();
-            if (languages.length === 0) {
-                alert("No languages registered! Open init section!");
-                process.exit();
-            }
-            for (let language of languages) {
-                dataManager.languages.load(language);
-            }
             // Register sections
             this.sections = {};
             const sections = document.getElementsByClassName("section");
@@ -250,5 +268,6 @@ class TrainerMain {
             this.sections[this.currentSection].open();
     }
 }
+
 
 const main = new TrainerMain();

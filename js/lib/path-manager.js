@@ -1,30 +1,73 @@
 "use strict";
 
 const path = require("path");
+const fs = require("fs");
 
 module.exports = function (basePath) {
     const paths = {};
 
-    // Construct some base paths
     const home = process.env[process.platform == "win32" ?
-                             "USERPROFILE" : "HOME"];
-    // TODO: Change "TrainerData" to program name (+ "data" I guess)
-    // TODO: Set dataPath according to settings and provide function to change
-    // TODO: Read datapath out of internal settings first
-    const dataPath = path.resolve(home, "Documents", "TrainerData");
-    const contentPath = path.resolve(basePath, "data", "language-content");
-    const langPath = path.resolve(dataPath, "Languages");
-    // TODO: Call folder "data-modules"?
-    const dataModulesPath = path.resolve(basePath, "js", "lib", "data-managers");
+                                 "USERPROFILE" : "HOME"];
+    const trainerName = "Trainer";
+    const dataPathBaseName = trainerName + "Data";
+    const dataPathConfigFile = path.resolve(basePath, "data", "data-path.txt");
+    const standardDataPathPrefix = path.resolve(home, "Documents");
+    let dataPath = null;
+    let langPath = null;
 
-    // TODO: Reconstruct all paths if datapath has been changed
+    // Try to load path for user data, return true if path could be loaded
+    paths.getDataPath = function () {
+        let prefix;
+        try {
+            prefix = fs.readFileSync(dataPathConfigFile, { encoding: "utf-8" });
+            if (prefix[prefix.length - 1] == "\n")
+                prefix = prefix.slice(0, prefix.length - 1);
+        } catch (error) {
+            return false;
+        }
+        paths.setDataPath(prefix);
+        return true;
+    }
+    
+    // Set a path for folder to store user data in
+    paths.setDataPath = function (prefix) { 
+        fs.writeFileSync(dataPathConfigFile, prefix);
+        paths.data = dataPath = path.resolve(prefix, dataPathBaseName);
+        paths.languages = langPath = path.resolve(dataPath, "Languages");
+        paths.globalSettings = path.resolve(dataPath, "settings.json");
+        // Create folder if it doesn't exists yet
+        try {
+            fs.readdirSync(dataPath);
+        } catch (error) {
+            if (error.errno === -2) fs.mkdirSync(dataPath);
+        }
+    };
 
     // Global data
-    paths.globalSettings = path.resolve(dataPath, "settings.json");
     paths.scoreCalculation = path.resolve(basePath, "data",
                                           "scoreCalculation.json");
-    paths.data = dataPath;
-    paths.languages = langPath;
+
+    // HTML
+    const sectionsPath = path.resolve(basePath, "html", "sections");
+    paths.sections = {
+        "home-section": path.resolve(sectionsPath, "home-section.html"),
+        "stats-section": path.resolve(sectionsPath, "stats-section.html"),
+        "history-section": path.resolve(sectionsPath, "history-section.html"),
+        "vocab-section": path.resolve(sectionsPath, "vocab-section.html"),
+        "settings-section": path.resolve(sectionsPath, "settings-section.html"),
+        "test-section": path.resolve(sectionsPath, "test-section.html"),
+        "dictionary-section": path.resolve(sectionsPath,
+                                           "dictionary-section.html"),
+        "kanji-section": path.resolve(sectionsPath, "kanji-section.html")
+    };
+    const panelsPath = path.resolve(basePath, "html", "panels");
+    paths.panels = {
+        "add-vocab-panel": path.resolve(panelsPath, "add-vocab-panel.html"),
+        "add-kanji-panel": path.resolve(panelsPath, "add-kanji-panel.html"),
+        "edit-vocab-panel": path.resolve(panelsPath, "edit-vocab-panel.html"),
+        "edit-kanji-panel": path.resolve(panelsPath, "edit-kanji-panel.html"),
+        "kanji-info-panel": path.resolve(panelsPath, "kanji-info-panel.html")
+    };
 
     // Styles
     paths.css = (name) => path.resolve(basePath, "css", name + ".css");
@@ -42,6 +85,8 @@ module.exports = function (basePath) {
     };
 
     // Data interface modules
+    // TODO: Call folder "data-modules"?
+    const dataModulesPath = path.resolve(basePath, "js", "lib","data-managers");
     paths.modules = {
         languages: path.resolve(dataModulesPath, "languages.js"),
         settings: path.resolve(dataModulesPath, "settings.js"),
@@ -68,6 +113,7 @@ module.exports = function (basePath) {
     });
 
     // Language content
+    const contentPath = path.resolve(basePath, "data", "language-content");
     const japEngPath = path.resolve(contentPath, "Japanese-English");
     paths.content = {
         "Japanese-English": {
