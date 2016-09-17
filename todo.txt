@@ -195,11 +195,27 @@ __ Resources __
 
 - http://usabilitypost.com/2012/01/10/pressed-button-state-with-css3/#
   --> Use inset shadow to style <button>?
-https://developers.google.com/web/fundamentals/primers/customelements/
+
 - http://stackoverflow.com/questions/13151693/passing-arguments-to-require-when-loading-module
   --> Use for parameterizing datamanagers?
+https://developers.google.com/web/fundamentals/primers/shadowdom/
+https://developers.google.com/web/fundamentals/primers/customelements/
 
 - https://www.thebalance.com/free-cloud-storage-1356638
   Free cloud storage services to save trainer resources and data!
 - For server hosting: 1. RedHat OpenShift, 2. Heroku, 3. 000webhost (PHP)
   --> Use flask(python) or express(nodejs)
+ 
+- Use native string includes function
+- Shadow DOM v1 (http://caniuse.com/#feat=shadowdomv1)
+- Use selection API  (window.getSelection(), selectionstart, selectionchanged)
+  (http://caniuse.com/#feat=selection-api)
+- Use native DOM manipulation conventience methods 
+  (http://caniuse.com/#feat=dom-manip-convenience)
+- Use Element.scrollIntoViewIfNeeded()
+  (http://caniuse.com/#feat=scrollintoviewifneeded)
+- http://caniuse.com/#feat=css-focus-within
+- http://caniuse.com/#feat=css-scrollbar
+
+https://github.com/electron/electron/blob/master/docs/tutorial/using-native-node-modules.md
+(Build native node modules like sqlite3 against electron. First method works.)

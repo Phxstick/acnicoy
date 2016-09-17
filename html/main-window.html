@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <title>Main</title>
+  <meta name="author" value="Daniel Bindemann">
+  <meta charset="UTF-8">
+  <script src="../js/main-window.js"></script>
+</head>
+<body>
+<div id="content">
+  <template id="styles">
+    <style>@import "./css/main-window.css";</style>
+    <style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
+  </template>
+  <div id="menu-bar">
+    <popup-list id="language-popup"></popup-list>
+    <div id="menu">
+      <i id="home-button" class="fa fa-home"></i>
+      <i id="stats-button" class="fa fa-trophy"></i>
+      <i id="vocab-button" class="fa fa-list"></i>
+      <i id="history-button" class="fa fa-clock-o"></i>
+      <i id="settings-button" class="fa fa-gear"></i>
+      <i id="exit-button" class="fa fa-power-off"></i>
+    </div>
+    <div id="status-bar">
+      <span id="status-text"></span>
+    </div>
+  </div>
+  <div id="side-bar">
+    <div id="add-vocab-button">Add words</div>
+    <div id="add-kanji-button">Add kanji</div>
+    <div id="test-button">
+      Test
+      <span id="num-srs-items"></span>
+    </div>
+    <div id="dictionary-button">Dictionary</div>
+    <div id="find-kanji-button">Find Kanji</div>
+  </div>
+  <div id="section-window">
+    <div id="filter"></div>
+  </div>
+  <footer>By Daniel Bindemann, 2016</footer>
+</div>
+</body>
+</html>

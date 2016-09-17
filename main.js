@@ -1,12 +1,11 @@
 'use strict';
 const localShortcut = require("electron-localshortcut");
 const electron = require('electron');
-const dialog = require('dialog');
 const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 
 // Report crashes to our server.
-electron.crashReporter.start();
+// electron.crashReporter.start();
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -20,6 +19,9 @@ app.on('window-all-closed', function() {
     app.quit();
   }
 });
+
+// TODO: Remove when electron has chrome version 54
+app.commandLine.appendSwitch("--enable-blink-features", "CustomElementsV1");
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

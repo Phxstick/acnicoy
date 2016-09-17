@@ -7,6 +7,7 @@ class KanjiSection extends TrainerSection {
         this.root.appendChild(docContent);
         this.selectedKanji = null;
         this.overviewFrame = this.root.getElementById("overview");
+        this.kanjiContainer = this.root.getElementById("kanji-container");
         // Create counter spans which display amount of added kanji per grade
         this.addedPerGradeCounters = {};
         for (let grade = 0; grade <= 9; ++grade) {
@@ -76,7 +77,7 @@ class KanjiSection extends TrainerSection {
             });
             fragment.appendChild(kanjiSpan);
         }
-        this.root.getElementById("kanji-container").appendChild(fragment);
+        this.kanjiContainer.appendChild(fragment);
     }
     displayKanji(ordering, onlyMissing=false, showJinmeiyou=false,
             showHyougai=false) {
