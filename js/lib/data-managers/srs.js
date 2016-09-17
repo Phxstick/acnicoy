@@ -14,7 +14,7 @@ module.exports = function (paths, modules) {
         .then((rows) => rows.map((row) => row.entry));
     };
 
-    srs.getScheduledKanji = function () {
+    srs.getScheduledKanji = function (mode) {
         const table = modules.test.modeToTable(mode);
         return modules.database.query(
             `SELECT entry FROM ${table} WHERE time <= ? AND level > 0`,

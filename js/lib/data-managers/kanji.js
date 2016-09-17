@@ -86,7 +86,7 @@ module.exports = function (paths, modules) {
         statusPromises.push(statusPromise);
       }
       // TODO: Put this at beginning and make database dependencies on this?
-      promises.push(isAdded().then((alreadyAdded) => {
+      promises.push(kanjiModule.isAdded().then((alreadyAdded) => {
         if (!alreadyAdded) {
           modules.stats.incrementKanjiAddedToday();
           return modules.database.run(

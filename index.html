@@ -4,30 +4,12 @@
   <title>Vocabulary Trainer</title>
   <meta name="author" value="Daniel Bindemann">
   <meta charset="UTF-8">
-  <!--link rel="import" href="sections/loading-section.html"-->
   <link rel="stylesheet" href="./css/index.css">
   <link rel="stylesheet" href="font-awesome-4.5.0/css/font-awesome.min.css">
   <script src="./js/index.js"></script>
-  <link rel="import" href="html/sections/home-section.html">
-  <link rel="import" href="html/sections/stats-section.html">
-  <link rel="import" href="html/sections/history-section.html">
-  <link rel="import" href="html/sections/vocab-section.html">
-  <link rel="import" href="html/sections/settings-section.html">
-  <link rel="import" href="html/sections/test-section.html">
-  <link rel="import" href="html/sections/dictionary-section.html">
-  <link rel="import" href="html/sections/kanji-section.html">
-  <link rel="import" href="html/panels/add-vocab-panel.html">
-  <link rel="import" href="html/panels/add-kanji-panel.html">
-  <link rel="import" href="html/panels/edit-vocab-panel.html">
-  <link rel="import" href="html/panels/edit-kanji-panel.html">
-  <link rel="import" href="html/panels/kanji-info-panel.html">
 </head>
 <body>
-<!--script>
-console.log(window.TEMP);
-//document.body.appendChild(window.docContent);
-</script-->
-<nav id="menu-bar">
+<div id="menu-bar">
   <popup-list id="language-popup"></popup-list>
   <div id="menu">
     <i id="home-button" class="fa fa-home"></i>
@@ -40,8 +22,8 @@ console.log(window.TEMP);
   <div id="status-bar">
     <span id="status-text"></span>
   </div>
-</nav>
-<nav id="side-bar">
+</div>
+<div id="side-bar">
   <div id="add-vocab-button">Add words</div>
   <div id="add-kanji-button">Add kanji</div>
   <div id="test-button">
@@ -50,23 +32,10 @@ console.log(window.TEMP);
   </div>
   <div id="dictionary-button">Dictionary</div>
   <div id="find-kanji-button">Find Kanji</div>
-</nav>
-<section id="section-window">
+</div>
+<div id="section-window">
   <div id="filter"></div>
-  <home-section class="section"></home-section>
-  <stats-section class="section"></stats-section>
-  <vocab-section class="section"></vocab-section>
-  <history-section class="section"></history-section>
-  <settings-section class="section"></settings-section>
-  <add-vocab-panel class="panel"></add-vocab-panel>
-  <add-kanji-panel class="panel"></add-kanji-panel>
-  <edit-vocab-panel class="panel"></edit-vocab-panel>
-  <edit-kanji-panel class="panel"></edit-kanji-panel>
-  <test-section class="section"></test-section>
-  <kanji-section class="section"></kanji-section>
-  <dictionary-section class="section"></dictionary-section>
-  <kanji-info-panel id="kanji-info-panel"></kanji-info-panel>
-</section>
-<footer><p>By Daniel Bindemann, 2016</p></footer>
+</div>
+<footer>By Daniel Bindemann, 2016</footer>
 </body>
 </html>

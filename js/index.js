@@ -63,123 +63,154 @@ for (let language of languages) {
 const total = performance.now() - startTime;
 console.log("Loaded all language data after %f ms", total);
 
+// Load section and panel files
+for (let name in paths.sections) {
+    const link = document.createElement("link");
+    link.rel = "import";
+    link.href = paths.sections[name];
+    document.head.appendChild(link);
+}
+for (let name in paths.panels) {
+    const link = document.createElement("link");
+    link.rel = "import";
+    link.href = paths.panels[name];
+    document.head.appendChild(link);
+}
+
+let main;
+// Create sections and panels
+$(document).ready(() => {
+    const sectionWindow = document.getElementById("section-window");
+    for (let name in paths.sections) {
+        const section = document.createElement(name);
+        section.classList.add("section");
+        section.id = name;
+        sectionWindow.appendChild(section);
+    }
+    for (let name in paths.panels) {
+        const panel = document.createElement(name);
+        if (name !== "kanji-info-panel")
+            panel.classList.add("panel");
+        panel.id = name;
+        sectionWindow.appendChild(panel);
+    }
+    main = new TrainerMain();
+});
+
 const eventEmitter = new EventEmitter(); // TODO: Put this into main class
 
 class TrainerMain {
     constructor() {
-        // TODO: Get rid of this (Use when instantiating instead?)
-        $(document).ready(() => {
-            // Store important DOM elements as members
-            this.statusText = document.getElementById("status-text");
-            this.filter = document.getElementById("filter");
-            this.numSrsItemsLabel = document.getElementById("num-srs-items");
-            // Register sections
-            this.sections = {};
-            const sections = document.getElementsByClassName("section");
-            let numSections = 0;
-            for (let i = 0; i < sections.length; ++i) {
-                this.sections[sections[i].tagName.toLowerCase()] = sections[i];
-                ++numSections;
-            }
-            this.currentSection = null;
-            // Register panels
-            this.panels = {};
-            let numPanels = 0;
-            const panels = document.getElementsByClassName("panel");
-            for (let i = 0; i < panels.length; ++i) {
-                this.panels[panels[i].tagName.toLowerCase().slice(0, -6)]
-                    = panels[i];
-                ++numPanels;
-            }
-            // TODO: Use panels object instead for everything?
-            this.addVocabPanel = document.querySelector("add-vocab-panel");
-            this.addKanjiPanel = document.querySelector("add-kanji-panel");
-            this.editVocabPanel = document.querySelector("edit-vocab-panel");
-            this.editKanjiPanel = document.querySelector("edit-kanji-panel");
-            this.kanjiInfoPanel = document.querySelector("kanji-info-panel");
-            this.currentPanel = null;
-            // Get status bar and language popup
-            this.statusBar = document.getElementById("status-text");
-            this.languagePopup = document.getElementById("language-popup");
-            // Once all sections are done loading, do initialization work
-            let doneLoading = 0;
-            eventEmitter.on("done-loading", () => {
-                doneLoading++;
-                if (doneLoading === numSections + numPanels) {
-                    // Set standard language as current language
-                    const standardLang = dataManager.settings["languages"]["standard"];
-                    if (languages.contains(standardLang)) {
-                        this.setLanguage(standardLang);
-                        // dataManager.importSrs();  // TODO
-                    } else {
-                        alert("Standard language is not available!");
-                        process.exit(); // TODO: Does this exit even work?
-                    }
-                    this.fillLanguagePopup(languages);
-                    this.languagePopup.callback = (_, index) => {
-                        if (this.language === languages[index]) return;
-                        this.setLanguage(languages[index]);
-                    };
-                    // Open home section and undisplay all others
-                    $(".section").css("display", "none");
-                    this.sections["home-section"].style.display = "block";
-                    this.sections["home-section"].open();
-                    this.currentSection = "home-section";
-                    // Update test button with amount of words to be tested
+        // Store important DOM elements as members
+        this.statusText = document.getElementById("status-text");
+        this.filter = document.getElementById("filter");
+        this.numSrsItemsLabel = document.getElementById("num-srs-items");
+        // Register sections
+        this.sections = {};
+        const sections = document.getElementsByClassName("section");
+        let numSections = 0;
+        for (let i = 0; i < sections.length; ++i) {
+            this.sections[sections[i].tagName.toLowerCase()] = sections[i];
+            ++numSections;
+        }
+        this.currentSection = null;
+        // Register panels
+        this.panels = {};
+        let numPanels = 0;
+        const panels = document.getElementsByClassName("panel");
+        for (let i = 0; i < panels.length; ++i) {
+            this.panels[panels[i].tagName.toLowerCase().slice(0, -6)]
+                = panels[i];
+            ++numPanels;
+        }
+        // TODO: Use panels object instead for everything?
+        this.addVocabPanel = document.querySelector("add-vocab-panel");
+        this.addKanjiPanel = document.querySelector("add-kanji-panel");
+        this.editVocabPanel = document.querySelector("edit-vocab-panel");
+        this.editKanjiPanel = document.querySelector("edit-kanji-panel");
+        this.kanjiInfoPanel = document.querySelector("kanji-info-panel");
+        this.currentPanel = null;
+        // Get status bar and language popup
+        this.statusBar = document.getElementById("status-text");
+        this.languagePopup = document.getElementById("language-popup");
+        // Once all sections are done loading, do initialization work
+        let doneLoading = 0;
+        eventEmitter.on("done-loading", () => {
+            doneLoading++;
+            if (doneLoading === numSections + numPanels) {
+                // Set standard language as current language
+                const standardLang = dataManager.settings["languages"]["standard"];
+                if (languages.contains(standardLang)) {
+                    this.setLanguage(standardLang);
+                    // dataManager.importSrs();  // TODO
+                } else {
+                    alert("Standard language is not available!");
+                    process.exit(); // TODO: Does this exit even work?
+                }
+                this.fillLanguagePopup(languages);
+                this.languagePopup.callback = (_, index) => {
+                    if (this.language === languages[index]) return;
+                    this.setLanguage(languages[index]);
+                };
+                // Open home section and undisplay all others
+                $(".section").css("display", "none");
+                this.sections["home-section"].style.display = "block";
+                this.sections["home-section"].open();
+                this.currentSection = "home-section";
+                // Update test button with amount of words to be tested
+                this.updateTestButton();
+                setInterval(() => {
                     this.updateTestButton();
-                    setInterval(() => {
-                        this.updateTestButton();
-                        this.fillLanguagePopup(languages);
-                    }, 300000);  // Every 5 min
-                    // $("#loading-frame").fadeOut();
-                }
+                    this.fillLanguagePopup(languages);
+                }, 300000);  // Every 5 min
+                // $("#loading-frame").fadeOut();
+            }
+        });
+        // Top menu button events
+        $("#exit-button").click(() => ipcRenderer.send("quit"));
+        $("#home-button").click(() => this.openSection("home-section"));
+        $("#stats-button").click(() => this.openSection("stats-section"));
+        $("#vocab-button").click(() => this.openSection("vocab-section"));
+        $("#history-button").click(() =>
+                this.openSection("history-section"));
+        $("#settings-button").click(() =>
+                this.openSection("settings-section"));
+        // Sidebar button events
+        $("#add-vocab-button").click(() =>
+                this.openPanel(this.addVocabPanel));
+        $("#add-kanji-button").click(() =>
+                this.openPanel(this.addKanjiPanel));
+        let openTestSection = () => {
+            // Update label and open section if there are items to test
+            // [ Somehow move this test to test section lateron? ]
+            this.updateTestButton().then(() => {
+                if (parseInt(this.numSrsItemsLabel.textContent) > 0)
+                    this.openSection("test-section");
+                else
+                    this.updateStatus("There are currently no items " +
+                                      "scheduled for testing!");
             });
-            // Top menu button events
-            $("#exit-button").click(() => ipcRenderer.send("quit"));
-            $("#home-button").click(() => this.openSection("home-section"));
-            $("#stats-button").click(() => this.openSection("stats-section"));
-            $("#vocab-button").click(() => this.openSection("vocab-section"));
-            $("#history-button").click(() =>
-                    this.openSection("history-section"));
-            $("#settings-button").click(() =>
-                    this.openSection("settings-section"));
-            // Sidebar button events
-            $("#add-vocab-button").click(() =>
-                    this.openPanel(this.addVocabPanel));
-            $("#add-kanji-button").click(() =>
-                    this.openPanel(this.addKanjiPanel));
-            let openTestSection = () => {
-                // Update label and open section if there are items to test
-                // [ Somehow move this test to test section lateron? ]
-                this.updateTestButton().then(() => {
-                    if (parseInt(this.numSrsItemsLabel.textContent) > 0)
-                        this.openSection("test-section");
-                    else
-                        this.updateStatus("There are currently no items " +
-                                          "scheduled for testing!");
-                });
-            };
-            $("#test-button").click(openTestSection);
-            $("#dictionary-button").click(() =>
-                    this.openSection("dictionary-section"));
-            $("#find-kanji-button").click(() =>
-                    this.openSection("kanji-section"));
-            // Add local shortcuts
-            registerShortcut("Ctrl+Q", () => ipcRenderer.send("quit"));
-            registerShortcut("Ctrl+A", () => this.openPanel(this.addVocabPanel));
-            registerShortcut("Ctrl+K", () => this.openPanel(this.addKanjiPanel));
-            registerShortcut("Ctrl+F", () =>
-                    this.openSection("dictionary-section"));
-            registerShortcut("Ctrl+T", openTestSection);
-            // registerShortcut("Ctrl+D", () => ipcRenderer.send("open-debug"));
-            // ... Bind help section to F1
-            ipcRenderer.on("closing-window", () => {
-                if (this.sections[this.currentSection].confirmClose()) {
-                    this.sections[this.currentSection].close();
-                    dataManager.vocabLists.save();
-                    ipcRenderer.send("close-now");
-                }
-            });
+        };
+        $("#test-button").click(openTestSection);
+        $("#dictionary-button").click(() =>
+                this.openSection("dictionary-section"));
+        $("#find-kanji-button").click(() =>
+                this.openSection("kanji-section"));
+        // Add local shortcuts
+        registerShortcut("Ctrl+Q", () => ipcRenderer.send("quit"));
+        registerShortcut("Ctrl+A", () => this.openPanel(this.addVocabPanel));
+        registerShortcut("Ctrl+K", () => this.openPanel(this.addKanjiPanel));
+        registerShortcut("Ctrl+F", () =>
+                this.openSection("dictionary-section"));
+        registerShortcut("Ctrl+T", openTestSection);
+        // registerShortcut("Ctrl+D", () => ipcRenderer.send("open-debug"));
+        // ... Bind help section to F1
+        ipcRenderer.on("closing-window", () => {
+            if (this.sections[this.currentSection].confirmClose()) {
+                this.sections[this.currentSection].close();
+                dataManager.vocabLists.save();
+                ipcRenderer.send("close-now");
+            }
         });
     }
     openSection(section) {
@@ -227,13 +258,19 @@ class TrainerMain {
     fillLanguagePopup(languages) {
         // TODO: Get srs counts for each language, then display in braces here
         // return dataManager.srs.getTotalAmountScheduled().then((count) => {
-            this.languagePopup.clear();
-            for (let i = 0; i < languages.length; ++i) {
-                this.languagePopup.appendItem(languages[i]);
-                if (languages[i] === this.language) {
-                    this.languagePopup.set(i);
-                }
-            }
+
+        // Why is this not working
+        // utility.finishEventQueue().then(() => {
+        //     console.log(this.languagePopup);
+        //     console.log(this.languagePopup.clear);
+        //     this.languagePopup.clear();
+        //     for (let i = 0; i < languages.length; ++i) {
+        //         this.languagePopup.appendItem(languages[i]);
+        //         if (languages[i] === this.language) {
+        //             this.languagePopup.set(i);
+        //         }
+        //     }
+        // });
         // });
     }
     adjustToLanguage(language, secondary) {
@@ -268,6 +305,3 @@ class TrainerMain {
             this.sections[this.currentSection].open();
     }
 }
-
-
-const main = new TrainerMain();
