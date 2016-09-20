@@ -65,6 +65,12 @@ class MainWindow extends HTMLElement {
         const promises = [];
         this.sections = {};
         for (let name in paths.sections) {
+            // Load section files
+            const link = document.createElement("link");
+            link.rel = "import";
+            link.href = paths.sections[name];
+            document.head.appendChild(link);
+            // Create sections
             const section = document.createElement(name);;
             section.classList.add("section");
             section.style.display = "none";
@@ -80,6 +86,12 @@ class MainWindow extends HTMLElement {
         const promises = [];
         this.panels = {};
         for (let name in paths.panels) {
+            // Load panel files
+            const link = document.createElement("link");
+            link.rel = "import";
+            link.href = paths.panels[name];
+            document.head.appendChild(link);
+            // Create panels
             const panel = document.createElement(name);
             if (name !== "kanji-info-panel")
                 panel.classList.add("panel");

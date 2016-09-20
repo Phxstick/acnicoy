@@ -51,6 +51,8 @@ __ General __
 - Check if there is something selected and adjust popupwindow for copying etc.
   --> Make other copy options more detailed, e.g. "Copy kanji", "Copy word"
 - Remove "data" from content section and always access with "dataMap[...]"?
+- CSS containment to increase performance
+- Use slots in custom components whereever useful
 
 __ Code __
 - Also split js and css into sections/widgets/panels?

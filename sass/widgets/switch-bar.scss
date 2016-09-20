@@ -1,7 +1,7 @@
-switch-bar {
+:host {
   display: flex;
   flex-direction: row;
-  switch-button {
+  ::slotted(switch-button) {
     flex: 1;
     margin-right: -1px;
     min-width: 80px;

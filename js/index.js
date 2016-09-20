@@ -68,23 +68,9 @@ const start = performance.now();
 for (let language of languages) {
     dataManager.languages.load(language);
 }
+// TODO: Wait until all data is loaded
 const total = performance.now() - startTime;
 console.log("Loaded all language data after %f ms", total);
-
-// TODO: Do this in createSections and createPanels?
-// Load section and panel files
-for (let name in paths.sections) {
-    const link = document.createElement("link");
-    link.rel = "import";
-    link.href = paths.sections[name];
-    document.head.appendChild(link);
-}
-for (let name in paths.panels) {
-    const link = document.createElement("link");
-    link.rel = "import";
-    link.href = paths.panels[name];
-    document.head.appendChild(link);
-}
 
 
 let main;
