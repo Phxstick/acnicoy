@@ -1,6 +1,6 @@
 "use strict";
 
-class SwitchBar extends HTMLSpanElement {
+class SwitchBar extends HTMLElement {
     createdCallback () {
         this.root = this.attachShadow({mode: "open"});
         const style = document.createElement("style");

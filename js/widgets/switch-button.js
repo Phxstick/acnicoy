@@ -1,40 +1,34 @@
 "use strict";
 
-// const css_normal = {
-//     background: "lightgrey",
-//     color: "grey",
-//     "box-shadow": "none",
-//     border: "1px solid grey"
-// };
-// const css_pushed = {
-//     background: "greenyellow",
-//     color: "black",
-//     "box-shadow": "0px 0px 10px greenyellow",
-//     border: "1px solid lime"
-// };
-
 class SwitchButton extends HTMLElement {
     createdCallback () {
-        const init = this.getAttribute("init");
-        this.state = (init === null) ? true : (init === "true");
-        this.root = this.createShadowRoot();
-        this.span = document.createElement("span");
-        this.root.appendChild(this.span);
-        this.span.textContent = this.textContent;
+        this.root = this.attachShadow({mode: "open"});
+        const slot = document.createElement("slot");
+        this.root.appendChild(slot);
         const style = document.createElement("style");
         style.textContent = `@import url(${paths.css("switch-button")})`;
         this.root.appendChild(style);
         this.callback = () => {};
-        if (this.state) this.span.classList.add("pushed");
-        this.span.addEventListener("click", () => this.invoke());
+        this.addEventListener("click", () => this.toggle());
+        if (this.hasAttribute("pushed"))
+            this.classList.add("pushed");
     }
-    invoke () {
-        this.state = !this.state;
-        if (this.state)
-            this.span.classList.add("pushed");
-        else
-            this.span.classList.remove("pushed");
-        this.callback(this.state);
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (name === "pushed") {
+            if (newValue === null) this.classList.remove("pushed");
+            else this.classList.add("pushed");
+        }
+    }
+    toggle () {
+        if (!this.hasAttribute("pushed")) {
+            this.setAttribute("pushed", "");
+            this.classList.add("pushed");
+            this.callback(true);
+        } else {
+            this.removeAttribute("pushed");
+            this.classList.remove("pushed");
+            this.callback(false);
+        }
     }
 }
 
