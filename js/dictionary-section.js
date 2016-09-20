@@ -2,7 +2,8 @@
 
 utility.processDocument(document.currentScript.ownerDocument, (docContent) => {
 class DictionarySection extends TrainerSection {
-    createdCallback() {
+    constructor() {
+        super();
         this.root = this.createShadowRoot();
         this.root.appendChild(docContent);
         this.lastResult = [];
@@ -155,6 +156,5 @@ class DictionarySection extends TrainerSection {
            `Displaying ${this.lastIndex} of ${this.lastResult.length} results.`;
     }
 }
-document.registerElement("dictionary-section",
-    { prototype: DictionarySection.prototype });
+customElements.define("dictionary-section", DictionarySection);
 });

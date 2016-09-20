@@ -2,7 +2,8 @@
 
 utility.processDocument(document.currentScript.ownerDocument, (docContent) => {
 class VocabSection extends TrainerSection {
-    createdCallback() {
+    constructor() {
+        super();
         this.root = this.createShadowRoot();
         this.root.appendChild(docContent);
 
@@ -65,7 +66,7 @@ class VocabSection extends TrainerSection {
             this.packEditEntry(item);
         });
         this.renameListButton.addEventListener("click", () => {
-            console.log("FIRING CALLBACK!");
+            // TODO: Remove guards and properly disable buttons instead
             if (this.selectedListNode === null) return;
             this.packEditEntry(this.selectedListNode);
         });
@@ -375,6 +376,5 @@ class VocabSection extends TrainerSection {
         this.editInput.focus();
     }
 }
-document.registerElement("vocab-section",
-    { prototype: VocabSection.prototype });
+customElements.define("vocab-section", VocabSection);
 });

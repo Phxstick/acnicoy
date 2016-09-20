@@ -6,7 +6,8 @@ $(document).ready(function() {
 const importDoc = document.currentScript.ownerDocument;
 const content = importDoc.getElementById("content");
 class EditKanjiPanel extends TrainerSection {
-    createdCallback () {
+    constructor () {
+        super();
         // Create shadow tree and append styles
         this.root = this.createShadowRoot();
         this.root.appendChild(content);
@@ -244,6 +245,5 @@ class EditKanjiPanel extends TrainerSection {
         });
     }
 }
-document.registerElement("edit-kanji-panel",
-                         { prototype: EditKanjiPanel.prototype });
+customElements.define("edit-kanji-panel", EditKanjiPanel);
 });

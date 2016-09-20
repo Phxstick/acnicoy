@@ -56,28 +56,28 @@ class MainWindow extends HTMLElement {
             const numPanels = Object.keys(paths.panels).length;
             let numLoaded = 0;
             eventEmitter.on("done-loading", () => {
-                console.log("Received done-loading event no. %s", numLoaded + 1);
-                // TODO: Remove the -1
-                if (++numLoaded === numSections + numPanels - 1)
+                if (++numLoaded === numSections + numPanels)
                     resolve();
             });
         });
     }
     createSections () {
+        const promises = [];
         this.sections = {};
         for (let name in paths.sections) {
-            let section;
-            const element = customElements.get(name);
-            section = new element;
+            const section = document.createElement(name);;
             section.classList.add("section");
             section.style.display = "none";
             section.id = name;
             this.sectionWindow.appendChild(section);
             this.sections[name] = section;
+            promises.push(customElements.whenDefined(name));
         }
         this.currentSection = null;
+        return promises;
     }
     createPanels () {
+        const promises = [];
         this.panels = {};
         for (let name in paths.panels) {
             const panel = document.createElement(name);
@@ -86,6 +86,7 @@ class MainWindow extends HTMLElement {
             panel.id = name;
             this.sectionWindow.appendChild(panel);
             this.panels[name] = panel;
+            promises.push(customElements.whenDefined(name));
         }
         // TODO: Use this.panels instead for everything
         this.addVocabPanel = this.panels["add-vocab-panel"];
@@ -94,6 +95,7 @@ class MainWindow extends HTMLElement {
         this.editKanjiPanel = this.panels["edit-kanji-panel"];
         this.kanjiInfoPanel = this.panels["kanji-info-panel"];
         this.currentPanel = null;
+        return promises;
     }
     loadLanguages(languages) {
         // Fill language popup and assign event

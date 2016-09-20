@@ -88,7 +88,6 @@ module.exports = function (basePath) {
     const widgetsPath = path.resolve(basePath, "js", "widgets");
     paths.widgets = {
         "popup-menu": path.resolve(widgetsPath, "popup-menu.js"),
-        "close-button": path.resolve(widgetsPath, "close-button.js"),
         "popup-stack": path.resolve(widgetsPath, "popup-stack.js"),
         "switch-button": path.resolve(widgetsPath, "switch-button.js"),
         "switch-bar": path.resolve(widgetsPath, "switch-bar.js"),

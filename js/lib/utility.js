@@ -129,12 +129,13 @@ HTMLElement.prototype.scrollToLeft = function() {
 /**
 **  Call given callback with the content of importDoc once it's done loading.
 **/
-// TODO: Which of these 2 to use after all?
+// TODO: Rename to getContentNode?
 function processDocument(importDoc, callback) {
     importDoc.addEventListener("DOMContentLoaded", () => {
         callback(importDoc.getElementById("template").content.cloneNode(true));
     });
 }
+// TODO: Use this one for every section/panel and rename to importDocContent?
 function processDocument2(importDoc, callback) {
     importDoc.addEventListener("DOMContentLoaded", () => {
         callback(importDoc.getElementById("content"));

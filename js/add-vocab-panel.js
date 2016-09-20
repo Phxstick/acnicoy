@@ -7,7 +7,8 @@ $(document).ready(function() {
     const importDoc = document.currentScript.ownerDocument;
     const content = importDoc.getElementById("content");
     class AddVocabPanel extends TrainerSection {
-        createdCallback () {
+        constructor () {
+            super();
             // Create shadow tree and load css
             this.root = this.createShadowRoot();
             this.root.appendChild(content);
@@ -132,6 +133,5 @@ $(document).ready(function() {
             main.closePanel(this, true);
         }
     }
-    document.registerElement("add-vocab-panel",
-                             { prototype: AddVocabPanel.prototype });
+    customElements.define("add-vocab-panel", AddVocabPanel);
 });

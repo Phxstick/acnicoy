@@ -4,7 +4,8 @@ $(document).ready(function() {
     const importDoc = document.currentScript.ownerDocument;
     const content = importDoc.getElementById("content");
     class KanjiInfoPanel extends TrainerSection {
-        createdCallback () {
+        constructor () {
+            super();
             // Create shadow tree and append styles
             this.root = this.createShadowRoot();
             this.root.appendChild(content);
@@ -64,7 +65,6 @@ $(document).ready(function() {
             // if (this.selectedKanji !== null)
             //     this.selectedKanji.classList.remove("kanji-selected");
             // this.selectedKanji = null;
-            // eventEmitter.emit("done-loading");
             // Create button callbacks
             this.addButton.addEventListener("click", () => {
                 // TODO: Call proper load function here and open edit panel
@@ -110,6 +110,7 @@ $(document).ready(function() {
             this.currentKanji = null;
             this.examplesLoaded = false;
             this.strokesLoaded = false;
+            eventEmitter.emit("done-loading");
         }
         open () {
             // Position and display kanji info frame
@@ -258,7 +259,7 @@ $(document).ready(function() {
         createExampleWordRows(dataRows) {
             const fragment = document.createDocumentFragment();
             for (let dataRow of dataRows) {
-                // // TODO: Attach popupmenu for adding words
+                // TODO: Attach popupmenu for adding words
                 const tableRow = document.createElement("tr");
                 // Add colored frequency marker to the row
                 const freqMarker = document.createElement("td");
@@ -405,6 +406,5 @@ $(document).ready(function() {
             this.strokeGraphics.scrollToLeft();
         }
     }
-    document.registerElement("kanji-info-panel",
-                             { prototype: KanjiInfoPanel.prototype });
+    customElements.define("kanji-info-panel", KanjiInfoPanel);
 });

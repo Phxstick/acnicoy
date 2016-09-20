@@ -2,7 +2,8 @@
 
 utility.processDocument(document.currentScript.ownerDocument, (docContent) => {
 class KanjiSection extends TrainerSection {
-    createdCallback() {
+    constructor () {
+        super();
         this.root = this.createShadowRoot();
         this.root.appendChild(docContent);
         this.selectedKanji = null;
@@ -159,6 +160,5 @@ class KanjiSection extends TrainerSection {
         });
     }
 }
-document.registerElement("kanji-section",
-    { prototype: KanjiSection.prototype });
+customElements.define("kanji-section", KanjiSection);
 });

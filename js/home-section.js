@@ -2,7 +2,8 @@
 
 utility.processDocument(document.currentScript.ownerDocument, (docContent) => {
 class HomeSection extends TrainerSection {
-    createdCallback() {
+    constructor() {
+        super();
         this.root = this.createShadowRoot();
         this.root.appendChild(docContent);
         this.pinwall = this.root.getElementById("pinwall");
@@ -58,6 +59,5 @@ class HomeSection extends TrainerSection {
         dataManager.pinwall.save();
     }
 }
-document.registerElement("home-section",
-    { prototype: HomeSection.prototype });
+customElements.define("home-section", HomeSection);
 });

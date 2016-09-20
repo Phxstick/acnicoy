@@ -2,7 +2,8 @@
 
 utility.processDocument2(document.currentScript.ownerDocument, (docContent) => {
 class StatsSection extends TrainerSection {
-    createdCallback() {
+    constructor() {
+        super();
         this.root = this.createShadowRoot();
         this.root.appendChild(docContent);
         this.root.appendChild(this.root.getElementById("styles").content);
@@ -94,6 +95,5 @@ class StatsSection extends TrainerSection {
         return Promise.all(promises);
     }
 }
-document.registerElement("stats-section",
-    { prototype: StatsSection.prototype });
+customElements.define("stats-section", StatsSection);
 });

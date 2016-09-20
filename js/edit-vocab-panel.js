@@ -6,7 +6,8 @@ $(document).ready(function() {
     const importDoc = document.currentScript.ownerDocument;
     const content = importDoc.getElementById("content");
     class EditVocabPanel extends TrainerSection {
-        createdCallback () {
+        constructor () {
+            super();
             // Create shadow tree and append styles
             this.root = this.createShadowRoot();
             this.root.appendChild(content);
@@ -384,6 +385,5 @@ $(document).ready(function() {
             });
         }
     }
-    document.registerElement("edit-vocab-panel",
-                             { prototype: EditVocabPanel.prototype });
+    customElements.define("edit-vocab-panel", EditVocabPanel);
 });

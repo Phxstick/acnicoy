@@ -18,5 +18,9 @@ class SwitchBar extends HTMLSpanElement {
         this.parentNode.prependChild(this.styleNode);
     }
 }
-module.exports = document.registerElement(
-        "switch-bar", { prototype: SwitchBar.prototype });
+
+document.registerElement(
+    "switch-bar", { prototype: SwitchBar.prototype });
+module.exports = SwitchBar;
+// module.exports = document.registerElement(
+//         "switch-bar", { prototype: SwitchBar.prototype });

@@ -2,7 +2,8 @@
 
 utility.processDocument2(document.currentScript.ownerDocument, (docContent) => {
 class HistorySection extends TrainerSection {
-    createdCallback () {
+    constructor() {
+        super();
         this.root = this.createShadowRoot();
         this.root.appendChild(docContent);
         this.root.appendChild(this.root.getElementById("styles").content);
@@ -187,6 +188,5 @@ class HistorySection extends TrainerSection {
         };
     }
 }
-document.registerElement("history-section",
-    { prototype: HistorySection.prototype });
+customElements.define("history-section", HistorySection);
 });

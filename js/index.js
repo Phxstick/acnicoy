@@ -29,9 +29,7 @@ const dialogWindow = require(paths.lib.dialogWindow);
 
 const TrainerSection = require("./js/trainer-section.js");
 // Load widgets
-// TODO: Use path manager
 const PopupMenu = require(paths.widgets["popup-menu"]);
-const CloseButton = require(paths.widgets["close-button"]);
 const PopupStack = require(paths.widgets["popup-stack"]);
 const SwitchButton = require(paths.widgets["switch-button"]);
 const SwitchBar = require(paths.widgets["switch-bar"]);
@@ -91,23 +89,19 @@ for (let name in paths.panels) {
 
 let main;
 // Create sections and panels
-$(document).ready(() => {
-    // TODO: Wait until all elements are defined with new API
-    setTimeout(() => {
+document.addEventListener("DOMContentLoaded", () => {
+    customElements.whenDefined("main-window").then(() => {
         main = document.getElementById("main-window");
         main.createSections();
-        console.log("Done creating sections!");
         main.createPanels();
-        console.log("Done creating panels!");
         main.doneLoading.then(() => {
-            console.log("Done loading main section!");
             main.setLanguage(standardLang);
             main.loadLanguages(languages);
             utility.finishEventQueue().then(() => {
                 main.style.display = "block";
             });
         });
-    }, 2000);
+    });
 });
 
 // TODO: Where to do this exactly?
@@ -119,4 +113,3 @@ registerShortcut("Ctrl+A", () => main.openPanel(main.addVocabPanel));
 registerShortcut("Ctrl+K", () => main.openPanel(main.addKanjiPanel));
 registerShortcut("Ctrl+F", () => main.openSection("dictionary-section"));
 registerShortcut("Ctrl+T", () => main.openTestSection);
-

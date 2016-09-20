@@ -1,16 +1,16 @@
 "use strict";
 
-// TODO: Remake this (dont use attributes)
+// TODO: Remake and parameterize
 
 class PopupList extends HTMLElement {
     createdCallback () {
         this.callback = () => { };
         // Set parameters
         // self.fade = false;
-        this.itemWidth = parseInt(this.getAttribute("itemwidth"));
-        if (!this.itemWidth) this.itemWidth = 30;
-        this.itemHeight = parseInt(this.getAttribute("itemheight"));
-        if (!this.itemHeight) this.itemHeight = 30;
+        //this.itemWidth = parseInt(this.getAttribute("itemwidth"));
+        this.itemWidth = 30;
+        this.itemHeight = 30;
+        // this.itemHeight = parseInt(this.getAttribute("itemheight"));
         this.items = [];
         this.isOpen = false;
         // Create widget tree

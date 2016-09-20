@@ -9,7 +9,8 @@ $(document).ready(function() {
     const importDoc = document.currentScript.ownerDocument;
     const content = importDoc.getElementById("content");
     class AddKanjiPanel extends TrainerSection {
-        createdCallback () {
+        constructor() {
+            super();
             // Create shadow tree and load css
             this.root = this.createShadowRoot();
             this.root.appendChild(content);
@@ -133,6 +134,5 @@ $(document).ready(function() {
             main.closePanel(this, true);
         }
     }
-    document.registerElement("add-kanji-panel",
-                             { prototype: AddKanjiPanel.prototype });
+    customElements.define("add-kanji-panel", AddKanjiPanel);
 });

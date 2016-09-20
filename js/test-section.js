@@ -5,7 +5,8 @@ const random = new Random(Random.engines.nativeMath);
 
 utility.processDocument(document.currentScript.ownerDocument, (docContent) => {
 class TestSection extends TrainerSection {
-    createdCallback() {
+    constructor() {
+        super();
         this.root = this.createShadowRoot();
         this.root.appendChild(docContent);
         // Store important DOM elements as class members
@@ -349,6 +350,5 @@ class TestSection extends TrainerSection {
         });
     }
 }
-document.registerElement("test-section",
-    { prototype: TestSection.prototype });
+customElements.define("test-section", TestSection);
 });

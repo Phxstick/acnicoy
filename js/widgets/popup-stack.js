@@ -93,7 +93,6 @@ class PopupStack extends HTMLDivElement {
     }
 }
 
-console.log(window.customElements);
 // module.exports = window.customElements.define("popup-stack", PopupStack);
 module.exports = document.registerElement(
     "popup-stack", { prototype: PopupStack.prototype });
