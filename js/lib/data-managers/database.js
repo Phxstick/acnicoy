@@ -28,5 +28,13 @@ module.exports = function (paths, modules) {
         });
     };
 
+    // Query the database for given language
+    database.queryLanguage = function (language, query, ...params) {
+        return new Promise((resolve, reject) => {
+            dataMap[language].all(query, ...params,
+                    (error, rows) => resolve(rows));
+        });
+    };
+
     return database;
 };

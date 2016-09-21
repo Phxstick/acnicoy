@@ -5,6 +5,7 @@
 class PopupList extends HTMLElement {
     createdCallback () {
         this.callback = () => { };
+        this.onOpen = () => { };
         // Set parameters
         // self.fade = false;
         //this.itemWidth = parseInt(this.getAttribute("itemwidth"));
@@ -58,7 +59,12 @@ class PopupList extends HTMLElement {
     }
     removeItem (index) {
     }
+    setLabelText(text) {
+        this.label.textContent = text;
+    }
     set (index) {
+        // TODO: Good idea to return here?
+        if (this.currentItemIndex === index) return;
         this.currentItemIndex = index;
         this.label.textContent = this.items[index].textContent;
         this.callback(this.get(), this.getIndex());
@@ -72,6 +78,7 @@ class PopupList extends HTMLElement {
     open () {
         this.isOpen = true;
         this.popupWindow.style.display = "block";
+        this.onOpen();
         $(this.popupWindow).css("top", $(this).css("height"));
     }
     close () {

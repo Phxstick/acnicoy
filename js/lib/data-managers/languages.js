@@ -4,6 +4,8 @@ const fs = require("fs");
 
 module.exports = function (paths, modules) {
     const languageManager = {};
+    
+    languageManager.currentLanguage = null;
 
     // Return list of all registered languages. Create folder if doesn't exist
     languageManager.find = function() {
@@ -32,6 +34,7 @@ module.exports = function (paths, modules) {
         ];
         for (let module of languageDependentModules)
             module.setLanguage(language);
+        languageManager.currentLanguage = language;
     };
 
     // Register a new language with given configuration

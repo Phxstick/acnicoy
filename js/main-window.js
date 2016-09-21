@@ -110,10 +110,10 @@ class MainWindow extends HTMLElement {
         return promises;
     }
     loadLanguages(languages) {
-        // Fill language popup and assign event
-        this.fillLanguagePopup(languages);
+        // Assign callbacks for language popup
+        this.languagePopup.onOpen = () => this.fillLanguagePopup(languages);
         this.languagePopup.callback = (_, index) => {
-            if (this.language === languages[index]) return;
+            // if (this.language === languages[index]) return;
             this.setLanguage(languages[index]);
         };
         // Only display home section
@@ -124,7 +124,6 @@ class MainWindow extends HTMLElement {
         this.updateTestButton();
         setInterval(() => {
             this.updateTestButton();
-            this.fillLanguagePopup(languages);
         }, 300000);  // Every 5 min
     }
     openSection(section) {
@@ -182,19 +181,18 @@ class MainWindow extends HTMLElement {
             this.numSrsItemsLabel.textContent = `${count} items`);
     }
     fillLanguagePopup(languages) {
-        // TODO: Get srs counts for each language, then display in braces here
-        // return dataManager.srs.getTotalAmountScheduled().then((count) => {
-        // Why is this not working
-        utility.finishEventQueue().then(() => {
+        dataManager.srs.getTotalAmountScheduledForLanguages(languages)
+        .then((amounts) => {
             this.languagePopup.clear();
             for (let i = 0; i < languages.length; ++i) {
-                this.languagePopup.appendItem(languages[i]);
-                if (languages[i] === this.language) {
-                    this.languagePopup.set(i);
+                if (amounts[languages[i]] > 0) {
+                    this.languagePopup.appendItem(
+                        `${languages[i]} (${amounts[languages[i]]})`);
+                } else {
+                    this.languagePopup.appendItem(languages[i]);
                 }
             }
         });
-        // });
     }
     adjustToLanguage(language, secondary) {
         // TODO: Rewrite without jQuery... implement own show/hide methods?
@@ -227,6 +225,7 @@ class MainWindow extends HTMLElement {
         }
         if (this.currentSection !== null)
             this.sections[this.currentSection].open();
+        this.languagePopup.setLabelText(language);
     }
 }
 customElements.define("main-window", MainWindow);

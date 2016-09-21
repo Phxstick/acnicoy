@@ -23,18 +23,13 @@ __ Fundamentals (Data) __
 __ General __
 - Find dictionary of monolingual descriptions (display in test after answer?)
 - Create a proper pointer cursor. Create better normal cursor as well
-- Add icons to the left of status message aswell?
 - Also use border gradients for shadowing
 - Allow temporary entries to be closed by clicking anywhere else
 - Differentiate between dark button and light button?
 - Where to put all the tons of update logic from eventEmitters?
 - Make popupstack have expandable shadow when popping up to see borders clearly
 - Show interval time when hovering above SRS level somewhere
-- If there's no content for a language, make contentLoaded-promise return error?
 - Possible trainer name: Acnicoy
-- Display srs counts for each language in language popup panel
-  --> Requires restructuring of dataManager...?
-- Make overlay window widget for init/help section.
 - Use inset shadows and class animations to design switch-buttons!
 - Use new version of custom elements (See resources)
 - For the time being, implement a little vocabulary backup system in order
@@ -83,6 +78,12 @@ __ Init section __
 __ Loading screen __
 - Have loading animation
 - Have refreshing picture in the background
+
+__ Main window __
+- Make special popup list for language popup with two columns
+  --> Second column contains number of current test items, highlighted if > 0
+  --> Popup automatically uses text in left column only for label
+- Add icons to the left of status message aswell?
 
 __ Home section __
 - When vocabulary is empty, write very small manual info card into intro section
@@ -155,7 +156,9 @@ __ Stats/Achievements __
 - Bar diagrams showing kanji learned by grade and JLPT next to each other
 - Update at least general stats when words/kanji are added
 
-
+__ Help __
+- Window? Section? Panel?
+- Make overlay window widget for this?
 
 List of settings:
 
