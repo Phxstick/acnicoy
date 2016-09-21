@@ -1,9 +1,3 @@
-TODO next:
-- Adapt remaining sections
-- Adapt index.js correctly
-- Make sections wait until all content has loaded?
-==> Test and commit
-
 __ BUGFIXES __
 - Use different random generator? Seed always generates about same sequence?
 - Make sure Japanese-only stuff is closed when changing to other language
@@ -13,7 +7,9 @@ __ BUGFIXES __
 - details bar in kanji info panel does not wrap at all or incorrectly.
 - info in details bar should properly be compressed if there are many readings
   or meanings
-- Use utility.finishEventQueue where sizes are not returned correctly!!
+- Make sections wait until all content has loaded
+- Use "contentAvailable" object/function in content datamanager
+  to make sure non-available stuff is closed
 
 __ Fundamentals (Data) __
 - [Consider overhaul of data storage --> Primarily use IDs for words?]
@@ -28,7 +24,6 @@ __ General __
 - Find dictionary of monolingual descriptions (display in test after answer?)
 - Create a proper pointer cursor. Create better normal cursor as well
 - Add icons to the left of status message aswell?
-- Find a way to implement loading screen, then add loading animation
 - Also use border gradients for shadowing
 - Allow temporary entries to be closed by clicking anywhere else
 - Differentiate between dark button and light button?
@@ -44,7 +39,7 @@ __ General __
 - Use new version of custom elements (See resources)
 - For the time being, implement a little vocabulary backup system in order
   to not do this manually anymore.
-- Updgrade electron to latest version (1.35) and check out new features?
+- Check out new electron features?
 - Have one global popupmenu object (so that only one is always active)
 - Allow filling popupmenu with an array of options (allows storing configs)
 - Make language content optional and provide language packs for download?
@@ -53,6 +48,9 @@ __ General __
 - Remove "data" from content section and always access with "dataMap[...]"?
 - CSS containment to increase performance
 - Use slots in custom components whereever useful
+- Make automatically-loading-upon-scrolling-divs into widgets?
+- Make kana input entries type katakana when pressing shift.
+  --> Also make into custom widget?
 
 __ Code __
 - Also split js and css into sections/widgets/panels?
@@ -81,6 +79,10 @@ __ Init section __
   => If data is found at fiven path, return, otherwise proceed to set first lang
 - Have second part of init section to set first language
   => Also open if directory in dataPath is empty
+
+__ Loading screen __
+- Have loading animation
+- Have refreshing picture in the background
 
 __ Home section __
 - When vocabulary is empty, write very small manual info card into intro section
@@ -138,6 +140,10 @@ __ Svg Bar Diagram __
 __ History __
 - Completely rework history section?
   --> Only display added entries and kanji?
+
+__ Dictionary __
+- Display help info at center of section at the beginning and when the user
+  presses enter on empty input or clicks some kind of help button
 
 __ Stats/Achievements __
 - Use single-bar diagram for kanji progress to display relative to total!
@@ -208,7 +214,7 @@ https://developers.google.com/web/fundamentals/primers/customelements/
 - For server hosting: 1. RedHat OpenShift, 2. Heroku, 3. 000webhost (PHP)
   --> Use flask(python) or express(nodejs)
  
-- Use native string includes function
+- Use native string "includes" function instead of "contains"
 - Shadow DOM v1 (http://caniuse.com/#feat=shadowdomv1)
 - Use selection API  (window.getSelection(), selectionstart, selectionchanged)
   (http://caniuse.com/#feat=selection-api)

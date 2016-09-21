@@ -178,7 +178,6 @@ $(document).ready(function() {
                 // Append JLPT level if it has one
                 if (info.jlptLevel !== null) {
                     const jlptSpan = document.createElement("span");
-                    // TODO
                     jlptSpan.textContent = `JLPT N${info.jlptLevel}`;
                     this.detailsFrame.appendChild(jlptSpan);
                 }

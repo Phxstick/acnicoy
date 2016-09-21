@@ -366,6 +366,45 @@ function removeEntryFromSortedList(listNode, text) {
         listNode.removeChildAt(index);
 }
 
+/**
+**  Given the tbody and thead of an HTML table, size the header cells in the
+**  thead rows to fit the size of table row cells in tbody.
+**/
+function calculateHeaderCellWidths(tableBody, tableHead) {
+    // If the thead contains no rows, do nothing
+    if (tableHead.children.length === 0) {
+        return;
+    }
+    // Currently only works for a single row in the thead.
+    if (tableHead.children.length > 1) {
+        throw { name: "NotImplementedError",
+                message: "Table head to adjust sizes for can currently only " +
+                         "contain a single row." };
+    }
+    const headCells = tableHead.children[0].children;
+    const widths = [];
+    // If there are no body rows to adjust cells to, make them equally sized
+    if (tableBody.children.length === 0) {
+        const width = tableHead.offsetWidth / headCells.length;
+        for (let i = 0; i < headCells.length; ++i) {
+            widths.push(width);
+        }
+    } else {
+        const bodyCells = tableBody.children[0].children;
+        // Throw an error if amount of cells in the thead and tbody do not fit
+        if (bodyCells.length !== headCells.length) {
+            throw { name: "ValueError",
+                message: `Table head row contains ${headCells.length} cells, ` +
+                         `but table body rows contain ${bodyCells.length}.` };
+        }
+        for (let i = 0; i < bodyCells.length; ++i) {
+            widths.push(bodyCells[i].offsetWidth);
+        }
+    }
+    for (let i = 0; i < headCells.length; ++i) {
+        headCells[i].style.width = widths[i] + "px";
+    }
+}
 
 module.exports.getTime = getTime;
 module.exports.getShortDateString = getShortDateString;
@@ -381,3 +420,4 @@ module.exports.createSvgNode = createSvgNode;
 module.exports.findIndex = findIndex;
 module.exports.insertNodeIntoSortedList = insertNodeIntoSortedList;
 module.exports.removeEntryFromSortedList = removeEntryFromSortedList;
+module.exports.calculateHeaderCellWidths = calculateHeaderCellWidths;

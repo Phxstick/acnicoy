@@ -16,7 +16,6 @@ table#history {
   flex: 1;
   background: $view-background;
   border-collapse: collapse;
-  // border-spacing: 1px;
   thead {
     display: block;
     table-layout: fixed;
@@ -32,15 +31,15 @@ table#history {
       border-style: solid;
       &.deleted {
         border-color: salmon;
-        // &:hover { background-color: lighten(salmon, 10%); }
+        &:hover { background-color: #ffc7b3; }
       }
       &.added {
         border-color: yellowGreen;
-        // &:hover { background-color: lighten(yellowgreen, 15%); }
+        &:hover { background-color: #e0ffb3; }
       }
       &.modified {
         border-color: khaki;
-        // &:hover { background-color: lighten(khaki, 10%); }
+        &:hover { background-color: #f6f0bb; }
       }
     }
   }

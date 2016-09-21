@@ -13,7 +13,8 @@ class HistorySection extends TrainerSection {
         this.rows = null;  // All rows from edit_history table in the database
         this.lastId = null;  // ID of last entry in the history
         // Store important DOM elements as members
-        this.table = this.root.getElementById("table-body");
+        this.table = this.root.getElementById("history-table-body");
+        this.tableHead = this.root.getElementById("history-table-head");
         // Assign callbacks
         for (let flag in this.flags) {
             this.root.getElementById(`${flag}-filter`).callback =
@@ -38,7 +39,8 @@ class HistorySection extends TrainerSection {
         eventEmitter.on("vocab-changed", () => this.updateTable());
     }
     open() {
-        utility.finishEventQueue().then(() => this.calculateHeaderCellWidths());
+        utility.finishEventQueue().then(() =>
+            utility.calculateHeaderCellWidths(this.table, this.tableHead));
     }
     adjustToLanguage(language, secondary) {
         this.nextRowIndex = 0;  // Index of next row to be been displayed
@@ -55,7 +57,8 @@ class HistorySection extends TrainerSection {
     updateTable() {
         dataManager.history.get(this.lastId).then((rows) => {
             this.table.prependChild(this.createTableRows(rows));
-            setTimeout(() => this.calculateHeaderCellWidths(), 100);
+            utility.finishEventQueue().then(() =>
+                utility.calculateHeaderCellWidths(this.table, this.tableHead));
             if (rows.length > 0)
                 this.lastId = rows[0].id;
         });
@@ -149,15 +152,6 @@ class HistorySection extends TrainerSection {
         }
         return fragment;
     }
-    calculateHeaderCellWidths() {
-        const headerCells = this.root.querySelectorAll("#history th");
-        const tableCells = this.root.querySelectorAll(
-                "#history tbody tr:first-child td");
-        if (tableCells.length === 0) return; // TODO: Make all equal width.
-        for (let i = 0; i < headerCells.length; ++i) {
-            headerCells[i].style.width = tableCells[i].offsetWidth + "px";
-        }
-    }
     getToggleCallback(className) {
         return (state) => {
             const newDisplay = (state === true) ? "" : "none";
@@ -184,7 +178,8 @@ class HistorySection extends TrainerSection {
                     }
                     break;
             }
-            setTimeout(() => this.calculateHeaderCellWidths(), 100);
+            utility.finishEventQueue().then(() =>
+                utility.calculateHeaderCellWidths(this.table, this.tableHead));
         };
     }
 }

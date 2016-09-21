@@ -7,42 +7,44 @@ class DictionarySection extends TrainerSection {
         this.root = this.createShadowRoot();
         this.root.appendChild(docContent);
         this.lastResult = [];
-        this.lastIndex = 0;
+        this.nextRowIndex = 0;
         const loadAmount = 30;  // Amout of entries to load at once
         // Store important elements as properties
-        this.entryFilter = this.root.getElementById("entry-filter");
+        this.wordsFilter = this.root.getElementById("words-filter");
         this.meaningsFilter = this.root.getElementById("meanings-filter");
-        this.readingsFilter = this.root.getElementById("readings-filter");
-        this.readingsFilter.enableKanaInput("hira");
         this.resultsTable = this.root.getElementById("results");
-        this.searchStatus = this.root.getElementById("search-status");
-        this.loadMoreButton = this.root.getElementById("load-more-results");
+        this.resultsTableHead = this.root.getElementById("results-table-head");
         // Bind callbacks
-        this.loadMoreButton.addEventListener("click", () =>
-            this.displayMoreResults(loadAmount));
         const getSearchCallback = (query, input) => (event) => {
             if (event.keyCode !== 13) return;
             dataManager.content.data.query(query, input.value.trim() + "%")
             .then((rows) => {
                 this.lastResult = [];
-                this.lastIndex = 0;
+                this.nextRowIndex = 0;
                 rows.forEach((row) => this.lastResult.push(row.id));
                 this.resultsTable.empty();
+                // If no results are found, don't display the table head
+                // TODO: Remove this once table head becomes obsolete
                 if (this.lastResult.length === 0) {
-                    this.searchStatus.textContent = "No matches found.";
+                    this.resultsTableHead.style.display = "none";
+                    // TODO: Display some "no matches found" message
                 } else {
-                    this.displayMoreResults(loadAmount);
+                    this.resultsTableHead.style.display = "block";
                 }
+                this.displayMoreResults(loadAmount);
             });
         };
-        this.entryFilter.addEventListener("keypress", getSearchCallback(
-            "SELECT id FROM words WHERE word LIKE ?", this.entryFilter));
+        // TODO: Adapt SQL queries. Apply frequencies to everything
+        this.wordsFilter.addEventListener("keypress", getSearchCallback(
+             `SELECT id FROM
+                  (SELECT id, news_freq FROM words WHERE word LIKE ?
+                   UNION
+                   SELECT id, 0 FROM readings WHERE reading LIKE ?)
+              ORDER BY news_freq DESC`,
+            this.wordsFilter));
         this.meaningsFilter.addEventListener("keypress", getSearchCallback(
             "SELECT id FROM translations WHERE translation LIKE ?",
             this.meaningsFilter));
-        this.readingsFilter.addEventListener("keypress", getSearchCallback(
-            "SELECT id FROM readings WHERE reading LIKE ?",
-            this.readingsFilter));
         // Create popup menus
         this.kanjiPopup = new PopupMenu();
         this.kanjiPopup.onOpen = (object) => {
@@ -68,7 +70,32 @@ class DictionarySection extends TrainerSection {
                 });
             });
         };
+        // If the user scrolls almost to table bottom, load more search results
+        const criticalScrollDistance = 200;
+        this.resultsTable.addEventListener("scroll", (event) => {
+            const maxScroll = this.resultsTable.scrollHeight -
+                              this.resultsTable.clientHeight;
+            const distanceToEnd = maxScroll - this.resultsTable.scrollTop;
+            if (distanceToEnd < criticalScrollDistance
+                    && this.nextRowIndex < this.lastResult.length)
+                this.displayMoreResults(loadAmount);
+        });
         eventEmitter.emit("done-loading");
+    }
+    open() {
+    }
+    adjustToLanguage(language, secondary) {
+        this.resultsTable.empty();
+        if (dataManager.languageSettings.readings) {
+            this.wordsFilter.placeholder = "Filter by words and readings";
+        } else {
+            this.wordsFilter.placeholder = "Filter by words";
+        }
+        if (language === "Japanese") {
+            this.wordsFilter.enableKanaInput("hira");
+        } else {
+            this.wordsFilter.disableKanaInput();
+        }
     }
     insertTableRow(entryId) {
         dataManager.content.data.query(
@@ -147,13 +174,16 @@ class DictionarySection extends TrainerSection {
         return charSpan;
     }
     displayMoreResults(amount) {
-        const limit = Math.min(this.lastIndex + amount, this.lastResult.length);
-        for (let i = this.lastIndex; i < limit; ++i) {
+        const limit = Math.min(this.nextRowIndex + amount,
+                               this.lastResult.length);
+        for (let i = this.nextRowIndex; i < limit; ++i) {
             this.insertTableRow(this.lastResult[i]);
         }
-        this.lastIndex = limit;
-        this.searchStatus.textContent =
-           `Displaying ${this.lastIndex} of ${this.lastResult.length} results.`;
+        utility.finishEventQueue().then(() =>
+            utility.calculateHeaderCellWidths(
+                this.resultsTable, this.resultsTableHead));
+        // this.searchStatus.textContent =
+        //  `Displaying ${this.nextRowIndex} of ${this.lastResult.length} results.`;
     }
 }
 customElements.define("dictionary-section", DictionarySection);

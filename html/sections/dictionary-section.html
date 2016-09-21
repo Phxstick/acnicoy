@@ -14,17 +14,12 @@
 <style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
 <div id="window">
   <div id="filters">
-    <input id="entry-filter" placeholder="Filter by entry"></input>
-    <input id="meanings-filter" placeholder="Filter by meanings"></input>
-    <input id="readings-filter" placeholder="Filter by readings"></input>
+    <input id="words-filter" placeholder="Filter by words"></input>
+    <input id="meanings-filter" placeholder="Filter by translations"></input>
   </div>
-  <div id="status-bar">
-    <div id="search-status">Enter queries into one of the inputs above and
-       press Return.</div>
-    <button id="load-more-results">Load more results</button>
-  </div>
+  <!--div id="status-bar"></div-->
   <table id="results-table">
-    <thead>
+    <thead id="results-table-head">
       <tr>
         <th>Entry</th>
         <th>Meanings</th>
