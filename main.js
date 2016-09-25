@@ -62,22 +62,16 @@ app.on('ready', function() {
   });
   electron.ipcMain.on("quit", () => app.quit());
   // TODO: "Object has been destroyed" error for openDevTools?
+  //       Maybe wrong context when calling it like below?
   var openDevTools = mainWindow.webContents.openDevTools;
   electron.ipcMain.on("open-debug", openDevTools);
-  // electron.ipcMain.on("confirm-close-test", (event) => {
-  //     const buttonIndex = electron.dialog.showMessageBox({
-  //         type: "question", buttons: ["Yes", "No"], defaultId: 1,
-  //         message: "Are you sure you want to cancel the test?",
-  //         title: "Confirm", cancelId: 1 });
-  //     event.returnValue = buttonIndex === 0;
-  // });
-  // electron.ipcMain.on("confirm-delete-word", (event, word) => {
-  //     const buttonIndex = electron.dialog.showMessageBox({
-  //         type: "question", buttons: ["Yes", "No"], defaultId: 1,
-  //         message: `Are you sure you want to delete the word '${word}'?`,
-  //         title: "Confirm", cancelId: 1 });
-  //     event.returnValue = buttonIndex === 0;
-  // });
+  electron.ipcMain.on("choose-data-path", (event, defaultPath) => {
+      const result = electron.dialog.showOpenDialog(mainWindow, {
+          title: "Choose directory for program data",
+          defaultPath: defaultPath,
+          properties: ["openDirectory"] });
+      event.returnValue = result === undefined ? defaultPath : result[0];
+  });
   electron.ipcMain.on("confirm", (event, text) => {
       const buttonIndex = electron.dialog.showMessageBox({
           type: "question", buttons: ["Yes", "No"], defaultId: 1,

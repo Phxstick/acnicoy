@@ -1,0 +1,72 @@
+@import "base";
+
+:host {
+  align-items: center;
+  justify-content: center;
+}
+
+#content {
+  width: 80%;
+  // display: flex;
+  // align-items: center;
+  // justify-content: center;
+}
+
+#init-frame {
+  // TODO: How to actually set size? 50%/50%?
+  display: flex;
+  flex-direction: column;
+  border: 1px solid dimgray;
+  border-radius: 5px;
+  background-color: $view-background;
+  color: $view-color;
+
+  #header {
+    background-color: #dddddd;
+    color: dimgray;
+    font-size: 120%;
+    display: flex;
+    font-family: $header-font;
+    padding: 5px;
+    padding-left: 10px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+  }
+
+  #step-content {
+    flex: 1;
+    padding: 10px;
+
+    > div > * {
+      margin-bottom: 8px;
+    }
+  }
+
+  #buttons {
+    padding: 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    
+    > button {
+      padding: 6px;
+    }
+  }
+}
+
+.note {
+  color: gray;
+  font-size: 80%;
+}
+
+#data-path-input-frame {
+  display: flex;
+  flex-direction: row;
+  #data-path {
+    flex: 1;
+  }
+}
+
+#steps {
+  display: none;
+}

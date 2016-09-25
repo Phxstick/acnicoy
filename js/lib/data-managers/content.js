@@ -7,7 +7,7 @@ module.exports = function (paths, modules) {
     const dataMap = {};
 
     content.load = function (language) {
-        let promise = new Promise((resolve) => resolve());
+        let promise = Promise.resolve();
         if (language === "Japanese") {
             // TODO: Properly involve secondary language to get paths
             const cPaths = paths.content["Japanese-English"];

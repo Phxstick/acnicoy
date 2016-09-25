@@ -46,6 +46,7 @@ __ General __
 - Make automatically-loading-upon-scrolling-divs into widgets?
 - Make kana input entries type katakana when pressing shift.
   --> Also make into custom widget?
+- When choosing comma as separator, allow escaping comma for single translations
 
 __ Code __
 - Also split js and css into sections/widgets/panels?
@@ -67,6 +68,8 @@ __ Code __
     by data changes and doesn't depend on the interface!!
 - Try to generalize as much scss as possibly and extend _base file.
   Split parts of _base file into smaller parts.
+- Use Promise.resolve(...) for instantly resolved promise. Where not used yet?
+- Use direct destructuring in function parameters in Promise.all(...) calls
 
 __ Init section __
 - Open if dataPath in settings is empty
@@ -74,6 +77,7 @@ __ Init section __
   => If data is found at fiven path, return, otherwise proceed to set first lang
 - Have second part of init section to set first language
   => Also open if directory in dataPath is empty
+- Allow user initializing with several languages at once
 
 __ Loading screen __
 - Have loading animation

@@ -41,15 +41,6 @@ class MainWindow extends HTMLElement {
                 () => this.openSection("dictionary-section"));
         document.getElementById("find-kanji-button").addEventListener("click",
                 () => this.openSection("kanji-section"));
-        // Confirm close command and save data before exiting the application
-        ipcRenderer.on("closing-window", () => {
-            if (this.sections[this.currentSection].confirmClose()) {
-                this.sections[this.currentSection].close();
-                // TODO: Use global datamanager save function here
-                dataManager.vocabLists.save();
-                ipcRenderer.send("close-now");
-            }
-        });
         // TODO: Where exactly to put this?
         this.doneLoading = new Promise((resolve) => {
             const numSections = Object.keys(paths.sections).length;
@@ -125,6 +116,16 @@ class MainWindow extends HTMLElement {
         setInterval(() => {
             this.updateTestButton();
         }, 300000);  // Every 5 min
+        // Confirm close command and save data before exiting the application
+        ipcRenderer.removeAllListeners("closing-window");
+        ipcRenderer.on("closing-window", () => {
+            if (this.sections[this.currentSection].confirmClose()) {
+                this.sections[this.currentSection].close();
+                // TODO: Use global datamanager save function here
+                dataManager.vocabLists.save();
+                ipcRenderer.send("close-now");
+            }
+        });
     }
     openSection(section) {
         if (this.currentSection == section) return;

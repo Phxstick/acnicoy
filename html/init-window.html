@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <title>Init</title>
+  <meta name="author" value="Daniel Bindemann">
+  <meta charset="UTF-8">
+  <script src="../js/init-window.js"></script>
+</head>
+<body>
+<div id="content">
+  <template id="styles">
+    <style>@import "./css/init-window.css";</style>
+    <style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
+  </template>
+
+  <span id="init-frame">
+    <div id="header"></div>
+    <div id="step-content"></div>
+    <div id="buttons">
+      <button id="continue-button">Continue</button>
+      <button id="back-button">Back</button>
+    </div>
+  </span>
+
+  <div id="steps">
+    <div id="data-path-step">
+      <div>Choose the directory where Acnicoy will store your
+        <span title="E.g your vocabulary, custom settings, ...">data</span> in:
+      </div>
+      <div id="data-path-input-frame">
+        <input id="data-path"></input>
+        <button id="choose-path-button">
+          <i class="fa fa-folder-open-o"></i>
+        </button>
+      </div>
+      <div class="note">The program will store the data in a folder named
+        "AcnicoyData". If you already have a folder with data, select the
+        directory where this folder is located in.
+      </div>
+    </div>
+
+    <div id="add-languages-step">
+      <div>Choose the languages you want to learn:</div>
+      <table id="languages-table">
+        <thead>
+          <th>Language</th>
+          <th>Secondary</th>
+          <th>Readings</th>
+          <th>Default</th>
+          <th></th>
+        </thead>
+        <tbody id="languages">
+        </tbody>
+      </table>
+      <button id="add-language-button">
+        Add new language <i class="fa fa-plus"></i>
+      </button>
+      <div class="note">You can also manage your languages in the settings.</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

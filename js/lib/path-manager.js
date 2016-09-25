@@ -8,10 +8,10 @@ module.exports = function (basePath) {
 
     const home = process.env[process.platform == "win32" ?
                                  "USERPROFILE" : "HOME"];
-    const trainerName = "Trainer";
+    const trainerName = "Acnicoy";
     const dataPathBaseName = trainerName + "Data";
     const dataPathConfigFile = path.resolve(basePath, "data", "data-path.txt");
-    const standardDataPathPrefix = path.resolve(home, "Documents");
+    paths.standardDataPathPrefix = path.resolve(home, "Documents");
     let dataPath = null;
     let langPath = null;
 

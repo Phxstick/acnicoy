@@ -6,10 +6,9 @@ body {
   // width: 100vw;
   margin: 0px;
   padding: 0px;
-}
-
-#load-window, #main-window {
-  display: none;
-  height: 100%;
-  width: 100%;
+  > * {
+    display: none;
+    height: 100%;
+    width: 100%;
+  }
 }

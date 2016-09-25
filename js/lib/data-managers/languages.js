@@ -23,8 +23,11 @@ module.exports = function (paths, modules) {
             modules.languageSettings, modules.content, modules.database,
             modules.vocabLists, modules.stats, modules.pinwall
         ];
-        for (let module of languageDataModules)
-            module.load(language);
+        const promises = [];
+        for (let module of languageDataModules) {
+            promises.push(module.load(language));
+        }
+        return Promise.all(promises);
     };
 
     languageManager.setCurrent = function (language) {
@@ -32,14 +35,16 @@ module.exports = function (paths, modules) {
             modules.languageSettings, modules.content, modules.database,
             modules.vocabLists, modules.stats, modules.pinwall, modules.test
         ];
-        for (let module of languageDependentModules)
+        for (let module of languageDependentModules) {
             module.setLanguage(language);
+        }
         languageManager.currentLanguage = language;
     };
 
     // Register a new language with given configuration
-    languageManager.add = function (language, settings) {
-        // TODO
+    languageManager.add = function (language, secondary, settings) {
+        // TODO: Create language and return promise
+        return language;
     };
 
     return languageManager;

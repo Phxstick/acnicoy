@@ -1,6 +1,6 @@
 PYTHON = python3
 DATA_SCRIPT_PATH = ./createJapaneseData.py
-RESOURCE_PATH = ~/TrainerResources
+RESOURCE_PATH = ~/Dropbox/TrainerResources
 OUTPUT_PATH = ./data/language-content/Japanese-English
 
 VOCAB_PATH = $(RESOURCE_PATH)/JMdict.xml
