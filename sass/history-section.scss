@@ -14,7 +14,7 @@ table#history {
   display: flex;
   flex-direction: column;
   flex: 1;
-  background: $view-background;
+  background-color: $view-background;
   border-collapse: collapse;
   thead {
     display: block;

@@ -25,13 +25,10 @@ class HistorySection extends TrainerSection {
         this.popupMenu.addItem("Reverse change", () =>
             main.updateStatus("Not implemented yet!"));
         // If the user scrolls almost to the table bottom, load more entries
-        const criticalScrollDistance = 200;
         const displayAmount = 30;
-        this.table.addEventListener("scroll", (event) => {
-            const maxScroll = this.table.scrollHeight - this.table.clientHeight;
-            const distanceToEnd = maxScroll - this.table.scrollTop;
-            if (distanceToEnd < criticalScrollDistance
-                    && this.nextRowIndex < this.rows.length)
+        this.table.uponScrollingBelow(200, () => {
+            if (this.nextRowIndex > 0 &&
+                    this.nextRowIndex < this.rows.length)
                 this.displayMoreEntries(displayAmount);
         });
         eventEmitter.emit("done-loading");

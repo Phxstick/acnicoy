@@ -37,12 +37,13 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  background: dimGray;
-  border-spacing: 1px;
-  overflow-y: auto;
+  background-color: $view-background;
+  border-collapse: collapse;
   thead {
     display: none;
     table-layout: fixed;
+    width: 100%;
+    background-color: dimgray;
   }
   tbody {
     flex: 1;
@@ -58,8 +59,8 @@
     color: white;
   }
   td {
+    border: 1px solid darken($view-background, 10%);
     padding: 5px;
-    background-color: $view-background;
   }
 }
 
@@ -72,4 +73,12 @@
 
 .alternative-writing > * {
   color: darkgrey;
+}
+
+tr.frequent-entry {
+  background-color: #e0ffb3;
+}
+
+tr.semi-frequent-entry {
+  background-color: lighten(#e0ffb3, 5%);
 }

@@ -78,6 +78,7 @@ __ Init section __
 - Have second part of init section to set first language
   => Also open if directory in dataPath is empty
 - Allow user initializing with several languages at once
+- Make frame feel 3D with shading effects/border
 
 __ Loading screen __
 - Have loading animation
@@ -201,6 +202,7 @@ List of settings:
 
 __ Resources __
 - http://www.tanos.co.uk/jlpt/skills/vocab/  (New JLPT stuff)
+  --> Get JLPT lists for words too
 - http://pj.ninjal.ac.jp/corpus_center/bccwj/en/freq-list.html  (Frequencies)
 - http://hiramatu-hifuka.com/onyak/onyak2/josu-ta.html  (Counters)
 - Kanji textbook/Internet frequencies?

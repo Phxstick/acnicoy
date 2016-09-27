@@ -224,6 +224,20 @@ function parseEntries(entryString, separator) {
     return entries;
 }
 
+/**
+**  Upon scrolling further than given distance to the bottom of this element,
+**  execute given callback.
+**/
+HTMLElement.prototype.uponScrollingBelow = function (limit, callback) {
+    this.addEventListener("scroll", (event) => {
+        utility.finishEventQueue().then(() => {
+            const maxScroll = this.scrollHeight - this.clientHeight;
+            const distanceToEnd = maxScroll - this.scrollTop;
+            if (distanceToEnd < limit) callback();
+        });
+    });
+}
+
 HTMLElement.prototype.safeDeepClone = function() {
     const nodeToCopyMap = {};
     const nodes = [];

@@ -1,9 +1,9 @@
 PYTHON = python3
 DATA_SCRIPT_PATH = ./createJapaneseData.py
-RESOURCE_PATH = ~/Dropbox/TrainerResources
+RESOURCE_PATH = ~/Dropbox/AcnicoyResources
 OUTPUT_PATH = ./data/language-content/Japanese-English
 
-VOCAB_PATH = $(RESOURCE_PATH)/JMdict.xml
+DICIONARY_PATH = $(RESOURCE_PATH)/JMdict.xml
 RADICALS_PATH = $(RESOURCE_PATH)/radical.utf8.txt
 IMP_PATH = $(RESOURCE_PATH)/improvedKanjiMeanings.json
 NEW_JLPT_N3_PATH = $(RESOURCE_PATH)/new_jlpt_n3_kanji.txt
@@ -13,7 +13,7 @@ KANJI_STROKES_PATH = $(RESOURCE_PATH)/kanjivg-20150615-2.xml
 KANJI_NUMERALS_PATH = $(RESOURCE_PATH)/numeric-kanji.json
 KANJI_COUNTERS_PATH = $(RESOURCE_PATH)/counter-kanji.json
 
-.PHONY: data vocab_data kanji_data build start
+.PHONY: data dictionary_data kanji_data build start
 
 
 all: build
@@ -25,10 +25,10 @@ start:
 	./node_modules/.bin/electron .
 
 
-data: vocab_data kanji_data
+data: dictionary_data kanji_data
 
-vocab_data:
-	$(PYTHON) $(DATA_SCRIPT_PATH) --vocab $(VOCAB_PATH) -o $(OUTPUT_PATH)
+dictionary_data:
+	$(PYTHON) $(DATA_SCRIPT_PATH) --dict $(DICIONARY_PATH) -o $(OUTPUT_PATH)
 
 kanji_data:
 	$(PYTHON) $(DATA_SCRIPT_PATH) \

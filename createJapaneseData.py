@@ -12,13 +12,14 @@ import json
 import xml.etree.ElementTree as ElementTree
 
 
-def create_vocab_tables(cursor):
-    """Create tables for vocabulary in the database referenced by given cursor.
+def create_dictionary_tables(cursor):
+    """Create tables for dictionary in the database referenced by given cursor.
     Drop tables first if they already exist.
     """
     cursor.execute("DROP TABLE IF EXISTS dictionary")
     cursor.execute("DROP TABLE IF EXISTS words")
     cursor.execute("DROP TABLE IF EXISTS readings")
+    cursor.execute("DROP TABLE IF EXISTS meanings")
     cursor.execute("DROP TABLE IF EXISTS translations")
     cursor.execute(
         """
@@ -26,7 +27,8 @@ def create_vocab_tables(cursor):
             id INTEGER PRIMARY KEY,
             words TEXT,
             readings TEXT,
-            translations TEXT
+            translations TEXT,
+            news_freq INTEGER
         )
         """)
     cursor.execute(
@@ -42,9 +44,25 @@ def create_vocab_tables(cursor):
         """
         CREATE TABLE IF NOT EXISTS readings (
             id INTEGER,
-            reading TEXT
+            reading TEXT,
+            news_freq INTEGER,
+            net_freq INTEGER,
+            restricted_to TEXT
         )
         """)
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS meanings (
+            id INTEGER,
+            translations TEXT,
+            part_of_speech TEXT,
+            field_of_application TEXT,
+            misc_info TEXT,
+            words_restricted_to TEXT,
+            readings_restricted_to TEXT
+        )
+        """)
+    # TODO: Is translations table needed?
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS translations (
@@ -89,15 +107,22 @@ def create_radicals_table(cursor):
                 details TEXT)""")
 
 
-def parse_vocab_entry(ID, entry, cursor):
-    """ Parse vocabulary entry given as an XML node.
+def parse_dictionary_entry(ID, entry, cursor):
+    """ Parse dictionary entry given as an XML node.
     Insert it into the database referenced by given cursor under given ID.
     """
     # number = entry.find("ent_seq").text
+    entry_news_freq = 0  # Calculated as maximum of word/reading frequencies
     words = []
     word_news_freq = dict()
     readings = []
-    senses = []
+    reading_news_freq = dict()
+    reading_restricted_to = dict()
+    meanings = []  # List of lists containing translations
+    meaning_restricted_to = []
+    part_of_speech = []
+    field_of_application = []
+    misc_info = []
     # Parse necessary information for this entry
     for kanji_element in entry.findall("k_ele"):
         word = kanji_element.find("keb").text
@@ -106,16 +131,48 @@ def parse_vocab_entry(ID, entry, cursor):
         for freq_element in kanji_element.findall("ke_pri"):
             if freq_element.text.startswith("nf"):
                 word_news_freq[word] = 49 - int(freq_element.text[2:])
+                entry_news_freq = max(word_news_freq[word], entry_news_freq)
         words.append(word)
     for reading_element in entry.findall("r_ele"):
-        readings.append(reading_element.find("reb").text)
+        reading = reading_element.find("reb").text
+        readings.append(reading)
+        reading_news_freq[reading] = 0
+        # Parse news frequency for this reading element
+        for freq_element in reading_element.findall("re_pri"):
+            if freq_element.text.startswith("nf"):
+                reading_news_freq[reading] = 49 - int(freq_element.text[2:])
+                entry_news_freq = max(reading_news_freq[reading], entry_news_freq)
+        # Get kanji elements which this reading is restricted to
+        reading_restricted_to[reading] = []
+        for restr_element in reading_element.findall("re_restr"):
+            reading_restricted_to[reading].append(restr_element.text)
     for sense_element in entry.findall("sense"):
         translations = []
+        meaning_restricted_to.append({ "words": [], "readings": [] })
+        part_of_speech.append([])
+        field_of_application.append([])
+        misc_info.append([])
+        # Get kanji elements this meaning is restricted to
+        for word_restr_element in sense_element.findall("stagk"):
+            meaning_restricted_to[-1]["words"].append(word_restr_element.text)
+        # Get reading elements this meaning is restricted to
+        for reading_restr_element in sense_element.findall("stagr"):
+            meaning_restricted_to[-1]["readings"].append(reading_restr_element.text)
+        # Get part of speech information for this meaning
+        for pos_element in sense_element.findall("pos"):
+            part_of_speech[-1].append(pos_element.text)
+        # Get field of application for this meaning
+        for field_element in sense_element.findall("field"):
+            field_of_application[-1].append(field_element.text)
+        # Get misc info for this meaning
+        for misc_element in sense_element.findall("field"):
+            misc_info[-1].append(misc_element.text)
+        # Get translations corresponding to this meaning
         for gloss_element in sense_element.findall("gloss"):
             if gloss_element.attrib[
                     "{http://www.w3.org/XML/1998/namespace}lang"] == "eng":
                 translations.append(gloss_element.text)
-        senses.append(translations)
+        meanings.append(translations)
     # # Print out entry info
     # print("_____ Entry ID %s _____" % ID)
     # print("Entry names:   %s" % ", ".join(words))
@@ -125,16 +182,25 @@ def parse_vocab_entry(ID, entry, cursor):
     #     print("    %d. %s" % (number + 1, ", ".join(sense)))
     # print()
     # Insert entry into the database
-    sense_strings = [",".join(sense) for sense in senses]
-    cursor.execute("INSERT INTO dictionary VALUES (?, ?, ?, ?)",
-        (ID, ";".join(words), ";".join(readings), ";".join(sense_strings)))
+    meaning_strings = [",".join(meaning) for meaning in meanings]
+    cursor.execute("INSERT INTO dictionary VALUES (?, ?, ?, ?, ?)",
+        (ID, ";".join(words), ";".join(readings), ";".join(meaning_strings),
+         entry_news_freq))
     for word in words:
         cursor.execute("INSERT INTO words VALUES (?, ?, ?, ?)",
                 (ID, word, word_news_freq[word], 0))
     for reading in readings:
-        cursor.execute("INSERT INTO readings VALUES (?, ?)", (ID, reading))
-    for sense in senses:
-        for translation in sense:
+        cursor.execute("INSERT INTO readings VALUES (?, ?, ?, ?, ?)",
+                (ID, reading, reading_news_freq[reading], 0,
+                 ";".join(reading_restricted_to[reading])))
+    for meaning, restricted_to, pos, field, misc in zip(meanings,
+            meaning_restricted_to, part_of_speech, field_of_application,
+            misc_info):
+        cursor.execute("INSERT INTO meanings VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (ID, ";".join(meaning), ";".join(pos), ";".join(field),
+                 ";".join(misc), ";".join(restricted_to["words"]),
+                 ";".join(restricted_to["readings"])))
+        for translation in meaning:
             cursor.execute("INSERT INTO translations VALUES (?, ?)",
                 (ID, translation))
 
@@ -145,7 +211,7 @@ def parse_kanji_entry(line, cursor):
     """
     fields = line.split() 
     # Parse line
-    data = {"kanji": fields[0], "on": [], "kun": [], "frequency": None,
+    data = {"kanji": fields[0], "on-yomi": [], "kun-yomi": [], "frequency": None,
             "strokes": None, "radical_id": None, "grade": None, "jlpt": None,
             "meanings": re.findall(r"\{(.*?)\}", line)}
     # data["jis_code"] = fields[1]
@@ -161,16 +227,16 @@ def parse_kanji_entry(line, cursor):
         elif field[0] == "F":
             data["frequency"] = int(field[1:])
         elif any((0x30A1 <= ord(c) <= 0x30A1 + 89 for c in field)):
-            data["on"].append(field)
+            data["on-yomi"].append(field)
         elif any((0x3042 <= ord(c) <= 0x3042 + 86 for c in field)):
-            data["kun"].append(field)
+            data["kun-yomi"].append(field)
         elif field == "T1" or field[0] == "{":
             break
     # Insert entry into database
     cursor.execute("INSERT INTO kanji VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (data["kanji"], data["grade"], data["jlpt"], data["radical_id"],
-         data["strokes"], data["frequency"], ",".join(data["on"]),
-         ",".join(data["kun"]), ",".join(data["meanings"]), ""))
+         data["strokes"], data["frequency"], ",".join(data["on-yomi"]),
+         ",".join(data["kun-yomi"]), ",".join(data["meanings"]), ""))
 
 
 def parse_radical_entry(line, cursor):
@@ -223,25 +289,25 @@ def parse_kanji_parts_entry(line, cursor):
             "UPDATE kanji SET parts = ? WHERE entry = ?", (parts, kanji))
 
 
-def parse_vocab(filename, cursor):
-    """Parse given vocabulary file (should be called 'JMdict.xml') and insert
-    vocabulary entries into database referenced by given cursor.
+def parse_dictionary(filename, cursor):
+    """Parse given dictionary file (should be called 'JMdict.xml') and insert
+    dictionary entries into database referenced by given cursor.
     """
-    print("Parsing vocabulary xml-file...", end="\r")
+    print("Parsing dictionary xml-file...", end="\r")
     tree = ElementTree.parse(filename)
     root = tree.getroot()
-    print("Parsing vocabulary xml-file... Done. Found %d entries" % len(root))
+    print("Parsing dictionary xml-file... Done. Found %d entries" % len(root))
 
-    print("Creating tables for vocabulary...", end="\r")
-    create_vocab_tables(cursor)
-    print("Creating tables for vocabulary... Done.")
+    print("Creating tables for dictionary...", end="\r")
+    create_dictionary_tables(cursor)
+    print("Creating tables for dictionary... Done.")
 
-    print("Inserting vocab entries into database... 0%", end="\r")
+    print("Inserting dict entries into database... 0%", end="\r")
     for ID, entry in enumerate(root):
-        parse_vocab_entry(ID, entry, cursor)
+        parse_dictionary_entry(ID, entry, cursor)
         perc = ((ID + 1) / len(root)) * 100
-        print("Inserting vocab entries into database... %d%%" % perc, end="\r")
-    print("Inserting vocab entries into database... 100%")
+        print("Inserting dict entries into database... %d%%" % perc, end="\r")
+    print("Inserting dict entries into database... 100%")
 
     print("Creating index on words...", end="\r")
     cursor.execute("CREATE INDEX words_word ON words(word)")
@@ -421,10 +487,10 @@ def parse_kanji_strokes(filename, output_filepath):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Parse data for language-pair 'Japanese'->'English'.")
-    parser.add_argument("--vocabulary", "--vocab", "--voc", "-v",
+        description="Parse dictionary for language-pair 'Japanese'->'English'.")
+    parser.add_argument("--dictionary", "--dict", "--dic", "-d",
             metavar="FILENAME",
-            dest="vocab_filename", help="Filename of the vocabulary xml file.")
+            dest="dict_filename", help="Filename of the dictionary xml file.")
     parser.add_argument("--kanji", "--kan", "-k", metavar="FILENAME",
             dest="kanji_filename", help="Filename of the kanji file.")
     parser.add_argument("--radicals", "--rad", "-r", metavar="FILENAME",
@@ -458,10 +524,10 @@ if __name__ == "__main__":
     connection = sqlite3.connect(database_path)
     cursor = connection.cursor()
     # print("Creating data for language-pair 'Japanese'->'English'.")
-    # Parse vocabulary
-    if args.vocab_filename is not None:
-        print("Parsing vocabulary from file '%s':" % args.vocab_filename)
-        parse_vocab(args.vocab_filename, cursor)
+    # Parse dictionary
+    if args.dict_filename is not None:
+        print("Parsing dictionary from file '%s':" % args.dict_filename)
+        parse_dictionary(args.dict_filename, cursor)
     # # Parse word frequencies
     # if args.word_web_freq_filename is not None:
     #     print()

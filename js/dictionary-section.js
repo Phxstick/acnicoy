@@ -17,7 +17,8 @@ class DictionarySection extends TrainerSection {
         // Bind callbacks
         const getSearchCallback = (query, input) => (event) => {
             if (event.keyCode !== 13) return;
-            dataManager.content.data.query(query, input.value.trim() + "%")
+            dataManager.content.data.query(query, input.value.trim() + "%",
+                    input.value.trim() + "%")
             .then((rows) => {
                 this.lastResult = [];
                 this.nextRowIndex = 0;
@@ -34,13 +35,13 @@ class DictionarySection extends TrainerSection {
                 this.displayMoreResults(loadAmount);
             });
         };
-        // TODO: Adapt SQL queries. Apply frequencies to everything
         this.wordsFilter.addEventListener("keypress", getSearchCallback(
-             `SELECT id FROM
-                  (SELECT id, news_freq FROM words WHERE word LIKE ?
-                   UNION
-                   SELECT id, 0 FROM readings WHERE reading LIKE ?)
-              ORDER BY news_freq DESC`,
+            `WITH matched_ids AS
+                 (SELECT id FROM words WHERE word LIKE ?
+                  UNION
+                  SELECT id FROM readings WHERE reading LIKE ?)
+             SELECT id, news_freq FROM matched_ids NATURAL JOIN dictionary
+             ORDER BY news_freq DESC`,
             this.wordsFilter));
         this.meaningsFilter.addEventListener("keypress", getSearchCallback(
             "SELECT id FROM translations WHERE translation LIKE ?",
@@ -71,13 +72,9 @@ class DictionarySection extends TrainerSection {
             });
         };
         // If the user scrolls almost to table bottom, load more search results
-        const criticalScrollDistance = 200;
-        this.resultsTable.addEventListener("scroll", (event) => {
-            const maxScroll = this.resultsTable.scrollHeight -
-                              this.resultsTable.clientHeight;
-            const distanceToEnd = maxScroll - this.resultsTable.scrollTop;
-            if (distanceToEnd < criticalScrollDistance
-                    && this.nextRowIndex < this.lastResult.length)
+        this.resultsTable.uponScrollingBelow(200, () => {
+            if (this.nextRowIndex > 0 &&
+                    this.nextRowIndex < this.lastResult.length)
                 this.displayMoreResults(loadAmount);
         });
         eventEmitter.emit("done-loading");
@@ -98,19 +95,13 @@ class DictionarySection extends TrainerSection {
         }
     }
     insertTableRow(entryId) {
-        dataManager.content.data.query(
-            `SELECT words, translations, readings FROM dictionary
-             WHERE id = ?`, entryId)
-        .then((rows) => {
-            const words = rows[0].words.split(";");
-            const meanings = rows[0].translations.split(";")
-            meanings.forEach(
-                (val, ind, arr) => arr[ind] = val.split(",").join(", "));
-            const readings = rows[0].readings.split(";");
+        dataManager.content.getDictionaryEntryInfo(entryId).then((info) => {
+            const { words, newsFreq, meanings, readings } = info;
             const tableRow = document.createElement("tr");
             tableRow.entryId = entryId;
             // Process words
             const wData = document.createElement("td");
+            wData.innerHTML += `<div>${newsFreq}</div>`;
             for (let i = 0; i < words.length; ++i) {
                 const el = document.createElement("div");
                 // Make every kanji character a link to open info panel
@@ -151,6 +142,12 @@ class DictionarySection extends TrainerSection {
                 rData.appendChild(el);
             }
             tableRow.appendChild(rData);
+            // Display frequencies
+            if (newsFreq > 0 && newsFreq < 25) {
+                tableRow.classList.add("semi-frequent-entry");
+            } else if (newsFreq >= 25) {
+                tableRow.classList.add("frequent-entry");
+            }
             this.resultsTable.appendChild(tableRow);
         });
     }
@@ -179,6 +176,7 @@ class DictionarySection extends TrainerSection {
         for (let i = this.nextRowIndex; i < limit; ++i) {
             this.insertTableRow(this.lastResult[i]);
         }
+        this.nextRowIndex = limit;
         utility.finishEventQueue().then(() =>
             utility.calculateHeaderCellWidths(
                 this.resultsTable, this.resultsTableHead));

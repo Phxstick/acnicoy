@@ -141,6 +141,22 @@ module.exports = function (paths, modules) {
             FROM kanji k JOIN radicals r ON k.radical_id = r.id`);
     };
 
+    content.getDictionaryEntryInfo = function (id) {
+        return dataMap["Japanese"].query(
+            `SELECT words, translations, readings, news_freq FROM dictionary
+             WHERE id = ?`, id)
+        .then(([{ words, translations, readings, news_freq }]) => {
+            const info = {};
+            info.words = words.split(";");
+            info.meanings = translations.split(";");
+            info.meanings.forEach(
+                (val, ind, arr) => arr[ind] = val.split(",").join(", "));
+            info.readings = readings.split(";");
+            info.newsFreq = news_freq;
+            return info;
+        });
+    };
+
     content.dataMap = dataMap;
 
     return content;

@@ -92,19 +92,13 @@ $(document).ready(function() {
                 this.strokesLoaded = true;
                 this.displayStrokeGraphics();
             });
-            // If the user scrolls almost to the example words table bottom,
-            // load more entries
-            const criticalScrollDistance = 50;
+            // If the user scrolls almost to the bottom of the table,
+            // load more example worlds
             const displayAmount = 20;
-            this.exampleWords.addEventListener("scroll", (event) => {
-                const maxScroll = this.exampleWords.scrollHeight -
-                                  this.exampleWords.clientHeight;
-                const distanceToEnd = maxScroll - this.exampleWords.scrollTop;
-                if (distanceToEnd < criticalScrollDistance
-                        && this.nextRowIndex < this.exampleWordRows.length
-                        && this.examplesLoaded) {
+            this.exampleWords.uponScrollingBelow(50, () => {
+                if (this.nextRowIndex > 0 && this.examplesLoaded &&
+                        this.nextRowIndex < this.exampleWordRows.length)
                     this.displayMoreExampleWords(displayAmount);
-                }
             });
             // State information variables
             this.currentKanji = null;
