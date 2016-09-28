@@ -193,14 +193,14 @@ def parse_dictionary_entry(ID, entry, cursor):
         cursor.execute("INSERT INTO readings VALUES (?, ?, ?, ?, ?)",
                 (ID, reading, reading_news_freq[reading], 0,
                  ";".join(reading_restricted_to[reading])))
-    for meaning, restricted_to, pos, field, misc in zip(meanings,
+    for translations, restricted_to, pos, field, misc in zip(meanings,
             meaning_restricted_to, part_of_speech, field_of_application,
             misc_info):
         cursor.execute("INSERT INTO meanings VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (ID, ";".join(meaning), ";".join(pos), ";".join(field),
+                (ID, ";".join(translations), ";".join(pos), ";".join(field),
                  ";".join(misc), ";".join(restricted_to["words"]),
                  ";".join(restricted_to["readings"])))
-        for translation in meaning:
+        for translation in translations:
             cursor.execute("INSERT INTO translations VALUES (?, ?)",
                 (ID, translation))
 
@@ -320,6 +320,14 @@ def parse_dictionary(filename, cursor):
     cursor.execute(
         "CREATE INDEX readings_reading ON readings(reading)")
     print("Creating index on readings... Done")
+    print("Creating index on entry ids for meanings...", end="\r")
+    cursor.execute(
+        "CREATE INDEX meanings_id ON meanings(id)")
+    print("Creating index on entry ids for meanings... Done")
+    print("Creating index on entry ids for readings...", end="\r")
+    cursor.execute(
+        "CREATE INDEX readings_id ON readings(id)")
+    print("Creating index on entry ids for readings... Done")
     # TODO: Which indices are needed most? Select carefully
     # print("Creating index on word news frequencies...", end="\r")
     # cursor.execute(

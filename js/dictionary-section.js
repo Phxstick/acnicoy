@@ -12,40 +12,28 @@ class DictionarySection extends TrainerSection {
         // Store important elements as properties
         this.wordsFilter = this.root.getElementById("words-filter");
         this.meaningsFilter = this.root.getElementById("meanings-filter");
-        this.resultsTable = this.root.getElementById("results");
-        this.resultsTableHead = this.root.getElementById("results-table-head");
+        this.resultList = this.root.getElementById("results");
         // Bind callbacks
-        const getSearchCallback = (query, input) => (event) => {
+        this.wordsFilter.addEventListener("keypress", (event) => {
             if (event.keyCode !== 13) return;
-            dataManager.content.data.query(query, input.value.trim() + "%",
-                    input.value.trim() + "%")
-            .then((rows) => {
-                this.lastResult = [];
+            dataManager.content.getEntryIdsForReadingQuery(
+                    this.wordsFilter.value.trim()).then((idList) => {
+                this.lastResult = idList;
                 this.nextRowIndex = 0;
-                rows.forEach((row) => this.lastResult.push(row.id));
-                this.resultsTable.empty();
-                // If no results are found, don't display the table head
-                // TODO: Remove this once table head becomes obsolete
-                if (this.lastResult.length === 0) {
-                    this.resultsTableHead.style.display = "none";
-                    // TODO: Display some "no matches found" message
-                } else {
-                    this.resultsTableHead.style.display = "block";
-                }
+                this.resultList.empty();
                 this.displayMoreResults(loadAmount);
             });
-        };
-        this.wordsFilter.addEventListener("keypress", getSearchCallback(
-            `WITH matched_ids AS
-                 (SELECT id FROM words WHERE word LIKE ?
-                  UNION
-                  SELECT id FROM readings WHERE reading LIKE ?)
-             SELECT id, news_freq FROM matched_ids NATURAL JOIN dictionary
-             ORDER BY news_freq DESC`,
-            this.wordsFilter));
-        this.meaningsFilter.addEventListener("keypress", getSearchCallback(
-            "SELECT id FROM translations WHERE translation LIKE ?",
-            this.meaningsFilter));
+        });
+        this.meaningsFilter.addEventListener("keypress", (event) => {
+            if (event.keyCode !== 13) return;
+            dataManager.content.getEntryIdsForTranslationQuery(
+                    this.meaningsFilter.value.trim()).then((idList) => {
+                this.lastResult = idList;
+                this.nextRowIndex = 0;
+                this.resultList.empty();
+                this.displayMoreResults(loadAmount);
+            });
+        });
         // Create popup menus
         this.kanjiPopup = new PopupMenu();
         this.kanjiPopup.onOpen = (object) => {
@@ -72,7 +60,7 @@ class DictionarySection extends TrainerSection {
             });
         };
         // If the user scrolls almost to table bottom, load more search results
-        this.resultsTable.uponScrollingBelow(200, () => {
+        this.resultList.uponScrollingBelow(200, () => {
             if (this.nextRowIndex > 0 &&
                     this.nextRowIndex < this.lastResult.length)
                 this.displayMoreResults(loadAmount);
@@ -82,7 +70,7 @@ class DictionarySection extends TrainerSection {
     open() {
     }
     adjustToLanguage(language, secondary) {
-        this.resultsTable.empty();
+        this.resultList.empty();
         if (dataManager.languageSettings.readings) {
             this.wordsFilter.placeholder = "Filter by words and readings";
         } else {
@@ -94,61 +82,83 @@ class DictionarySection extends TrainerSection {
             this.wordsFilter.disableKanaInput();
         }
     }
-    insertTableRow(entryId) {
+    createDictionaryEntry(entryId) {
         dataManager.content.getDictionaryEntryInfo(entryId).then((info) => {
-            const { words, newsFreq, meanings, readings } = info;
-            const tableRow = document.createElement("tr");
-            tableRow.entryId = entryId;
-            // Process words
-            const wData = document.createElement("td");
-            wData.innerHTML += `<div>${newsFreq}</div>`;
-            for (let i = 0; i < words.length; ++i) {
-                const el = document.createElement("div");
-                // Make every kanji character a link to open info panel
-                for (let character of words[i]) {
-                    el.appendChild(this.createCharSpan(character));
+            const { wordsAndReadings, meanings, newsFreq } = info;
+            const entryFrame = document.createElement("div");
+            const wordFrame = document.createElement("div");
+            wordFrame.classList.add("word-frame");
+            const meaningsFrame = document.createElement("div");
+            meaningsFrame.classList.add("meanings-frame");
+            entryFrame.appendChild(wordFrame);
+            entryFrame.appendChild(meaningsFrame);
+                // tableRow.entryId = entryId;
+            // Process main word and its reading
+            const mainWordDiv = document.createElement("div");
+            const mainReadingDiv = document.createElement("div");
+            mainReadingDiv.classList.add("readings-small");
+            mainWordDiv.classList.add("main-word");
+            const {word: mainWord, reading: mainReading} = wordsAndReadings[0];
+            // If there is only a reading, use it as the main word
+            if (mainWord.length === 0) {
+                mainWordDiv.textContent = mainReading;
+            } else {
+                for (let character of mainWord) {
+                    mainWordDiv.appendChild(this.createCharSpan(character));
                 }
-                // el.textContent = words[i];
-                if (words.length > 1 && i === 0) {
-                    el.style.marginBottom = "10px";
-                }
-                if (i > 0) {
-                    el.style.marginBottom = "2px";
-                    el.classList.add("alternative-writing");
-                }
-                wData.appendChild(el);
+                mainReadingDiv.textContent = mainReading;
             }
-            tableRow.appendChild(wData);
+            wordFrame.appendChild(mainReadingDiv);
+            wordFrame.appendChild(mainWordDiv);
+            // Process variants of this word
+            const variantSpans = [];
+            for (let i = 1; i < wordsAndReadings.length; ++i) {
+                const { word, reading } = wordsAndReadings[i];
+                const variantSpan = document.createElement("span");
+                const wordSpan = document.createElement("span");
+                const readingSpan = document.createElement("span");
+                // Make every kanji character a link to open kanji info panel
+                for (let character of word) {
+                    wordSpan.appendChild(this.createCharSpan(character));
+                }
+                readingSpan.textContent = `【${reading}】`;
+                if (i !== wordsAndReadings.length - 1) {
+                    readingSpan.textContent += "、";
+                }
+                variantSpan.appendChild(wordSpan);
+                variantSpan.appendChild(readingSpan);
+                variantSpans.push(variantSpan);
+            }
             // Process meanings
-            const mData = document.createElement("td");
             for (let i = 0; i < meanings.length; ++i) {
-                const el = document.createElement("div");
-                el.textContent = meanings[i];
+                const { translations, partsOfSpeech, fieldsOfApplication,
+                        miscInfo, restrictedTo } = meanings[i];
+                const meaningFrame = document.createElement("div");
+                const numberSpan = document.createElement("span");
+                numberSpan.classList.add("number");
+                const posSpan = document.createElement("span");
+                posSpan.classList.add("part-of-speech");
+                const translationsSpan = document.createElement("span");
+                meaningFrame.appendChild(numberSpan);
+                meaningFrame.appendChild(posSpan);
+                meaningFrame.appendChild(translationsSpan);
                 if (meanings.length > 1) {
-                    el.textContent = `${i + 1}. ${meanings[i]}`;
-                    el.style.marginBottom = "3px";
-                } else {
-                    el.textContent = meanings[i];
+                    numberSpan.textContent = `${i + 1}. `;
                 }
-                mData.appendChild(el);
+                if (partsOfSpeech.length > 0) {
+                    posSpan.textContent = `[${partsOfSpeech.join(", ")}] `;
+                }
+                translationsSpan.textContent = translations.join("; ");
+                // TODO: Use fieldsOfApplication, miscInfo, restrictedTo
+                meaningsFrame.appendChild(meaningFrame);
             }
-            tableRow.appendChild(mData);
-            // Process readings
-            const rData = document.createElement("td");
-            for (let reading of readings) {
-                const el = document.createElement("div");
-                el.textContent = reading;
-                el.style.marginBottom = "3px";
-                rData.appendChild(el);
-            }
-            tableRow.appendChild(rData);
             // Display frequencies
             if (newsFreq > 0 && newsFreq < 25) {
-                tableRow.classList.add("semi-frequent-entry");
+                entryFrame.classList.add("semi-frequent-entry");
             } else if (newsFreq >= 25) {
-                tableRow.classList.add("frequent-entry");
+                entryFrame.classList.add("frequent-entry");
             }
-            this.resultsTable.appendChild(tableRow);
+            this.resultList.appendChild(entryFrame);
         });
     }
     createCharSpan(character) {
@@ -174,12 +184,9 @@ class DictionarySection extends TrainerSection {
         const limit = Math.min(this.nextRowIndex + amount,
                                this.lastResult.length);
         for (let i = this.nextRowIndex; i < limit; ++i) {
-            this.insertTableRow(this.lastResult[i]);
+            this.createDictionaryEntry(this.lastResult[i]);
         }
         this.nextRowIndex = limit;
-        utility.finishEventQueue().then(() =>
-            utility.calculateHeaderCellWidths(
-                this.resultsTable, this.resultsTableHead));
         // this.searchStatus.textContent =
         //  `Displaying ${this.nextRowIndex} of ${this.lastResult.length} results.`;
     }

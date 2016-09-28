@@ -95,98 +95,6 @@ function setEqual(a, b) {
 }
 
 /**
-**  Returns the last element of an array.
-**/
-Array.prototype.last = function() {
-    return this[this.length - 1];
-};
-
-/**
-**  Sum up the integers in the array.
-**/
-Array.prototype.sum = function() {
-    return this.reduce((total, value) => total + value, 0);
-};
-
-/**
-**  Return true if the array contains given value.
-**/
-Array.prototype.contains = function(value) {
-    return this.indexOf(value) > -1;
-};
-
-
-/**
-**  Given one or more values, return true if this array contains only
-**  elements equal to given values.
-**/
-Array.prototype.containsOnly = function(...values) {
-    for (let element of this) {
-        if (!values.contains(element)) return false;
-    }
-    return true;
-};
-
-
-/**
-**  Remove first occurence of given element from the array.
-**/
-Array.prototype.remove = function(value) {
-    const index = this.indexOf(value);
-    if (index === -1) return false;
-    this.splice(index, 1);
-    return true;
-}
-
-/**
-**  Remove all children elements of this node.
-**/
-HTMLElement.prototype.empty = function() {
-    while (this.lastChild !== null)
-        this.removeChild(this.lastChild);
-};
-
-/**
-**  Insert given node as the first child of this node.
-**/
-HTMLElement.prototype.prependChild = function(node) {
-    this.insertBefore(node, this.firstChild);
-}
-
-
-/**
-**  Insert given node as child at given index.
-**/
-HTMLElement.prototype.insertChildAt = function(node, index) {
-    this.insertBefore(node, this.children[index]);
-}
-
-
-/**
-**  Remove child node of this node at given index.
-**/
-HTMLElement.prototype.removeChildAt = function(index) {
-    this.removeChild(this.children[index]);
-}
-
-
-/**
-**  Scroll to the end of this element in a certain direction.
-**/
-HTMLElement.prototype.scrollToBottom = function() {
-    this.scrollTop = this.scrollHeight;
-}
-HTMLElement.prototype.scrollToRight = function() {
-    this.scrollLeft = this.scrollWidth;
-}
-HTMLElement.prototype.scrollToTop = function() {
-    this.scrollTop = 0;
-}
-HTMLElement.prototype.scrollToLeft = function() {
-    this.scrollLeft = 0;
-}
-
-/**
 **  Call given callback with the content of importDoc once it's done loading.
 **/
 // TODO: Rename to getContentNode?
@@ -285,96 +193,7 @@ function parseEntries(entryString, separator) {
 }
 
 /**
-**  Upon scrolling further than given distance to the bottom of this element,
-**  execute given callback.
-**/
-HTMLElement.prototype.uponScrollingBelow = function (limit, callback) {
-    this.addEventListener("scroll", (event) => {
-        utility.finishEventQueue().then(() => {
-            const maxScroll = this.scrollHeight - this.clientHeight;
-            const distanceToEnd = maxScroll - this.scrollTop;
-            if (distanceToEnd < limit) callback();
-        });
-    });
-}
-
-HTMLElement.prototype.safeDeepClone = function() {
-    const nodeToCopyMap = {};
-    const nodes = [];
-    nodes.push(this);
-    while (nodes.length > 0) {
-        const oldNode = nodes.pop();
-        // "Copy" old note with correct tag, textContent and style
-        const newNode = document.createElement(oldNode.tagName);
-        newNode.textContent = oldNode.textContent;
-        newNode.style.cssText =
-            document.defaultView.getComputedStyle(oldNode, "").cssText;
-        // for (let attribute in oldNode.style) {
-        //     newNode.style.setProperty(attribute,
-        //         oldNode.style.getPropertyValue(attribute));
-        //     // newNode.style[attribute] = oldNode.style[attribute];
-        // }
-        // Map the old node to its copy
-        nodeToCopyMap[oldNode] = newNode;
-        // Append new node to the copied tree
-        if (oldNode !== this) {
-            console.log("Appending ", newNode, " to ",
-                    nodeToCopyMap[oldNode.parentNode]);
-            nodeToCopyMap[oldNode.parentNode].appendChild(newNode);
-        }
-        // Append children of old node into array for traversing
-        for (let i = 0; i < oldNode.children.length; ++i) {
-            nodes.push(oldNode.children[i]);
-        }
-    }
-    return nodeToCopyMap[this];
-}
-
-HTMLElement.prototype.fadeOut = function(distance) {
-    const fadeOutSpan = this.safeDeepClone(); //this.cloneNode(true);
-    fadeOutSpan.style.position = "fixed";
-    fadeOutSpan.style.overflow = "hidden";
-    this.style.visibility = "hidden";
-    this.parentNode.appendChild(fadeOutSpan);
-    const oldWidth = $(this).width();
-    const oldOffset = $(this).offset();
-    fadeOutSpan.textContent = this.textContent;
-    $(fadeOutSpan).width(oldWidth);
-    $(fadeOutSpan).show();
-    $(fadeOutSpan).offset(oldOffset);
-    return new Promise((resolve) => {
-        $(fadeOutSpan).animate({ left: `+=${distance}` })
-                      .fadeOut({ queue: false, complete: () => {
-                          fadeOutSpan.remove();
-                          resolve();
-                      }});
-    });
-}
-
-HTMLElement.prototype.fadeIn = function(distance) {
-    const fadeInSpan = this.safeDeepClone();//this.cloneNode(true);
-    fadeInSpan.style.position = "fixed";
-    fadeInSpan.style.overflow = "hidden";
-    fadeInSpan.style.visibility = "visible";
-    this.parentNode.appendChild(fadeInSpan);
-    const newWidth = $(this).width();
-    const newOffset = $(this).offset();
-    $(fadeInSpan).offset({ top: newOffset.top, left: newOffset.left - distance });
-    $(fadeInSpan).hide();
-    $(fadeInSpan).width(newWidth);
-    return new Promise((resolve) => {
-        $(fadeInSpan).animate({ left: `+=${distance}` })
-                     .fadeIn({ queue: false, complete: () => {
-                         fadeInSpan.remove();
-                         this.style.visibility = "visible";
-                         resolve();
-                     }});
-    });
-}
-
-
-/**
-**  Functions to reduce the pain of creating SVG elements in javascript.
+**  Reduce the pain of creating SVG elements in javascript.
 **/
 function createSvgNode(type, attributes) {
     const node = document.createElementNS("http://www.w3.org/2000/svg", type);
@@ -383,7 +202,6 @@ function createSvgNode(type, attributes) {
     }
     return node;
 }
-
 
 /**
 **  Given an HTMLElement whose children are sorted lexically by textContent,
@@ -407,7 +225,6 @@ function findIndex(listNode, text) {
     return left;
 }
 
-
 /**
 **  Given an HTMLElement whose children are sorted lexically by textContent,
 **  insert given node as child such that the children stay sorted.
@@ -426,7 +243,6 @@ function insertNodeIntoSortedList(listNode, childNode) {
         }
     }
 }
-
 
 /**
 **  Given an HTMLElement whose children are sorted lexically by textContent,
@@ -480,17 +296,21 @@ function calculateHeaderCellWidths(tableBody, tableHead) {
     }
 }
 
+
+// Not DOM-related functions
 module.exports.getTime = getTime;
 module.exports.getShortDateString = getShortDateString;
-module.exports.setEqual = setEqual;
-module.exports.finishEventQueue = finishEventQueue;
+module.exports.parseEntries = parseEntries;
 module.exports.parseCssText = parseCssText;
+module.exports.setEqual = setEqual;
 module.exports.calculateED = calculateED;
 module.exports.getStringForNumber = getStringForNumber;
 module.exports.getOrdinalNumberString = getOrdinalNumberString;
+
+// DOM related functions
 module.exports.processDocument = processDocument;
 module.exports.processDocument2 = processDocument2;
-module.exports.parseEntries = parseEntries;
+module.exports.finishEventQueue = finishEventQueue;
 module.exports.createSvgNode = createSvgNode;
 module.exports.findIndex = findIndex;
 module.exports.insertNodeIntoSortedList = insertNodeIntoSortedList;

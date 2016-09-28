@@ -33,34 +33,61 @@
   }
 }
 
-#results-table {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+#results {
   background-color: $view-background;
-  border-collapse: collapse;
-  thead {
-    display: none;
-    table-layout: fixed;
-    width: 100%;
-    background-color: dimgray;
-  }
-  tbody {
-    flex: 1;
-    display: block;
-    overflow-y: auto;
-  }
-  th {
-    background: dimgray;
-    padding: 5px 0px 5px 0px;
-    font-family: $header-font;
-    font-size: 120%;
-    font-weight: normal;
-    color: white;
-  }
-  td {
-    border: 1px solid darken($view-background, 10%);
+  color: $view-color;
+  overflow-y: auto;
+
+  > div {
+    display: flex;
+    flex-direction: row;
+
+    .word-frame {
+
+      .readings-small {
+        font-size: 80%;
+      }
+
+      .main-word {
+        margin-top: 4px;
+        font-size: 120%;
+      }
+
+      width: 120px;
+      margin-right: 4px;
+    }
+
+    .meanings-frame {
+      flex: 1;
+
+      > div {
+        margin-bottom: 4px;
+
+        .number {
+          font-size: 80%;
+          color: grey;
+        }
+
+        .part-of-speech {
+          font-size: 80%;
+          color: grey;
+        }
+
+        .translations {
+        }
+      }
+    }
+
     padding: 5px;
+    border-bottom: 1px solid darken($view-background, 10%);
+
+    &.frequent-entry {
+      background-color: #e0ffb3;
+    }
+
+    &.semi-frequent-entry {
+      background-color: lighten(#e0ffb3, 5%);
+    }
   }
 }
 
@@ -69,16 +96,4 @@
     text-shadow: 0 0 2px lightsalmon;
     color: darkred;
   }
-}
-
-.alternative-writing > * {
-  color: darkgrey;
-}
-
-tr.frequent-entry {
-  background-color: #e0ffb3;
-}
-
-tr.semi-frequent-entry {
-  background-color: lighten(#e0ffb3, 5%);
 }

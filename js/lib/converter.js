@@ -1,5 +1,10 @@
 "use strict";
 
+/**
+**  This module extends String, HTMLInputElement and HTMLTextAreaElement
+**  by methods to convert romaji to kana and the other way round.
+**/
+
 const hiragana1 = [];
 for (let i = 12353; i < 12439; ++i) hiragana1.push(String.fromCharCode(i));
 const hiragana2 = [

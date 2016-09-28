@@ -18,11 +18,15 @@ ipcRenderer.on("closing-window", () => ipcRenderer.send("close-now"));
 // Load libraries
 const paths = require("./js/lib/path-manager.js")(__dirname);
 const dataManager = require(paths.lib.dataManager)(paths);
-const utility = require(paths.lib.utility);  // Extends some objects
-require(paths.lib.converter);  // Extends String, Input and TextArea
-window.$ = window.jQuery = require(paths.lib.jQuery);
+const utility = require(paths.lib.utility);
 const dialogWindow = require(paths.lib.dialogWindow);
 const layers = require(paths.lib.layerManager);
+window.$ = window.jQuery = require(paths.lib.jQuery);
+
+// Load libraries extending existing objects
+require(paths.lib.arrayExtensions);
+require(paths.lib.htmlElementExtensions);
+require(paths.lib.converter);
 
 const TrainerSection = require("./js/trainer-section.js");
 // Load widgets

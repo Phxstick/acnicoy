@@ -83,7 +83,11 @@ module.exports = function (basePath) {
         converter: path.resolve(basePath, "js", "lib", "converter.js"),
         dialogWindow: path.resolve(basePath, "js", "lib", "dialog-window.js"),
         dataManager: path.resolve(basePath, "js", "lib", "data-manager.js"),
-        layerManager: path.resolve(basePath, "js", "lib", "layer-manager.js")
+        layerManager: path.resolve(basePath, "js", "lib", "layer-manager.js"),
+        arrayExtensions: path.resolve(basePath, "js", "lib",
+                                      "array-extensions.js"),
+        htmlElementExtensions: path.resolve(basePath, "js", "lib",
+                                            "html-element-extensions.js")
     };
 
     // Custom widget scripts

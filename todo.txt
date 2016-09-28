@@ -9,6 +9,8 @@ __ BUGFIXES __
   or meanings
 - Use "contentAvailable" object/function in content datamanager
   to make sure non-available stuff is closed
+- Result in dictionary still not ordered correctly
+- Whats taking so long when searching in dictionary? Measure everything.
 
 __ Fundamentals (Data) __
 - [Consider overhaul of data storage --> Primarily use IDs for words?]
@@ -149,6 +151,8 @@ __ Dictionary __
 - Display help info at center of section at the beginning and when the user
   presses enter on empty input or clicks some kind of help button
 - Also make entries bigger and move to center when search result is empty
+- Have setting which makes part-of-speech display in Japanese
+- Make each dict-entry a custom widget? Definitely place it in shadow DOM.
 
 __ Stats/Achievements __
 - Use single-bar diagram for kanji progress to display relative to total!

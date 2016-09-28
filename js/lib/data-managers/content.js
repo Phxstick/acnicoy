@@ -141,19 +141,80 @@ module.exports = function (paths, modules) {
     };
 
     content.getDictionaryEntryInfo = function (id) {
-        return dataMap["Japanese"].query(
-            `SELECT words, translations, readings, news_freq FROM dictionary
-             WHERE id = ?`, id)
-        .then(([{ words, translations, readings, news_freq }]) => {
+        return Promise.all([
+            dataMap["Japanese"].query(
+                `SELECT words, news_freq FROM dictionary WHERE id = ?`, id),
+            dataMap["Japanese"].query(
+                `SELECT translations, part_of_speech, field_of_application,
+                        misc_info, words_restricted_to, readings_restricted_to
+                 FROM meanings WHERE id = ?`, id),
+            dataMap["Japanese"].query(
+                `SELECT reading, restricted_to FROM readings WHERE id = ?`, id)
+        ]).then(([[{ words, news_freq }], meanings, readings]) => {
             const info = {};
-            info.words = words.split(";");
-            info.meanings = translations.split(";");
-            info.meanings.forEach(
-                (val, ind, arr) => arr[ind] = val.split(",").join(", "));
-            info.readings = readings.split(";");
+            // Provide list of objects containing of a word and its reading
+            words = words.split(";");
+            info.wordsAndReadings = [];
+            for (let { reading, restricted_to } of readings) {
+                let wordsForThisReading;
+                // If the reading is not restricted to particular given words,
+                // it counts for all words
+                if (restricted_to.length > 0) {
+                    wordsForThisReading = restricted_to;
+                } else {
+                    wordsForThisReading = words;
+                }
+                for (let word of wordsForThisReading) {
+                    info.wordsAndReadings.push({
+                        word: word, reading: reading
+                    });
+                }
+            }
+            // Provide list of meaning-objects containing translations for this
+            // meaning, field of application, etc.
+            info.meanings = [];
+            for (let { translations, part_of_speech, field_of_application,
+                       misc_info, words_restricted_to, readings_restricted_to }
+                    of meanings) {
+                info.meanings.push({
+                    translations: translations.split(";"),
+                    partsOfSpeech:
+                        part_of_speech.split(";").withoutEmptyStrings(),
+                    fieldsOfApplication:
+                        field_of_application.split(";").withoutEmptyStrings(),
+                    miscInfo:
+                        misc_info.split(";").withoutEmptyStrings(),
+                    restrictedTo:
+                        words_restricted_to.split(";")
+                        .concat(readings_restricted_to.split(";"))
+                        .withoutEmptyStrings()
+                });
+            }
             info.newsFreq = news_freq;
             return info;
         });
+    };
+
+    content.getEntryIdsForTranslationQuery = function (query) {
+        return dataMap["Japanese"].query(
+            `WITH matched_ids AS
+               (SELECT DISTINCT id FROM translations WHERE translation LIKE ?)
+             SELECT d.id
+             FROM matched_ids m JOIN dictionary d ON m.id = d.id
+             ORDER BY d.news_freq DESC`, query + "%")
+        .then((rows) => rows.map((row) => row.id));
+    };
+
+    content.getEntryIdsForReadingQuery = function (query) {
+        return dataMap["Japanese"].query(
+            `WITH matched_ids AS
+                 (SELECT id FROM words WHERE word LIKE ?
+                  UNION
+                  SELECT id FROM readings WHERE reading LIKE ?)
+             SELECT d.id
+             FROM matched_ids m JOIN dictionary d ON m.id = d.id
+             ORDER BY d.news_freq DESC`, query + "%", query + "%")
+        .then((rows) => rows.map((row) => row.id));
     };
 
     content.dataMap = dataMap;
