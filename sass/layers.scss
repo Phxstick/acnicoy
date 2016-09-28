@@ -1,0 +1,19 @@
+:root, :host {
+  --loading-window-layer: 500;
+
+  // Widgets with overlay elements
+  --popup-list-layer: 400;
+  --popup-menu-layer: 300;
+  --popup-stack-layer: 200;
+
+  // Main window
+  --menu-bar-layer: 100;
+  --footer-layer: 100;  // Needed? Remove footer?
+  --side-bar-layer: 50;
+
+  // Panels and sections
+  --panel-layer: 30;
+  --closing-panel-layer: 20;
+  --section-overlay-layer: 10;
+  --section-window-layer: 0;  // Needed?
+}

@@ -3,7 +3,7 @@
 const sqlite3 = require("sqlite3");
 
 module.exports = function (paths, modules) {
-    const content = { data: null, allLoaded: [] };
+    const content = { data: null };
     const dataMap = {};
 
     content.load = function (language) {
@@ -32,10 +32,10 @@ module.exports = function (paths, modules) {
                 query(`SELECT jlpt AS level, COUNT(*) AS amount
                        FROM kanji WHERE jlpt IS NOT NULL
                        GROUP BY jlpt`)
-            ])).then((results) => {
+            ])).then(([amountPerGrade, amountPerLevel]) => {
                 // Create mapping from jouyou grade to amount
                 const kanjiPerGrade = {};
-                for (let { grade, amount } of results[0]) {
+                for (let { grade, amount } of amountPerGrade) {
                     kanjiPerGrade[grade] = amount;
                 }
                 kanjiPerGrade[9] += kanjiPerGrade[10];
@@ -43,7 +43,7 @@ module.exports = function (paths, modules) {
                 delete kanjiPerGrade[null];
                 // Create mapping from jlpt level to amount
                 const kanjiPerJlpt = {};
-                for (let { level, amount } of results[1]) {
+                for (let { level, amount } of amountPerLevel) {
                     kanjiPerJlpt[level] = amount;
                 }
                 // Gather all the content into a frozen object
@@ -59,7 +59,6 @@ module.exports = function (paths, modules) {
                 });
             });
         }
-        content.allLoaded.push(promise);
         return promise;
     };
 

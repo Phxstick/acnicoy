@@ -223,7 +223,7 @@ class TestSection extends TrainerSection {
         const promise = this.animate ? 
             this.itemsDiv.fadeOut(300).then(
                     () => this.itemsDiv.visibility = "visible") :
-            new Promise((resolve) => resolve());
+                    Promise.resolve();
         promise.then(() => {
             // Display stuff
             this._prepareMode(newItem.mode, part);

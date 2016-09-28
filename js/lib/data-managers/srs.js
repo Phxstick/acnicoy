@@ -36,16 +36,16 @@ module.exports = function (paths, modules) {
                 counts[mode][level] = { count: 0, scheduled: 0 };
             promises.push(Promise.all([
                 modules.database.query(
-                    `SELECT level, COUNT(entry) AS count FROM ${table}
+                    `SELECT level, COUNT(entry) AS amount FROM ${table}
                      WHERE time <= ? GROUP BY level`, time),
                 modules.database.query(
-                    `SELECT level, COUNT(entry) AS scheduled FROM ${table}
+                    `SELECT level, COUNT(entry) AS amount FROM ${table}
                      WHERE time > ? GROUP BY level`, time)
-            ]).then((results) => {
-                for (let row of results[0])
-                    counts[mode][row.level].count = row.count;
-                for (let row of results[1])
-                    counts[mode][row.level].scheduled = row.scheduled;
+            ]).then(([amountsReady, amountsScheduled]) => {
+                for (let { level, amount } of amountsReady)
+                    counts[mode][level].count = amount;
+                for (let { level, amount } of amountsScheduled)
+                    counts[mode][level].scheduled = amount;
             }));
         }
         return Promise.all(promises).then(() => counts);

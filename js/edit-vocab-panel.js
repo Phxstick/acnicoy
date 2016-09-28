@@ -170,18 +170,18 @@ $(document).ready(function() {
                 dataManager.vocab.getTranslations(word),
                 dataManager.vocab.getReadings(word),
                 dataManager.srs.getLevel(word, dataManager.test.mode.WORDS)])
-            .then((results) => {
+            .then(([translations, readings, level]) => {
                 this.oldWord = word;  // Remove lateron
                 this.translationsList.empty();
                 this.readingsList.empty();
                 this.wordLabel.textContent = word;
-                for (let translation of results[0]) {
+                for (let translation of translations) {
                     this.createListItem(translation, "translation");
                 }
-                for (let reading of results[1]) {
+                for (let reading of readings) {
                     this.createListItem(reading, "reading");
                 }
-                this.levelPopup.set(results[2] - 1);
+                this.levelPopup.set(level - 1);
                 this.changes = [];
             });
             this.listsList.empty();
@@ -358,7 +358,7 @@ $(document).ready(function() {
         }
         save () {
             const word = this.wordLabel.textContent;
-            let promise = new Promise((resolve) => resolve());
+            let promise = Promise.resolve();
             for (let func of this.changes) {
                 promise = promise.then(func);
             }

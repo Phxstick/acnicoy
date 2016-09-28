@@ -151,16 +151,16 @@ module.exports = function (paths, modules) {
               "SELECT level FROM kanji_kun_test WHERE entry = ?", kanji),
             modules.database.query(
               "SELECT level FROM kanji_on_test WHERE entry = ?", kanji)
-        ]).then((results) => {
-            for (let row of results[0]) info.meanings.push(row.meaning);
-            for (let row of results[1]) info.kunYomi.push(row.kun_reading);
-            for (let row of results[2]) info.onYomi.push(row.on_reading);
-            info.meaningsLevel = results[3] ? (results[3][0] ?
-                                 parseInt(results[3][0].level) : 1) : 1;
-            info.kunLevel = results[4] ? (results[4][0] ?
-                                 parseInt(results[4][0].level) : 1) : 1;
-            info.onLevel = results[5] ? (results[5][0] ?
-                                 parseInt(results[5][0].level) : 1) : 1;
+        ]).then(([meanings, kunYomi, onYomi, meaningsLvl, kunLvl, onLvl]) => {
+            for (let row of meanings) info.meanings.push(row.meaning);
+            for (let row of kunYomi) info.kunYomi.push(row.kun_reading);
+            for (let row of onYomi) info.onYomi.push(row.on_reading);
+            info.meaningsLevel = meaningsLvl ? (meaningsLvl[0] ?
+                                 parseInt(meaningsLvl[0].level) : 1) : 1;
+            info.kunLevel = kunLvl ? (kunLvl[0] ?
+                                 parseInt(kunLvl[0].level) : 1) : 1;
+            info.onLevel = onLvl ? (onLvl[0] ?
+                                 parseInt(onLvl[0].level) : 1) : 1;
             return info;
         });
     };

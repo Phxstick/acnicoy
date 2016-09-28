@@ -44,12 +44,10 @@ class KanjiSection extends TrainerSection {
             });
         });
 
-        Promise.all(dataManager.content.allLoaded).then(() => {
-            dataManager.content.getKanjiList().then((rows) => {
-                this.createKanji(rows);
-                this.displayKanji("grade");
-                eventEmitter.emit("done-loading");
-            });
+        dataManager.content.getKanjiList().then((rows) => {
+            this.createKanji(rows);
+            this.displayKanji("grade");
+            eventEmitter.emit("done-loading");
         });
     }
     createKanji(rows) {

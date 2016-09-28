@@ -156,8 +156,7 @@ module.exports = function (paths, modules) {
     function rename(word, newWord) {
         return Promise.all([
             getTranslations(word), getReadings(word), getSrsLevel(word)])
-        .then((results) => {
-            const [translations, readings, level] = results;
+        .then(([translations, readings, level]) => {
             const lists = modules.vocabLists.getListsForWord(word);
             return remove(word)
             .then(() => add(newWord, translations, readings, level, false))

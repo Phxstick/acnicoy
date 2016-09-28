@@ -11,7 +11,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  z-index: 500;
+  z-index: var(--menu-bar-layer);
   box-sizing: border-box;
   border-bottom: 1px solid gray;
 }
@@ -102,7 +102,7 @@ div#status-bar {
     box-shadow: 2px 0 3px dimgray;
     font-family: $gui-font;
     font-weight: bold;
-    z-index: 100;
+    z-index: var(--side-bar-layer);
 
     &:hover {
       background: crimson;
@@ -115,8 +115,7 @@ div#status-bar {
   height: 85%;
   float: right;
   position: relative;
-  z-index: 0;
-  // transition: filter .6s;
+  z-index: var(--section-window-layer);
 }
 
 div#filter {
@@ -126,7 +125,7 @@ div#filter {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 10;
+  z-index: var(--section-overlay-layer);
   display: none;
 }
 
@@ -139,7 +138,7 @@ footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 500;
+  z-index: var(--footer-layer);
 }
 
 .section {
@@ -157,6 +156,7 @@ footer {
   top: 0px;
   bottom: 0px;
   background-color: whitesmoke;
+  z-index: var(--panel-layer);
   // box-shadow: 2px 0 3px black1;
 }
 

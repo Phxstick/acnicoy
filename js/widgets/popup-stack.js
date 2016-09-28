@@ -24,7 +24,7 @@ class PopupStack extends HTMLDivElement {
         const newItem = document.createElement("span");
         newItem.textContent = text;
         const itemIndex = this.items.length;  // Dangerous
-        newItem.style.zIndex = itemIndex + 10;
+        newItem.style.zIndex = layers["popup-stack"] + itemIndex;
         newItem.addEventListener("click", (event) => {
             if (this.isOpen) {
                 this.set(itemIndex);
@@ -41,13 +41,14 @@ class PopupStack extends HTMLDivElement {
     }
     set (index) {
         if (this.topItem !== null) {
-            this.topItem.style.zIndex = this.topItemIndex + 10;
+            this.topItem.style.zIndex =
+                layers["popup-stack"] + this.topItemIndex;
             this.topItem.classList.remove("selected");
         }
         this.topItem = this.items[index];
         this.topItem.classList.add("selected");
         this.topItemIndex = index;
-        this.topItem.style.zIndex = this.items.length + 10;
+        this.topItem.style.zIndex = layers["popup-stack"] + this.items.length;
         this.callback(this.get(), this.getIndex());
     }
     get () {

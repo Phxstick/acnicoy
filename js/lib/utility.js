@@ -24,6 +24,66 @@ function finishEventQueue() {
     return new Promise((resolve) => window.setTimeout(resolve, 0));
 }
 
+/**
+**  Parse text of given css file and return object with css rules.
+**  Returned object maps each css selector to an object mapping css properties
+**  to their values.
+**/
+function parseCssText(text) {
+    let blockOpen = false;
+    let valOpen = false;
+    let buff = "";
+    let selBuff = "";
+    let keyBuff = "";
+
+    const rules = {};
+
+    for (let c of text) {
+        if (c === "\t") continue;
+
+        if (c === "{") {
+            blockOpen = true;
+            selBuff = buff.trim();
+            buff = "";
+            continue;
+        }
+
+        if (blockOpen) {
+            if (c === "}") {
+                blockOpen = valOpen = false;
+                selBuff = keyBuff = buff = "";
+                continue;
+            }
+
+            if (!valOpen) {
+                if (c === ":") {
+                    valOpen = true;
+                    keyBuff = buff.trim();
+                    buff = "";
+                    continue;
+                }
+            }
+            else {
+                if (c === "\n" || c === ";" || c === "}") {
+                    const [selector, key, value] = [selBuff, keyBuff, buff];
+                    if (!rules.hasOwnProperty(selector)) {
+                        rules[selector] = {};
+                    }
+                    rules[selector][key] = value.trim();
+                    valOpen = false;
+                    keyBuff = buff = "";
+                }
+            }
+        }
+
+        if (c === "\n") {
+            buff = "";
+        } else {
+            buff += c;
+        }
+    }
+    return rules;
+}
 
 /**
 **  Return true if the two given sets contain equal elements.
@@ -424,6 +484,7 @@ module.exports.getTime = getTime;
 module.exports.getShortDateString = getShortDateString;
 module.exports.setEqual = setEqual;
 module.exports.finishEventQueue = finishEventQueue;
+module.exports.parseCssText = parseCssText;
 module.exports.calculateED = calculateED;
 module.exports.getStringForNumber = getStringForNumber;
 module.exports.getOrdinalNumberString = getOrdinalNumberString;

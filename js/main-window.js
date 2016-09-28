@@ -144,7 +144,7 @@ class MainWindow extends HTMLElement {
             this.closePanel(currentPanel, currentPanel === panel);
             if (currentPanel === panel) return;
         }
-        panel.style.zIndex = 30;
+        panel.style.zIndex = layers["panel"];
         this.currentPanel = panel;
         panel.open();
         $(this.filter).fadeIn();
@@ -154,7 +154,7 @@ class MainWindow extends HTMLElement {
     // TODO: Use default args here
     closePanel(panel, noNew) {
         $(panel).animate({ left: "-400px" }, () => panel.close());
-        panel.style.zIndex = 20;
+        panel.style.zIndex = layers["closing-panel"];
         if (noNew) {
             this.currentPanel = null;
             $(this.filter).fadeOut();

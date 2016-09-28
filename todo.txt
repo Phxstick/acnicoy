@@ -7,7 +7,6 @@ __ BUGFIXES __
 - details bar in kanji info panel does not wrap at all or incorrectly.
 - info in details bar should properly be compressed if there are many readings
   or meanings
-- Make sections wait until all content has loaded
 - Use "contentAvailable" object/function in content datamanager
   to make sure non-available stuff is closed
 
@@ -29,24 +28,18 @@ __ General __
 - Where to put all the tons of update logic from eventEmitters?
 - Make popupstack have expandable shadow when popping up to see borders clearly
 - Show interval time when hovering above SRS level somewhere
-- Possible trainer name: Acnicoy
 - Use inset shadows and class animations to design switch-buttons!
-- Use new version of custom elements (See resources)
 - For the time being, implement a little vocabulary backup system in order
   to not do this manually anymore.
 - Check out new electron features?
-- Have one global popupmenu object (so that only one is always active)
-- Allow filling popupmenu with an array of options (allows storing configs)
 - Make language content optional and provide language packs for download?
-- Check if there is something selected and adjust popupwindow for copying etc.
-  --> Make other copy options more detailed, e.g. "Copy kanji", "Copy word"
-- Remove "data" from content section and always access with "dataMap[...]"?
 - CSS containment to increase performance
 - Use slots in custom components whereever useful
 - Make automatically-loading-upon-scrolling-divs into widgets?
 - Make kana input entries type katakana when pressing shift.
   --> Also make into custom widget?
 - When choosing comma as separator, allow escaping comma for single translations
+- Implement global tooltip widget --> Add a function to HTMLElement prototype?
 
 __ Code __
 - Also split js and css into sections/widgets/panels?
@@ -54,7 +47,6 @@ __ Code __
 - Replace .button with actual button element (both in css and html)
 - Stop using things like 110% font everywhere - Use as standard font size in
   _base file instead or in some classes there
-- Make file with all z-index layers of the program
 - Put font-awesome import in _base scss?
 - Don't change event listeners in converter.js but change callback var instead?
 - Put common code for panels in _panel.scss file and import everywhere?
@@ -68,8 +60,8 @@ __ Code __
     by data changes and doesn't depend on the interface!!
 - Try to generalize as much scss as possibly and extend _base file.
   Split parts of _base file into smaller parts.
-- Use Promise.resolve(...) for instantly resolved promise. Where not used yet?
-- Use direct destructuring in function parameters in Promise.all(...) calls
+- Remove "data" from content section and always access with "dataMap[...]"?
+- Use new version of custom elements (See resources)
 
 __ Init section __
 - Open if dataPath in settings is empty
@@ -101,6 +93,12 @@ __ Home section __
 - Customizable bar diagram showing when new items for testing become available
 
 __ Popup-Menu __
+- Have one global popupmenu object (so that only one is always active)
+- Allow filling popupmenu with an array of options (allows storing configs)
+- Check if there is something selected and adjust popupwindow for copying etc.
+  --> Make other copy options more detailed, e.g. "Copy kanji", "Copy word"
+
+__ Popup-List __
 - Make width of popupmenu the width of largest item?
 
 __ Test __
@@ -150,6 +148,7 @@ __ History __
 __ Dictionary __
 - Display help info at center of section at the beginning and when the user
   presses enter on empty input or clicks some kind of help button
+- Also make entries bigger and move to center when search result is empty
 
 __ Stats/Achievements __
 - Use single-bar diagram for kanji progress to display relative to total!

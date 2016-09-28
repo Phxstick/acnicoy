@@ -71,6 +71,7 @@ module.exports = function (basePath) {
 
     // Styles
     paths.css = (name) => path.resolve(basePath, "css", name + ".css");
+    paths.layers = path.resolve(basePath, "css", "layers.css");
     // TODO: Make fontAwesome and jQuery path version-independent?
     paths.fontAwesome = path.resolve(basePath, "font-awesome-4.5.0",
                                      "css", "font-awesome.min.css");
@@ -81,7 +82,8 @@ module.exports = function (basePath) {
         utility: path.resolve(basePath, "js", "lib", "utility.js"),
         converter: path.resolve(basePath, "js", "lib", "converter.js"),
         dialogWindow: path.resolve(basePath, "js", "lib", "dialog-window.js"),
-        dataManager: path.resolve(basePath, "js", "lib", "data-manager.js")
+        dataManager: path.resolve(basePath, "js", "lib", "data-manager.js"),
+        layerManager: path.resolve(basePath, "js", "lib", "layer-manager.js")
     };
 
     // Custom widget scripts

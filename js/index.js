@@ -22,6 +22,7 @@ const utility = require(paths.lib.utility);  // Extends some objects
 require(paths.lib.converter);  // Extends String, Input and TextArea
 window.$ = window.jQuery = require(paths.lib.jQuery);
 const dialogWindow = require(paths.lib.dialogWindow);
+const layers = require(paths.lib.layerManager);
 
 const TrainerSection = require("./js/trainer-section.js");
 // Load widgets
@@ -34,7 +35,6 @@ const SvgBarDiagram = require(paths.widgets["svg-bar-diagram"]);
 
 const totalTime = performance.now() - startTime;
 console.log("Loaded all required modules after %f ms", totalTime);
-
 
 // TODO: Put all of this in a closure
 let main;  // TODO: Really fine as global object? Rather pass it to sections?
