@@ -137,7 +137,8 @@ module.exports = function (basePath) {
             database: path.resolve(japEngPath, "Japanese-English.sqlite3"),
             kanjiStrokes: path.resolve(japEngPath, "kanji-strokes.json"),
             numbers: path.resolve(japEngPath, "numeric-kanji.json"),
-            counters: path.resolve(japEngPath, "counter-kanji.json")
+            counters: path.resolve(japEngPath, "counter-kanji.json"),
+            dictCodeToText: path.resolve(japEngPath, "dict-code-to-text.json")
         }
     };
 

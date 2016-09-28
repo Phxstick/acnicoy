@@ -55,7 +55,8 @@ module.exports = function (paths, modules) {
                     numKanjiPerJlptLevel: Object.freeze(kanjiPerJlpt),
                     kanjiStrokes: Object.freeze(require(cPaths.kanjiStrokes)),
                     numericKanji: Object.freeze(require(cPaths.numbers)),
-                    counterKanji: Object.freeze(require(cPaths.counters))
+                    counterKanji: Object.freeze(require(cPaths.counters)),
+                    codeToText: Object.freeze(require(cPaths.dictCodeToText))
                 });
             });
         }
@@ -140,6 +141,14 @@ module.exports = function (paths, modules) {
             FROM kanji k JOIN radicals r ON k.radical_id = r.id`);
     };
 
+    // Convert a string of ";"-separated codes to an array of infos
+    function parseCodes(codes) {
+        codes = codes.split(";").withoutEmptyStrings();
+        // TODO: Use settings here to choose language for mapping
+        const codeMap = dataMap["Japanese"].codeToText["English"];
+        return codes.map((code) => codeMap[code]);
+    }
+
     content.getDictionaryEntryInfo = function (id) {
         return Promise.all([
             dataMap["Japanese"].query(
@@ -178,16 +187,11 @@ module.exports = function (paths, modules) {
                     of meanings) {
                 info.meanings.push({
                     translations: translations.split(";"),
-                    partsOfSpeech:
-                        part_of_speech.split(";").withoutEmptyStrings(),
-                    fieldsOfApplication:
-                        field_of_application.split(";").withoutEmptyStrings(),
-                    miscInfo:
-                        misc_info.split(";").withoutEmptyStrings(),
-                    restrictedTo:
-                        words_restricted_to.split(";")
-                        .concat(readings_restricted_to.split(";"))
-                        .withoutEmptyStrings()
+                    partsOfSpeech: parseCodes(part_of_speech),
+                    fieldsOfApplication: parseCodes(field_of_application),
+                    miscInfo: parseCodes(misc_info),
+                    restrictedTo: parseCodes(words_restricted_to + ";" +
+                                             readings_restricted_to)
                 });
             }
             info.newsFreq = news_freq;
