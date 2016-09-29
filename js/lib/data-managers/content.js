@@ -38,9 +38,6 @@ module.exports = function (paths, modules) {
                 for (let { grade, amount } of amountPerGrade) {
                     kanjiPerGrade[grade] = amount;
                 }
-                kanjiPerGrade[9] += kanjiPerGrade[10];
-                kanjiPerGrade[10] = kanjiPerGrade[null];
-                delete kanjiPerGrade[null];
                 // Create mapping from jlpt level to amount
                 const kanjiPerJlpt = {};
                 for (let { level, amount } of amountPerLevel) {
@@ -82,10 +79,7 @@ module.exports = function (paths, modules) {
                     (k.entry IN (SELECT entry FROM trainer.kanji)) AS added
              FROM kanji k JOIN radicals r ON k.radical_id = r.id
              WHERE k.entry = ?`, kanji)
-        .then((rows) => {
-            const row = rows[0];
-            // TODO: Take null or 10 after all? (Make consistent!)
-            if (row.grade == null) row.grade = 10;
+        .then(([row]) => {
             row.meanings = row.meanings ? row.meanings.split(",") : [];
             row.onYomi = row.onYomi ? row.onYomi.split(",") : [];
             row.kunYomi = row.kunYomi ? row.kunYomi.split(",") : [];
@@ -128,7 +122,7 @@ module.exports = function (paths, modules) {
     content.getKanjiList = function () {
         // TODO: Don't retrieve too much info? Or store info in kanji instead?
         return dataMap["Japanese"].query(
-            `SELECT k.entry AS entry,
+            `SELECT k.entry AS kanji,
                     k.grade AS grade,
                     k.strokes AS strokes,
                     k.frequency AS frequency,

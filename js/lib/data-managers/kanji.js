@@ -167,17 +167,16 @@ module.exports = function (paths, modules) {
 
     kanjiModule.getAmountAdded = function () {
         return modules.database.query("SELECT COUNT(*) AS amount FROM kanji")
-               .then((rows) => rows[0].amount);
+               .then(([{amount}]) => amount);
     };
 
     // TODO: Move part of this to content section?
     kanjiModule.getAmountAddedForGrade = function (grade) {
-        // TODO: Adjust grade to database value first (e.g. null for grade 10)
         return modules.content.dataMap["Japanese"].query(
             `SELECT COUNT(*) AS amount
              FROM trainer.kanji t JOIN kanji k ON t.entry = k.entry
              WHERE k.grade = ?`, grade)
-        .then((rows) => rows[0].amount);
+        .then(([{amount}]) => amount);
     };
 
     kanjiModule.getAmountsAddedPerGrade = function () {
@@ -190,9 +189,6 @@ module.exports = function (paths, modules) {
              for (let { grade, amount } of rows) {
                  result[grade] = amount;
              }
-             result[9] += result[10];
-             result[10] = result[null];
-             delete result[null];
              return result;
         });
     };

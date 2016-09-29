@@ -1,11 +1,9 @@
 "use strict";
 
-utility.processDocument(document.currentScript.ownerDocument, (docContent) => {
+utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
 class DictionarySection extends TrainerSection {
     constructor() {
-        super();
-        this.root = this.createShadowRoot();
-        this.root.appendChild(docContent);
+        super(docContent);
         this.lastResult = [];
         this.nextRowIndex = 0;
         const loadAmount = 30;  // Amout of entries to load at once
@@ -146,7 +144,7 @@ class DictionarySection extends TrainerSection {
                     numberSpan.textContent = `${i + 1}. `;
                 }
                 if (partsOfSpeech.length > 0) {
-                    posSpan.textContent = `[${partsOfSpeech.join(", ")}] `;
+                    posSpan.textContent = `${partsOfSpeech.join(", ")}`;
                 }
                 translationsSpan.textContent = translations.join("; ");
                 // TODO: Use fieldsOfApplication, miscInfo, restrictedTo

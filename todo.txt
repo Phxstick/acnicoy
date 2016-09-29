@@ -42,6 +42,8 @@ __ General __
   --> Also make into custom widget?
 - When choosing comma as separator, allow escaping comma for single translations
 - Implement global tooltip widget --> Add a function to HTMLElement prototype?
+- Backup codeMap in Dropbox
+- Capture focus in panels?
 
 __ Code __
 - Also split js and css into sections/widgets/panels?
@@ -64,6 +66,8 @@ __ Code __
   Split parts of _base file into smaller parts.
 - Remove "data" from content section and always access with "dataMap[...]"?
 - Use new version of custom elements (See resources)
+- Import all widgets through code (even html ones?)
+- Move root creation in sections to TrainerSection constructor?
 
 __ Init section __
 - Open if dataPath in settings is empty
@@ -115,14 +119,19 @@ __ Test __
 - Animate everything (and have setting to to toggle that)
 - Have invisible translations for synonyms/unnecessary words (e.g. AE <-> BE)
 
+__ Kanji Info Panel __
+- Allow seeing stroke animation instead of pictures (and customize speed)
+- Use inverted index to quickly load kanji examples
+
 __ Kanji __
 - Use bottom-animation to slide open kanji info panel (better performance)?
 - Use selection colors when hovering over added kanji?
-- Make add-kanji button in a brighter color (less distracting)?
 - Possibly make mapping from kanji parts to actual parts in SVG drawing
   to make sure all parts are properly highlighted
 - Show info for kanji that are part of the Chinese zodiac
 - Show info for kanji that symbolize a country
+- Have separate table for searching kanji, extend readings by ones without
+  a ".", keep all meanings for each kanji
 
 __ Content __
 - Contains a database of custom info cards
@@ -153,6 +162,7 @@ __ Dictionary __
 - Also make entries bigger and move to center when search result is empty
 - Have setting which makes part-of-speech display in Japanese
 - Make each dict-entry a custom widget? Definitely place it in shadow DOM.
+- Use better fonts for small infos (see Jisho)
 
 __ Stats/Achievements __
 - Use single-bar diagram for kanji progress to display relative to total!
@@ -220,6 +230,7 @@ __ Resources __
   --> Use for parameterizing datamanagers?
 https://developers.google.com/web/fundamentals/primers/shadowdom/
 https://developers.google.com/web/fundamentals/primers/customelements/
+https://davidwalsh.name/css-js-animation  <-- Replace jQuery with better stuff
 
 - https://www.thebalance.com/free-cloud-storage-1356638
   Free cloud storage services to save trainer resources and data!

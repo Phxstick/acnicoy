@@ -1,11 +1,9 @@
 "use strict";
 
-utility.processDocument(document.currentScript.ownerDocument, (docContent) => {
+utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
 class VocabSection extends TrainerSection {
     constructor() {
-        super();
-        this.root = this.createShadowRoot();
-        this.root.appendChild(docContent);
+        super(docContent);
 
         this.selectedList = null;
         this.selectedListNode = null;

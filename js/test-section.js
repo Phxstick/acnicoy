@@ -1,14 +1,9 @@
 "use strict";
 
-const Random = require("random-js");
-const random = new Random(Random.engines.nativeMath);
-
-utility.processDocument(document.currentScript.ownerDocument, (docContent) => {
+utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
 class TestSection extends TrainerSection {
     constructor() {
-        super();
-        this.root = this.createShadowRoot();
-        this.root.appendChild(docContent);
+        super(docContent);
         // Store important DOM elements as class members
         this.statusLabel = this.root.getElementById("status");
         this.itemsDiv = this.root.getElementById("items");  // Rename this...

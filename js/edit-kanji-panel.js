@@ -1,17 +1,9 @@
 "use strict";
 
-// TODO: Capture focus within panel?
-
-$(document).ready(function() {
-const importDoc = document.currentScript.ownerDocument;
-const content = importDoc.getElementById("content");
+utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
 class EditKanjiPanel extends TrainerSection {
     constructor () {
-        super();
-        // Create shadow tree and append styles
-        this.root = this.createShadowRoot();
-        this.root.appendChild(content);
-        this.root.appendChild(this.root.getElementById("styles").content);
+        super(docContent);
         // Store important DOM elements as properties
         this.kanjiLabel = this.root.getElementById("kanji");
         this.meaningsList = this.root.getElementById("meanings");

@@ -5,32 +5,28 @@
   <meta name="description" content="Review vocabulary items">
   <meta name="author" content="Daniel Bindemann">
   <meta charset="UTF-8">
-  <!--link rel="stylesheet" href="../css/test-section.css"-->
   <script src="../../js/test-section.js"></script>
 </head>
 <body>
-
-<template id="template">
-<style>@import "./css/test-section.css";</style>
-<div id="window">
-  <div id="top">
-    <div id="status"></div>
-    <div id="items">
-      <div id="test-item"></div>
-      <div id="correct-answers"></div>
-    </div>
-    <div id="button-bar">
-      <button id="ignore-answer">Ignore answer</button>
-      <button id="add-answer">Add answer to item</button>
-      <button id="modify-item">Modify item</button>
-    </div>
+<template id="styles">
+  <style>@import "./css/test-section.css";</style>
+  <style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
+</template>
+<div id="top">
+  <div id="status"></div>
+  <div id="items">
+    <div id="test-item"></div>
+    <div id="correct-answers"></div>
   </div>
-  <div id="bottom">
-    <input id="answer"></input>
-    <button id="continue">Continue</button>
+  <div id="button-bar">
+    <button id="ignore-answer">Ignore answer</button>
+    <button id="add-answer">Add answer to item</button>
+    <button id="modify-item">Modify item</button>
   </div>
 </div>
-</template>
-
+<div id="bottom">
+  <input id="answer"></input>
+  <button id="continue">Continue</button>
+</div>
 </body>
 </html>

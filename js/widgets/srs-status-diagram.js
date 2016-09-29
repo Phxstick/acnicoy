@@ -1,14 +1,11 @@
 "use strict";
 
-(function() {
-const importDoc = document.currentScript.ownerDocument;
-importDoc.addEventListener("DOMContentLoaded", () => {
-const docContent = importDoc.getElementById("template").content;
+utility.getContentNode(document.currentScript.ownerDocument, (content) => {
 class SrsStatusDiagram extends PinwallWidget {
-    createdCallback () {
-        super.createdCallback();
+    constructor () {
+        super();
         this.root = this.contentFrame.createShadowRoot();
-        this.root.appendChild(docContent.cloneNode(true));
+        this.root.appendChild(content.cloneNode(true));
         this.srsTable = this.root.getElementById("srs-counts");
         this.widgetName = "SRS status diagram";
     }
@@ -70,7 +67,6 @@ class SrsStatusDiagram extends PinwallWidget {
         this.fillSrsTable();
     }
 }
-window.SrsStatusDiagram = document.registerElement("srs-status-diagram",
-    { prototype: SrsStatusDiagram.prototype });
+customElements.define("srs-status-diagram", SrsStatusDiagram);
+window.SrsStatusDiagram = SrsStatusDiagram;
 });
-})();

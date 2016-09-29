@@ -1,14 +1,8 @@
 @import "base";
 
-#window {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
+body {
   display: flex;
   flex-direction: row;
-
   background-color: whitesmoke;
   border-top: 1px solid dimgray;
   box-shadow: 0 -3px 3px #333333;

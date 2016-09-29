@@ -8,36 +8,37 @@
   <script src="../../js/vocab-section.js"></script>
 </head>
 <body>
-
-<template id="template">
-<style>@import "./css/vocab-section.css";</style>
-<style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
-<div id="window">
-  <div id="all-words-frame">
-    <input class="search-entry" id="search-all-entry"
-     placeholder="Search vocabulary"></input>
-    <div class="list-view-header">Vocabulary</div>
-    <div id="all-words" class="list-view"></div>
-  </div>
-  <div id="all-lists-frame">
-    <input class="search-entry" id="find-list-entry"
-     placeholder="Search vocabulary lists"></input>
-    <div class="list-view-header">Vocabulary Lists</div>
-    <div id="all-lists" class="list-view"></div>
-    <div id="all-lists-button-frame">
-      <button id="add-new-list-button"><i class="fa fa-plus"></i></button>
-      <button id="rename-list-button"><i class="fa fa-pencil"></i></button>
-      <button id="delete-list-button"><i class="fa fa-trash"></i></button>
-    </div>
-    <button id="test-on-list-button">Test on list</button>
-  </div>
-  <div id="list-contents-frame">
-    <input class="search-entry" id="find-list-contents-entry"
-     placeholder="Search list contents"></input>
-    <div class="list-view-header">List contents</div>
-    <div id="list-contents" class="list-view"></div>
-  </div>
-</div>
+<template id="styles">
+  <style>@import "./css/vocab-section.css";</style>
+  <style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
 </template>
+
+<div id="all-words-frame">
+  <input class="search-entry" id="search-all-entry"
+   placeholder="Search vocabulary"></input>
+  <div class="list-view-header">Vocabulary</div>
+  <div id="all-words" class="list-view"></div>
+</div>
+
+<div id="all-lists-frame">
+  <input class="search-entry" id="find-list-entry"
+   placeholder="Search vocabulary lists"></input>
+  <div class="list-view-header">Vocabulary Lists</div>
+  <div id="all-lists" class="list-view"></div>
+  <div id="all-lists-button-frame">
+    <button id="add-new-list-button"><i class="fa fa-plus"></i></button>
+    <button id="rename-list-button"><i class="fa fa-pencil"></i></button>
+    <button id="delete-list-button"><i class="fa fa-trash"></i></button>
+  </div>
+  <button id="test-on-list-button">Test on list</button>
+</div>
+
+<div id="list-contents-frame">
+  <input class="search-entry" id="find-list-contents-entry"
+   placeholder="Search list contents"></input>
+  <div class="list-view-header">List contents</div>
+  <div id="list-contents" class="list-view"></div>
+</div>
+
 </body>
 </html>

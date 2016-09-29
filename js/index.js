@@ -4,6 +4,8 @@ const startTime = performance.now();
 // Load node modules
 const { ipcRenderer, clipboard } = require("electron");
 const EventEmitter = require("events");
+const Random = require("random-js");
+const random = new Random(Random.engines.nativeMath);
 
 // TODO: Use this for languages init section and settings
 // const languageList = require("languages");
@@ -139,6 +141,6 @@ Promise.all([
     return utility.finishEventQueue();
 }).then(() => {
     // TODO: Now undisplay loading-window again
-}).catch((error) => {
+});/*.catch((error) => {
     console.error(error);
-});
+});*/

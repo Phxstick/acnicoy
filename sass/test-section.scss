@@ -1,15 +1,6 @@
-@import "variables";
 @import "base";
 
-$buttonBorderColor: white;
-
-#window {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
+$button-border-color: white;
 
 #top {
   height: 60%;
@@ -109,7 +100,7 @@ button#continue {
   font-size: 90%;
   border-top: 1px solid transparent;
   border-bottom: 0px;
-  border-image: linear-gradient(to left, transparent, $buttonBorderColor, transparent) 1 1%;
+  border-image: linear-gradient(to left, transparent, $button-border-color, transparent) 1 1%;
 
   button {
     @extend .button;
@@ -126,22 +117,22 @@ button#continue {
     border-right: 1px solid transparent;
     border-left: 0;
     border-top: 0;
-    border-image: linear-gradient(lighten($buttonBorderColor, 15%), transparent) 1 100%;
+    border-image: linear-gradient(lighten($button-border-color, 15%), transparent) 1 100%;
     &:hover {
-      background-image: linear-gradient(to bottom, darken($buttonBorderColor,
+      background-image: linear-gradient(to bottom, darken($button-border-color,
       40%), transparent 75%);
-      text-shadow: 0 0 1px $buttonBorderColor;
+      text-shadow: 0 0 1px $button-border-color;
     }
     &:first-child {
       border-left: 0;
       &:hover {
-        background-image: linear-gradient(to bottom left, darken($buttonBorderColor, 40%), transparent, transparent);
+        background-image: linear-gradient(to bottom left, darken($button-border-color, 40%), transparent, transparent);
       }
     }
     &:last-child {
       border-right: 0;
       &:hover {
-        background-image: linear-gradient(to bottom right, darken($buttonBorderColor, 40%), transparent, transparent);
+        background-image: linear-gradient(to bottom right, darken($button-border-color, 40%), transparent, transparent);
       }
     }
     &:disabled {

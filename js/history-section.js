@@ -1,12 +1,9 @@
 "use strict";
 
-utility.processDocument2(document.currentScript.ownerDocument, (docContent) => {
+utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
 class HistorySection extends TrainerSection {
     constructor() {
-        super();
-        this.root = this.createShadowRoot();
-        this.root.appendChild(docContent);
-        this.root.appendChild(this.root.getElementById("styles").content);
+        super(docContent);
         this.flags = { added: true, deleted: true, modified: true,
                        entry: true, translation: true, reading: true };
         // Define variable values

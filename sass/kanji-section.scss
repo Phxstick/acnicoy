@@ -4,13 +4,27 @@
   display: none;
 }
 
-#window {
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+#control-bar {
+  background-color: darkred;
+  height: 50px;
+}
+
+#bottom {
+  flex: 1;
   overflow: auto;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
+
+  #overview-window {
+    // overflow: auto;
+  }
+
+  #search-results {
+    // overflow
+  }
 }
 
 dt {
@@ -35,19 +49,21 @@ dd {
   font-size: 140%;
   color: darkred;
 
-  &:hover {
-    @extend .kanji-selected;
+  &.added {
+    color: darkgrey;
   }
-}
 
-.added {
-  color: darkgrey;
-}
+  &:hover {
+    color: $select-color;
+    background: lighten($select-background, 10%);
+    border-radius: 3px;
+  }
 
-.kanji-selected {
+  &.selected {
     color: $select-color;
     background: $select-background;
     border-radius: 3px;
+  }
 }
 
 .statistic-label {

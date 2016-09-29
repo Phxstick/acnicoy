@@ -5,45 +5,41 @@
   <meta name="description" content="Add Kanji SRS items">
   <meta name="author" content="Daniel Bindemann">
   <meta charset="UTF-8">
+  <script src="../../js/add-kanji-panel.js"></script>
 </head>
 <body>
-<div id="content">
-  <template id="styles">
+<template id="styles">
   <style>@import "./css/add-kanji-panel.css";</style>
   <style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
-  </template>
-  <div id="window">
-    <div id="header-frame">
-      <div id="header">Add kanji</div>
-      <i id="close-button" class="fa fa-angle-double-left"></i>
-    </div>
-    <div id="main-frame">
-      <textarea name="kanji" rows="1" column="1" spellcheck="false"
-       maxlength="1"></textarea>
-      <div class="detail-row">
-        <textarea name="meanings"
-         placeholder="Meanings" spellcheck="false"></textarea>
-        <popup-stack id="srs-level-meanings"></popup-stack>
-      </div>
-      <div class="detail-row">
-        <textarea name="kun" placeholder="Kun Yomi" spellcheck="false"></textarea>
-        <popup-stack id="srs-level-kun"></popup-stack>
-      </div>
-      <div class="detail-row">
-        <textarea name="on" placeholder="On Yomi" spellcheck="false"></textarea>
-        <popup-stack id="srs-level-on"></popup-stack>
-      </div>
-      <div id="all-levels-div">
-        <span>Set all SRS levels at once:</span>
-        <popup-stack id="srs-level"></popup-stack>
-      </div>
-    </div>
-    <div id="button-frame">
-      <button id="save-button">Save</button>
-      <button id="cancel-button">Cancel</button>
-    </div>
+</template>
+<div id="header-frame">
+  <div id="header">Add kanji</div>
+  <i id="close-button" class="fa fa-angle-double-left"></i>
+</div>
+<div id="main-frame">
+  <textarea name="kanji" rows="1" column="1" spellcheck="false"
+   maxlength="1"></textarea>
+  <div class="detail-row">
+    <textarea name="meanings"
+     placeholder="Meanings" spellcheck="false"></textarea>
+    <popup-stack id="srs-level-meanings"></popup-stack>
   </div>
+  <div class="detail-row">
+    <textarea name="kun" placeholder="Kun Yomi" spellcheck="false"></textarea>
+    <popup-stack id="srs-level-kun"></popup-stack>
+  </div>
+  <div class="detail-row">
+    <textarea name="on" placeholder="On Yomi" spellcheck="false"></textarea>
+    <popup-stack id="srs-level-on"></popup-stack>
+  </div>
+  <div id="all-levels-div">
+    <span>Set all SRS levels at once:</span>
+    <popup-stack id="srs-level"></popup-stack>
+  </div>
+</div>
+<div id="button-frame">
+  <button id="save-button">Save</button>
+  <button id="cancel-button">Cancel</button>
 </div>
 </body>
 </html>
-<script src="../../js/add-kanji-panel.js"></script>

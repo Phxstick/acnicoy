@@ -1,16 +1,12 @@
 "use strict";
 
-(function() {
-const importDoc = document.currentScript.ownerDocument;
-importDoc.addEventListener("DOMContentLoaded", () => {
-const docContent = importDoc.getElementById("template").content;
-class PinwallWidget extends TrainerSection {
+utility.getContentNode(document.currentScript.ownerDocument, (content) => {
+class PinwallWidget extends HTMLElement {
     constructor () {
+        super();
         this.hovering = false;
-    }
-    createdCallback () {
         const root = this.createShadowRoot();
-        root.appendChild(docContent.cloneNode(true));
+        root.appendChild(content.cloneNode(true));
         this.contentFrame = root.getElementById("content-frame");
         const controlFrame = root.getElementById("control-frame");
         const windowFrame = root.getElementById("window");
@@ -41,6 +37,8 @@ class PinwallWidget extends TrainerSection {
     }
     adjustToLanguage(language, secondary) {
     }
+    open() {
+    }
     set widgetName(value) {
         this.widgetNameLabel.textContent = value;
     }
@@ -50,7 +48,6 @@ class PinwallWidget extends TrainerSection {
         // this.removeButton.addEventListener("click", value);
     }
 }
-window.PinwallWidget = document.registerElement("pinwall-widget",
-    { prototype: PinwallWidget.prototype });
+customElements.define("pinwall-widget", PinwallWidget);
+window.PinwallWidget = PinwallWidget;
 });
-})();

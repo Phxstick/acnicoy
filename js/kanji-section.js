@@ -1,11 +1,9 @@
 "use strict";
 
-utility.processDocument(document.currentScript.ownerDocument, (docContent) => {
+utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
 class KanjiSection extends TrainerSection {
     constructor () {
-        super();
-        this.root = this.createShadowRoot();
-        this.root.appendChild(docContent);
+        super(docContent);
         this.selectedKanji = null;
         this.overviewFrame = this.root.getElementById("overview");
         this.kanjiContainer = this.root.getElementById("kanji-container");
@@ -23,7 +21,6 @@ class KanjiSection extends TrainerSection {
         });
         this.popupMenuAdded.addSeparator();
         this.popupMenuAdded.addItem("Edit", () => {
-            // TODO: Open edit-panel here instead
             main.editKanjiPanel.load(
                 this.popupMenuAdded.currentObject.textContent);
             main.openPanel(main.editKanjiPanel);
@@ -50,26 +47,21 @@ class KanjiSection extends TrainerSection {
             eventEmitter.emit("done-loading");
         });
     }
+
     createKanji(rows) {
         const fragment = document.createDocumentFragment();
-        for (let i = 0; i < rows.length; ++i) {
+        for (let { kanji, added, strokes, grade } of rows) {
             const kanjiSpan = document.createElement("span");
-            const kanji = rows[i].entry;
-            const added = rows[i].added;
-            const strokes = rows[i].strokes;
-            let grade = rows[i].grade;
-            if (grade === 9 || grade === 10) grade = 9;
-            else if (grade === null) grade = 0;
             kanjiSpan.textContent = kanji;
             kanjiSpan.id = kanji;
-            kanjiSpan.className = `${added ? "added" : ""} grade-${grade} 
- strokes-${strokes} kanji`;
+            kanjiSpan.className = 
+              `${added ? "added" : ""} grade-${grade} strokes-${strokes} kanji`;
             if (added) this.popupMenuAdded.attachTo(kanjiSpan);
             else this.popupMenuMissing.attachTo(kanjiSpan);
             kanjiSpan.addEventListener("click", () => {
                 if (this.selectedKanji !== null)
-                    this.selectedKanji.classList.remove("kanji-selected");
-                kanjiSpan.classList.add("kanji-selected");
+                    this.selectedKanji.classList.remove("selected");
+                kanjiSpan.classList.add("selected");
                 this.selectedKanji = kanjiSpan;
                 main.kanjiInfoPanel.load(kanji).then(
                     () => main.kanjiInfoPanel.open());
@@ -78,10 +70,16 @@ class KanjiSection extends TrainerSection {
         }
         this.kanjiContainer.appendChild(fragment);
     }
+
     displayKanji(ordering, onlyMissing=false, showJinmeiyou=false,
             showHyougai=false) {
         this.overviewFrame.empty();
-        $(".added").css("display", onlyMissing ? "none" : "inline-block");
+        if (onlyMissing) {
+            const elements = this.root.getElementsByClassName("added");
+            for (let i = 0; i < elements.length; ++i)
+                elements[i].style.display = "none";
+        }
+        // $(".added").css("display", onlyMissing ? "none" : "inline-block");
         let content;
         let title;
         const titles = [];

@@ -225,7 +225,7 @@ def parse_kanji_entry(line, cursor):
     fields = line.split() 
     # Parse line
     data = {"kanji": fields[0], "on-yomi": [], "kun-yomi": [], "frequency": None,
-            "strokes": None, "radical_id": None, "grade": None, "jlpt": None,
+            "strokes": None, "radical_id": None, "grade": 0, "jlpt": None,
             "meanings": re.findall(r"\{(.*?)\}", line)}
     # data["jis_code"] = fields[1]
     for field in fields:
@@ -237,6 +237,8 @@ def parse_kanji_entry(line, cursor):
             data["strokes"] = int(field[1:])
         elif field[0] == "G":
             data["grade"] = int(field[1:])
+            if data["grade"] == 10:
+                data["grade"] == 9
         elif field[0] == "F":
             data["frequency"] = int(field[1:])
         elif any((0x30A1 <= ord(c) <= 0x30A1 + 89 for c in field)):

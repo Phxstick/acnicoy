@@ -8,15 +8,18 @@
   <script src="../../js/kanji-section.js"></script>
 </head>
 <body>
-
-<template id="template">
-<style>@import "./css/kanji-section.css";</style>
-<style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
-<!-- TODO: Add control bar with filters (Outside window div)-->
-<div id="kanji-container"></div>
-<div id="window">
-  <dl id="overview"></dl>
-</div>
+<template id="styles">
+  <style>@import "./css/kanji-section.css";</style>
+  <style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
 </template>
+<div id="kanji-container"></div>
+<div id="control-bar"></div>
+<div id="bottom">
+  <div id="overview-window">
+    <dl id="overview"></dl>
+  </div>
+  <div id="search-results">
+  </div>
+</div>
 </body>
 </html>

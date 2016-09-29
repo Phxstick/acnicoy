@@ -94,19 +94,30 @@ function setEqual(a, b) {
     return a.length === b.length;
 }
 
-/**
-**  Call given callback with the content of importDoc once it's done loading.
-**/
-// TODO: Rename to getContentNode?
-function processDocument(importDoc, callback) {
-    importDoc.addEventListener("DOMContentLoaded", () => {
-        callback(importDoc.getElementById("template").content.cloneNode(true));
-    });
-}
-// TODO: Use this one for every section/panel and rename to importDocContent?
+// TODO: Replace with importDocContent once main/init-window use shadow DOM
 function processDocument2(importDoc, callback) {
     importDoc.addEventListener("DOMContentLoaded", () => {
         callback(importDoc.getElementById("content"));
+    });
+}
+module.exports.processDocument2 = processDocument2;
+
+/**
+**  Call given callback with the contents of a template with id "template" in
+**  importDoc once it's done loading.
+**/
+function getContentNode(importDoc, callback) {
+    importDoc.addEventListener("DOMContentLoaded", () => {
+        callback(importDoc.getElementById("template").content);
+    });
+}
+
+/**
+**  Call given callback with the <body> of importDoc once it's done loading.
+**/
+function importDocContent(importDoc, callback) {
+    importDoc.addEventListener("DOMContentLoaded", () => {
+        callback(importDoc.body);
     });
 }
 
@@ -308,8 +319,8 @@ module.exports.getStringForNumber = getStringForNumber;
 module.exports.getOrdinalNumberString = getOrdinalNumberString;
 
 // DOM related functions
-module.exports.processDocument = processDocument;
-module.exports.processDocument2 = processDocument2;
+module.exports.getContentNode = getContentNode;
+module.exports.importDocContent = importDocContent;
 module.exports.finishEventQueue = finishEventQueue;
 module.exports.createSvgNode = createSvgNode;
 module.exports.findIndex = findIndex;

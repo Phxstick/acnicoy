@@ -1,21 +1,15 @@
 "use strict";
 
-utility.processDocument(document.currentScript.ownerDocument, (docContent) => {
+utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
 class HomeSection extends TrainerSection {
     constructor() {
-        super();
-        this.root = this.createShadowRoot();
-        this.root.appendChild(docContent);
+        super(docContent);
         this.pinwall = this.root.getElementById("pinwall");
-        eventEmitter.emit("done-loading");
-        this.widgetAdder = document.createElement("i");
-        this.widgetAdder.id = "widget-adder";
-        this.widgetAdder.classList.add("fa")
-        this.widgetAdder.classList.add("fa-plus");
-        this.pinwall.appendChild(this.widgetAdder);
+        this.widgetAdder = this.root.getElementById("widget-adder");
         // TODO: Generalize
         this.widgetAdder.addEventListener(
             "click", () => this.addPinwallWidget("pinwall-note"));
+        eventEmitter.emit("done-loading");
     }
     open() {
         for (let i = 0; i < this.pinwall.children.length - 1; ++i) {
@@ -41,7 +35,8 @@ class HomeSection extends TrainerSection {
         }
     }
     addPinwallWidget(type) {
-        const widget = document.createElement(type);
+        const Type = customElements.get(type);
+        const widget = new Type();
         this.pinwall.insertBefore(widget, this.widgetAdder);
         widget.removeCallback = () => this.pinwall.removeChild(widget);
         return widget;
