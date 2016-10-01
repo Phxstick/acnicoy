@@ -98,7 +98,9 @@ module.exports = function (basePath) {
         "switch-button": path.resolve(widgetsPath, "switch-button.js"),
         "switch-bar": path.resolve(widgetsPath, "switch-bar.js"),
         "popup-list": path.resolve(widgetsPath, "popup-list.js"),
-        "svg-bar-diagram": path.resolve(widgetsPath, "svg-bar-diagram.js")
+        "svg-bar-diagram": path.resolve(widgetsPath, "svg-bar-diagram.js"),
+        "kanji-search-result-entry":
+            path.resolve(widgetsPath, "kanji-search-result-entry.js")
     };
 
     // Data interface modules

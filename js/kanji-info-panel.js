@@ -396,7 +396,7 @@ class KanjiInfoPanel extends TrainerSection {
         if (kanji in counterKanji) {
             const counterSpan = document.createElement("span");
             counterSpan.textContent = "Counter";
-            spans.push(counterLabel);
+            spans.push(counterSpan);
         }
         // Add info if kanji is a numeral
         const numericKanji = dataManager.content.data.numericKanji;

@@ -40,7 +40,7 @@ class KanjiSection extends TrainerSection {
             Promise.all(promises).then(() => {
                 this.lastSearchResult = knownKanji;
                 this.searchResults.empty();
-                this.displayMoreSearchResults(30);
+                this.displayMoreSearchResults(10);
                 this.overviewWindow.style.display = "none";
                 this.searchWindow.style.display = "block";
             });
@@ -118,7 +118,6 @@ class KanjiSection extends TrainerSection {
             for (let i = 0; i < elements.length; ++i)
                 elements[i].style.display = "none";
         }
-        // $(".added").css("display", onlyMissing ? "none" : "inline-block");
         let content;
         let title;
         const titles = [];
@@ -200,54 +199,11 @@ class KanjiSection extends TrainerSection {
         const promises = [];
         let promise;
         for (let kanji of this.lastSearchResult) {
-            const resultItem = document.createElement("div");
-            const leftFrame = document.createElement("div");
-            leftFrame.classList.add("left-frame");
-            const infoFrame = document.createElement("div");
-            infoFrame.classList.add("info-frame");
-            resultItem.appendChild(leftFrame);
-            resultItem.appendChild(infoFrame);
-            // Fill left frame with the kanji and links
-            const kanjiFrame = document.createElement("div");
-            kanjiFrame.classList.add("kanji-frame");
-            kanjiFrame.classList.add("kanji-info-link");
-            // Open kanji info panel upon clicking the kanji
-            kanjiFrame.addEventListener("click", () => {
-                main.kanjiInfoPanel.load(kanji);
-                main.kanjiInfoPanel.open();
-            });
-            kanjiFrame.textContent = kanji;
-            leftFrame.appendChild(kanjiFrame);
-            // Create info frame elements
-            const meaningsFrame = document.createElement("div");
-            meaningsFrame.classList.add("meanings-frame");
-            const onYomiFrame = document.createElement("div");
-            onYomiFrame.classList.add("yomi-frame");
-            const kunYomiFrame = document.createElement("div");
-            kunYomiFrame.classList.add("yomi-frame");
-            const detailsBar = document.createElement("div");
-            detailsBar.classList.add("details-bar");
-            infoFrame.appendChild(meaningsFrame);
-            infoFrame.appendChild(detailsBar);
-            infoFrame.appendChild(onYomiFrame);
-            infoFrame.appendChild(kunYomiFrame);
             // Fill info frame with data
             promise = dataManager.content.getKanjiInfo(kanji).then((info) =>  {
-                meaningsFrame.textContent = info.meanings.join(", ");
-                onYomiFrame.textContent = info.onYomi.join("、 ");
-                kunYomiFrame.textContent = info.kunYomi.join("、 ");
-                fragment.appendChild(resultItem);
-                const detailSpans =
-                    main.kanjiInfoPanel.getKanjiDetailSpans(kanji, info);
-                detailSpans.forEach((span) => detailsBar.appendChild(span));
-                // Choose fitting classes
-                // if (info.frequency === null || info.grade === 0) {
-                //     kanjiFrame.style.color = "gray";
-                // }
-                // if (info.added) {
-                //     kanjiFrame.style.color = "green";
-                //     kanjiFrame.style.textShadow = "0 0 2px lawngreen";
-                // }
+                const entry = new KanjiSearchResultEntry();
+                entry.setInfo(kanji, info);
+                fragment.appendChild(entry);
             });
             promises.push(promise);
         }

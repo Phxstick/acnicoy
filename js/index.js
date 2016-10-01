@@ -6,6 +6,7 @@ const { ipcRenderer, clipboard } = require("electron");
 const EventEmitter = require("events");
 const Random = require("random-js");
 const random = new Random(Random.engines.nativeMath);
+const Handlebars = require("handlebars");
 
 // TODO: Use this for languages init section and settings
 // const languageList = require("languages");
@@ -38,6 +39,8 @@ const SwitchButton = require(paths.widgets["switch-button"]);
 const SwitchBar = require(paths.widgets["switch-bar"]);
 const PopupList = require(paths.widgets["popup-list"]);
 const SvgBarDiagram = require(paths.widgets["svg-bar-diagram"]);
+const KanjiSearchResultEntry =
+    require(paths.widgets["kanji-search-result-entry"]);
 
 const totalTime = performance.now() - startTime;
 console.log("Loaded all required modules after %f ms", totalTime);

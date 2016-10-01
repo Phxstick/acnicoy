@@ -1,0 +1,34 @@
+<div id="frame">
+  <div id="left-frame">
+    <div id="kanji" class="kanji-info-link {{#if rare}}rare{{/if}}">
+      {{kanji}}
+    </div>
+    {{#if added}}
+      <div id="added-label">Added</div>
+    {{else}}
+      <div id="add-button">Add</div>
+    {{/if}}
+    <!--div id="strokes-link">Strokes</div>
+    <div id="examples-link">Examples</div-->
+  </div>
+  <div id="right-frame">
+    <div id="meanings">{{meanings}}</div>
+    <div id="details-bar"></div>
+    {{#if onYomi.length}}
+      <div class="yomi-frame">
+        <span class="yomi-header">On:</span>
+        {{#each onYomi}}
+          <span class="yomi">{{this}}</span>
+        {{/each}}
+      </div>
+    {{/if}}
+    {{#if kunYomi.length}}
+      <div class="yomi-frame">
+        <span class="yomi-header">Kun:</span>
+        {{#each kunYomi}}
+          <span class="yomi">{{this}}</span>
+        {{/each}}
+      </div>
+    {{/if}}
+  </div>
+</div>

@@ -1,0 +1,110 @@
+@import "../base";
+
+span {
+  display: inline-block;
+}
+
+#frame {
+  display: flex;
+  flex-direction: row;
+  padding: 3px;
+  border-bottom: 1px solid darken($view-background, 30%);
+
+  #left-frame {
+    margin-left: 3px;
+    margin-right: 4px;
+    #kanji {
+      font-size: 250%;
+      padding: 5px;
+      text-shadow: -0.5px -0.5px 0.5px $color;
+      text-align: center;
+      &.rare {
+        color: dimgray;
+        text-shadow: -0.5px -0.5px 0.5px grey;
+        &:hover {
+          @extend .kanji-info-link;
+        }
+      }
+      &:hover {
+        @extend .kanji-info-link;
+      }
+    }
+    #added-label {
+      flex: 1;
+      @extend .button;
+      padding: 3px;
+      font-family: $header-font;
+      text-align: center;
+      color: darken(limegreen, 20%);
+      &:hover {
+        text-shadow: 0 0 1px lawngreen;
+      }
+    }
+    #add-button {
+      flex: 1;
+      @extend .button;
+      padding: 3px;
+      font-family: $header-font;
+      text-align: center;
+      color: darkred;
+      &:hover {
+        text-shadow: 0 0 1px coral;
+        background: $view-hover-background;
+      }
+      &:active {
+        background-color: darken($view-hover-background, 10%);
+      }
+    }
+    #strokes-link, #examples-link {
+      font-size: 80%;
+      color: darkred;
+      text-align: center;
+      margin-top: 3px;
+      // TODO
+    }
+  }
+
+  #right-frame {
+    flex: 1;
+    padding: 3px;
+
+    #meanings {
+      font-size: 120%;
+      margin-bottom: 5px;
+    }
+
+    #details-bar > span {
+      padding-top: 2px;
+      padding-bottom: 2px;
+      font-size: 80%;
+      &:not(:last-child) {
+        border-right: 1px solid transparent;
+        border-image: linear-gradient(to bottom, transparent, dimgray,
+                                      transparent) 0 100%;
+        padding-right: 5px;
+      }
+      // margin-right: 10px;
+      &:not(:first-child) {
+        padding-left: 6px;
+      }
+      color: #666;
+    }
+
+    .yomi-frame {
+      margin-top: 4px;
+
+      .yomi-header {
+        font-size: 80%;
+        font-color: dimgray;
+      }
+
+      .yomi {
+        margin-top: 3px;
+        padding: 2px;
+        border-radius: 4px;
+        margin-right: 6px;
+        background-color: #EEE; // #F5F5F5;
+      }
+    }
+  }
+}
