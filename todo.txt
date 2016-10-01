@@ -68,6 +68,7 @@ __ Code __
 - Use new version of custom elements (See resources)
 - Import all widgets through code (even html ones?)
 - Move root creation in sections to TrainerSection constructor?
+- Use document fragment to insert stuff into search results
 
 __ Init section __
 - Open if dataPath in settings is empty

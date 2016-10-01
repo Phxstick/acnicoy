@@ -64,6 +64,13 @@ module.exports = function (paths, modules) {
         content.data = dataMap[language];
     };
 
+    content.isKnownKanji = function (character) {
+        return dataMap["Japanese"].query(
+            "SELECT COUNT(entry) AS amount FROM kanji WHERE entry = ?",
+            character)
+        .then(([{amount}]) => amount > 0);
+    };
+
     content.getKanjiInfo = function (kanji) {
         return dataMap["Japanese"].query(
             `SELECT k.grade AS grade,

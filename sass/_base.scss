@@ -222,3 +222,10 @@ popup-stack {
   --select-background: crimson;
   --select-color: $button-color;
 }
+
+.kanji-info-link {
+  &:hover {
+    text-shadow: 0 0 2px lightsalmon;
+    color: darkred;
+  }
+}

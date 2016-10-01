@@ -151,57 +151,24 @@ class KanjiInfoPanel extends TrainerSection {
             this.kunReadingsFrame.style.display =
                     info.kunYomi.length > 0 ? "block" : "none";
             this.detailsFrame.empty();
-            // Display grade info
-            const gradeSpan = document.createElement("span");
-            if (info.grade == 0) {
-                gradeSpan.textContent = `Hyougai kanji`;
-            } else if (info.grade <= 6) {
-                gradeSpan.textContent = `Jouyou kanji, grade ${info.grade}`;
-            } else if (info.grade == 8) {
-                gradeSpan.textContent = `Jouyou kanji, secondary grade`;
-            } else if (info.grade == 9) {
-                gradeSpan.textContent = `Jinmeiyou kanji`;
+            // Display misc info spans
+            const detailSpans = this.getKanjiDetailSpans(kanji, info);
+            for (let span of detailSpans) {
+                this.detailsFrame.appendChild(span);
             }
-            this.detailsFrame.appendChild(gradeSpan);
-            // Append JLPT level if it has one
-            if (info.jlptLevel !== null) {
-                const jlptSpan = document.createElement("span");
-                jlptSpan.textContent = `JLPT N${info.jlptLevel}`;
-                this.detailsFrame.appendChild(jlptSpan);
-            }
-            // Display frequency of kanji in newspapers (if in top 2500)
-            if (info.frequency !== null) {
-                const freqSpan = document.createElement("span");
-                const freq = utility.getOrdinalNumberString(info.frequency);
-                freqSpan.textContent = `${freq} most frequent`;
-                this.detailsFrame.appendChild(freqSpan);
-            }
-            // TODO: Add info if kanji is kokuji
-            // Add info if kanji is a counter
-            this.counterFrame.style.display = "none";
+            // If counter kanji: display list of objects counted in description
             const counterKanji = dataManager.content.data.counterKanji;
             if (kanji in counterKanji) {
-                // Display small info label in details bar
-                const counterLabel = document.createElement("span");
-                counterLabel.textContent = "Counter";
-                this.detailsFrame.appendChild(counterLabel);
-                // Display list of objects counted in kanji description
-                this.counterLabel.textContent =
-                    counterKanji[kanji].join(", ");
+                this.counterLabel.textContent = counterKanji[kanji].join(", ");
                 this.counterFrame.style.display = "block";
+            } else {
+                this.counterFrame.style.display = "none";
             }
-            // Add info if kanji is a numeral
-            this.numberFrame.style.display = "none";
+            // Info kanji is number, display represented number in description
             const numericKanji = dataManager.content.data.numericKanji;
             if (kanji in numericKanji.kanjiToNumber) {
-                // Display small info label in details bar
-                const numberLabel = document.createElement("span");
-                numberLabel.textContent = "Numeral";
-                this.detailsFrame.appendChild(numberLabel);
-                // Display represented number in kanji description
                 this.numberLabel.textContent = utility.getStringForNumber(
                     numericKanji.kanjiToNumber[kanji].number);
-                this.numberFrame.style.display = "block";
                 // If kanji is only used in legal docs and/or obsolete,
                 // display this info after the represented number
                 if (numericKanji.kanjiToNumber[kanji].legal) {
@@ -213,6 +180,9 @@ class KanjiInfoPanel extends TrainerSection {
                 } else {
                     this.numberDetails.textContent = "";
                 }
+                this.numberFrame.style.display = "block";
+            } else {
+                this.numberFrame.style.display = "none";
             }
             // Display 'added' sign or button for adding the kanji
             this.addedLabel.style.display =
@@ -391,6 +361,52 @@ class KanjiInfoPanel extends TrainerSection {
             this.strokeGraphics.appendChild(svg);
         }
         this.strokeGraphics.scrollToLeft();
+    }
+    
+    getKanjiDetailSpans(kanji, info) {
+        const spans = [];
+        // Display grade info
+        const gradeSpan = document.createElement("span");
+        if (info.grade == 0) {
+            gradeSpan.textContent = `Hyougai kanji`;
+        } else if (info.grade <= 6) {
+            gradeSpan.textContent = `Jouyou kanji, grade ${info.grade}`;
+        } else if (info.grade == 8) {
+            gradeSpan.textContent = `Jouyou kanji, secondary grade`;
+        } else if (info.grade == 9) {
+            gradeSpan.textContent = `Jinmeiyou kanji`;
+        }
+        spans.push(gradeSpan);
+        // Append JLPT level if it has one
+        if (info.jlptLevel !== null) {
+            const jlptSpan = document.createElement("span");
+            jlptSpan.textContent = `JLPT N${info.jlptLevel}`;
+            spans.push(jlptSpan);
+        }
+        // Display frequency of kanji in newspapers (if in top 2500)
+        if (info.frequency !== null) {
+            const freqSpan = document.createElement("span");
+            const freq = utility.getOrdinalNumberString(info.frequency);
+            freqSpan.textContent = `${freq} most frequent`;
+            spans.push(freqSpan);
+        }
+        // TODO: Add info if kanji is kokuji
+        // Add info if kanji is a counter
+        const counterKanji = dataManager.content.data.counterKanji;
+        if (kanji in counterKanji) {
+            const counterSpan = document.createElement("span");
+            counterSpan.textContent = "Counter";
+            spans.push(counterLabel);
+        }
+        // Add info if kanji is a numeral
+        const numericKanji = dataManager.content.data.numericKanji;
+        if (kanji in numericKanji.kanjiToNumber) {
+            // Display small info label in details bar
+            const numberSpan = document.createElement("span");
+            numberSpan.textContent = "Numeral";
+            spans.push(numberSpan);
+        }
+        return spans;
     }
 }
 customElements.define("kanji-info-panel", KanjiInfoPanel);

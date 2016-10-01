@@ -13,12 +13,17 @@
   <style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
 </template>
 <div id="kanji-container"></div>
-<div id="control-bar"></div>
+<div id="control-bar">
+  <button id="show-overview-button"><i class="fa fa-th"></i></button>
+  <button id="show-search-results-button"><i class="fa fa-list"></i></button>
+  <input id="search-by-kanji-entry" placeholder="Search by kanji"></input>
+</div>
 <div id="bottom">
   <div id="overview-window">
     <dl id="overview"></dl>
   </div>
-  <div id="search-results">
+  <div id="search-window">
+    <div id="search-results"></div>
   </div>
 </div>
 </body>

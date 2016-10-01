@@ -1,17 +1,33 @@
 @import "base";
 
-#kanji-container {
-  display: none;
-}
-
 body {
   display: flex;
   flex-direction: column;
 }
 
+#kanji-container {
+  display: none;
+}
+
 #control-bar {
-  background-color: darkred;
+  display: flex;
+  flex-direction: row;
+  background-color: whitesmoke;
   height: 50px;
+  box-shadow: 0 3px 2px #333333;
+  z-index: var(--kanji-control-bar-layer);
+
+  #show-overview-button, #show-search-results-button {
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 140%;
+  }
+
+  #search-by-kanji-entry {
+    flex: 1;
+    font-size: 120%;
+    padding-left: 3px;
+  }
 }
 
 #bottom {
@@ -19,17 +35,86 @@ body {
   overflow: auto;
 
   #overview-window {
-    // overflow: auto;
+    .kanji {
+      display: inline-block;
+      margin-right: 5px;
+      margin-bottom: 5px;
+      padding: 3px;
+      font-size: 140%;
+      color: darkred;
+
+      &.added {
+        color: darkgrey;
+      }
+
+      &:hover {
+        color: $select-color;
+        background: lighten($select-background, 10%);
+        border-radius: 3px;
+      }
+
+      &.selected {
+        color: $select-color;
+        background: $select-background;
+        border-radius: 3px;
+      }
+    }
   }
 
-  #search-results {
-    // overflow
+  #search-window {
+    display: none;
+  }
+}
+
+#search-results {
+  background-color: $view-background;
+  color: $view-color;
+
+  > div {
+    display: flex;
+    flex-direction: row;
+    padding: 3px;
+    border-bottom: 1px solid darken($view-background, 30%);
+    
+    .left-frame {
+
+      .kanji-frame {
+        font-size: 250%;
+        padding: 5px;
+        // text-shadow: -0.5px -0.5px 0.5px $color;
+      }
+    }
+
+    .info-frame {
+      flex: 1;
+      padding: 3px;
+
+      .meanings-frame {
+        font-size: 120%;
+        margin-bottom: 5px;
+      }
+
+      .details-bar {
+        > span {
+          padding: 2px;
+          font-size: 80%;
+          border: 1px solid lightgrey;
+          margin-right: 10px;
+          color: #666;
+        }
+      }
+
+      .yomi-frame {
+        font-size: 100%;
+        margin-top: 4px;
+      }
+    }
   }
 }
 
 dt {
   font-size: 130%;
-  margin: 10px;
+margin: 10px;
   margin-top: 18px;
   font-variant: small-caps;
 }
@@ -41,30 +126,6 @@ dd {
   box-shadow: 0px 0px 2px darkred;
 }
 
-.kanji {
-  display: inline-block;
-  margin-right: 5px;
-  margin-bottom: 5px;
-  padding: 3px;
-  font-size: 140%;
-  color: darkred;
-
-  &.added {
-    color: darkgrey;
-  }
-
-  &:hover {
-    color: $select-color;
-    background: lighten($select-background, 10%);
-    border-radius: 3px;
-  }
-
-  &.selected {
-    color: $select-color;
-    background: $select-background;
-    border-radius: 3px;
-  }
-}
 
 .statistic-label {
   font-size: 60%;

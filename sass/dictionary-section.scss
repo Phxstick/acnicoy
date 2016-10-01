@@ -36,6 +36,8 @@ body {
   > div {
     display: flex;
     flex-direction: row;
+    padding: 5px;
+    border-bottom: 1px solid darken($view-background, 30%);
 
     .word-frame {
 
@@ -74,9 +76,6 @@ body {
       }
     }
 
-    padding: 5px;
-    border-bottom: 1px solid darken($view-background, 30%);
-
     &.frequent-entry {
       background-color: #e0ffb3;
     }
@@ -84,12 +83,5 @@ body {
     &.semi-frequent-entry {
       background-color: lighten(#e0ffb3, 5%);
     }
-  }
-}
-
-.kanji-info-link {
-  &:hover {
-    text-shadow: 0 0 2px lightsalmon;
-    color: darkred;
   }
 }

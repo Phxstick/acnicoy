@@ -4,8 +4,47 @@ utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
 class KanjiSection extends TrainerSection {
     constructor () {
         super(docContent);
+        this.lastSearchResult = [];
         this.selectedKanji = null;
-        this.overviewFrame = this.root.getElementById("overview");
+        this.overviewWindow = this.root.getElementById("overview-window");
+        this.searchWindow = this.root.getElementById("search-window");
+        this.overview = this.root.getElementById("overview");
+        this.searchResults = this.root.getElementById("search-results");
+        // Buttons for switching between overview and search results
+        this.showOverviewButton =
+            this.root.getElementById("show-overview-button");
+        this.showSearchResultsButton =
+            this.root.getElementById("show-search-results-button");
+        this.showOverviewButton.addEventListener("click", () => {
+            this.overviewWindow.style.display = "block";
+            this.searchWindow.style.display = "none";
+        });
+        this.showSearchResultsButton.addEventListener("click", () => {
+            this.overviewWindow.style.display = "none";
+            this.searchWindow.style.display = "block";
+        });
+        this.searchByKanjiEntry =
+            this.root.getElementById("search-by-kanji-entry");
+        this.searchByKanjiEntry.addEventListener("keypress", (event) => {
+            if (event.keyCode !== 13) return;
+            const queryString = this.searchByKanjiEntry.value.trim();
+            const knownKanji = [];
+            const promises = [];
+            // Check which characters are known kanji (= in the database)
+            for (let character of queryString) {
+                const promise = dataManager.content.isKnownKanji(character)
+                .then((isKnown) => isKnown ? knownKanji.push(character) : 0);
+                promises.push(promise);
+            }
+            // Display kanji in order given in the input field
+            Promise.all(promises).then(() => {
+                this.lastSearchResult = knownKanji;
+                this.searchResults.empty();
+                this.displayMoreSearchResults(30);
+                this.overviewWindow.style.display = "none";
+                this.searchWindow.style.display = "block";
+            });
+        });
         this.kanjiContainer = this.root.getElementById("kanji-container");
         // Create counter spans which display amount of added kanji per grade
         this.addedPerGradeCounters = {};
@@ -73,7 +112,7 @@ class KanjiSection extends TrainerSection {
 
     displayKanji(ordering, onlyMissing=false, showJinmeiyou=false,
             showHyougai=false) {
-        this.overviewFrame.empty();
+        this.overview.empty();
         if (onlyMissing) {
             const elements = this.root.getElementsByClassName("added");
             for (let i = 0; i < elements.length; ++i)
@@ -113,8 +152,8 @@ class KanjiSection extends TrainerSection {
                 for (let i = 0; i < spans.length; ++i) {
                     content.appendChild(spans[i]);
                 }
-                this.overviewFrame.appendChild(title);
-                this.overviewFrame.appendChild(content);
+                this.overview.appendChild(title);
+                this.overview.appendChild(content);
             }
         }
     }
@@ -154,6 +193,66 @@ class KanjiSection extends TrainerSection {
             this.addedPerGradeCounters[grade].textContent =
                 `( ${added} / ${total} )`;
         });
+    }
+
+    displayMoreSearchResults(amount) {
+        const fragment = document.createDocumentFragment();
+        const promises = [];
+        let promise;
+        for (let kanji of this.lastSearchResult) {
+            const resultItem = document.createElement("div");
+            const leftFrame = document.createElement("div");
+            leftFrame.classList.add("left-frame");
+            const infoFrame = document.createElement("div");
+            infoFrame.classList.add("info-frame");
+            resultItem.appendChild(leftFrame);
+            resultItem.appendChild(infoFrame);
+            // Fill left frame with the kanji and links
+            const kanjiFrame = document.createElement("div");
+            kanjiFrame.classList.add("kanji-frame");
+            kanjiFrame.classList.add("kanji-info-link");
+            // Open kanji info panel upon clicking the kanji
+            kanjiFrame.addEventListener("click", () => {
+                main.kanjiInfoPanel.load(kanji);
+                main.kanjiInfoPanel.open();
+            });
+            kanjiFrame.textContent = kanji;
+            leftFrame.appendChild(kanjiFrame);
+            // Create info frame elements
+            const meaningsFrame = document.createElement("div");
+            meaningsFrame.classList.add("meanings-frame");
+            const onYomiFrame = document.createElement("div");
+            onYomiFrame.classList.add("yomi-frame");
+            const kunYomiFrame = document.createElement("div");
+            kunYomiFrame.classList.add("yomi-frame");
+            const detailsBar = document.createElement("div");
+            detailsBar.classList.add("details-bar");
+            infoFrame.appendChild(meaningsFrame);
+            infoFrame.appendChild(detailsBar);
+            infoFrame.appendChild(onYomiFrame);
+            infoFrame.appendChild(kunYomiFrame);
+            // Fill info frame with data
+            promise = dataManager.content.getKanjiInfo(kanji).then((info) =>  {
+                meaningsFrame.textContent = info.meanings.join(", ");
+                onYomiFrame.textContent = info.onYomi.join("、 ");
+                kunYomiFrame.textContent = info.kunYomi.join("、 ");
+                fragment.appendChild(resultItem);
+                const detailSpans =
+                    main.kanjiInfoPanel.getKanjiDetailSpans(kanji, info);
+                detailSpans.forEach((span) => detailsBar.appendChild(span));
+                // Choose fitting classes
+                // if (info.frequency === null || info.grade === 0) {
+                //     kanjiFrame.style.color = "gray";
+                // }
+                // if (info.added) {
+                //     kanjiFrame.style.color = "green";
+                //     kanjiFrame.style.textShadow = "0 0 2px lawngreen";
+                // }
+            });
+            promises.push(promise);
+        }
+        Promise.all(promises).then(
+            () => this.searchResults.appendChild(fragment));
     }
 }
 customElements.define("kanji-section", KanjiSection);
