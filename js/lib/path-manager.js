@@ -78,7 +78,7 @@ module.exports = function (basePath) {
 
     // Library and extension scripts
     paths.lib = {
-        jQuery: path.resolve(basePath, "js", "lib", "jquery-2.1.4.min.js"),
+        velocity: path.resolve(basePath, "js", "lib", "velocity.min.js"),
         utility: path.resolve(basePath, "js", "lib", "utility.js"),
         converter: path.resolve(basePath, "js", "lib", "converter.js"),
         dialogWindow: path.resolve(basePath, "js", "lib", "dialog-window.js"),

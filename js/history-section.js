@@ -4,6 +4,8 @@ utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
 class HistorySection extends TrainerSection {
     constructor() {
         super(docContent);
+        this.entryTemplate = Handlebars.compile(
+                this.root.getElementById("history-entry").textContent);
         this.flags = { added: true, deleted: true, modified: true,
                        entry: true, translation: true, reading: true };
         // Define variable values
@@ -135,42 +137,29 @@ class HistorySection extends TrainerSection {
             }
             // Construct the row
             // TODO: Store ID as invisible table data
-            htmlStrings.push(`<tr class="${data.type} ${data.column}"><td>${data.time}</td><td>${data.type}</td><td>${data.column}</td><td>${data.entry}</td><td>${data.details}</td></tr>`);
+            htmlStrings.push(this.entryTemplate(data));
         }
-        const fragment = document.createDocumentFragment();
-        const rows = $(htmlStrings.join(''));
-        for (let i = 0; i < rows.length; ++i) {
-            const row = rows[i];
-            this.popupMenu.attachTo(row);
-            fragment.appendChild(row);
-        }
-        return fragment;
+        return utility.fragmentFromString(htmlStrings.join(''));
     }
     getToggleCallback(className) {
         return (state) => {
             const newDisplay = (state === true) ? "" : "none";
             this.flags[className] = state;
+            let flags;
             switch (className) {
                 case "added": case "deleted": case "modified":
-                    for (let flag of ["entry", "translation", "reading"]) {
-                        if (this.flags[flag] === true) {
-                            const items = this.root.querySelectorAll(
-                                `.${className}.${flag}`);
-                            // TODO: Do with normal js?
-                            $(items).css("display", newDisplay);
-                        }
-                    }
-                    break;
+                    flags = ["entry", "translation", "reading"]; break;
                 case "entry": case "translation": case "reading":
-                    for (let flag of ["added", "deleted", "modified"]) {
-                        if (this.flags[flag] === true) {
-                            const items = this.root.querySelectorAll(
-                                `.${className}.${flag}`);
-                            // TODO: Do with normal js?
-                            $(items).css("display", newDisplay);
-                        }
+                    flags = ["added", "deleted", "modified"]; break;
+            }
+            for (let flag of flags) {
+                if (this.flags[flag]) {
+                    const items = this.root.querySelectorAll(
+                        `.${className}.${flag}`);
+                    for (let i = 0; i < items.length; ++i) {
+                        items[i].style.display = newDisplay;
                     }
-                    break;
+                }
             }
             utility.finishEventQueue().then(() =>
                 utility.calculateHeaderCellWidths(this.table, this.tableHead));

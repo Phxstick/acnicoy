@@ -109,18 +109,17 @@ HTMLElement.prototype.fadeOut = function(distance) {
     fadeOutSpan.style.overflow = "hidden";
     this.style.visibility = "hidden";
     this.parentNode.appendChild(fadeOutSpan);
-    const oldWidth = $(this).width();
-    const oldOffset = $(this).offset();
+    const oldWidth = this.offsetWidth;
+    const oldOffsetTop = this.offsetTop;
+    const oldOffsetLeft = this.offsetLeft;
     fadeOutSpan.textContent = this.textContent;
-    $(fadeOutSpan).width(oldWidth);
-    $(fadeOutSpan).show();
-    $(fadeOutSpan).offset(oldOffset);
-    return new Promise((resolve) => {
-        $(fadeOutSpan).animate({ left: `+=${distance}` })
-                      .fadeOut({ queue: false, complete: () => {
-                          fadeOutSpan.remove();
-                          resolve();
-                      }});
+    fadeOutSpan.style.width = `${oldWidth}px`;
+    fadeOutSpan.style.display = "inline-block";
+    fadeOutSpan.style.top = `${oldOffsetTop}px`;
+    fadeOutSpan.style.left = `${oldOffsetLeft}px`;
+    Velocity(fadeOutSpan, { left: `+=${distance}` });
+    return Velocity(fadeOutSpan, "fadeOut", { queue: false }).then(() => {
+        fadeOutSpan.remove();
     });
 }
 
@@ -135,17 +134,16 @@ HTMLElement.prototype.fadeIn = function(distance) {
     fadeInSpan.style.overflow = "hidden";
     fadeInSpan.style.visibility = "visible";
     this.parentNode.appendChild(fadeInSpan);
-    const newWidth = $(this).width();
-    const newOffset = $(this).offset();
-    $(fadeInSpan).offset({ top: newOffset.top, left: newOffset.left - distance });
-    $(fadeInSpan).hide();
-    $(fadeInSpan).width(newWidth);
-    return new Promise((resolve) => {
-        $(fadeInSpan).animate({ left: `+=${distance}` })
-                     .fadeIn({ queue: false, complete: () => {
-                         fadeInSpan.remove();
-                         this.style.visibility = "visible";
-                         resolve();
-                     }});
+    const newWidth = this.offsetWidth;
+    const newOffsetTop = this.offsetTop;
+    const newOffsetLeft = this.offsetLeft;
+    fadeInSpan.style.top = `${newOffsetTop}px`;
+    fadeInSpan.style.left = `${newOffsetLeft - distance}px`;
+    fadeInSpan.style.display = "none";
+    fadeInSpan.style.width = `${newWidth}px`;
+    Velocity(fadeInSpan, { left: `+=${distance}` });
+    return Velocity(fadeInSpan, "fadeIn", { queue: false }).then(() => {
+        fadeInSpan.remove();
+        this.style.visibility = "visible";
     });
 }

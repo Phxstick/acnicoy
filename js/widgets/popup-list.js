@@ -79,7 +79,7 @@ class PopupList extends HTMLElement {
         this.isOpen = true;
         this.popupWindow.style.display = "block";
         this.onOpen();
-        $(this.popupWindow).css("top", $(this).css("height"));
+        this.popupWindow.style.top = `${this.offsetHeight}px`;
     }
     close () {
         this.isOpen = false;

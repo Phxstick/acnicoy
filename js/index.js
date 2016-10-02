@@ -24,7 +24,7 @@ const dataManager = require(paths.lib.dataManager)(paths);
 const utility = require(paths.lib.utility);
 const dialogWindow = require(paths.lib.dialogWindow);
 const layers = require(paths.lib.layerManager);
-window.$ = window.jQuery = require(paths.lib.jQuery);
+const Velocity = require(paths.lib.velocity);
 
 // Load libraries extending existing objects
 require(paths.lib.arrayExtensions);

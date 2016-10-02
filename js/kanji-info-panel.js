@@ -4,8 +4,10 @@ utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
 class KanjiInfoPanel extends TrainerSection {
     constructor () {
         super(docContent);
+        this.isOpen = false;
         // Store important DOM elements as properties
         this.frame = this.root.getElementById("window");
+        this.closeButton = this.root.getElementById("close-button");
         this.kanji = this.root.getElementById("kanji");
         this.completeSvg = this.root.getElementById("complete-kanji");
         this.addedLabel = this.root.getElementById("added-label");
@@ -36,8 +38,6 @@ class KanjiInfoPanel extends TrainerSection {
             "strokes": this.root.getElementById("strokes-frame"),
             "examples": this.root.getElementById("examples-frame")
         };
-        // this.grade = this.root.getElementById("grade");
-        // this.frequency = this.root.getElementById("frequency");
         this.exampleWords = this.root.getElementById("example-words");
         // Create button callbacks
         for (let name in this.sectionButtons) {
@@ -52,16 +52,12 @@ class KanjiInfoPanel extends TrainerSection {
             clipboard.writeText(this.currentKanji));
         this.exampleWordsPopup = new PopupMenu();
         // Callbacks
-        this.root.getElementById("close-button").addEventListener(
-            "click", () => $(this).hide());
-        // TODO: Get slideUp to work?
-        // TODO: Still do the following when closing?
-        // if (this.selectedKanji !== null)
-        //     this.selectedKanji.classList.remove("kanji-selected");
-        // this.selectedKanji = null;
+        this.closeButton.addEventListener("click", () => {
+            Velocity(this, "slideUp", { duration: 200 });
+            this.isOpen = false;
+        });
         // Create button callbacks
         this.addButton.addEventListener("click", () => {
-            // TODO: Call proper load function here and open edit panel
             main.addKanjiPanel.load(this.currentKanji);
             main.openPanel(main.addKanjiPanel);
         });
@@ -86,8 +82,7 @@ class KanjiInfoPanel extends TrainerSection {
             this.strokesLoaded = true;
             this.displayStrokeGraphics();
         });
-        // If the user scrolls almost to the bottom of the table,
-        // load more example worlds
+        // If user scrolls almost to the table bottom, load more example words
         const displayAmount = 20;
         this.exampleWords.uponScrollingBelow(50, () => {
             if (this.nextRowIndex > 0 && this.examplesLoaded &&
@@ -101,17 +96,9 @@ class KanjiInfoPanel extends TrainerSection {
         eventEmitter.emit("done-loading");
     }
     open () {
-        // Position and display kanji info frame
-        //// const rect = this.getBoundingClientRect();
-        //// console.log(this.kanjiInfo.style);
-        //// const width = $(document).width();
-        //// const height = $(document).height();
-        //// this.frame.style.bottom = height - rect.bottom + "px";
-        //// this.frame.style.right = width - rect.right + "px";
-        //// this.frame.style.left = rect.left + "px";
-        if ($(this).css("display") === "none") {
-            // $(this).slideDown("fast");
-            this.style.display = "block";
+        if (!this.isOpen) {
+            Velocity(this, "slideDown", { duration: 200 });
+            this.isOpen = true;
         }
     }
     close () {
@@ -119,10 +106,11 @@ class KanjiInfoPanel extends TrainerSection {
     adjustToLanguage(language, secondary) {
     }
     openSection(newSection) {
-        if (newSection === "strokes")
+        if (newSection === "strokes") {
             this.sectionFrames[newSection].style.display = "flex";
-        else
+        } else {
             this.sectionFrames[newSection].style.display = "block";
+        }
         this.sectionButtons[newSection].classList.add("selected");
         for (let section in this.sectionButtons) {
             if (newSection !== section) {
@@ -137,12 +125,12 @@ class KanjiInfoPanel extends TrainerSection {
         this.currentKanji = kanji;
         // Fill info fields
         this.kanji.textContent = kanji;
-        // TODO: Dont just insert spaces, treat as separate clickable
-        // entities with custom spacing
         this.openSection("info");
         return dataManager.content.getKanjiInfo(kanji).then((info) => {
             // Display meanings, on-yomi, kun-yomi
             this.meanings.textContent = info.meanings.join(", ");
+            // TODO: Dont just insert spaces, treat as separate clickable
+            // entities with custom spacing
             this.onReadings.textContent = info.onYomi.join("、 ");
             this.kunReadings.textContent = info.kunYomi.join("、 ");
             // Hide on/kun-yomi header label if not available

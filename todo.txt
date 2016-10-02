@@ -44,6 +44,7 @@ __ General __
 - Implement global tooltip widget --> Add a function to HTMLElement prototype?
 - Backup codeMap in Dropbox
 - Capture focus in panels?
+- Implement convenient "show"/"hide" methods which save last state in element!
 
 __ Code __
 - Also split js and css into sections/widgets/panels?

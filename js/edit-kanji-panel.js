@@ -28,11 +28,11 @@ class EditKanjiPanel extends TrainerSection {
         });
         // Create closing and saving callbacks
         this.root.getElementById("close-button").addEventListener(
-            "click", () => main.closePanel(this, true));
+            "click", () => main.closePanel(this));
         this.root.getElementById("cancel-button").addEventListener(
-            "click", () => main.closePanel(this, true));
+            "click", () => main.closePanel(this));
         this.root.getElementById("save-button").addEventListener(
-            "click", () => { this.save(); main.closePanel(this, true); });
+            "click", () => { this.save(); main.closePanel(this); });
         // Create popup menus
         this.kanjiPopup = new PopupMenu();
         this.meaningsListPopup = new PopupMenu();
@@ -166,7 +166,7 @@ class EditKanjiPanel extends TrainerSection {
                 `Are you sure you want to remove the kanji '${kanji}'?`))
             return;
         dataManager.kanji.remove(kanji);
-        main.closePanel(this, true);
+        main.closePanel(this);
         // TODO: Emit events
     }
 

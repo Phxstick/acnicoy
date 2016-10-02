@@ -23,9 +23,9 @@ class AddVocabPanel extends TrainerSection {
         // Attach event handlers
         this.readingsEntry.enableKanaInput("hira");
         this.root.getElementById("close-button").addEventListener(
-            "click", () => main.closePanel(this, true));
+            "click", () => main.closePanel(this));
         this.root.getElementById("cancel-button").addEventListener(
-            "click", () => main.closePanel(this, true));
+            "click", () => main.closePanel(this));
         this.root.getElementById("save-button").addEventListener(
             "click", () => this.save());
         eventEmitter.emit("done-loading");
@@ -121,7 +121,7 @@ class AddVocabPanel extends TrainerSection {
                eventEmitter.emit("vocab-changed");
            }
         );
-        main.closePanel(this, true);
+        main.closePanel(this);
     }
 }
 customElements.define("add-vocab-panel", AddVocabPanel);

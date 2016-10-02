@@ -103,6 +103,15 @@ function processDocument2(importDoc, callback) {
 module.exports.processDocument2 = processDocument2;
 
 /**
+**  Given a string with html, return a document fragment with the parsed html.
+**/
+function fragmentFromString(htmlString) {
+    const template = document.createElement("template");
+    template.innerHTML = htmlString;
+    return template.content;
+}
+
+/**
 **  Call given callback with the contents of a template with id "template" in
 **  importDoc once it's done loading.
 **/
@@ -319,6 +328,7 @@ module.exports.getStringForNumber = getStringForNumber;
 module.exports.getOrdinalNumberString = getOrdinalNumberString;
 
 // DOM related functions
+module.exports.fragmentFromString = fragmentFromString;
 module.exports.getContentNode = getContentNode;
 module.exports.importDocContent = importDocContent;
 module.exports.finishEventQueue = finishEventQueue;

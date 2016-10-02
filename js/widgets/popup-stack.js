@@ -64,24 +64,27 @@ class PopupStack extends HTMLDivElement {
             let current = 0;
             for (let item of this.items) {
                 if (this.animated)
-                    $(item).animate({ "left": `${current}px` }, { queue: false });
+                    Velocity(item, { "left": `${current}px` });
                 else
                     item.style.left = `${current}px`;
                 current += itemWidth - this.overlap;
             }
-            // $(this.itemContainer).animate({ "width": current });
+            // Velocity(this.itemContainer, { "width": current });
         }
         this.isOpen = true;
     }
     close () {
         if (!this.isOpen) return;
         if (this.orientation === "horizontal") {
-            if (this.animated)
-                $(this.items).animate({ "left": "0" });
-            else
-                $(this.items).css({ "left": "0" });
+            if (this.animated) {
+                Velocity(this.items, { "left": "0" });
+            } else {
+                for (let item of this.items) {
+                    item.style.left = "0";
+                }
+            }
         }
-        // $(this.itemContainer).animate({ "width": "100%" });
+        // Velocity(this.itemContainer, { "width": "100%" });
         this.isOpen = false;
     }
     clear () {

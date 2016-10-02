@@ -24,9 +24,9 @@ class AddKanjiPanel extends TrainerSection {
         this.onEntry.enableKanaInput("kata");
         this.kunEntry.enableKanaInput("hira");
         this.root.getElementById("close-button").addEventListener(
-            "click", () => main.closePanel(this, true));
+            "click", () => main.closePanel(this));
         this.root.getElementById("cancel-button").addEventListener(
-            "click", () => main.closePanel(this, true));
+            "click", () => main.closePanel(this));
         this.root.getElementById("save-button").addEventListener(
             "click", () => this.save());
         eventEmitter.emit("done-loading");
@@ -122,7 +122,7 @@ class AddKanjiPanel extends TrainerSection {
                     main.updateStatus(`Kanji ${kanji} has been removed.`);
             }
         );
-        main.closePanel(this, true);
+        main.closePanel(this);
     }
 }
 customElements.define("add-kanji-panel", AddKanjiPanel);

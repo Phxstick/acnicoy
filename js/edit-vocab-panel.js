@@ -52,11 +52,11 @@ class EditVocabPanel extends TrainerSection {
         });
         // Create closing and saving callbacks
         this.root.getElementById("close-button").addEventListener(
-            "click", () => main.closePanel(this, true));
+            "click", () => main.closePanel(this));
         this.root.getElementById("cancel-button").addEventListener(
-            "click", () => main.closePanel(this, true));
+            "click", () => main.closePanel(this));
         this.root.getElementById("save-button").addEventListener(
-            "click", () => { this.save(); main.closePanel(this, true); });
+            "click", () => { this.save(); main.closePanel(this); });
         // Create popup menus
         this.wordPopup = new PopupMenu();
         this.translationsListPopup = new PopupMenu();
@@ -220,7 +220,7 @@ class EditVocabPanel extends TrainerSection {
                                       old_entry: word,
                                       old_translations: oldTranslations,
                                       old_readings: oldReadings }));
-        main.closePanel(this, true);
+        main.closePanel(this);
         eventEmitter.emit("word-deleted", word);
         eventEmitter.emit("vocab-changed");
     }

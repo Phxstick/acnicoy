@@ -17,6 +17,9 @@ class MainWindow extends HTMLElement {
         this.numSrsItemsLabel = document.getElementById("num-srs-items");
         this.statusBar = document.getElementById("status-text");
         this.languagePopup = document.getElementById("language-popup");
+        this.dictionaryButton = document.getElementById("dictionary-button");
+        this.findKanjiButton = document.getElementById("find-kanji-button");
+        this.addKanjiButton = document.getElementById("add-kanji-button");
         // Top menu button events
         document.getElementById("exit-button").addEventListener("click",
                 () => ipcRenderer.send("quit"));
@@ -127,37 +130,35 @@ class MainWindow extends HTMLElement {
             }
         });
     }
-    openSection(section) {
-        if (this.currentSection == section) return;
+    openSection(name) {
+        if (this.currentSection == name) return;
         if (!this.sections[this.currentSection].confirmClose()) return;
         this.sections[this.currentSection].close();
-        $(this.sections[this.currentSection]).fadeOut(() => {
-            $(this.sections[this.currentSection]).css("display", "none");
-            this.sections[section].open();
-            $(this.sections[section]).fadeIn();
+        Velocity(this.sections[this.currentSection], "fadeOut").then(() => {
+            this.sections[name].open();
+            Velocity(this.sections[name], "fadeIn");
         });
-        this.currentSection = section;
+        this.currentSection = name;
     }
     openPanel(panel) {
         const currentPanel = this.currentPanel;
         if (currentPanel !== null) {
             this.closePanel(currentPanel, currentPanel === panel);
             if (currentPanel === panel) return;
+        } else {
+            Velocity(this.filter, "fadeIn");
         }
         panel.style.zIndex = layers["panel"];
         this.currentPanel = panel;
         panel.open();
-        $(this.filter).fadeIn();
-        $(panel).animate({ left: "0px" });
-        // TODO: Do opening animations here? Possible (different widths, ...)?
+        Velocity(panel, { left: "0px" });
     }
-    // TODO: Use default args here
-    closePanel(panel, noNew) {
-        $(panel).animate({ left: "-400px" }, () => panel.close());
+    closePanel(panel, noOtherPanelOpening=true) {
+        Velocity(panel, { left: "-400px" }).then(() => panel.close());
         panel.style.zIndex = layers["closing-panel"];
-        if (noNew) {
+        if (noOtherPanelOpening) {
             this.currentPanel = null;
-            $(this.filter).fadeOut();
+            Velocity(this.filter, "fadeOut");
         }
     }
     updateStatus(text) {
@@ -196,16 +197,12 @@ class MainWindow extends HTMLElement {
         });
     }
     adjustToLanguage(language, secondary) {
-        // TODO: Rewrite without jQuery... implement own show/hide methods?
         if (language === "Japanese") {
-            if (document.getElementById("find-kanji-button").style.display ==
-                    "none") {
-                $(document.getElementById("find-kanji-button")).show();
-                $(document.getElementById("add-kanji-button")).show();
-            }
+            this.findKanjiButton.style.display = "flex";
+            this.addKanjiButton.style.display = "flex";
         } else {
-            $(document.getElementById("find-kanji-button")).hide();
-            $(document.getElementById("add-kanji-button")).hide();
+            this.findKanjiButton.style.display = "none";
+            this.addKanjiButton.style.display = "none";
         }
         this.updateTestButton();
     }
