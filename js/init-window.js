@@ -1,10 +1,10 @@
 "use strict";
 
-utility.processDocument2(document.currentScript.ownerDocument, (docContent) => {
+utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
 class InitWindow extends HTMLElement {
     constructor() {
         super();
-        this.root = this.createShadowRoot();
+        this.root = this.attachShadow({ mode: "open" });
         this.root.appendChild(docContent);
         this.root.appendChild(this.root.getElementById("styles").content);
         this.frame = this.root.getElementById("init-frame");

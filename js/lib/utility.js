@@ -94,14 +94,6 @@ function setEqual(a, b) {
     return a.length === b.length;
 }
 
-// TODO: Replace with importDocContent once main/init-window use shadow DOM
-function processDocument2(importDoc, callback) {
-    importDoc.addEventListener("DOMContentLoaded", () => {
-        callback(importDoc.getElementById("content"));
-    });
-}
-module.exports.processDocument2 = processDocument2;
-
 /**
 **  Given a string with html, return a document fragment with the parsed html.
 **/

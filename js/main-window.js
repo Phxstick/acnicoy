@@ -1,48 +1,45 @@
 "use strict";
 
-utility.processDocument2(document.currentScript.ownerDocument, (docContent) => {
+utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
 class MainWindow extends HTMLElement {
     constructor () {
         super();
-        // TODO: Try to use a shadow root and replace jQuery
-        //// this.root = this.createShadowRoot();
-        //// this.root.appendChild(docContent);
-        //// this.root.appendChild(this.root.getElementById("styles").content);
-        this.appendChild(docContent);
-        this.appendChild(document.getElementById("styles").content);
+        this.root = this.attachShadow({ mode: "open" });
+        this.root.appendChild(docContent);
+        this.root.appendChild(this.root.getElementById("styles").content);
         // Store important DOM elements as members
-        this.sectionWindow = document.getElementById("section-window");
-        this.statusText = document.getElementById("status-text");
-        this.filter = document.getElementById("filter");
-        this.numSrsItemsLabel = document.getElementById("num-srs-items");
-        this.statusBar = document.getElementById("status-text");
-        this.languagePopup = document.getElementById("language-popup");
-        this.dictionaryButton = document.getElementById("dictionary-button");
-        this.findKanjiButton = document.getElementById("find-kanji-button");
-        this.addKanjiButton = document.getElementById("add-kanji-button");
+        this.sectionWindow = this.root.getElementById("section-window");
+        this.statusText = this.root.getElementById("status-text");
+        this.filter = this.root.getElementById("filter");
+        this.numSrsItemsLabel = this.root.getElementById("num-srs-items");
+        this.statusBar = this.root.getElementById("status-text");
+        this.languagePopup = this.root.getElementById("language-popup");
+        this.dictionaryButton = this.root.getElementById("dictionary-button");
+        this.findKanjiButton = this.root.getElementById("find-kanji-button");
+        this.addKanjiButton = this.root.getElementById("add-kanji-button");
         // Top menu button events
-        document.getElementById("exit-button").addEventListener("click",
+        this.root.getElementById("exit-button").addEventListener("click",
                 () => ipcRenderer.send("quit"));
-        document.getElementById("home-button").addEventListener("click",
+        this.root.getElementById("home-button").addEventListener("click",
                 () => this.openSection("home-section"));
-        document.getElementById("stats-button").addEventListener("click",
+        this.root.getElementById("stats-button").addEventListener("click",
                 () => this.openSection("stats-section"));
-        document.getElementById("vocab-button").addEventListener("click",
+        this.root.getElementById("vocab-button").addEventListener("click",
                 () => this.openSection("vocab-section"));
-        document.getElementById("history-button").addEventListener("click",
+        this.root.getElementById("history-button").addEventListener("click",
                 () => this.openSection("history-section"));
-        document.getElementById("settings-button").addEventListener("click",
+        this.root.getElementById("settings-button").addEventListener("click",
                 () => this.openSection("settings-section"));
         // Sidebar button events
-        document.getElementById("add-vocab-button").addEventListener("click",
+        this.root.getElementById("add-vocab-button").addEventListener("click",
                 () => this.openPanel(this.panels["add-vocab-panel"]));
-        document.getElementById("add-kanji-button").addEventListener("click",
+        this.root.getElementById("add-kanji-button").addEventListener("click",
                 () => this.openPanel(this.panels["add-kanji-panel"]));
-        document.getElementById("test-button").addEventListener("click",
+        this.root.getElementById("test-button").addEventListener("click",
                 () => this.openTestSection());
-        document.getElementById("dictionary-button").addEventListener("click",
+        this.root.getElementById("dictionary-button").addEventListener("click",
                 () => this.openSection("dictionary-section"));
-        document.getElementById("find-kanji-button").addEventListener("click",
+        this.root.getElementById("find-kanji-button").addEventListener("click",
                 () => this.openSection("kanji-section"));
         // TODO: Where exactly to put this?
         this.doneLoading = new Promise((resolve) => {
@@ -65,7 +62,7 @@ class MainWindow extends HTMLElement {
             link.href = paths.sections[name];
             document.head.appendChild(link);
             // Create sections
-            const section = document.createElement(name);;
+            const section = document.createElement(name);
             section.classList.add("section");
             section.style.display = "none";
             section.id = name;
