@@ -47,80 +47,46 @@ module.exports = function (basePath) {
     paths.scoreCalculation = path.resolve(basePath, "data",
                                           "scoreCalculation.json");
 
-    // HTML
+    // JS paths for components
+    const jsPath = path.resolve(basePath, "js");
+    paths.js = {
+        "component": (name) => path.resolve(jsPath, name + ".js"),
+        "window": (name) => path.resolve(jsPath, name + "-window.js"),
+        "section": (name) => path.resolve(jsPath, name + "-section.js"),
+        "panel": (name) => path.resolve(jsPath, name + "-panel.js"),
+        "widget": (name) => path.resolve(jsPath, "widgets", name + ".js")
+    };
+
+    // HTML paths for components
+    const windowsPath = path.resolve(basePath, "html");
     const sectionsPath = path.resolve(basePath, "html", "sections");
-    paths.sections = {
-        "home-section": path.resolve(sectionsPath, "home-section.html"),
-        "stats-section": path.resolve(sectionsPath, "stats-section.html"),
-        "history-section": path.resolve(sectionsPath, "history-section.html"),
-        "vocab-section": path.resolve(sectionsPath, "vocab-section.html"),
-        "settings-section": path.resolve(sectionsPath, "settings-section.html"),
-        "test-section": path.resolve(sectionsPath, "test-section.html"),
-        "dictionary-section": path.resolve(sectionsPath,
-                                           "dictionary-section.html"),
-        "kanji-section": path.resolve(sectionsPath, "kanji-section.html")
-    };
     const panelsPath = path.resolve(basePath, "html", "panels");
-    paths.panels = {
-        "add-vocab-panel": path.resolve(panelsPath, "add-vocab-panel.html"),
-        "add-kanji-panel": path.resolve(panelsPath, "add-kanji-panel.html"),
-        "edit-vocab-panel": path.resolve(panelsPath, "edit-vocab-panel.html"),
-        "edit-kanji-panel": path.resolve(panelsPath, "edit-kanji-panel.html"),
-        "kanji-info-panel": path.resolve(panelsPath, "kanji-info-panel.html")
-    };
+    const widgetsPath = path.resolve(basePath, "html", "widgets");
+    paths.html = {
+        "window": (name) => path.resolve(windowsPath, name + "-window.html"),
+        "section": (name) => path.resolve(sectionsPath, name + "-section.html"),
+        "panel": (name) => path.resolve(panelsPath, name + "-panel.html"),
+        "widget": (name) => path.resolve(widgetsPath, name + ".html")
+    }
+
+    // Templates
+    const templatePath = path.resolve(basePath, "templates");
+    paths.template = (name) => path.resolve(templatePath, name + ".handlebars");
 
     // Styles
     paths.css = (name) => path.resolve(basePath, "css", name + ".css");
     paths.layers = path.resolve(basePath, "css", "layers.css");
-    // TODO: Make fontAwesome and jQuery path version-independent?
-    paths.fontAwesome = path.resolve(basePath, "font-awesome-4.5.0",
+    paths.fontAwesome = path.resolve(basePath, "font-awesome",
                                      "css", "font-awesome.min.css");
 
     // Library and extension scripts
-    paths.lib = {
-        velocity: path.resolve(basePath, "js", "lib", "velocity.min.js"),
-        utility: path.resolve(basePath, "js", "lib", "utility.js"),
-        converter: path.resolve(basePath, "js", "lib", "converter.js"),
-        dialogWindow: path.resolve(basePath, "js", "lib", "dialog-window.js"),
-        dataManager: path.resolve(basePath, "js", "lib", "data-manager.js"),
-        layerManager: path.resolve(basePath, "js", "lib", "layer-manager.js"),
-        arrayExtensions: path.resolve(basePath, "js", "lib",
-                                      "array-extensions.js"),
-        htmlElementExtensions: path.resolve(basePath, "js", "lib",
-                                            "html-element-extensions.js")
-    };
-
-    // Custom widget scripts
-    const widgetsPath = path.resolve(basePath, "js", "widgets");
-    paths.widgets = {
-        "popup-menu": path.resolve(widgetsPath, "popup-menu.js"),
-        "popup-stack": path.resolve(widgetsPath, "popup-stack.js"),
-        "switch-button": path.resolve(widgetsPath, "switch-button.js"),
-        "switch-bar": path.resolve(widgetsPath, "switch-bar.js"),
-        "popup-list": path.resolve(widgetsPath, "popup-list.js"),
-        "svg-bar-diagram": path.resolve(widgetsPath, "svg-bar-diagram.js"),
-        "kanji-search-result-entry":
-            path.resolve(widgetsPath, "kanji-search-result-entry.js")
-    };
+    const extensionPath = path.resolve(jsPath, "lib", "extensions");
+    paths.extension = (name) => path.resolve(extensionPath, name + ".js");
+    paths.lib = (name) => path.resolve(jsPath, "lib", name + ".js");
 
     // Data interface modules
-    // TODO: Call folder "data-modules"?
     const dataModulesPath = path.resolve(basePath, "js", "lib","data-managers");
-    paths.modules = {
-        languages: path.resolve(dataModulesPath, "languages.js"),
-        settings: path.resolve(dataModulesPath, "settings.js"),
-        languageSettings: path.resolve(dataModulesPath, "language-settings.js"),
-        vocabLists: path.resolve(dataModulesPath, "vocab-lists.js"),
-        pinwall: path.resolve(dataModulesPath, "pinwall.js"),
-        content: path.resolve(dataModulesPath, "content.js"),
-        vocab: path.resolve(dataModulesPath, "vocab.js"),
-        kanji: path.resolve(dataModulesPath, "kanji.js"),
-        stats: path.resolve(dataModulesPath, "stats.js"),
-        srs: path.resolve(dataModulesPath, "srs.js"),
-        test: path.resolve(dataModulesPath, "test.js"),
-        history: path.resolve(dataModulesPath, "history.js"),
-        database: path.resolve(dataModulesPath, "database.js")
-    };
+    paths.modules = (name) => path.resolve(dataModulesPath, name + ".js");
 
     // Language data
     paths.languageData = (language) => ({

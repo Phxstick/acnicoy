@@ -19,15 +19,15 @@ For Japanese language learners, the program additionally offers:
 
 Features to be implemented:
   - Earn achievements for learning progress and unlock design settings
-  - Customizing design with color schemes
-  - Customizable kanji overview
-  - Customizing the SRS system
+  - Many settings to customize design, kanji overview, SRS system, and more
   - ... (the todo-list is fairly large)
 
 ### Installation
 
 **NOTE**: The program is not quite ready for use yet. It's still missing some
 initialization functionality and there a few bugs to be squashed first.
+If you would already like to try it, feel free to contact me (See e-mail address
+at the bottom).
 
 ### Building for source
 Acnicoy requires [Node.js] v5+ to run and uses the [npm package manager][npm].
@@ -57,8 +57,9 @@ Credits
 Contact
 ----
 
-I don't think anyone will find this repository, so there's no need to provide
-means of contact here.
+In case anyone finds this repository:
+I'd be glad if you tried out the program and gave me some feedback.
+You can contact me at:  Phxsticks [at] gmail.com
 
 
    [SRS]: <https://en.wikipedia.org/wiki/Spaced_repetition>

@@ -47,7 +47,7 @@ module.exports = function (paths, modules) {
         currentLanguage = language;
         // Precalculate amout of score for each SRS level
         // TODO: How to make sure languageSettings are loaded first?
-        const timeIntervals = modules.languageSettings["SRS"]["spacing"];
+        const timeIntervals = modules["language-settings"]["SRS"]["spacing"];
         levelToScore = { "0": 0 };
         for (let level = 1; level < timeIntervals.length; ++level) {
             const totalTime = timeIntervals.slice(1, level + 1).sum();

@@ -1,18 +1,3 @@
-<!doctype html>
-<html>
-<head>
-  <title>History Section</title>
-  <meta name="description" content="View log of changes to the dictionary">
-  <meta name="author" content="Daniel Bindemann">
-  <meta charset="UTF-8">
-  <script src="../../js/history-section.js"></script>
-</head>
-<body>
-<template id="styles">
-  <style>@import "./css/history-section.css";</style>
-  <style>@import "./font-awesome-4.5.0/css/font-awesome.min.css";</style>
-</template>
-
 <div id="filter-frame">
   <div id="filters">
     <switch-bar>
@@ -41,16 +26,3 @@
   <tbody id="history-table-body">
   </tbody>
 </table>
-
-<script id="history-entry" type="text/x-handlebars-template">
-  <tr class="{{type}} {{column}}">
-    <td>{{time}}</td>
-    <td>{{type}}</td>
-    <td>{{column}}</td>
-    <td>{{entry}}</td>
-    <td>{{{details}}}</td>
-  </tr>
-</script>
-
-</body>
-</html>

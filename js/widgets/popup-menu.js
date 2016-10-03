@@ -1,16 +1,13 @@
 "use strict";
 
-class PopupMenu extends HTMLElement {
-    createdCallback () {
+class PopupMenu extends Widget {
+    constructor () {
+        super("popup-menu");
         this.posted = false;
         this.callbacks = new Map();
         this.onOpen = () => { };  // Called before menu pops up
-        this.root = this.createShadowRoot();
         this.menuWindow = document.createElement("div");
-        const style = document.createElement("style");
-        style.textContent = `@import url(${paths.css("popup-menu")})`;
         this.root.appendChild(this.menuWindow);
-        this.root.appendChild(style);
         document.body.appendChild(this);
         window.addEventListener("contextmenu", () => this.unpost());
         window.addEventListener("click", () => this.unpost());
@@ -81,5 +78,5 @@ class PopupMenu extends HTMLElement {
     }
 }
 
-module.exports = document.registerElement(
-        "popup-menu", { prototype: PopupMenu.prototype });
+customElements.define("popup-menu", PopupMenu);
+module.exports = PopupMenu;

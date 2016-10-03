@@ -4,7 +4,7 @@ module.exports = function (paths, modules) {
     const srs = {};
     
     srs.getNumberOfLevels = function () {
-        return modules.languageSettings["SRS"]["spacing"].length;
+        return modules["language-settings"]["SRS"]["spacing"].length;
     };
 
     srs.getScheduledVocab = function () {
@@ -26,7 +26,7 @@ module.exports = function (paths, modules) {
 
     srs.getAmountsScheduled = function () {
         const time = utility.getTime();
-        const numLevels = modules.languageSettings["SRS"]["spacing"].length;
+        const numLevels = modules["language-settings"]["SRS"]["spacing"].length;
         const counts = {};
         const promises = [];
         for (let mode of modules.test.modes) {
@@ -101,7 +101,7 @@ module.exports = function (paths, modules) {
 
     srs.setLevel = function (entry, newLevel, mode) {
         const table = modules.test.modeToTable(mode);
-        const spacing = modules.languageSettings["SRS"]["spacing"][newLevel];
+        const spacing = modules["language-settings"]["SRS"]["spacing"][newLevel];
         return modules.database.run(
             `UPDATE ${table} SET level = ?, time = ? WHERE entry = ?`,
             newLevel, utility.getTime() + spacing, entry);

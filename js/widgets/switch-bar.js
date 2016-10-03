@@ -1,16 +1,12 @@
 "use strict";
 
-class SwitchBar extends HTMLElement {
-    createdCallback () {
-        this.root = this.attachShadow({mode: "open"});
-        const style = document.createElement("style");
-        style.textContent = `@import url(${paths.css("switch-bar")})`;
-        this.root.appendChild(style);
+class SwitchBar extends Widget {
+    constructor () {
+        super("switch-bar");
         const slot = document.createElement("slot");
         this.root.appendChild(slot);
     }
 }
 
-document.registerElement(
-    "switch-bar", { prototype: SwitchBar.prototype });
+customElements.define("switch-bar", SwitchBar);
 module.exports = SwitchBar;

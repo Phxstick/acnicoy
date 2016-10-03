@@ -1,12 +1,8 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class MainWindow extends HTMLElement {
+class MainWindow extends Window {
     constructor () {
-        super();
-        this.root = this.attachShadow({ mode: "open" });
-        this.root.appendChild(docContent);
-        this.root.appendChild(this.root.getElementById("styles").content);
+        super("main");
         // Store important DOM elements as members
         this.sectionWindow = this.root.getElementById("section-window");
         this.statusText = this.root.getElementById("status-text");
@@ -17,89 +13,74 @@ class MainWindow extends HTMLElement {
         this.dictionaryButton = this.root.getElementById("dictionary-button");
         this.findKanjiButton = this.root.getElementById("find-kanji-button");
         this.addKanjiButton = this.root.getElementById("add-kanji-button");
+        this.kanjiInfoPanel = this.root.getElementById("kanji-info-panel");
         // Top menu button events
         this.root.getElementById("exit-button").addEventListener("click",
                 () => ipcRenderer.send("quit"));
         this.root.getElementById("home-button").addEventListener("click",
-                () => this.openSection("home-section"));
+                () => this.openSection("home"));
         this.root.getElementById("stats-button").addEventListener("click",
-                () => this.openSection("stats-section"));
+                () => this.openSection("stats"));
         this.root.getElementById("vocab-button").addEventListener("click",
-                () => this.openSection("vocab-section"));
+                () => this.openSection("vocab"));
         this.root.getElementById("history-button").addEventListener("click",
-                () => this.openSection("history-section"));
+                () => this.openSection("history"));
         this.root.getElementById("settings-button").addEventListener("click",
-                () => this.openSection("settings-section"));
+                () => this.openSection("settings"));
         // Sidebar button events
         this.root.getElementById("add-vocab-button").addEventListener("click",
-                () => this.openPanel(this.panels["add-vocab-panel"]));
+                () => this.openPanel("add-vocab"));
         this.root.getElementById("add-kanji-button").addEventListener("click",
-                () => this.openPanel(this.panels["add-kanji-panel"]));
+                () => this.openPanel("add-kanji"));
         this.root.getElementById("test-button").addEventListener("click",
                 () => this.openTestSection());
         this.root.getElementById("dictionary-button").addEventListener("click",
-                () => this.openSection("dictionary-section"));
+                () => this.openSection("dictionary"));
         this.root.getElementById("find-kanji-button").addEventListener("click",
-                () => this.openSection("kanji-section"));
-        // TODO: Where exactly to put this?
+                () => this.openSection("kanji"));
+        // TODO: Remove this lateron. Try to handle kanji-section separately
+        // In index, instead use promises from createSections/createPanels
         this.doneLoading = new Promise((resolve) => {
-            const numSections = Object.keys(paths.sections).length;
-            const numPanels = Object.keys(paths.panels).length;
             let numLoaded = 0;
+            const total = globals.sections.length + globals.panels.length;
             eventEmitter.on("done-loading", () => {
-                if (++numLoaded === numSections + numPanels)
+                if (++numLoaded === total)
                     resolve();
             });
         });
     }
+
     createSections () {
         const promises = [];
         this.sections = {};
-        for (let name in paths.sections) {
-            // Load section files
-            const link = document.createElement("link");
-            link.rel = "import";
-            link.href = paths.sections[name];
-            document.head.appendChild(link);
-            // Create sections
-            const section = document.createElement(name);
+        for (let name of globals.sections) {
+            require(paths.js.section(name));
+            const section = document.createElement(name + "-section");
             section.classList.add("section");
             section.style.display = "none";
-            section.id = name;
             this.sectionWindow.appendChild(section);
             this.sections[name] = section;
-            promises.push(customElements.whenDefined(name));
+            promises.push(customElements.whenDefined(name + "-section"));
         }
         this.currentSection = null;
         return promises;
     }
+
     createPanels () {
         const promises = [];
         this.panels = {};
-        for (let name in paths.panels) {
-            // Load panel files
-            const link = document.createElement("link");
-            link.rel = "import";
-            link.href = paths.panels[name];
-            document.head.appendChild(link);
-            // Create panels
-            const panel = document.createElement(name);
-            if (name !== "kanji-info-panel")
-                panel.classList.add("panel");
-            panel.id = name;
+        for (let name of globals.panels) {
+            require(paths.js.panel(name));
+            const panel = document.createElement(name + "-panel");
+            panel.classList.add("panel");
             this.sectionWindow.appendChild(panel);
             this.panels[name] = panel;
-            promises.push(customElements.whenDefined(name));
+            promises.push(customElements.whenDefined(name + "-panel"));
         }
-        // TODO: Use this.panels instead for everything
-        this.addVocabPanel = this.panels["add-vocab-panel"];
-        this.addKanjiPanel = this.panels["add-kanji-panel"];
-        this.editVocabPanel = this.panels["edit-vocab-panel"];
-        this.editKanjiPanel = this.panels["edit-kanji-panel"];
-        this.kanjiInfoPanel = this.panels["kanji-info-panel"];
         this.currentPanel = null;
         return promises;
     }
+
     loadLanguages(languages) {
         // Assign callbacks for language popup
         this.languagePopup.onOpen = () => this.fillLanguagePopup(languages);
@@ -108,9 +89,9 @@ class MainWindow extends HTMLElement {
             this.setLanguage(languages[index]);
         };
         // Only display home section
-        this.sections["home-section"].style.display = "block";
-        this.sections["home-section"].open();
-        this.currentSection = "home-section";
+        this.sections["home"].style.display = "block";
+        this.sections["home"].open();
+        this.currentSection = "home";
         // Update test button with amount of words to be tested
         this.updateTestButton();
         setInterval(() => {
@@ -127,6 +108,7 @@ class MainWindow extends HTMLElement {
             }
         });
     }
+
     openSection(name) {
         if (this.currentSection == name) return;
         if (!this.sections[this.currentSection].confirmClose()) return;
@@ -137,20 +119,23 @@ class MainWindow extends HTMLElement {
         });
         this.currentSection = name;
     }
-    openPanel(panel) {
+
+    openPanel(name) {
         const currentPanel = this.currentPanel;
         if (currentPanel !== null) {
-            this.closePanel(currentPanel, currentPanel === panel);
-            if (currentPanel === panel) return;
+            this.closePanel(currentPanel, currentPanel === name);
+            if (currentPanel === name) return;
         } else {
             Velocity(this.filter, "fadeIn");
         }
-        panel.style.zIndex = layers["panel"];
-        this.currentPanel = panel;
-        panel.open();
-        Velocity(panel, { left: "0px" });
+        this.panels[name].style.zIndex = layers["panel"];
+        this.currentPanel = name;
+        this.panels[name].open();
+        Velocity(this.panels[name], { left: "0px" });
     }
-    closePanel(panel, noOtherPanelOpening=true) {
+
+    closePanel(name, noOtherPanelOpening=true) {
+        const panel = this.panels[name];
         Velocity(panel, { left: "-400px" }).then(() => panel.close());
         panel.style.zIndex = layers["closing-panel"];
         if (noOtherPanelOpening) {
@@ -158,27 +143,34 @@ class MainWindow extends HTMLElement {
             Velocity(this.filter, "fadeOut");
         }
     }
+
     updateStatus(text) {
         this.statusText.fadeOut(300);
         this.statusText.textContent = text;
         this.statusText.fadeIn(300);
     }
+
     openTestSection() {
         // Update label and open section if there are items to test
         // [ Somehow move this test to test section lateron? ]
-        this.updateTestButton().then(() => {
-            // TODO: Don't read from textcontent, use data directly
-            if (parseInt(this.numSrsItemsLabel.textContent) > 0)
-                this.openSection("test-section");
-            else
+        this.updateTestButton().then((count) => {
+            if (count > 0) {
+                this.openSection("test");
+            } else {
                 this.updateStatus("There are currently no items " +
                                   "scheduled for testing!");
+            }
         });
     };
+
     updateTestButton() {
-        return dataManager.srs.getTotalAmountScheduled().then((count) =>
-            this.numSrsItemsLabel.textContent = `${count} items`);
+        return dataManager.srs.getTotalAmountScheduled()
+        .then((count) => {
+            this.numSrsItemsLabel.textContent = `${count} items`;
+            return count;
+        });
     }
+
     fillLanguagePopup(languages) {
         dataManager.srs.getTotalAmountScheduledForLanguages(languages)
         .then((amounts) => {
@@ -193,6 +185,7 @@ class MainWindow extends HTMLElement {
             }
         });
     }
+
     adjustToLanguage(language, secondary) {
         if (language === "Japanese") {
             this.findKanjiButton.style.display = "flex";
@@ -203,6 +196,7 @@ class MainWindow extends HTMLElement {
         }
         this.updateTestButton();
     }
+
     setLanguage(language) {
         if (this.currentSection !== null) {
             if (!this.sections[this.currentSection].confirmClose()) return;
@@ -223,5 +217,6 @@ class MainWindow extends HTMLElement {
         this.languagePopup.setLabelText(language);
     }
 }
+
 customElements.define("main-window", MainWindow);
-});
+module.exports = MainWindow;

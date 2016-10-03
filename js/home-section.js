@@ -1,9 +1,8 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class HomeSection extends TrainerSection {
+class HomeSection extends Section {
     constructor() {
-        super(docContent);
+        super("home");
         this.pinwall = this.root.getElementById("pinwall");
         this.widgetAdder = this.root.getElementById("widget-adder");
         // TODO: Generalize
@@ -54,5 +53,6 @@ class HomeSection extends TrainerSection {
         dataManager.pinwall.save();
     }
 }
+
 customElements.define("home-section", HomeSection);
-});
+module.exports = HomeSection;

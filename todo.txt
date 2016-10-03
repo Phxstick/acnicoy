@@ -4,13 +4,12 @@ __ BUGFIXES __
 - Make edit panel inputs unpack when clicking somewhere else
 - Issue with database modification speed? Or is it the JS overhead afterwards?
 - Replace added-button in opened kanji-info-panel if kanji has been added
-- details bar in kanji info panel does not wrap at all or incorrectly.
 - info in details bar should properly be compressed if there are many readings
   or meanings
 - Use "contentAvailable" object/function in content datamanager
   to make sure non-available stuff is closed
 - Result in dictionary still not ordered correctly
-- Whats taking so long when searching in dictionary? Measure everything.
+- Use flexbox and flexible padding in kanji info panel
 
 __ Fundamentals (Data) __
 - [Consider overhaul of data storage --> Primarily use IDs for words?]
@@ -47,18 +46,15 @@ __ General __
 - Implement convenient "show"/"hide" methods which save last state in element!
 
 __ Code __
-- Also split js and css into sections/widgets/panels?
+- Only hierarchically order one folder of html/js/sass
 - Use CSS variables for all widget styling
 - Replace .button with actual button element (both in css and html)
 - Stop using things like 110% font everywhere - Use as standard font size in
   _base file instead or in some classes there
-- Put font-awesome import in _base scss?
 - Don't change event listeners in converter.js but change callback var instead?
 - Put common code for panels in _panel.scss file and import everywhere?
-- Put common panel code in TrainerPanel class and inherit everywhere?
 - Remove inconsistencies in code, e.g. unify glossary ("word" <-> "entry")
 - Make special function where all update logic is defined to keep code clean?
-- Rewrite all sections like history section so that custom elements work
 - Rework edit-vocab-panel like edit-kanji-panel (only one function call for
   all the changes, everything logged in dataManager.vocab.editWord)!
 --> Especially logging should be done by the datamanger since it's triggered
@@ -66,10 +62,9 @@ __ Code __
 - Try to generalize as much scss as possibly and extend _base file.
   Split parts of _base file into smaller parts.
 - Remove "data" from content section and always access with "dataMap[...]"?
-- Use new version of custom elements (See resources)
-- Import all widgets through code (even html ones?)
-- Move root creation in sections to TrainerSection constructor?
-- Use document fragment to insert stuff into search results
+- Use document fragment to insert stuff into search results (Done?)
+- Have htmlManager and cssManager which make sure all assets are only loaded
+  once? --> Better performance, centralized resource loading
 
 __ Init section __
 - Open if dataPath in settings is empty
@@ -250,5 +245,12 @@ https://davidwalsh.name/css-js-animation  <-- Replace jQuery with better stuff
 - http://caniuse.com/#feat=css-focus-within
 - http://caniuse.com/#feat=css-scrollbar
 
-https://github.com/electron/electron/blob/master/docs/tutorial/using-native-node-modules.md
-(Build native node modules like sqlite3 against electron. First method works.)
+[Steps to install]
+1. Run npm install
+2. Rebuild sqlite3 against electron:
+   https://github.com/electron/electron/blob/master/docs/tutorial/using-native-node-modules.md
+   (Build native node modules against electron. First method works.)
+2. Download font-awesome, call folder "font-awesome", put it in base-directory
+3. Download fonts, put "fonts" folder in base-directory
+4. Download raw language data, adjust path to data in makefile
+5. Run make

@@ -2,27 +2,17 @@
 
 // TODO: Remake and parameterize
 
-class PopupList extends HTMLElement {
-    createdCallback () {
+class PopupList extends Widget {
+    constructor() {
+        super("popup-list");
         this.callback = () => { };
         this.onOpen = () => { };
         // Set parameters
         // self.fade = false;
-        //this.itemWidth = parseInt(this.getAttribute("itemwidth"));
         this.itemWidth = 30;
         this.itemHeight = 30;
-        // this.itemHeight = parseInt(this.getAttribute("itemheight"));
         this.items = [];
         this.isOpen = false;
-        // Create widget tree
-        this.root = this.createShadowRoot();
-        const style = document.createElement("style");
-        style.textContent = `@import url(${paths.css("popup-list")})`;
-        // const style2 = document.createElement("style");
-        // style2.textContent = `#container span { width: ${this.itemWidth}px;
-        //                                         height: ${this.itemHeight}px;}`;
-        this.root.appendChild(style);
-        // this.root.appendChild(style2);
         // this.style.height = `${this.itemHeight}px`;
         // this.style.width = `${this.itemWidth}px`;
         // this.style.display = "inline-block";
@@ -39,7 +29,7 @@ class PopupList extends HTMLElement {
         this.popupWindow.id = "popup-window";
         this.root.appendChild(this.popupWindow);
     }
-    // TODO TODO TODO
+    // TODO
     setItemHeight () {
     }
     setItemWidth () {
@@ -93,5 +83,5 @@ class PopupList extends HTMLElement {
     }
 }
 
-module.exports = document.registerElement(
-    "popup-list", { prototype: PopupList.prototype });
+customElements.define("popup-list", PopupList);
+module.exports = PopupList;

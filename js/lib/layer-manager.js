@@ -1,9 +1,6 @@
 "use const";
 
-const fs = require("fs");
-
-const cssContent = utility.parseCssText(fs.readFileSync(
-                       paths.layers, { encoding: "utf-8" }));
+const cssContent = utility.parseCssFile(paths.layers);
 const layers = {};
 
 for (let key in cssContent[":root, :host"]) {

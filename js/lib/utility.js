@@ -1,5 +1,7 @@
 "use strict";
 
+const fs = require("fs");
+
 /**
  * Return the current time in SECONDS since 1970/01/01.
  */
@@ -29,7 +31,8 @@ function finishEventQueue() {
 **  Returned object maps each css selector to an object mapping css properties
 **  to their values.
 **/
-function parseCssText(text) {
+function parseCssFile(filepath) {
+    const text = fs.readFileSync(filepath, "utf-8");
     let blockOpen = false;
     let valOpen = false;
     let buff = "";
@@ -95,31 +98,28 @@ function setEqual(a, b) {
 }
 
 /**
+**  Given a path, parse the html file at that path and return a fragment node
+**  with the contents.
+**  If wrapBody is true, return a body element wrapping around the contents.
+**/
+function parseHtmlFile(path, wrapBody=false) {
+    const htmlString = fs.readFileSync(path, "utf-8");
+    if (wrapBody) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlString, "text/html");
+        return document.importNode(doc.body, true);
+    } else  {
+        return fragmentFromString(htmlString);
+    }
+}
+
+/**
 **  Given a string with html, return a document fragment with the parsed html.
 **/
 function fragmentFromString(htmlString) {
     const template = document.createElement("template");
     template.innerHTML = htmlString;
-    return template.content;
-}
-
-/**
-**  Call given callback with the contents of a template with id "template" in
-**  importDoc once it's done loading.
-**/
-function getContentNode(importDoc, callback) {
-    importDoc.addEventListener("DOMContentLoaded", () => {
-        callback(importDoc.getElementById("template").content);
-    });
-}
-
-/**
-**  Call given callback with the <body> of importDoc once it's done loading.
-**/
-function importDocContent(importDoc, callback) {
-    importDoc.addEventListener("DOMContentLoaded", () => {
-        callback(importDoc.body);
-    });
+    return document.importNode(template.content, true);
 }
 
 /**
@@ -146,7 +146,7 @@ function calculateED(word1, word2) {
 }
 
 /**
-**  Given a number, return the string representing the number with commas
+**  Given an integer, return the string representing the number with commas
 **  inserted for readability.
 **/
 function getStringForNumber(number) {
@@ -219,6 +219,7 @@ function createSvgNode(type, attributes) {
 **  Given an HTMLElement whose children are sorted lexically by textContent,
 **  return the index of the child node containing given text. If no such child
 **  node is found, return the index where the child node would be inserted.
+**  (Performs binary search using the textContents of the sorted nodes)
 **/
 function findIndex(listNode, text) {
     let middle = 0;
@@ -309,20 +310,19 @@ function calculateHeaderCellWidths(tableBody, tableHead) {
 }
 
 
-// Not DOM-related functions
+// Non DOM-related functions
 module.exports.getTime = getTime;
 module.exports.getShortDateString = getShortDateString;
 module.exports.parseEntries = parseEntries;
-module.exports.parseCssText = parseCssText;
+module.exports.parseCssFile = parseCssFile;
 module.exports.setEqual = setEqual;
 module.exports.calculateED = calculateED;
 module.exports.getStringForNumber = getStringForNumber;
 module.exports.getOrdinalNumberString = getOrdinalNumberString;
 
 // DOM related functions
+module.exports.parseHtmlFile = parseHtmlFile;
 module.exports.fragmentFromString = fragmentFromString;
-module.exports.getContentNode = getContentNode;
-module.exports.importDocContent = importDocContent;
 module.exports.finishEventQueue = finishEventQueue;
 module.exports.createSvgNode = createSvgNode;
 module.exports.findIndex = findIndex;

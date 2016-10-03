@@ -20,23 +20,23 @@ module.exports = function (paths, modules) {
     // Load content and user data for given language
     languageManager.load = function (language) {
         const languageDataModules = [
-            modules.languageSettings, modules.content, modules.database,
-            modules.vocabLists, modules.stats, modules.pinwall
+            "language-settings", "content", "database", "vocab-lists",
+            "stats", "pinwall"
         ];
         const promises = [];
-        for (let module of languageDataModules) {
-            promises.push(module.load(language));
+        for (let name of languageDataModules) {
+            promises.push(modules[name].load(language));
         }
         return Promise.all(promises);
     };
 
     languageManager.setCurrent = function (language) {
         const languageDependentModules = [
-            modules.languageSettings, modules.content, modules.database,
-            modules.vocabLists, modules.stats, modules.pinwall, modules.test
+            "language-settings", "content", "database", "vocab-lists",
+            "stats", "pinwall", "test"
         ];
-        for (let module of languageDependentModules) {
-            module.setLanguage(language);
+        for (let name of languageDependentModules) {
+            modules[name].setLanguage(language);
         }
         languageManager.currentLanguage = language;
     };

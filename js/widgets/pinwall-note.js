@@ -1,13 +1,8 @@
 "use strict";
 
-
-utility.getContentNode(document.currentScript.ownerDocument, (content) => {
 class PinwallNote extends PinwallWidget {
     constructor() {
-        super();
-        this.widgetName = "Note";
-        this.root = this.contentFrame.createShadowRoot();
-        this.root.appendChild(content.cloneNode(true));
+        super("pinwall-note", "Note");
         this.windowFrame = this.root.getElementById("window");
         this.textDiv = this.root.getElementById("text-div");
         this.textEntry = this.root.getElementById("text-entry");
@@ -49,6 +44,6 @@ class PinwallNote extends PinwallWidget {
     adjustToLanguage(language, secondary) {
     }
 }
+
 customElements.define("pinwall-note", PinwallNote);
-window.PinwallNote = PinwallNote;
-});
+module.exports = PinwallNote;

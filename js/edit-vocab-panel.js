@@ -1,9 +1,8 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class EditVocabPanel extends TrainerSection {
-    constructor () {
-        super(docContent);
+class EditVocabPanel extends Panel {
+    constructor() {
+        super("edit-vocab");
         // Store important DOM elements as properties
         this.wordLabel = this.root.getElementById("word");
         this.translationsList = this.root.getElementById("translations");
@@ -52,11 +51,11 @@ class EditVocabPanel extends TrainerSection {
         });
         // Create closing and saving callbacks
         this.root.getElementById("close-button").addEventListener(
-            "click", () => main.closePanel(this));
+            "click", () => main.closePanel("edit-vocab"));
         this.root.getElementById("cancel-button").addEventListener(
-            "click", () => main.closePanel(this));
+            "click", () => main.closePanel("edit-vocab"));
         this.root.getElementById("save-button").addEventListener(
-            "click", () => { this.save(); main.closePanel(this); });
+            "click", () => { this.save(); main.closePanel("edit-vocab"); });
         // Create popup menus
         this.wordPopup = new PopupMenu();
         this.translationsListPopup = new PopupMenu();
@@ -130,10 +129,13 @@ class EditVocabPanel extends TrainerSection {
         });
         eventEmitter.emit("done-loading");
     }
+
     open () {
     }
-    close () {
+
+    close() {
     }
+
     adjustToLanguage(language, secondary) {
         // Fill SRS level popup stack
         const numLevels = dataManager.srs.getNumberOfLevels();
@@ -157,7 +159,8 @@ class EditVocabPanel extends TrainerSection {
         this.root.getElementById("readings-frame").style.display =
             dataManager.languageSettings["readings"] ? "flex" : "none";
     }
-    load (word) {
+
+    load(word) {
         Promise.all([
             dataManager.vocab.getTranslations(word),
             dataManager.vocab.getReadings(word),
@@ -184,6 +187,7 @@ class EditVocabPanel extends TrainerSection {
         this.defaultListOption.setAttribute("selected", "");
         this.defaultListOption.value = "";
     }
+
     createListItem(text, type) {
         const span = document.createElement("span");
         span.classList.add("list-entry");
@@ -204,6 +208,7 @@ class EditVocabPanel extends TrainerSection {
         }
         return span;
     }
+
     deleteWord(word) {
         if (!dialogWindow.confirm(
                 `Are you sure you want to delete the word '${word}'?`))
@@ -220,10 +225,11 @@ class EditVocabPanel extends TrainerSection {
                                       old_entry: word,
                                       old_translations: oldTranslations,
                                       old_readings: oldReadings }));
-        main.closePanel(this);
+        main.closePanel("edit-vocab");
         eventEmitter.emit("word-deleted", word);
         eventEmitter.emit("vocab-changed");
     }
+
     packEditEntry(node, type) {
         const word = this.wordLabel.textContent;
         // If the entry is already packed here, do nothing
@@ -348,7 +354,8 @@ class EditVocabPanel extends TrainerSection {
         };
         this.editInput.focus();
     }
-    save () {
+
+    save() {
         const word = this.wordLabel.textContent;
         let promise = Promise.resolve();
         for (let func of this.changes) {
@@ -377,5 +384,6 @@ class EditVocabPanel extends TrainerSection {
         });
     }
 }
+
 customElements.define("edit-vocab-panel", EditVocabPanel);
-});
+module.exports = EditVocabPanel;

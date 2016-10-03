@@ -2,10 +2,9 @@
 
 // TODO: Restrict character set for kanji entry
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class AddKanjiPanel extends TrainerSection {
+class AddKanjiPanel extends Panel {
     constructor() {
-        super(docContent);
+        super("add-kanji");
         // Store important DOM elements as properties
         this.kanjiEntry = this.root.querySelector(
             "textarea[name='kanji']");
@@ -24,14 +23,15 @@ class AddKanjiPanel extends TrainerSection {
         this.onEntry.enableKanaInput("kata");
         this.kunEntry.enableKanaInput("hira");
         this.root.getElementById("close-button").addEventListener(
-            "click", () => main.closePanel(this));
+            "click", () => main.closePanel("add-kanji"));
         this.root.getElementById("cancel-button").addEventListener(
-            "click", () => main.closePanel(this));
+            "click", () => main.closePanel("add-kanji"));
         this.root.getElementById("save-button").addEventListener(
             "click", () => this.save());
         eventEmitter.emit("done-loading");
     }
-    open () {
+
+    open() {
         const kanjiStyle = window.getComputedStyle(this.kanjiEntry, null);
         this.kanjiEntry.style.width =
             kanjiStyle.getPropertyValue("font-size");
@@ -45,12 +45,14 @@ class AddKanjiPanel extends TrainerSection {
         else
             this.meaningsEntry.focus();
     }
-    close () {
+
+    close() {
         this.kanjiEntry.value = "";
         this.meaningsEntry.value = "";
         this.onEntry.value = "";
         this.kunEntry.value = "";
     }
+
     adjustToLanguage(language, secondary) {
         if (language !== "Japanese") return;
         if (this.doneSetting) return;
@@ -73,7 +75,8 @@ class AddKanjiPanel extends TrainerSection {
         // ... Just a workaround
         this.doneSetting = true;
     }
-    load (kanji) {
+
+    load(kanji) {
         this.kanjiEntry.value = kanji;
         dataManager.content.getKanjiInfo(kanji).then((info) => {
             this.meaningsEntry.value = info.meanings.join(", ");
@@ -81,7 +84,8 @@ class AddKanjiPanel extends TrainerSection {
             this.kunEntry.value = info.kunYomi.join(", ");
         });
     }
-    save () {
+
+    save() {
         const separator = dataManager.settings["add"]["separator"];
         const trim = (val, index, array) => { array[index] = val.trim(); }
         const notEmpty = (element) => element.length > 0;
@@ -122,8 +126,9 @@ class AddKanjiPanel extends TrainerSection {
                     main.updateStatus(`Kanji ${kanji} has been removed.`);
             }
         );
-        main.closePanel(this);
+        main.closePanel("add-kanji");
     }
 }
+
 customElements.define("add-kanji-panel", AddKanjiPanel);
-});
+module.exports = AddKanjiPanel;

@@ -1,9 +1,11 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class TestSection extends TrainerSection {
+const Random = require("random-js");
+const random = new Random(Random.engines.nativeMath);
+
+class TestSection extends Section {
     constructor() {
-        super(docContent);
+        super("test");
         // Store important DOM elements as class members
         this.statusLabel = this.root.getElementById("status");
         this.itemsDiv = this.root.getElementById("items");  // Rename this...
@@ -41,11 +43,11 @@ class TestSection extends TrainerSection {
             if (item.mode === dataManager.test.mode.KANJI_MEANINGS ||
                     item.mode === dataManager.test.mode.KANJI_ON_YOMI ||
                     item.mode === dataManager.test.mode.KANJI_KUN_YOMI) {
-                main.editKanjiPanel.load(item.entry);
-                main.openPanel(main.editKanjiPanel);
+                main.panels["edit-kanji"].load(item.entry);
+                main.openPanel("edit-kanji");
             } else if (item.mode === dataManager.test.mode.WORDS) {
-                main.editVocabPanel.load(item.entry);
-                main.openPanel(main.editVocabPanel);
+                main.panels["edit-vocab"].load(item.entry);
+                main.openPanel("edit-vocab");
             }
             // TODO: Immediately modify test item afterwards?
         });
@@ -64,7 +66,7 @@ class TestSection extends TrainerSection {
     }
 
     /**
-    *   Functions from TrainerSection
+    *   Functions from Section
     **/
 
     open() {
@@ -198,7 +200,7 @@ class TestSection extends TrainerSection {
                   `Wrong: ${this.testInfo.numIncorrect}`);
             // TODO: Prepare and show test-complete stuff
             this.testFinished = true;
-            main.openSection("home-section");
+            main.openSection("home");
             return;
         }
         // ... Update stats bar
@@ -345,5 +347,6 @@ class TestSection extends TrainerSection {
         });
     }
 }
+
 customElements.define("test-section", TestSection);
-});
+module.exports = TestSection;

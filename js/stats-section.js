@@ -1,9 +1,8 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class StatsSection extends TrainerSection {
+class StatsSection extends Section {
     constructor() {
-        super(docContent);
+        super("stats");
         // Store important elements
         this.totalScore = this.root.getElementById("total-score");
         this.wordsAdded = this.root.getElementById("words-added");
@@ -92,5 +91,6 @@ class StatsSection extends TrainerSection {
         return Promise.all(promises);
     }
 }
+
 customElements.define("stats-section", StatsSection);
-});
+module.exports = StatsSection;

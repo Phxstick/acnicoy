@@ -1,7 +1,8 @@
 "use strict";
 
-class PopupStack extends HTMLDivElement {
-    createdCallback () {
+class PopupStack extends Widget {
+    constructor () {
+        super("popup-stack");
         this.callback = () => { };
         // Set parameters
         this.animated = true;
@@ -11,10 +12,6 @@ class PopupStack extends HTMLDivElement {
         this.isOpen = false;
         this.topItem = null;
         // Create widget tree
-        this.root = this.createShadowRoot();
-        const style = document.createElement("style");
-        style.textContent = `@import url(${paths.css("popup-stack")})`;
-        this.root.appendChild(style);
         this.itemContainer = document.createElement("div");
         this.itemContainer.id = "container";
         this.root.appendChild(this.itemContainer);
@@ -97,6 +94,5 @@ class PopupStack extends HTMLDivElement {
     }
 }
 
-// module.exports = window.customElements.define("popup-stack", PopupStack);
-module.exports = document.registerElement(
-    "popup-stack", { prototype: PopupStack.prototype });
+customElements.define("popup-stack", PopupStack);
+module.exports = PopupStack;

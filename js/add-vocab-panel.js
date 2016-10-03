@@ -1,9 +1,8 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class AddVocabPanel extends TrainerSection {
+class AddVocabPanel extends Panel {
     constructor () {
-        super(docContent);
+        super("add-vocab");
         // Store important DOM elements as properties
         this.wordEntry = this.root.querySelector("textarea[name='word']");
         this.translationsEntry = this.root.querySelector(
@@ -23,17 +22,19 @@ class AddVocabPanel extends TrainerSection {
         // Attach event handlers
         this.readingsEntry.enableKanaInput("hira");
         this.root.getElementById("close-button").addEventListener(
-            "click", () => main.closePanel(this));
+            "click", () => main.closePanel("add-vocab"));
         this.root.getElementById("cancel-button").addEventListener(
-            "click", () => main.closePanel(this));
+            "click", () => main.closePanel("add-vocab"));
         this.root.getElementById("save-button").addEventListener(
             "click", () => this.save());
         eventEmitter.emit("done-loading");
     }
-    open () {
+
+    open() {
         this.wordEntry.focus();
     }
-    close () {
+
+    close() {
         this.wordEntry.value = "";
         this.translationsEntry.value = "";
         this.readingsEntry.value = "";
@@ -41,10 +42,12 @@ class AddVocabPanel extends TrainerSection {
         this.defaultOption.setAttribute("selected", "");
         this.vocabListSelect.value = "";
     }
-    load (id, word) {
+
+    load(id, word) {
         this.wordEntry.value = word;
         // TODO: Load necessary word info into fields here
     }
+
     adjustToLanguage(language, secondary) {
         // Fill SRS level popup stack
         this.levelPopup.clear();
@@ -77,7 +80,8 @@ class AddVocabPanel extends TrainerSection {
         this.readingsEntry.style.display =
             dataManager.languageSettings["readings"] ? "block" : "none";
     }
-    save () {
+
+    save() {
         const separator = dataManager.settings["add"]["separator"];
         // Read entered values
         const word = this.wordEntry.value.trim();
@@ -121,8 +125,9 @@ class AddVocabPanel extends TrainerSection {
                eventEmitter.emit("vocab-changed");
            }
         );
-        main.closePanel(this);
+        main.closePanel("add-vocab");
     }
 }
+
 customElements.define("add-vocab-panel", AddVocabPanel);
-});
+module.exports = AddVocabPanel;

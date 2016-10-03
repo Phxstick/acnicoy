@@ -1,9 +1,8 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class KanjiInfoPanel extends TrainerSection {
+class KanjiInfoPanel extends Widget {
     constructor () {
-        super(docContent);
+        super("kanji-info-panel", true, true);
         this.isOpen = false;
         // Store important DOM elements as properties
         this.frame = this.root.getElementById("window");
@@ -58,12 +57,12 @@ class KanjiInfoPanel extends TrainerSection {
         });
         // Create button callbacks
         this.addButton.addEventListener("click", () => {
-            main.addKanjiPanel.load(this.currentKanji);
-            main.openPanel(main.addKanjiPanel);
+            main.panels["add-kanji"].load(this.currentKanji);
+            main.openPanel("add-kanji");
         });
         this.addedLabel.addEventListener("click", () => {
-            main.editKanjiPanel.load(this.currentKanji);
-            main.openPanel(main.editKanjiPanel);
+            main.panels["edit-kanji"].load(this.currentKanji);
+            main.openPanel("edit-kanji");
         });
         this.sectionButtons["examples"].addEventListener("click", () => {
             if (this.examplesLoaded) return;
@@ -93,7 +92,6 @@ class KanjiInfoPanel extends TrainerSection {
         this.currentKanji = null;
         this.examplesLoaded = false;
         this.strokesLoaded = false;
-        eventEmitter.emit("done-loading");
     }
     open () {
         if (!this.isOpen) {
@@ -228,14 +226,14 @@ class KanjiInfoPanel extends TrainerSection {
                     if (isAdded) {
                         this.exampleWordsPopup.addItem(
                                 "Edit vocabulary item", () => {
-                            main.editVocabPanel.load(row.word);
-                            main.openPanel(main.editVocabPanel);
+                            main.panels["edit-vocab"].load(row.word);
+                            main.openPanel("edit-vocab");
                         });
                     } else {
                         this.exampleWordsPopup.addItem(
                                 "Add word to vocabulary", () => {
-                            main.addVocabPanel.load(row.wordId, row.word);
-                            main.openPanel(main.addVocabPanel);
+                            main.panels["add-vocab"].load(row.wordId, row.word);
+                            main.openPanel("add-vocab");
                         });
                     }
                 });
@@ -397,5 +395,6 @@ class KanjiInfoPanel extends TrainerSection {
         return spans;
     }
 }
+
 customElements.define("kanji-info-panel", KanjiInfoPanel);
-});
+module.exports = KanjiInfoPanel;

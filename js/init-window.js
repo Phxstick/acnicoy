@@ -1,12 +1,9 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class InitWindow extends HTMLElement {
+class InitWindow extends Window {
     constructor() {
-        super();
-        this.root = this.attachShadow({ mode: "open" });
-        this.root.appendChild(docContent);
-        this.root.appendChild(this.root.getElementById("styles").content);
+        super("init");
+        // Store important DOM elements as members
         this.frame = this.root.getElementById("init-frame");
         this.header = this.root.getElementById("header");
         this.stepContent = this.root.getElementById("step-content");
@@ -70,5 +67,6 @@ class InitWindow extends HTMLElement {
         return ["Japanese", "English", {}];
     }
 }
+
 customElements.define("init-window", InitWindow);
-});
+module.exports = InitWindow;

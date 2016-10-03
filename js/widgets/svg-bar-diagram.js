@@ -1,11 +1,8 @@
 "use strict";
 
-class SvgBarDiagram extends HTMLElement {
-    createdCallback () {
-        this.root = this.createShadowRoot();
-        const style = document.createElement("style");
-        style.textContent = `@import url(${paths.css("svg-bar-diagram")})`;
-        this.root.appendChild(style);
+class SvgBarDiagram extends Widget {
+    constructor () {
+        super("svg-bar-diagram");
         this.svg = utility.createSvgNode("svg");
         this.root.appendChild(this.svg);
         // Parameters for drawing (all in pixels)
@@ -96,5 +93,5 @@ class SvgBarDiagram extends HTMLElement {
     }
 }
 
-module.exports = document.registerElement(
-        "svg-bar-diagram", { prototype: SvgBarDiagram.prototype });
+customElements.define("svg-bar-diagram", SvgBarDiagram);
+module.exports = SvgBarDiagram;

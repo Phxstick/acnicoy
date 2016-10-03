@@ -1,12 +1,18 @@
 "use strict";
 
+const globals = {
+    modules: ["languages", "settings", "language-settings", "vocab-lists",
+                 "pinwall", "content", "vocab", "kanji", "stats", "srs",
+                 "test", "history", "database"],
+    panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
+    sections: ["home", "stats", "history", "vocab", "settings",
+               "test", "dictionary", "kanji"]
+};
+
 const startTime = performance.now();
 // Load node modules
 const { ipcRenderer, clipboard } = require("electron");
 const EventEmitter = require("events");
-const Random = require("random-js");
-const random = new Random(Random.engines.nativeMath);
-const Handlebars = require("handlebars");
 
 // TODO: Use this for languages init section and settings
 // const languageList = require("languages");
@@ -20,27 +26,43 @@ ipcRenderer.on("closing-window", () => ipcRenderer.send("close-now"));
 
 // Load libraries
 const paths = require("./js/lib/path-manager.js")(__dirname);
-const dataManager = require(paths.lib.dataManager)(paths);
-const utility = require(paths.lib.utility);
-const dialogWindow = require(paths.lib.dialogWindow);
-const layers = require(paths.lib.layerManager);
-const Velocity = require(paths.lib.velocity);
+const dataManager = require(paths.lib("data-manager"))(paths);
+const utility = require(paths.lib("utility"));
+const dialogWindow = require(paths.lib("dialog-window"));
+const layers = require(paths.lib("layer-manager"));
+const templates = require(paths.lib("template-manager"));
+const Velocity = require(paths.lib("velocity"));
 
 // Load libraries extending existing objects
-require(paths.lib.arrayExtensions);
-require(paths.lib.htmlElementExtensions);
-require(paths.lib.converter);
+require(paths.extension("converter"));
+require(paths.extension("array-extensions"));
+require(paths.extension("html-element-extensions"));
 
-const TrainerSection = require("./js/trainer-section.js");
+// Load components
+const Component = require(paths.js.component("component"));
+const Window = require(paths.js.component("window"));
+const Section = require(paths.js.component("section"));
+const Panel = require(paths.js.component("panel"));
+const Widget = require(paths.js.component("widget"));
+
+// Load windows
+const MainWindow = require(paths.js.window("main"));
+const InitWindow = require(paths.js.window("init"));
+
 // Load widgets
-const PopupMenu = require(paths.widgets["popup-menu"]);
-const PopupStack = require(paths.widgets["popup-stack"]);
-const SwitchButton = require(paths.widgets["switch-button"]);
-const SwitchBar = require(paths.widgets["switch-bar"]);
-const PopupList = require(paths.widgets["popup-list"]);
-const SvgBarDiagram = require(paths.widgets["svg-bar-diagram"]);
+const PopupMenu = require(paths.js.widget("popup-menu"));
+const PopupStack = require(paths.js.widget("popup-stack"));
+const SwitchButton = require(paths.js.widget("switch-button"));
+const SwitchBar = require(paths.js.widget("switch-bar"));
+const PopupList = require(paths.js.widget("popup-list"));
+const SvgBarDiagram = require(paths.js.widget("svg-bar-diagram"));
+const KanjiInfoPanel = require(paths.js.widget("kanji-info-panel"));
 const KanjiSearchResultEntry =
-    require(paths.widgets["kanji-search-result-entry"]);
+    require(paths.js.widget("kanji-search-result-entry"));
+
+const PinwallWidget = require(paths.js.widget("pinwall-widget"));
+const PinwallNote = require(paths.js.widget("pinwall-note"));
+const SrsStatusDiagram = require(paths.js.widget("srs-status-diagram"));
 
 const totalTime = performance.now() - startTime;
 console.log("Loaded all required modules after %f ms", totalTime);
@@ -135,10 +157,10 @@ Promise.all([
         ipcRenderer.send("shortcut", shortcut, false);
     };
     registerShortcut("Ctrl+Q", () => ipcRenderer.send("quit"));
-    registerShortcut("Ctrl+A", () => main.openPanel(main.addVocabPanel));
-    registerShortcut("Ctrl+K", () => main.openPanel(main.addKanjiPanel));
-    registerShortcut("Ctrl+F", () => main.openSection("dictionary-section"));
-    registerShortcut("Ctrl+T", () => main.openTestSection);
+    registerShortcut("Ctrl+A", () => main.openPanel("add-vocab"));
+    registerShortcut("Ctrl+K", () => main.openPanel("add-kanji"));
+    registerShortcut("Ctrl+F", () => main.openSection("dictionary"));
+    registerShortcut("Ctrl+T", () => main.openTestSection());
     // Define a shortcut to force exit
     registerShortcut("Ctrl+Esc", () => ipcRenderer.send("close-now"));
     return utility.finishEventQueue();

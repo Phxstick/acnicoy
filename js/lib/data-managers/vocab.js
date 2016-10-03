@@ -75,7 +75,8 @@ module.exports = function (paths, modules) {
         contains(word).then((isAdded) => {
           // Add word to SRS system if not yet added and update stats
           if (!isAdded) {
-            const spacing = modules.languageSettings["SRS"]["spacing"][level];
+            const spacing =
+                modules["language-settings"]["SRS"]["spacing"][level];
             modules.database.run("INSERT INTO vocabulary VALUES (?, ?, ?)",
                        word, level, utility.getTime() + spacing);
             modules.stats.incrementWordsAddedToday();

@@ -1,13 +1,9 @@
 "use strict";
 
-utility.getContentNode(document.currentScript.ownerDocument, (content) => {
 class SrsStatusDiagram extends PinwallWidget {
-    constructor () {
-        super();
-        this.root = this.contentFrame.createShadowRoot();
-        this.root.appendChild(content.cloneNode(true));
+    constructor() {
+        super("srs-status-diagram", "SRS status diagram");
         this.srsTable = this.root.getElementById("srs-counts");
-        this.widgetName = "SRS status diagram";
     }
     createSrsTable() {
         let innerHTML =
@@ -67,6 +63,6 @@ class SrsStatusDiagram extends PinwallWidget {
         this.fillSrsTable();
     }
 }
+
 customElements.define("srs-status-diagram", SrsStatusDiagram);
-window.SrsStatusDiagram = SrsStatusDiagram;
-});
+module.exports = SrsStatusDiagram;

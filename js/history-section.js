@@ -1,11 +1,9 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class HistorySection extends TrainerSection {
+class HistorySection extends Section {
     constructor() {
-        super(docContent);
-        this.entryTemplate = Handlebars.compile(
-                this.root.getElementById("history-entry").textContent);
+        super("history");
+        this.entryTemplate = templates.get("history-entry");
         this.flags = { added: true, deleted: true, modified: true,
                        entry: true, translation: true, reading: true };
         // Define variable values
@@ -34,10 +32,12 @@ class HistorySection extends TrainerSection {
         // Make sure to update table when the vocabulary has been edited
         eventEmitter.on("vocab-changed", () => this.updateTable());
     }
+
     open() {
         utility.finishEventQueue().then(() =>
             utility.calculateHeaderCellWidths(this.table, this.tableHead));
     }
+
     adjustToLanguage(language, secondary) {
         this.nextRowIndex = 0;  // Index of next row to be been displayed
         // Get all rows from the database first, then fill history table with
@@ -50,6 +50,7 @@ class HistorySection extends TrainerSection {
                 this.lastId = rows[0].id;
         });
     }
+
     updateTable() {
         dataManager.history.get(this.lastId).then((rows) => {
             this.table.prependChild(this.createTableRows(rows));
@@ -59,12 +60,14 @@ class HistorySection extends TrainerSection {
                 this.lastId = rows[0].id;
         });
     }
+
     displayMoreEntries(amount) {
         const limit = Math.min(this.nextRowIndex + amount, this.rows.length);
         this.table.appendChild(
             this.createTableRows(this.rows.slice(this.nextRowIndex, limit)));
         this.nextRowIndex = limit;
     }
+
     // TODO: Differentiate term "rows" (database rows <-> table rows)...
     createTableRows(entries) {
         const htmlStrings = [];
@@ -141,6 +144,7 @@ class HistorySection extends TrainerSection {
         }
         return utility.fragmentFromString(htmlStrings.join(''));
     }
+
     getToggleCallback(className) {
         return (state) => {
             const newDisplay = (state === true) ? "" : "none";
@@ -166,5 +170,6 @@ class HistorySection extends TrainerSection {
         };
     }
 }
+
 customElements.define("history-section", HistorySection);
-});
+module.exports = HistorySection;

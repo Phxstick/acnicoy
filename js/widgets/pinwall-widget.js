@@ -1,16 +1,16 @@
 "use strict";
 
-utility.getContentNode(document.currentScript.ownerDocument, (content) => {
-class PinwallWidget extends HTMLElement {
-    constructor () {
-        super();
+class PinwallWidget extends Widget {
+    constructor (name, label) {
+        super("pinwall-widget", true, true);
+        const root = this.root;
         this.hovering = false;
-        const root = this.createShadowRoot();
-        root.appendChild(content.cloneNode(true));
         this.contentFrame = root.getElementById("content-frame");
+        // this.contentFrame.style.position = "relative";
         const controlFrame = root.getElementById("control-frame");
         const windowFrame = root.getElementById("window");
         this.widgetNameLabel = root.getElementById("widget-name");
+        this.widgetNameLabel.textContent = label;
         this.style.display = "inline-block";
         this.removeButton = root.getElementById("remove-button");
         windowFrame.addEventListener("mouseenter", (event) => {
@@ -34,13 +34,17 @@ class PinwallWidget extends HTMLElement {
         });
         this._removeCallback = () => { };
         this.removeButton.addEventListener("click", this._removeCallback);
+        // Create new root in content frame and fill it with widget content
+        this.root = this.contentFrame.attachShadow({ mode: "open" });
+        const style = document.createElement("style");
+        style.textContent = `@import url(${paths.css(name)});`
+        style.textContent += `@import url(${paths.fontAwesome})`;
+        this.root.appendChild(style);
+        this.root.appendChild(utility.parseHtmlFile(paths.html.widget(name)));
     }
     adjustToLanguage(language, secondary) {
     }
     open() {
-    }
-    set widgetName(value) {
-        this.widgetNameLabel.textContent = value;
     }
     set removeCallback(value) {
         this._removeCallback = value;
@@ -48,6 +52,6 @@ class PinwallWidget extends HTMLElement {
         // this.removeButton.addEventListener("click", value);
     }
 }
+
 customElements.define("pinwall-widget", PinwallWidget);
-window.PinwallWidget = PinwallWidget;
-});
+module.exports = PinwallWidget;

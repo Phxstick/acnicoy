@@ -1,9 +1,8 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class EditKanjiPanel extends TrainerSection {
-    constructor () {
-        super(docContent);
+class EditKanjiPanel extends Panel {
+    constructor() {
+        super("edit-kanji");
         // Store important DOM elements as properties
         this.kanjiLabel = this.root.getElementById("kanji");
         this.meaningsList = this.root.getElementById("meanings");
@@ -28,11 +27,11 @@ class EditKanjiPanel extends TrainerSection {
         });
         // Create closing and saving callbacks
         this.root.getElementById("close-button").addEventListener(
-            "click", () => main.closePanel(this));
+            "click", () => main.closePanel("edit-kanji"));
         this.root.getElementById("cancel-button").addEventListener(
-            "click", () => main.closePanel(this));
+            "click", () => main.closePanel("edit-kanji"));
         this.root.getElementById("save-button").addEventListener(
-            "click", () => { this.save(); main.closePanel(this); });
+            "click", () => { this.save(); main.closePanel("edit-kanji"); });
         // Create popup menus
         this.kanjiPopup = new PopupMenu();
         this.meaningsListPopup = new PopupMenu();
@@ -107,7 +106,7 @@ class EditKanjiPanel extends TrainerSection {
         }
     }
 
-    load (kanji) {
+    load(kanji) {
         dataManager.kanji.getInfo(kanji).then((info) => {
             this.meaningsList.empty();
             this.onYomiList.empty();
@@ -166,7 +165,7 @@ class EditKanjiPanel extends TrainerSection {
                 `Are you sure you want to remove the kanji '${kanji}'?`))
             return;
         dataManager.kanji.remove(kanji);
-        main.closePanel(this);
+        main.closePanel("edit-kanji");
         // TODO: Emit events
     }
 
@@ -205,7 +204,7 @@ class EditKanjiPanel extends TrainerSection {
         this.editInput.focus();
     }
 
-    save () {
+    save() {
         const kanji = this.kanjiLabel.textContent;
         const meanings = [];
         const onYomi = [];
@@ -237,5 +236,6 @@ class EditKanjiPanel extends TrainerSection {
         });
     }
 }
+
 customElements.define("edit-kanji-panel", EditKanjiPanel);
-});
+module.exports = EditKanjiPanel;

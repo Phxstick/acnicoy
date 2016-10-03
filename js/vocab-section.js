@@ -1,9 +1,8 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class VocabSection extends TrainerSection {
+class VocabSection extends Section {
     constructor() {
-        super(docContent);
+        super("vocab");
 
         this.selectedList = null;
         this.selectedListNode = null;
@@ -164,8 +163,8 @@ class VocabSection extends TrainerSection {
         this.listContentsItemPopup = new PopupMenu();
         this.listContentsItemPopup.addItem("Edit item", () => {
             const word = this.listContentsItemPopup.currentObject.textContent;
-            main.editVocabPanel.load(word);
-            main.openPanel(main.editVocabPanel);
+            main.panels["edit-vocab"].load(word);
+            main.openPanel("edit-vocab");
         });
         this.listContentsItemPopup.addItem("Remove item from list", () => {
             const word = this.listContentsItemPopup.currentObject.textContent;
@@ -176,8 +175,8 @@ class VocabSection extends TrainerSection {
         this.allWordsItemPopup = new PopupMenu();
         this.allWordsItemPopup.addItem("Edit item", () => {
             const word = this.allWordsItemPopup.currentObject.textContent;
-            main.editVocabPanel.load(word);
-            main.openPanel(main.editVocabPanel);
+            main.panels["edit-vocab"].load(word);
+            main.openPanel("edit-vocab");
         });
         this.allWordsItemPopup.addItem("Delete item", () => {
             const word = this.allWordsItemPopup.currentObject.textContent;
@@ -374,5 +373,6 @@ class VocabSection extends TrainerSection {
         this.editInput.focus();
     }
 }
+
 customElements.define("vocab-section", VocabSection);
-});
+module.exports = VocabSection;

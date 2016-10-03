@@ -1,9 +1,8 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class KanjiSection extends TrainerSection {
+class KanjiSection extends Section {
     constructor () {
-        super(docContent);
+        super("kanji");
         this.lastSearchResult = [];
         this.selectedKanji = null;
         this.overviewWindow = this.root.getElementById("overview-window");
@@ -60,18 +59,18 @@ class KanjiSection extends TrainerSection {
         });
         this.popupMenuAdded.addSeparator();
         this.popupMenuAdded.addItem("Edit", () => {
-            main.editKanjiPanel.load(
+            main.panels["edit-kanji"].load(
                 this.popupMenuAdded.currentObject.textContent);
-            main.openPanel(main.editKanjiPanel);
+            main.openPanel("edit-kanji");
         });
         this.popupMenuAdded.addItem("Remove", () => { });
         this.popupMenuMissing.addItem("Copy", () => {
             clipboard.writeText(this.popupMenuMissing.currentObject.textContent);
         });
         this.popupMenuMissing.addItem("Add", () => {
-            main.addKanjiPanel.load(
+            main.panels["add-kanji"].load(
                 this.popupMenuMissing.currentObject.textContent);
-            main.openPanel(main.addKanjiPanel);
+            main.openPanel("add-kanji");
         });
         eventEmitter.on("kanji-edited", (kanji, type) => {
             this.updateKanjiStatus(kanji, type)
@@ -211,5 +210,6 @@ class KanjiSection extends TrainerSection {
             () => this.searchResults.appendChild(fragment));
     }
 }
+
 customElements.define("kanji-section", KanjiSection);
-});
+module.exports = KanjiSection;

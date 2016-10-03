@@ -1,11 +1,11 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class SettingsSection extends TrainerSection {
+class SettingsSection extends Section {
     constructor() {
-        super(docContent);
+        super("settings");
         eventEmitter.emit("done-loading");
     }
 }
+
 customElements.define("settings-section", SettingsSection);
-});
+module.exports = SettingsSection;

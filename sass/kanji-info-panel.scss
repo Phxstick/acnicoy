@@ -1,6 +1,6 @@
 @import "base";
 
-body {
+#window {
   display: flex;
   flex-direction: row;
   background-color: whitesmoke;
@@ -116,7 +116,7 @@ body {
     #details-frame {
       padding: 10px;
       span {
-        white-space: nowrap;  // Not working :'(
+        display: inline-block;
         font-size: 90%;
         border-radius: 5px;
         margin-right: 10px;
@@ -200,7 +200,6 @@ body {
       }
     }
     #stroke-graphics {
-      // white-space: nowrap;
       overflow-y: auto;
       background: lightgrey;
       padding: 2px;
@@ -210,7 +209,7 @@ body {
         margin-right: 2px;
         &:last-child { margin-right: 0 };
         background-color: white;
-        display: inline;
+        display: inline-block;
         path {
           stroke: #888888;
           stroke-width: 5;

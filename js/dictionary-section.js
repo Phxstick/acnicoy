@@ -1,9 +1,8 @@
 "use strict";
 
-utility.importDocContent(document.currentScript.ownerDocument, (docContent) => {
-class DictionarySection extends TrainerSection {
+class DictionarySection extends Section {
     constructor() {
-        super(docContent);
+        super("dictionary");
         this.lastResult = [];
         this.nextRowIndex = 0;
         const loadAmount = 30;  // Amout of entries to load at once
@@ -41,14 +40,14 @@ class DictionarySection extends TrainerSection {
                 // Adjust entry by whether kanji is already added or not
                 if (isAdded) {
                     this.kanjiPopup.addItem("Edit this kanji", () => {
-                        main.addKanjiPanel.load(object.textContent);
-                        main.openPanel(main.addKanjiPanel);
+                        main.panels["edit-kanji"].load(object.textContent);
+                        main.openPanel("edit-kanji");
                     });
                 } else {
                     this.kanjiPopup.addItem("Add this kanji", () => {
-                        main.addKanjiPanel.kanjiEntry.value =
+                        main.panels["add-kanji"].kanjiEntry.value =
                             object.textContent;
-                        main.openPanel(main.addKanjiPanel);
+                        main.openPanel("add-kanji");
                     });
                 }
                 this.kanjiPopup.addItem("View kanji info", () => {
@@ -65,8 +64,10 @@ class DictionarySection extends TrainerSection {
         });
         eventEmitter.emit("done-loading");
     }
+
     open() {
     }
+
     adjustToLanguage(language, secondary) {
         this.resultList.empty();
         if (dataManager.languageSettings.readings) {
@@ -80,6 +81,7 @@ class DictionarySection extends TrainerSection {
             this.wordsFilter.disableKanaInput();
         }
     }
+
     createDictionaryEntry(entryId) {
         dataManager.content.getDictionaryEntryInfo(entryId).then((info) => {
             const { wordsAndReadings, meanings, newsFreq } = info;
@@ -159,6 +161,7 @@ class DictionarySection extends TrainerSection {
             this.resultList.appendChild(entryFrame);
         });
     }
+
     createCharSpan(character) {
         const charSpan = document.createElement("span");
         charSpan.textContent = character;
@@ -178,6 +181,7 @@ class DictionarySection extends TrainerSection {
         });
         return charSpan;
     }
+
     displayMoreResults(amount) {
         const limit = Math.min(this.nextRowIndex + amount,
                                this.lastResult.length);
@@ -189,5 +193,6 @@ class DictionarySection extends TrainerSection {
         //  `Displaying ${this.nextRowIndex} of ${this.lastResult.length} results.`;
     }
 }
+
 customElements.define("dictionary-section", DictionarySection);
-});
+module.exports = DictionarySection;

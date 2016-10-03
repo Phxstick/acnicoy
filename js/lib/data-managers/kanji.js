@@ -41,7 +41,7 @@ module.exports = function (paths, modules) {
           if (newValues[i].length > 0) {
             const newLevel = levels[names[i]];
             const spacing =
-                modules.languageSettings["SRS"]["spacing"][newLevel];
+                modules["language-settings"]["SRS"]["spacing"][newLevel];
             const promise = modules.database.query(
                 `SELECT * FROM ${table}_test WHERE entry = ?`, kanji)
             .then((rows) => {
