@@ -3,6 +3,15 @@
 const Random = require("random-js");
 const random = new Random(Random.engines.nativeMath);
 
+const menuItems = PopupMenu.registerItems({
+    "copy-test-item": {
+        label: "Copy",
+        click: ({ currentNode }) => {
+            clipboard.writeText(currentNode.textContent);
+        }
+    }
+});
+
 class TestSection extends Section {
     constructor() {
         super("test");
@@ -57,11 +66,7 @@ class TestSection extends Section {
             // this._createQuestion();
         });
         // Create popup-menus
-        const testItemPopup = new PopupMenu();
-        testItemPopup.attachTo(this.testItem);
-        testItemPopup.addItem("Copy", () => {
-            clipboard.writeText(this.testItem.textContent);
-        });
+        this.testItem.popupMenu(menuItems, ["copy-test-item"]);
         eventEmitter.emit("done-loading");
     }
 
@@ -219,8 +224,8 @@ class TestSection extends Section {
         // TODO: Unregistering shortcut (customize in settings)
         const promise = this.animate ? 
             this.itemsDiv.fadeOut(300).then(
-                    () => this.itemsDiv.visibility = "visible") :
-                    Promise.resolve();
+                    () => this.itemsDiv.style.visibility = "visible") :
+            Promise.resolve();
         promise.then(() => {
             // Display stuff
             this._prepareMode(newItem.mode, part);

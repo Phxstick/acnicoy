@@ -1,5 +1,34 @@
 "use strict";
 
+const menuItems = PopupMenu.registerItems({
+    "copy-kanji": {
+        label: "Copy kanji",
+        click: ({ currentNode }) => {
+            clipboard.writeText(currentNode.textContent);
+        }
+    },
+    "copy-word": {
+        label: "Copy word",
+        click: ({ currentNode }) => {
+            clipboard.writeText(currentNode.word);
+        }
+    },
+    "edit-word": {
+        label: "Edit vocabulary item",
+        click: ({ currentNode }) => {
+            main.panels["edit-vocab"].load(currentNode.word);
+            main.openPanel("edit-vocab");
+        }
+    },
+    "add-word": {
+        label: "Add word to vocabulary",
+        click: ({ currentNode }) => {
+            main.panels["add-vocab"].load(currentNode.wordId, currentNode.word);
+            main.openPanel("add-vocab");
+        }
+    }
+});
+
 class KanjiInfoPanel extends Widget {
     constructor () {
         super("kanji-info-panel", true, true);
@@ -8,6 +37,7 @@ class KanjiInfoPanel extends Widget {
         this.frame = this.root.getElementById("window");
         this.closeButton = this.root.getElementById("close-button");
         this.kanji = this.root.getElementById("kanji");
+        this.kanji.popupMenu(menuItems, ["copy-kanji"]);
         this.completeSvg = this.root.getElementById("complete-kanji");
         this.addedLabel = this.root.getElementById("added-label");
         this.addButton = this.root.getElementById("add-button");
@@ -44,12 +74,6 @@ class KanjiInfoPanel extends Widget {
                 this.openSection(name);
             });
         }
-        // TODO: Create all necessary popup menus
-        this.kanjiPopup = new PopupMenu();
-        this.kanjiPopup.attachTo(this.kanji);
-        this.kanjiPopup.addItem("Copy", () => 
-            clipboard.writeText(this.currentKanji));
-        this.exampleWordsPopup = new PopupMenu();
         // Callbacks
         this.closeButton.addEventListener("click", () => {
             Velocity(this, "slideUp", { duration: 200 });
@@ -218,27 +242,11 @@ class KanjiInfoPanel extends Widget {
             const wordCol = document.createElement("td");
             wordCol.textContent = dataRow.word;
             tableRow.appendChild(wordCol);
-            this.exampleWordsPopup.onOpen = (row) => {
-                this.exampleWordsPopup.clearItems();
-                this.exampleWordsPopup.addItem("Copy word",
-                        () => clipboard.writeText(row.word));
-                dataManager.vocab.contains(row.word).then((isAdded) => {
-                    if (isAdded) {
-                        this.exampleWordsPopup.addItem(
-                                "Edit vocabulary item", () => {
-                            main.panels["edit-vocab"].load(row.word);
-                            main.openPanel("edit-vocab");
-                        });
-                    } else {
-                        this.exampleWordsPopup.addItem(
-                                "Add word to vocabulary", () => {
-                            main.panels["add-vocab"].load(row.wordId, row.word);
-                            main.openPanel("add-vocab");
-                        });
-                    }
-                });
-            };
-            this.exampleWordsPopup.attachTo(tableRow);
+            tableRow.popupMenu(menuItems, () => {
+                return dataManager.vocab.contains(row.word).then((isAdded) =>
+                    isAdded? ["copy-word", "edit-word"] :
+                             ["copy-word", "add-word"]);
+            });
             // Add readings to the row
             // TODO: Choose most common readings / no outdated ones
             const readingsCol = document.createElement("td");
@@ -340,6 +348,8 @@ class KanjiInfoPanel extends Widget {
             const lastStroke = strokes[i].stroke;
             // Display a red dot where the current stroke begins
             const dotPos = lastStroke.match(/^M\s?([-\d.]+),([-\d.]+)/);
+            // TODO: Still sometimes throws error
+            //       (Cannot read property 1 of null)
             const brushStart = utility.createSvgNode("circle",
                 { cx: dotPos[1], cy: dotPos[2], r: "5" });
             brushStart.classList.add("brush-start");

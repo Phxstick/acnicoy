@@ -11,7 +11,8 @@ const globals = {
 
 const startTime = performance.now();
 // Load node modules
-const { ipcRenderer, clipboard } = require("electron");
+const { ipcRenderer, clipboard, remote } = require("electron");
+const { Menu, MenuItem } = remote;
 const EventEmitter = require("events");
 
 // TODO: Use this for languages init section and settings
@@ -32,6 +33,7 @@ const dialogWindow = require(paths.lib("dialog-window"));
 const layers = require(paths.lib("layer-manager"));
 const templates = require(paths.lib("template-manager"));
 const Velocity = require(paths.lib("velocity"));
+const PopupMenu = require(paths.lib("popup-menu"));
 
 // Load libraries extending existing objects
 require(paths.extension("converter"));
@@ -50,7 +52,6 @@ const MainWindow = require(paths.js.window("main"));
 const InitWindow = require(paths.js.window("init"));
 
 // Load widgets
-const PopupMenu = require(paths.js.widget("popup-menu"));
 const PopupStack = require(paths.js.widget("popup-stack"));
 const SwitchButton = require(paths.js.widget("switch-button"));
 const SwitchBar = require(paths.js.widget("switch-bar"));

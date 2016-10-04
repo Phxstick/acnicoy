@@ -67,7 +67,7 @@ HTMLElement.prototype.uponScrollingBelow = function (limit, callback) {
 
 // TODO: Is this really needed? Better alternative?
 HTMLElement.prototype.safeDeepClone = function() {
-    const nodeToCopyMap = {};
+    const nodeToCopyMap = new Map();
     const nodes = [];
     nodes.push(this);
     while (nodes.length > 0) {
@@ -77,25 +77,21 @@ HTMLElement.prototype.safeDeepClone = function() {
         newNode.textContent = oldNode.textContent;
         newNode.style.cssText =
             document.defaultView.getComputedStyle(oldNode, "").cssText;
-        // for (let attribute in oldNode.style) {
-        //     newNode.style.setProperty(attribute,
-        //         oldNode.style.getPropertyValue(attribute));
-        //     // newNode.style[attribute] = oldNode.style[attribute];
-        // }
         // Map the old node to its copy
-        nodeToCopyMap[oldNode] = newNode;
+        nodeToCopyMap.set(oldNode, newNode);
         // Append new node to the copied tree
         if (oldNode !== this) {
-            console.log("Appending ", newNode, " to ",
-                    nodeToCopyMap[oldNode.parentNode]);
-            nodeToCopyMap[oldNode.parentNode].appendChild(newNode);
+            // console.log("Appending ", newNode, " to ",
+            //         nodeToCopyMap[oldNode.parentNode]);
+            nodeToCopyMap.get(oldNode.parentNode).appendChild(newNode);
         }
         // Append children of old node into array for traversing
+        const oldSize = nodes.length;
         for (let i = 0; i < oldNode.children.length; ++i) {
             nodes.push(oldNode.children[i]);
         }
     }
-    return nodeToCopyMap[this];
+    return nodeToCopyMap.get(this);
 }
 
 
@@ -146,4 +142,54 @@ HTMLElement.prototype.fadeIn = function(distance) {
         fadeInSpan.remove();
         this.style.visibility = "visible";
     });
+}
+
+/**
+**  When opening the context-menu for this element, display the given list
+**  of items.
+**  @param {Object} menuItems - Map item names to MenuItem-objects.
+**  @param {Array, function} itemNames - Either an array of item names or a
+**      function returning an array of item names (or promise of an array).
+**      For each of the given names, the menuItems-parameter must return
+**      a MenuItem-object which will be displayed.
+**  @param {Object} [data] - Optional data to pass to the menu items callback.
+**/
+HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
+    if (data === undefined) {
+        data = {};
+    }
+    // TODO: Can I just reassign this.popupMenuCallback?
+    if (this.popupMenuCallback !== undefined) {
+        this.removeEventListener("contextmenu", this.popupMenuCallback);
+    }
+    // If itemNames is a function, evaluate items to be displayed right before
+    // opening the popupWindow
+    if (typeof itemNames === "function") {
+        this.popupMenuCallback = (event) => {
+            const names = itemNames();
+            PopupMenu.itemsLoaded = Promise.resolve(itemNames())
+            .then((names) => {
+                for (let name of names) {
+                    const menuItem = menuItems[name];
+                    menuItem.currentNode = this;
+                    menuItem.data = data;
+                    PopupMenu.visibleItems.add(menuItem);
+                }
+            });
+        };
+    // If itemNames is an Array, directly read the names
+    } else if (Array.isArray(itemNames)) {
+        if (itemNames.length === 0) return;
+        this.popupMenuCallback = (event) => {
+            for (let name of itemNames) {
+                const menuItem = menuItems[name];
+                menuItem.currentNode = this;
+                menuItem.data = data;
+                PopupMenu.visibleItems.add(menuItem);
+            }
+        };
+    } else {
+        throw Error("Parameter 'itemNames' must be an array or function!");
+    }
+    this.addEventListener("contextmenu", this.popupMenuCallback);
 }

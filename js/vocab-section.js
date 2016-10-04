@@ -1,5 +1,69 @@
 "use strict";
 
+const menuItems = PopupMenu.registerItems({
+    "rename-list": {
+        label: "Rename list",
+        click: ({ currentNode, data: {section} }) => {
+            section.packEditEntry(currentNode);
+        }
+    },
+    "delete-list": {
+        label: "Delete list",
+        click: ({ currentNode, data: {section} }) => {
+            const name = currentNode.textContent;
+            if (dialogWindow.confirm("Are you sure you want to delete " +
+                    "the vocabulary list '" + name + "'?")) {
+                dataManager.vocabLists.deleteList(name);
+                main.updateStatus(`Deleted list '${name}' and its contents.`);
+                currentNode.remove();
+                if (section.selectedList === name) {
+                    section.selectedListNode = null;
+                    section.selectedList = null;
+                    section.listContentsList.empty();
+                    section.renameListButton.disabled = true;
+                    section.deleteListButton.disabled = true;
+                    section.testOnListButton.disabled = true;
+                }
+            }
+        }
+    },
+    "test-on-list": {
+        label: "Take test on list",
+        click: ({ currentNode, data: {section} }) => {
+            main.updateStatus("Not yet implemented.");
+        }
+    },
+    "edit-item": {
+        label: "Edit item",
+        click: ({ currentNode }) => {
+            const word = currentNode.textContent;
+            main.panels["edit-vocab"].load(word);
+            main.openPanel("edit-vocab");
+        }
+    },
+    "remove-from-list": {
+        label: "Remove item from list",
+        click: ({ currentNode, data: {section} }) => {
+            const word = currentNode.textContent;
+            dataManager.vocabLists.removeWordFromList(
+                    word, section.selectedList);
+            section.listContentsList.removeChild(currentNode);
+        }
+    },
+    "remove-from-vocab": {
+        label: "Remove item from vocabulary",
+        click: ({ currentNode, data: {section} }) => {
+            const word = currentNode.textContent;
+            if (dialogWindow.confirm(
+                   `Are you sure you want to delete the word '${word}'?`)) {
+                dataManager.vocab.remove(word);
+                eventEmitter.emit("word-deleted", word);
+                eventEmitter.emit("vocab-changed");
+            }
+        }
+    }
+});
+
 class VocabSection extends Section {
     constructor() {
         super("vocab");
@@ -12,7 +76,6 @@ class VocabSection extends Section {
         this.getDomElements();
         this.createDomEventListeners();
         this.createTrainerEventListeners();
-        this.createPopupMenus();
 
         eventEmitter.emit("done-loading");
     }
@@ -135,58 +198,6 @@ class VocabSection extends Section {
     }
     
     createPopupMenus() {
-        this.allListsItemPopup = new PopupMenu();
-        this.allListsItemPopup.addItem("Rename list", () => {
-            this.packEditEntry(this.allListsItemPopup.currentObject);
-        });
-        this.allListsItemPopup.addItem("Delete list", () => {
-            const name = this.allListsItemPopup.currentObject.textContent;
-            if (dialogWindow.confirm("Are you sure you want to delete " +
-                    "the vocabulary list '" + name + "'?")) {
-                dataManager.vocabLists.deleteList(name);
-                main.updateStatus(`Deleted list '${name}' and its contents.`);
-                this.allListsItemPopup.currentObject.remove();
-                if (this.selectedList === name) {
-                    this.selectedListNode = null;
-                    this.selectedList = null;
-                    this.listContentsList.empty();
-                    this.renameListButton.disabled = true;
-                    this.deleteListButton.disabled = true;
-                    this.testOnListButton.disabled = true;
-                }
-            }
-        });
-        this.allListsItemPopup.addItem("Take test on list", () => {
-            // TODO TODO
-            main.updateStatus("Not yet implemented.");
-        });
-        this.listContentsItemPopup = new PopupMenu();
-        this.listContentsItemPopup.addItem("Edit item", () => {
-            const word = this.listContentsItemPopup.currentObject.textContent;
-            main.panels["edit-vocab"].load(word);
-            main.openPanel("edit-vocab");
-        });
-        this.listContentsItemPopup.addItem("Remove item from list", () => {
-            const word = this.listContentsItemPopup.currentObject.textContent;
-            dataManager.vocabLists.removeWordFromList(word, this.selectedList);
-            this.listContentsList.removeChild(
-                this.listContentsItemPopup.currentObject);
-        });
-        this.allWordsItemPopup = new PopupMenu();
-        this.allWordsItemPopup.addItem("Edit item", () => {
-            const word = this.allWordsItemPopup.currentObject.textContent;
-            main.panels["edit-vocab"].load(word);
-            main.openPanel("edit-vocab");
-        });
-        this.allWordsItemPopup.addItem("Delete item", () => {
-            const word = this.allWordsItemPopup.currentObject.textContent;
-            if (dialogWindow.confirm(
-                   `Are you sure you want to delete the word '${word}'?`)) {
-                dataManager.vocab.remove(word);
-                eventEmitter.emit("word-deleted", word);
-                eventEmitter.emit("vocab-changed");
-            }
-        });
     }
 
     adjustToLanguage(language, secondary) {
@@ -212,6 +223,7 @@ class VocabSection extends Section {
         this.deleteListButton.disabled = true;
         this.testOnListButton.disabled = true;
     }
+
     createAllWordsItem(word) {
         const item = document.createElement("div");
         item.draggable = true;
@@ -226,9 +238,11 @@ class VocabSection extends Section {
             event.dataTransfer.setData("text/plain", item.textContent);
             this.draggedItem = item;
         });
-        this.allWordsItemPopup.attachTo(item);
+        item.popupMenu(menuItems, ["edit-item", "remove-from-vocab"],
+                       { section: this });
         return item;
     }
+
     createListContentsItem(word) {
         const item = document.createElement("div");
         item.textContent = word;
@@ -237,11 +251,14 @@ class VocabSection extends Section {
         // item.addEventListener("dragstart", (event) => {
         //     event.dataTransfer.setData("text", item.textContent);
         // });
-        this.listContentsItemPopup.attachTo(item);
+        item.popupMenu(menuItems,
+                ["edit-item", "remove-from-list", "remove-from-vocab"],
+                { section: this });
         // Make sure the inserted item keeps the list sorted
         utility.insertNodeIntoSortedList(this.listContentsList, item);
         return item;
     }
+
     createAllListsItem(name) {
         const item = document.createElement("div");
         item.textContent = name;
@@ -291,10 +308,13 @@ class VocabSection extends Section {
             event.preventDefault();
             item.classList.remove("dragging-over");
         });
-        this.allListsItemPopup.attachTo(item);
+        item.popupMenu(menuItems,
+                ["test-on-list", "rename-list", "delete-list"],
+                { section: this });
         this.allListsList.appendChild(item);
         return item;
     }
+
     packEditEntry(node) {
         // If the entry is already packed here, do nothing
         if (this.editInput.parentNode === node)

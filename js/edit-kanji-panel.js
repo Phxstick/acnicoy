@@ -1,5 +1,81 @@
 "use strict";
 
+const menuItems = PopupMenu.registerItems({
+    "copy-kanji": {
+        label: "Copy kanji",
+        click: ({ currentNode }) => {
+            const kanji = currentNode.textContent;
+            clipboard.writeText(currentNode.textContent);
+        }
+    },
+    "remove-kanji": {
+        label: "Remove kanji from SRS items",
+        click: ({ data: {section} }) => {
+            section.deleteKanji();
+        }
+    },
+    "add-meaning": {
+        label: "Add meaning",
+        click: ({ data: {section} }) => {
+            const item = section.createListItem("", "meaning");
+            section.meaningsList.scrollToBottom;
+            section.packEditEntry(item, "meaning");
+        }
+    },
+    "delete-meaning": {
+        label: "Delete meaning",
+        click: ({ currentNode, data: {section} }) => {
+            section.meaningsList.removeChild(currentNode);
+        }
+    },
+    "modify-meaning": {
+        label: "Modify meaning",
+        click: ({ currentNode, data: {section} }) => {
+            section.packEditEntry(currentNode, "meaning");
+        }
+    },
+    "add-on-yomi": {
+        label: "Add on-yomi",
+        click: ({ data: {section} }) => {
+            const item = section.createListItem("", "on-yomi");
+            section.onYomiList.scrollToBottom;
+            section.packEditEntry(item, "on-yomi");
+        }
+    },
+    "delete-on-yomi": {
+        label: "Delete on-yomi",
+        click: ({ currentNode, data: {section} }) => {
+            section.onYomiList.removeChild(currentNode);
+        }
+    },
+    "modify-on-yomi": {
+        label: "Modify on-yomi",
+        click: ({ currentNode, data: {section} }) => {
+            section.packEditEntry(currentNode, "on-yomi");
+        }
+    },
+    "add-kun-yomi": {
+        label: "Add kun-yomi",
+        click: ({ data: {section} }) => {
+            const item = section.createListItem("", "kun-yomi");
+            section.kunYomiList.scrollToBottom;
+            section.packEditEntry(item, "kun-yomi");
+        }
+    },
+    "delete-kun-yomi": {
+        label: "Delete kun-yomi",
+        click: ({ currentNode, data: {section} }) => {
+            section.kunYomiList.removeChild(currentNode);
+        }
+    },
+    "modify-kun-yomi": {
+        label: "Modify kun-yomi",
+        click: ({ currentNode, data: {section} }) => {
+            section.packEditEntry(currentNode, "kun-yomi");
+        }
+    }
+});
+
 class EditKanjiPanel extends Panel {
     constructor() {
         super("edit-kanji");
@@ -25,6 +101,11 @@ class EditKanjiPanel extends Panel {
                 this.editInput.unpack();
             }
         });
+        // Configure popup-menu for static elements
+        this.kanjiLabel.popupMenu(menuItems, ["copy-kanji", "remove-kanji"]);
+        this.meaningsList.popupMenu(menuItems, ["add-meaning"]);
+        this.onYomiList.popupMenu(menuItems, ["add-on-yomi"]);
+        this.kunYomiList.popupMenu(menuItems, ["add-kun-yomi"]);
         // Create closing and saving callbacks
         this.root.getElementById("close-button").addEventListener(
             "click", () => main.closePanel("edit-kanji"));
@@ -32,64 +113,6 @@ class EditKanjiPanel extends Panel {
             "click", () => main.closePanel("edit-kanji"));
         this.root.getElementById("save-button").addEventListener(
             "click", () => { this.save(); main.closePanel("edit-kanji"); });
-        // Create popup menus
-        this.kanjiPopup = new PopupMenu();
-        this.meaningsListPopup = new PopupMenu();
-        this.onYomiListPopup = new PopupMenu();
-        this.kunYomiListPopup = new PopupMenu();
-        this.meaningsItemPopup = new PopupMenu();
-        this.onYomiItemPopup = new PopupMenu();
-        this.kunYomiItemPopup = new PopupMenu();
-        this.kanjiPopup.attachTo(this.kanjiLabel);
-        this.meaningsListPopup.attachTo(this.meaningsList);
-        this.onYomiListPopup.attachTo(this.onYomiList);
-        this.kunYomiListPopup.attachTo(this.kunYomiList);
-        // Create kanjiPopup entries
-        this.kanjiPopup.addItem("Copy",
-                () => clipboard.writeText(this.kanjiPopup.textContent));
-        this.kanjiPopup.addSeparator();
-        this.kanjiPopup.addItem("Remove kanji from SRS items", () => {
-            this.deleteKanji();
-        });
-        // Create meaningsListPopup entry
-        this.meaningsListPopup.addItem("Add meaning", () => {
-            const item = this.createListItem("", "meaning");
-            this.meaningsList.scrollToBottom();
-            this.packEditEntry(item, "meaning");
-        });
-        // Create meaningsItemPopup entries
-        this.meaningsItemPopup.addItem("Delete meaning", () => {
-            this.meaningsList.removeChild(this.meaningsItemPopup.currentObject);
-        });
-        this.meaningsItemPopup.addItem("Modify meaning", () => {
-            this.packEditEntry(this.meaningsItemPopup.currentObject, "meaning");
-        });
-        // Create onYomiListPopup entry
-        this.onYomiListPopup.addItem("Add on-yomi", () => {
-            const item = this.createListItem("", "on-yomi");
-            this.onYomiList.scrollToBottom();
-            this.packEditEntry(item, "on-yomi");
-        });
-        // Create onYomiItemPopup entries
-        this.onYomiItemPopup.addItem("Delete on-yomi", () => {
-            this.onYomiList.removeChild(this.onYomiItemPopup.currentObject);
-        });
-        this.onYomiItemPopup.addItem("Modify on-yomi", () => {
-            this.packEditEntry(this.onYomiItemPopup.currentObject, "on-yomi");
-        });
-        // Create kunYomiListPopup entry
-        this.kunYomiListPopup.addItem("Add kun-yomi", () => {
-            const item = this.createListItem("", "kun-yomi");
-            this.kunYomiList.scrollToBottom();
-            this.packEditEntry(item, "kun-yomi");
-        });
-        // Create kunYomiItemPopup entries
-        this.kunYomiItemPopup.addItem("Delete kun-yomi", () => {
-            this.kunYomiList.removeChild(this.kunYomiItemPopup.currentObject);
-        });
-        this.kunYomiItemPopup.addItem("Modify kun-yomi", () => {
-            this.packEditEntry(this.kunYomiItemPopup.currentObject, "kun-yomi");
-        });
         // TODO: all-srs-levels popup callback
         eventEmitter.emit("done-loading");
     }
@@ -148,13 +171,16 @@ class EditKanjiPanel extends Panel {
         span.addEventListener("click", () => this.packEditEntry(span, type));
         if (type === "meaning") {
             this.meaningsList.appendChild(span);
-            this.meaningsItemPopup.attachTo(span);
+            span.popupMenu(menuItems, ["delete-meaning", "modify-meaning"],
+                           { section: this });
         } else if (type === "kun-yomi") {
             this.kunYomiList.appendChild(span);
-            this.kunYomiItemPopup.attachTo(span);
+            span.popupMenu(menuItems, ["delete-kun-yomi", "modify-kun-yomi"],
+                           { section: this });
         } else if (type === "on-yomi") {
             this.onYomiList.appendChild(span);
-            this.onYomiItemPopup.attachTo(span);
+            span.popupMenu(menuItems, ["delete-on-yomi", "modify-on-yomi"],
+                           { section: this });
         }
         return span;
     }

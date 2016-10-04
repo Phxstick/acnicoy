@@ -56,77 +56,77 @@ class EditVocabPanel extends Panel {
             "click", () => main.closePanel("edit-vocab"));
         this.root.getElementById("save-button").addEventListener(
             "click", () => { this.save(); main.closePanel("edit-vocab"); });
-        // Create popup menus
-        this.wordPopup = new PopupMenu();
-        this.translationsListPopup = new PopupMenu();
-        this.readingsListPopup = new PopupMenu();
-        this.translationsItemPopup = new PopupMenu();
-        this.readingsItemPopup = new PopupMenu();
-        this.listsPopup = new PopupMenu();
-        this.wordPopup.attachTo(this.wordLabel);
-        this.translationsListPopup.attachTo(this.translationsList);
-        this.readingsListPopup.attachTo(this.readingsList);
-        // Create wordPopup entries
-        this.wordPopup.addItem("Copy", () => {
-            clipboard.writeText(this.wordLabel.textContent);
-        });
-        this.wordPopup.addSeparator();
-        this.wordPopup.addItem("Delete item", () => {
-            this.deleteWord(this.wordLabel.textContent);
-        });
-        this.wordPopup.addItem("Rename item", () => {
-            this.packEditEntry(this.wordLabel, "word");
-        });
-        // Create translationsListPopup entry
-        this.translationsListPopup.addItem("Add translation", () => {
-            const item = this.createListItem("", "translation");
-            this.translationsList.scrollToBottom();
-            this.packEditEntry(item, "translation");
-        });
-        // Create translationsItemPopup entries
-        this.translationsItemPopup.addItem("Delete translation", () => {
-            const span = this.translationsItemPopup.currentObject;
-            const word = this.wordLabel.textContent;
-            this.translationsList.removeChild(span);
-            this.changes.push(() => dataManager.vocab.removeTranslation(
-                word, span.textContent));
-            this.changes.push(() => dataManager.history.log(
-                { type: "D", column: "translation", old_entry: word,
-                  old_translations: span.textContent }));
-        });
-        this.translationsItemPopup.addItem("Modify translation", () => {
-            this.packEditEntry(
-                this.translationsItemPopup.currentObject, "translation");
-        });
-        // Create readingsListPopup entry
-        this.readingsListPopup.addItem("Add reading", () => {
-            const item = this.createListItem("", "reading");
-            this.readingsList.scrollToBottom();
-            this.packEditEntry(item, "reading");
-        });
-        // Create readingsItemPopup entries
-        this.readingsItemPopup.addItem("Delete reading", () => {
-            const span = this.readingsItemPopup.currentObject;
-            const word = this.wordLabel.textContent;
-            this.readingsList.removeChild(span);
-            this.changes.push(() => dataManager.vocab.removeReading(
-                word, span.textContent));
-            this.changes.push(() => dataManager.history.log(
-                { type: "D", column: "reading", old_entry: word,
-                  old_readings: span.textContent }));
-        });
-        this.readingsItemPopup.addItem("Modify reading", () => {
-            this.packEditEntry(
-                this.readingsItemPopup.currentObject, "reading");
-        });
-        // Create listsPopup entries
-        this.listsPopup.addItem("Remove from list", () => {
-            const span = this.listsPopup.currentObject;
-            this.listsList.removeChild(span);
-            this.changes.push(
-                () => dataManager.vocabLists.removeWordFromList(
-                    this.wordLabel.textContent, span.textContent));
-        });
+        //// // Create popup menus
+        //// this.wordPopup = new PopupMenu();
+        //// this.translationsListPopup = new PopupMenu();
+        //// this.readingsListPopup = new PopupMenu();
+        //// this.translationsItemPopup = new PopupMenu();
+        //// this.readingsItemPopup = new PopupMenu();
+        //// this.listsPopup = new PopupMenu();
+        //// this.wordPopup.attachTo(this.wordLabel);
+        //// this.translationsListPopup.attachTo(this.translationsList);
+        //// this.readingsListPopup.attachTo(this.readingsList);
+        //// // Create wordPopup entries
+        //// this.wordPopup.addItem("Copy", () => {
+        ////     clipboard.writeText(this.wordLabel.textContent);
+        //// });
+        //// this.wordPopup.addSeparator();
+        //// this.wordPopup.addItem("Delete item", () => {
+        ////     this.deleteWord(this.wordLabel.textContent);
+        //// });
+        //// this.wordPopup.addItem("Rename item", () => {
+        ////     this.packEditEntry(this.wordLabel, "word");
+        //// });
+        //// // Create translationsListPopup entry
+        //// this.translationsListPopup.addItem("Add translation", () => {
+        ////     const item = this.createListItem("", "translation");
+        ////     this.translationsList.scrollToBottom();
+        ////     this.packEditEntry(item, "translation");
+        //// });
+        //// // Create translationsItemPopup entries
+        //// this.translationsItemPopup.addItem("Delete translation", () => {
+        ////     const span = this.translationsItemPopup.currentObject;
+        ////     const word = this.wordLabel.textContent;
+        ////     this.translationsList.removeChild(span);
+        ////     this.changes.push(() => dataManager.vocab.removeTranslation(
+        ////         word, span.textContent));
+        ////     this.changes.push(() => dataManager.history.log(
+        ////         { type: "D", column: "translation", old_entry: word,
+        ////           old_translations: span.textContent }));
+        //// });
+        //// this.translationsItemPopup.addItem("Modify translation", () => {
+        ////     this.packEditEntry(
+        ////         this.translationsItemPopup.currentObject, "translation");
+        //// });
+        //// // Create readingsListPopup entry
+        //// this.readingsListPopup.addItem("Add reading", () => {
+        ////     const item = this.createListItem("", "reading");
+        ////     this.readingsList.scrollToBottom();
+        ////     this.packEditEntry(item, "reading");
+        //// });
+        //// // Create readingsItemPopup entries
+        //// this.readingsItemPopup.addItem("Delete reading", () => {
+        ////     const span = this.readingsItemPopup.currentObject;
+        ////     const word = this.wordLabel.textContent;
+        ////     this.readingsList.removeChild(span);
+        ////     this.changes.push(() => dataManager.vocab.removeReading(
+        ////         word, span.textContent));
+        ////     this.changes.push(() => dataManager.history.log(
+        ////         { type: "D", column: "reading", old_entry: word,
+        ////           old_readings: span.textContent }));
+        //// });
+        //// this.readingsItemPopup.addItem("Modify reading", () => {
+        ////     this.packEditEntry(
+        ////         this.readingsItemPopup.currentObject, "reading");
+        //// });
+        //// // Create listsPopup entries
+        //// this.listsPopup.addItem("Remove from list", () => {
+        ////     const span = this.listsPopup.currentObject;
+        ////     this.listsList.removeChild(span);
+        ////     this.changes.push(
+        ////         () => dataManager.vocabLists.removeWordFromList(
+        ////             this.wordLabel.textContent, span.textContent));
+        //// });
         eventEmitter.emit("done-loading");
     }
 
@@ -198,13 +198,13 @@ class EditVocabPanel extends Panel {
         }
         if (type === "reading") {
             this.readingsList.appendChild(span);
-            this.readingsItemPopup.attachTo(span);
+            // this.readingsItemPopup.attachTo(span);
         } else if (type === "translation") {
             this.translationsList.appendChild(span);
-            this.translationsItemPopup.attachTo(span);
+            // this.translationsItemPopup.attachTo(span);
         } else if (type === "list") {
             this.listsList.appendChild(span);
-            this.listsPopup.attachTo(span);
+            // this.listsPopup.attachTo(span);
         }
         return span;
     }

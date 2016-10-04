@@ -17,10 +17,6 @@ class HistorySection extends Section {
             this.root.getElementById(`${flag}-filter`).callback =
                 this.getToggleCallback(flag);
         }
-        // Create a popup menu
-        this.popupMenu = new PopupMenu();
-        this.popupMenu.addItem("Reverse change", () =>
-            main.updateStatus("Not implemented yet!"));
         // If the user scrolls almost to the table bottom, load more entries
         const displayAmount = 30;
         this.table.uponScrollingBelow(200, () => {

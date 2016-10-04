@@ -1,5 +1,38 @@
 "use strict";
 
+const menuItems = PopupMenu.registerItems({
+    "copy-kanji": {
+        label: "Copy kanji",
+        click: ({ currentNode }) => {
+            const kanji = currentNode.textContent;
+            clipboard.writeText(kanji);
+        }
+    },
+    "view-kanji-info": {
+        label: "View kanji info",
+        click: ({ currentNode }) => {
+            main.kanjiInfoPanel.load(currentNode.textContent);
+            main.kanjiInfoPanel.open();
+        }
+    },
+    "add-kanji": {
+        label: "Add kanji",
+        click: ({ currentNode }) => {
+            const kanji = currentNode.textContent;
+            main.panels["add-kanji"].load(kanji);
+            main.openPanel("add-kanji");
+        }
+    },
+    "edit-kanji": {
+        label: "Edit kanji",
+        click: ({ currentNode }) => {
+            const kanji = currentNode.textContent;
+            main.panels["edit-kanji"].load(kanji);
+            main.openPanel("edit-kanji");
+        }
+    }
+});
+
 class KanjiSection extends Section {
     constructor () {
         super("kanji");
@@ -51,34 +84,12 @@ class KanjiSection extends Section {
             this.addedPerGradeCounters[grade] = document.createElement("span");
             this.addedPerGradeCounters[grade].classList.add("statistic-label");
         }
-        // Create popupmenus
-        this.popupMenuAdded = new PopupMenu();
-        this.popupMenuMissing = new PopupMenu();
-        this.popupMenuAdded.addItem("Copy", () => {
-            clipboard.writeText(this.popupMenuAdded.currentObject.textContent);
-        });
-        this.popupMenuAdded.addSeparator();
-        this.popupMenuAdded.addItem("Edit", () => {
-            main.panels["edit-kanji"].load(
-                this.popupMenuAdded.currentObject.textContent);
-            main.openPanel("edit-kanji");
-        });
-        this.popupMenuAdded.addItem("Remove", () => { });
-        this.popupMenuMissing.addItem("Copy", () => {
-            clipboard.writeText(this.popupMenuMissing.currentObject.textContent);
-        });
-        this.popupMenuMissing.addItem("Add", () => {
-            main.panels["add-kanji"].load(
-                this.popupMenuMissing.currentObject.textContent);
-            main.openPanel("add-kanji");
-        });
         eventEmitter.on("kanji-edited", (kanji, type) => {
             this.updateKanjiStatus(kanji, type)
             dataManager.content.getKanjiInfo(kanji).then((info) => {
                 this.updateAddedPerGradeCounter(info.grade);
             });
         });
-
         dataManager.content.getKanjiList().then((rows) => {
             this.createKanji(rows);
             this.displayKanji("grade");
@@ -94,8 +105,9 @@ class KanjiSection extends Section {
             kanjiSpan.id = kanji;
             kanjiSpan.className = 
               `${added ? "added" : ""} grade-${grade} strokes-${strokes} kanji`;
-            if (added) this.popupMenuAdded.attachTo(kanjiSpan);
-            else this.popupMenuMissing.attachTo(kanjiSpan);
+            kanjiSpan.popupMenu(menuItems,
+                    ["copy-kanji", "view-kanji-info",
+                     added ? "edit-kanji" : "add-kanji"]);
             kanjiSpan.addEventListener("click", () => {
                 if (this.selectedKanji !== null)
                     this.selectedKanji.classList.remove("selected");
@@ -167,13 +179,11 @@ class KanjiSection extends Section {
         const item = this.root.getElementById(kanji);
         if (type === "added") {
             item.classList.add("added");
-            this.popupMenuMissing.detachFrom(item);
-            this.popupMenuAdded.attachTo(item);
+            item.popupMenu(menuItems, ["copy-kanji", "edit-kanji"]);
         }
         else if (type === "removed") {
             item.classList.remove("added");
-            this.popupMenuAdded.detachFrom(item);
-            this.popupMenuMissing.attachTo(item);
+            item.popupMenu(menuItems, ["copy-kanji", "add-kanji"]);
         }
     }
 

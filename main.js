@@ -52,7 +52,6 @@ app.on('ready', function() {
         event.preventDefault();
     }
   });
-  electron.ipcMain.on("close-response", () => console.log("Received respose!!"));
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {
     // Dereference the window object, usually you would store windows
@@ -65,6 +64,7 @@ app.on('ready', function() {
   //       Maybe wrong context when calling it like below?
   var openDevTools = mainWindow.webContents.openDevTools;
   electron.ipcMain.on("open-debug", openDevTools);
+  // TODO: Move this to shortcut-manager via remote
   electron.ipcMain.on("choose-data-path", (event, defaultPath) => {
       const result = electron.dialog.showOpenDialog(mainWindow, {
           title: "Choose directory for program data",

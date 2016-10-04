@@ -1,5 +1,32 @@
 "use strict";
 
+const menuItems = PopupMenu.registerItems({
+    "edit-kanji": {
+        label: "Edit this kanji",
+        click: (menuItem, browserWindow, event) => {
+            const kanji = menuItem.currentNode.textContent;
+            main.panels["edit-kanji"].load(kanji);
+            main.openPanel("edit-kanji");
+        }
+    },
+    "add-kanji": {
+        label: "Add this kanji",
+        click: (menuItem, browserWindow, event) => {
+            const kanji = menuItem.currentNode.textContent;
+            main.panels["add-kanji"].load(kanji);
+            main.openPanel("add-kanji");
+        }
+    },
+    "view-kanji-info": {
+        label: "View kanji info",
+        click: (menuItem, browserWindow, event) => {
+            const kanji = menuItem.currentNode.textContent;
+            main.kanjiInfoPanel.load(kanji);
+            main.kanjiInfoPanel.open();
+        }
+    }
+});
+
 class DictionarySection extends Section {
     constructor() {
         super("dictionary");
@@ -31,31 +58,6 @@ class DictionarySection extends Section {
                 this.displayMoreResults(loadAmount);
             });
         });
-        // Create popup menus
-        this.kanjiPopup = new PopupMenu();
-        this.kanjiPopup.onOpen = (object) => {
-            this.kanjiPopup.clearItems();
-            return dataManager.kanji.isAdded(object.textContent)
-            .then((isAdded) => {
-                // Adjust entry by whether kanji is already added or not
-                if (isAdded) {
-                    this.kanjiPopup.addItem("Edit this kanji", () => {
-                        main.panels["edit-kanji"].load(object.textContent);
-                        main.openPanel("edit-kanji");
-                    });
-                } else {
-                    this.kanjiPopup.addItem("Add this kanji", () => {
-                        main.panels["add-kanji"].kanjiEntry.value =
-                            object.textContent;
-                        main.openPanel("add-kanji");
-                    });
-                }
-                this.kanjiPopup.addItem("View kanji info", () => {
-                    main.kanjiInfoPanel.load(object.textContent);
-                    main.kanjiInfoPanel.open();
-                });
-            });
-        };
         // If the user scrolls almost to table bottom, load more search results
         this.resultList.uponScrollingBelow(200, () => {
             if (this.nextRowIndex > 0 &&
@@ -176,7 +178,12 @@ class DictionarySection extends Section {
                     main.kanjiInfoPanel.load(character);
                     main.kanjiInfoPanel.open();
                 });
-                this.kanjiPopup.attachTo(charSpan);
+                charSpan.popupMenu(menuItems, () => {
+                    return dataManager.kanji.isAdded(character)
+                    .then((isAdded) => 
+                        isAdded ? ["edit-kanji", "view-kanji-info"] :
+                                  ["add-kanji", "view-kanji-info"]);
+                });
             }
         });
         return charSpan;

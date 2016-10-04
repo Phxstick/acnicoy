@@ -44,6 +44,7 @@ __ General __
 - Backup codeMap in Dropbox
 - Capture focus in panels?
 - Implement convenient "show"/"hide" methods which save last state in element!
+- Use popupMenu separators when context changes?
 
 __ Code __
 - Only hierarchically order one folder of html/js/sass
@@ -244,6 +245,10 @@ https://davidwalsh.name/css-js-animation  <-- Replace jQuery with better stuff
   (http://caniuse.com/#feat=scrollintoviewifneeded)
 - http://caniuse.com/#feat=css-focus-within
 - http://caniuse.com/#feat=css-scrollbar
+
+https://github.com/electron/electron/blob/master/docs/api/menu.md
+http://electron.atom.io/docs/api/menu-item/
+http://electron.atom.io/docs/api/web-contents/#event-context-menu
 
 [Steps to install]
 1. Run npm install
