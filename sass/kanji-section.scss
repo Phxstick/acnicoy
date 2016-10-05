@@ -47,11 +47,11 @@ body {
         color: darkgrey;
       }
 
-      &:hover {
-        color: $select-color;
-        background: lighten($select-background, 10%);
-        border-radius: 3px;
-      }
+      // &:hover {
+      //   color: $select-color;
+      //   background: lighten($select-background, 10%);
+      //   border-radius: 3px;
+      // }
 
       &.selected {
         color: $select-color;

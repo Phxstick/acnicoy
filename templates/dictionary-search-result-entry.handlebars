@@ -1,0 +1,62 @@
+<div id="frame" class="{{frequency}}">
+  <div id="word-frame">
+
+    {{! Display reading corresponding to main word }}
+
+    <div id="main-reading">
+      {{#if wordsAndReadings.[0].word.length}}
+        {{wordsAndReadings.[0].reading}}
+      {{/if}}
+    </div>
+
+    {{! Display main word. If there is only a reading, use it as main word }}
+
+    <div id="main-word">
+      {{#if wordsAndReadings.[0].word.length}}
+        {{eachLetter wordsAndReadings.[0].word}}
+      {{else}}
+        {{wordsAndReadings.[0].reading}}
+      {{/if}}
+    </div>
+  </div>
+  <div id="meanings-frame">
+
+    {{! Process meanings of this word }}
+
+    {{#each meanings}}
+      {{#if partsOfSpeech.length}}
+        <div class="part-of-speech">{{join partsOfSpeech ", "}}</div>
+      {{/if}}
+      <div class="meaning">
+        {{#ifLargerThanOne ../meanings.length}}
+          <span class="number">{{inc @index 1}}.</span>
+        {{/ifLargerThanOne}}
+        <span class="translations">{{join translations "; "}}</span>
+        {{#each fieldsOfApplication}}<span>{{this}}</span>{{/each}}
+        {{#each dialect}}<span>{{this}}</span>{{/each}}
+        {{#each miscInfo}}<span>{{this}}</span>{{/each}}
+        {{#each restrictedTo}}<span>Only applies to {{this}}</span>{{/each}}
+      </div>
+    {{/each}}
+
+    {{! Process variants of this word (Words and readings after first one)}}
+
+    {{#ifLargerThanOne wordsAndReadings.length}}
+      <div id="variants">
+        <span id="variant-header">Variants:</span>
+        {{#each wordsAndReadings}}
+          {{#if @index}}
+            <span class="variant">
+              <span class="word">
+                {{eachLetter word}}
+              </span>
+              <span class="reading">
+                【{{this.reading}}】{{#unless @last}}、{{/unless}}
+              </span>
+            </span>
+          {{/if}}
+        {{/each}}
+      </div>
+    {{/ifLargerThanOne}}
+  </div>
+</div>

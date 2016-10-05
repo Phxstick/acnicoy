@@ -60,6 +60,8 @@ const SvgBarDiagram = require(paths.js.widget("svg-bar-diagram"));
 const KanjiInfoPanel = require(paths.js.widget("kanji-info-panel"));
 const KanjiSearchResultEntry =
     require(paths.js.widget("kanji-search-result-entry"));
+const DictionarySearchResultEntry =
+    require(paths.js.widget("dictionary-search-result-entry"));
 
 const PinwallWidget = require(paths.js.widget("pinwall-widget"));
 const PinwallNote = require(paths.js.widget("pinwall-note"));

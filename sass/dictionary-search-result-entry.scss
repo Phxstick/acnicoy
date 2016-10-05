@@ -1,0 +1,75 @@
+@import "base";
+
+.small {
+  font-size: 80%;
+  color: grey;
+}
+
+#frame {
+  display: flex;
+  flex-direction: row;
+  padding: 5px;
+  border-bottom: 1px solid darken($view-background, 30%);
+
+  &.frequent {
+    background-color: #e0ffb3;
+  }
+
+  &.semi-frequent {
+    background-color: lighten(#e0ffb3, 5%);
+  }
+
+  #word-frame {
+    width: 130px;
+    margin-right: 4px;
+
+    #main-reading {
+      font-size: 80%;
+    }
+    #main-word {
+      margin-top: 4px;
+      font-size: 130%;
+    }
+  }
+
+  #meanings-frame {
+    flex: 1;
+
+    > div {
+      margin-bottom: 4px;
+
+      &.part-of-speech {
+        @extend .small;
+        &:not(:first-child) {
+          margin-top: 4px;
+          display: inline-block;
+        }
+      }
+      &.meaning {
+        .number {
+          @extend .small;
+        }
+        .translations + span {
+          margin-left: 3px;
+        }
+        .translations ~ span {
+          @extend .small;
+          &::after:not(:last-child) {
+            content: ", ";
+          }
+        }
+      }
+      &#variants {
+        margin-top: 10px;
+
+        #variant-header {
+          @extend .small;
+        }
+
+        .variant {
+          display: inline-block;
+        }
+      }
+    }
+  }
+}

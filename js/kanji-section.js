@@ -1,38 +1,5 @@
 "use strict";
 
-const menuItems = PopupMenu.registerItems({
-    "copy-kanji": {
-        label: "Copy kanji",
-        click: ({ currentNode }) => {
-            const kanji = currentNode.textContent;
-            clipboard.writeText(kanji);
-        }
-    },
-    "view-kanji-info": {
-        label: "View kanji info",
-        click: ({ currentNode }) => {
-            main.kanjiInfoPanel.load(currentNode.textContent);
-            main.kanjiInfoPanel.open();
-        }
-    },
-    "add-kanji": {
-        label: "Add kanji",
-        click: ({ currentNode }) => {
-            const kanji = currentNode.textContent;
-            main.panels["add-kanji"].load(kanji);
-            main.openPanel("add-kanji");
-        }
-    },
-    "edit-kanji": {
-        label: "Edit kanji",
-        click: ({ currentNode }) => {
-            const kanji = currentNode.textContent;
-            main.panels["edit-kanji"].load(kanji);
-            main.openPanel("edit-kanji");
-        }
-    }
-});
-
 class KanjiSection extends Section {
     constructor () {
         super("kanji");
@@ -85,7 +52,9 @@ class KanjiSection extends Section {
             this.addedPerGradeCounters[grade].classList.add("statistic-label");
         }
         eventEmitter.on("kanji-edited", (kanji, type) => {
-            this.updateKanjiStatus(kanji, type)
+            const item = this.root.getElementById(kanji);
+            if (type === "added") item.classList.add("added")
+            else if (type === "removed") item.classList.remove("added")
             dataManager.content.getKanjiInfo(kanji).then((info) => {
                 this.updateAddedPerGradeCounter(info.grade);
             });
@@ -105,16 +74,12 @@ class KanjiSection extends Section {
             kanjiSpan.id = kanji;
             kanjiSpan.className = 
               `${added ? "added" : ""} grade-${grade} strokes-${strokes} kanji`;
-            kanjiSpan.popupMenu(menuItems,
-                    ["copy-kanji", "view-kanji-info",
-                     added ? "edit-kanji" : "add-kanji"]);
+            main.makeKanjiInfoLink(kanjiSpan, kanji);
             kanjiSpan.addEventListener("click", () => {
                 if (this.selectedKanji !== null)
                     this.selectedKanji.classList.remove("selected");
                 kanjiSpan.classList.add("selected");
                 this.selectedKanji = kanjiSpan;
-                main.kanjiInfoPanel.load(kanji).then(
-                    () => main.kanjiInfoPanel.open());
             });
             fragment.appendChild(kanjiSpan);
         }
@@ -165,25 +130,6 @@ class KanjiSection extends Section {
                 this.overview.appendChild(title);
                 this.overview.appendChild(content);
             }
-        }
-    }
-
-    /**
-     * Update element corresponding to given kanji in the kanji overview
-     * (mark whether it is added or not).
-     * @param {String} kanji - The kanji which changed its status.
-     * @param {String} type - The type of status change ("added, "updated",
-     * "removed").
-     */
-    updateKanjiStatus(kanji, type) {
-        const item = this.root.getElementById(kanji);
-        if (type === "added") {
-            item.classList.add("added");
-            item.popupMenu(menuItems, ["copy-kanji", "edit-kanji"]);
-        }
-        else if (type === "removed") {
-            item.classList.remove("added");
-            item.popupMenu(menuItems, ["copy-kanji", "add-kanji"]);
         }
     }
 

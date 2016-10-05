@@ -1,38 +1,12 @@
 "use strict";
 
-const menuItems = PopupMenu.registerItems({
-    "edit-kanji": {
-        label: "Edit this kanji",
-        click: (menuItem, browserWindow, event) => {
-            const kanji = menuItem.currentNode.textContent;
-            main.panels["edit-kanji"].load(kanji);
-            main.openPanel("edit-kanji");
-        }
-    },
-    "add-kanji": {
-        label: "Add this kanji",
-        click: (menuItem, browserWindow, event) => {
-            const kanji = menuItem.currentNode.textContent;
-            main.panels["add-kanji"].load(kanji);
-            main.openPanel("add-kanji");
-        }
-    },
-    "view-kanji-info": {
-        label: "View kanji info",
-        click: (menuItem, browserWindow, event) => {
-            const kanji = menuItem.currentNode.textContent;
-            main.kanjiInfoPanel.load(kanji);
-            main.kanjiInfoPanel.open();
-        }
-    }
-});
-
 class DictionarySection extends Section {
     constructor() {
         super("dictionary");
         this.lastResult = [];
+        this.doneLoading = false;
         this.nextRowIndex = 0;
-        const loadAmount = 30;  // Amout of entries to load at once
+        const loadAmount = 20;  // Amout of entries to load at once
         // Store important elements as properties
         this.wordsFilter = this.root.getElementById("words-filter");
         this.meaningsFilter = this.root.getElementById("meanings-filter");
@@ -60,8 +34,7 @@ class DictionarySection extends Section {
         });
         // If the user scrolls almost to table bottom, load more search results
         this.resultList.uponScrollingBelow(200, () => {
-            if (this.nextRowIndex > 0 &&
-                    this.nextRowIndex < this.lastResult.length)
+            if (this.doneLoading && this.nextRowIndex < this.lastResult.length)
                 this.displayMoreResults(loadAmount);
         });
         eventEmitter.emit("done-loading");
@@ -84,118 +57,34 @@ class DictionarySection extends Section {
         }
     }
 
-    createDictionaryEntry(entryId) {
-        dataManager.content.getDictionaryEntryInfo(entryId).then((info) => {
-            const { wordsAndReadings, meanings, newsFreq } = info;
-            const entryFrame = document.createElement("div");
-            const wordFrame = document.createElement("div");
-            wordFrame.classList.add("word-frame");
-            const meaningsFrame = document.createElement("div");
-            meaningsFrame.classList.add("meanings-frame");
-            entryFrame.appendChild(wordFrame);
-            entryFrame.appendChild(meaningsFrame);
-                // tableRow.entryId = entryId;
-            // Process main word and its reading
-            const mainWordDiv = document.createElement("div");
-            const mainReadingDiv = document.createElement("div");
-            mainReadingDiv.classList.add("readings-small");
-            mainWordDiv.classList.add("main-word");
-            const {word: mainWord, reading: mainReading} = wordsAndReadings[0];
-            // If there is only a reading, use it as the main word
-            if (mainWord.length === 0) {
-                mainWordDiv.textContent = mainReading;
-            } else {
-                for (let character of mainWord) {
-                    mainWordDiv.appendChild(this.createCharSpan(character));
-                }
-                mainReadingDiv.textContent = mainReading;
-            }
-            wordFrame.appendChild(mainReadingDiv);
-            wordFrame.appendChild(mainWordDiv);
-            // Process variants of this word
-            const variantSpans = [];
-            for (let i = 1; i < wordsAndReadings.length; ++i) {
-                const { word, reading } = wordsAndReadings[i];
-                const variantSpan = document.createElement("span");
-                const wordSpan = document.createElement("span");
-                const readingSpan = document.createElement("span");
-                // Make every kanji character a link to open kanji info panel
-                for (let character of word) {
-                    wordSpan.appendChild(this.createCharSpan(character));
-                }
-                readingSpan.textContent = `【${reading}】`;
-                if (i !== wordsAndReadings.length - 1) {
-                    readingSpan.textContent += "、";
-                }
-                variantSpan.appendChild(wordSpan);
-                variantSpan.appendChild(readingSpan);
-                variantSpans.push(variantSpan);
-            }
-            // Process meanings
-            for (let i = 0; i < meanings.length; ++i) {
-                const { translations, partsOfSpeech, fieldsOfApplication,
-                        miscInfo, restrictedTo } = meanings[i];
-                const meaningFrame = document.createElement("div");
-                const numberSpan = document.createElement("span");
-                numberSpan.classList.add("number");
-                const posSpan = document.createElement("span");
-                posSpan.classList.add("part-of-speech");
-                const translationsSpan = document.createElement("span");
-                meaningFrame.appendChild(numberSpan);
-                meaningFrame.appendChild(posSpan);
-                meaningFrame.appendChild(translationsSpan);
-                if (meanings.length > 1) {
-                    numberSpan.textContent = `${i + 1}. `;
-                }
-                if (partsOfSpeech.length > 0) {
-                    posSpan.textContent = `${partsOfSpeech.join(", ")}`;
-                }
-                translationsSpan.textContent = translations.join("; ");
-                // TODO: Use fieldsOfApplication, miscInfo, restrictedTo
-                meaningsFrame.appendChild(meaningFrame);
-            }
-            // Display frequencies
-            if (newsFreq > 0 && newsFreq < 25) {
-                entryFrame.classList.add("semi-frequent-entry");
-            } else if (newsFreq >= 25) {
-                entryFrame.classList.add("frequent-entry");
-            }
-            this.resultList.appendChild(entryFrame);
-        });
-    }
-
-    createCharSpan(character) {
-        const charSpan = document.createElement("span");
-        charSpan.textContent = character;
-        dataManager.content.data.query(
-            "SELECT count(entry) AS containsChar FROM kanji WHERE entry = ?",
-            character)
-        .then((rows) => {
-            const row = rows[0];
-            if (row.containsChar) {
-                charSpan.classList.add("kanji-info-link");
-                charSpan.addEventListener("click", () => {
-                    main.kanjiInfoPanel.load(character);
-                    main.kanjiInfoPanel.open();
-                });
-                charSpan.popupMenu(menuItems, () => {
-                    return dataManager.kanji.isAdded(character)
-                    .then((isAdded) => 
-                        isAdded ? ["edit-kanji", "view-kanji-info"] :
-                                  ["add-kanji", "view-kanji-info"]);
-                });
-            }
-        });
-        return charSpan;
-    }
 
     displayMoreResults(amount) {
+        this.doneLoading = false;
         const limit = Math.min(this.nextRowIndex + amount,
                                this.lastResult.length);
+        const entryPromises = [];
         for (let i = this.nextRowIndex; i < limit; ++i) {
-            this.createDictionaryEntry(this.lastResult[i]);
+            const entryId = this.lastResult[i];
+            const promise = dataManager.content.getDictionaryEntryInfo(entryId)
+            .then((info) => {
+                const resultEntry = new DictionarySearchResultEntry();
+                resultEntry.setInfo(info);
+                resultEntry.entryId = entryId;
+                return resultEntry;
+            });
+            entryPromises.push(promise);
         }
-        this.nextRowIndex = limit;
+        return Promise.all(entryPromises).then((entries) => {
+            const fragment = document.createDocumentFragment();
+            for (let entry of entries) {
+                fragment.appendChild(entry);
+            }
+            this.resultList.appendChild(fragment);
+            this.nextRowIndex = limit;
+            return utility.finishEventQueue();
+        }).then(() => {
+            this.doneLoading = true;
+        });
         // this.searchStatus.textContent =
         //  `Displaying ${this.nextRowIndex} of ${this.lastResult.length} results.`;
     }

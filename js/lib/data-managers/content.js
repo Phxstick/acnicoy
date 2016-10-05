@@ -156,7 +156,8 @@ module.exports = function (paths, modules) {
                 `SELECT words, news_freq FROM dictionary WHERE id = ?`, id),
             dataMap["Japanese"].query(
                 `SELECT translations, part_of_speech, field_of_application,
-                        misc_info, words_restricted_to, readings_restricted_to
+                        misc_info, words_restricted_to, readings_restricted_to,
+                        dialect
                  FROM meanings WHERE id = ?`, id),
             dataMap["Japanese"].query(
                 `SELECT reading, restricted_to FROM readings WHERE id = ?`, id)
@@ -170,7 +171,7 @@ module.exports = function (paths, modules) {
                 // If the reading is not restricted to particular given words,
                 // it counts for all words
                 if (restricted_to.length > 0) {
-                    wordsForThisReading = restricted_to;
+                    wordsForThisReading = restricted_to.split(";");
                 } else {
                     wordsForThisReading = words;
                 }
@@ -184,15 +185,17 @@ module.exports = function (paths, modules) {
             // meaning, field of application, etc.
             info.meanings = [];
             for (let { translations, part_of_speech, field_of_application,
-                       misc_info, words_restricted_to, readings_restricted_to }
-                    of meanings) {
+                       misc_info, words_restricted_to, readings_restricted_to,
+                       dialect } of meanings) {
                 info.meanings.push({
                     translations: translations.split(";"),
                     partsOfSpeech: parseCodes(part_of_speech),
                     fieldsOfApplication: parseCodes(field_of_application),
                     miscInfo: parseCodes(misc_info),
-                    restrictedTo: parseCodes(words_restricted_to + ";" +
-                                             readings_restricted_to)
+                    dialect: parseCodes(dialect),
+                    restrictedTo: words_restricted_to.split(";").concat(
+                                  readings_restricted_to.split(";"))
+                                  .withoutEmptyStrings()
                 });
             }
             info.newsFreq = news_freq;

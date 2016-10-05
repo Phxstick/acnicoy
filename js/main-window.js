@@ -1,5 +1,38 @@
 "use strict";
 
+const menuItems = PopupMenu.registerItems({
+    "copy-kanji": {
+        label: "Copy kanji",
+        click: ({ currentNode }) => {
+            const kanji = currentNode.textContent;
+            clipboard.writeText(kanji);
+        }
+    },
+    "view-kanji-info": {
+        label: "View kanji info",
+        click: ({ currentNode }) => {
+            main.kanjiInfoPanel.load(currentNode.textContent);
+            main.kanjiInfoPanel.open();
+        }
+    },
+    "add-kanji": {
+        label: "Add kanji",
+        click: ({ currentNode }) => {
+            const kanji = currentNode.textContent;
+            main.panels["add-kanji"].load(kanji);
+            main.openPanel("add-kanji");
+        }
+    },
+    "edit-kanji": {
+        label: "Edit kanji",
+        click: ({ currentNode }) => {
+            const kanji = currentNode.textContent;
+            main.panels["edit-kanji"].load(kanji);
+            main.openPanel("edit-kanji");
+        }
+    }
+});
+
 class MainWindow extends Window {
     constructor () {
         super("main");
@@ -215,6 +248,27 @@ class MainWindow extends Window {
         if (this.currentSection !== null)
             this.sections[this.currentSection].open();
         this.languagePopup.setLabelText(language);
+    }
+
+    makeKanjiInfoLink(element, character) {
+        dataManager.content.dataMap["Japanese"].query(
+            "SELECT count(entry) AS containsChar FROM kanji WHERE entry = ?",
+            character)
+        .then(([{ containsChar }]) => {
+            if (containsChar) {
+                element.classList.add("kanji-info-link");
+                element.addEventListener("click", () => {
+                    this.kanjiInfoPanel.load(character);
+                    this.kanjiInfoPanel.open();
+                });
+            }
+            element.popupMenu(menuItems, () => {
+                return dataManager.kanji.isAdded(character)
+                .then((isAdded) => 
+                    ["copy-kanji", "view-kanji-info",
+                     isAdded? "edit-kanji" : "add-kanji"]);
+            });
+        });
     }
 }
 

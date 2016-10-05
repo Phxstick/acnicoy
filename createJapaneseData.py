@@ -176,7 +176,7 @@ def parse_dictionary_entry(ID, entry, cursor, text_to_code):
         for field_element in sense_element.findall("field"):
             field_of_application[-1].append(get_code(field_element.text))
         # Get misc info for this meaning
-        for misc_element in sense_element.findall("field"):
+        for misc_element in sense_element.findall("misc"):
             misc_info[-1].append(get_code(misc_element.text))
         # Get dialect info for this meaning
         for dial_element in sense_element.findall("dial"):
@@ -304,8 +304,7 @@ def parse_kanji_parts_entry(line, cursor):
             "UPDATE kanji SET parts = ? WHERE entry = ?", (parts, kanji))
 
 
-def parse_dictionary(
-        filename, cursor, text_to_code_output_path, code_to_text_output_path):
+def parse_dictionary(filename, cursor, code_to_text_output_path):
     """Parse given dictionary file (should be called 'JMdict.xml') and insert
     dictionary entries into database referenced by given cursor.
 
@@ -313,7 +312,8 @@ def parse_dictionary(
     codes which will be mapped back to texts again in the trainer.
         --> More compact database
         --> Allows using custom mapping from codes to texts
-    Ouput the mappings from codes to texts, and texts to codes.
+    Use given mapping from texts to improve texts, to output a mapping from
+    codes to improved texts.
     """
     print("Parsing dictionary xml-file...", end="\r")
     tree = ElementTree.parse(filename)
@@ -362,17 +362,33 @@ def parse_dictionary(
         "CREATE INDEX words_word_news_freq ON words(word, news_freq)")
     print("Creating index on words + word news frequencies... Done")
 
-    print("Creating json files for code mappings...", end="\r")
+    print("Creating json file containing code-to-text mapping...", end="\r")
     code_to_text = dict()
     for text in text_to_code:
         code_to_text[text_to_code[text]] = text
-    with open(text_to_code_output_path, "w") as f:
-        f.write(json.dumps(text_to_code, sort_keys=True, indent=4,
+    with open(code_to_text_output_path, "w") as f2:
+        f2.write(json.dumps(code_to_text, sort_keys=True, indent=4,
+                            ensure_ascii=False))
+    print("Creating json file containing code-to-text mapping... Done.")
+
+
+def parse_improved_dictionary_texts(code_to_text_path, improved_texts_path):
+    with open(code_to_text_path, "r+") as f, open(improved_texts_path) as f2:
+        code_to_old_text = json.load(f)
+        improved_texts = json.load(f2)
+        code_to_new_text = { "English": dict(), "Japanese": dict() }
+        for code in code_to_old_text:
+            if code_to_old_text[code] in improved_texts["English"]:
+                code_to_new_text["English"][code] = \
+                    improved_texts["English"][code_to_old_text[code]]
+            if code_to_old_text[code] in improved_texts["Japanese"]:
+                code_to_new_text["Japanese"][code] = \
+                    improved_texts["Japanese"][code_to_old_text[code]]
+        f.seek(0)
+        f.write(json.dumps(code_to_new_text, sort_keys=True, indent=4,
                            ensure_ascii=False))
-    with open(code_to_text_output_path, "w") as f:
-        f.write(json.dumps(code_to_text, sort_keys=True, indent=4,
-                           ensure_ascii=False))
-    print("Creating json files for code mappings... Done.", end="\r")
+        f.truncate()
+    print("Done.")
 
 
 def parse_word_web_frequencies(filename, cursor):
@@ -536,13 +552,14 @@ if __name__ == "__main__":
             dest="dict_filename", help="Filename of the dictionary xml file.")
     parser.add_argument("--kanji", "--kan", "-k", metavar="FILENAME",
             dest="kanji_filename", help="Filename of the kanji file.")
-    parser.add_argument("--radicals", "--rad", "-r", metavar="FILENAME",
-            dest="radicals_filename", help="Filename of the radicals file.")
-    parser.add_argument("--improvements", "--imp", "-i", metavar="FILENAME",
-            dest="improvements_filename",
+    parser.add_argument("--kanji-radicals", "--radicals", "--rad", "-r",
+            metavar="FILENAME", dest="radicals_filename",
+            help="Name of the file containing radicals for each kanji.")
+    parser.add_argument("--kanji-meanings", "--meanings", "--mean", "-m",
+            metavar="FILENAME", dest="kanji_meanings_filename",
             help="Filename of the json file containing revised kanji meanings.")
-    parser.add_argument("--strokes", "--str", "-s", metavar="FILENAME",
-            dest="kanji_strokes_filename",
+    parser.add_argument("--kanji-strokes", "--strokes", "--str", "-s",
+            metavar="FILENAME", dest="kanji_strokes_filename",
             help="Filename of the xml file containing kanji stroke info.")
     parser.add_argument("--web-frequencies", "--web", "-w", metavar="FILENAME",
             dest="word_web_freq_filename",
@@ -553,27 +570,35 @@ if __name__ == "__main__":
     parser.add_argument("--kanji-parts", "--part", "-p",
             metavar="FILENAME", dest="kanji_parts_filename",
             help="Filename of the file containing kanji part compositions.")
-    parser.add_argument("--update-jlpt", "--jlpt", "-j",
+    parser.add_argument("--kanji-jlpt", "--kjlpt", "-j",
             metavar="FILENAME", dest="new_jlpt_n3_kanji",
             help="Filename of the file containing new JLPT N3 kanji.")
     parser.add_argument("--output", "--out", "-o", metavar="FILENAME",
             dest="output_path", help="Directory path for output files.")
+    parser.add_argument("--dictionary-texts", "--texts", "--tex", "-t",
+            metavar="FILENAME", dest="improved_dictionary_texts_filename",
+            help="Name of the json file mapping info entity texts in the "
+                 "dictionary to improved versions.")
     args = parser.parse_args()
     output_path = args.output_path if args.output_path is not None else "data"
     # Define filenames and paths for output files
     database_path = os.path.join(output_path, "Japanese-English.sqlite3")
     kanji_strokes_path = os.path.join(output_path, "kanji-strokes.json")
-    code_to_text_path = os.path.join(output_path, "code-to-text.json")
-    text_to_code_path = os.path.join(output_path, "text-to-code.json")
+    code_to_text_path = os.path.join(output_path, "dict-code-to-text.json")
     # Open database connection
     connection = sqlite3.connect(database_path)
     cursor = connection.cursor()
-    # print("Creating data for language-pair 'Japanese'->'English'.")
     # Parse dictionary
     if args.dict_filename is not None:
         print("Parsing dictionary from file '%s':" % args.dict_filename)
-        parse_dictionary(args.dict_filename, cursor,
-                text_to_code_path, code_to_text_path)
+        parse_dictionary(args.dict_filename, cursor, code_to_text_path)
+    # Parse improved dictionary texts
+    if args.improved_dictionary_texts_filename is not None:
+        print()
+        print("Applying improved dictionary info texts from file '%s':" %
+            args.improved_dictionary_texts_filename)
+        parse_improved_dictionary_texts(
+                code_to_text_path, args.improved_dictionary_texts_filename)
     # # Parse word frequencies
     # if args.word_web_freq_filename is not None:
     #     print()
@@ -596,11 +621,11 @@ if __name__ == "__main__":
         print("Parsing radicals from file '%s':" % args.radicals_filename)
         parse_radicals(args.radicals_filename, cursor)
     # Parse improved kanji meanings
-    if args.improvements_filename is not None:
+    if args.kanji_meanings_filename is not None:
         print()
         print("Applying improved kanji meanings from file '%s':" %
-            args.improvements_filename)
-        parse_improved_kanji_meanings(args.improvements_filename, cursor)
+            args.kanji_meanings_filename)
+        parse_improved_kanji_meanings(args.kanji_meanings_filename, cursor)
     # Parse kanji part compositions
     if args.kanji_parts_filename is not None:
         print()
