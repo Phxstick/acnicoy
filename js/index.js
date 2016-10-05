@@ -2,11 +2,17 @@
 
 const globals = {
     modules: ["languages", "settings", "language-settings", "vocab-lists",
-                 "pinwall", "content", "vocab", "kanji", "stats", "srs",
-                 "test", "history", "database"],
-    panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
+              "pinwall", "content", "vocab", "kanji", "stats", "srs",
+              "test", "history", "database"],
+    windows: ["init", "main"],
     sections: ["home", "stats", "history", "vocab", "settings",
-               "test", "dictionary", "kanji"]
+               "test", "dictionary", "kanji"],
+    panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
+    widgets: ["popup-stack", "switch-button", "switch-bar", "popup-list",
+              "svg-bar-diagram", "kanji-info-panel", "pinwall-widget",
+              "kanji-search-result-entry", "dictionary-search-result-entry",
+              "pinwall-note", "srs-status-diagram"],
+    extensions: ["converter", "array-extensions", "html-element-extensions"]
 };
 
 const startTime = performance.now();
@@ -14,63 +20,47 @@ const startTime = performance.now();
 const { ipcRenderer, clipboard, remote } = require("electron");
 const { Menu, MenuItem } = remote;
 const EventEmitter = require("events");
+const languageList = require("languages");
 
 // TODO: Use this for languages init section and settings
-// const languageList = require("languages");
 // for (let langcode of languageList.getAllLanguageCode()) {
 //     console.log(languageList.getLanguageInfo(langcode));
 // }
 
 // TODO: Put this into main class?
 const eventEmitter = new EventEmitter();
+// TODO: Make immediately closeable by default, until signal sent
 ipcRenderer.on("closing-window", () => ipcRenderer.send("close-now"));
 
 // Load libraries
 const paths = require("./js/lib/path-manager.js")(__dirname);
-const dataManager = require(paths.lib("data-manager"))(paths);
-const utility = require(paths.lib("utility"));
-const dialogWindow = require(paths.lib("dialog-window"));
-const layers = require(paths.lib("layer-manager"));
-const templates = require(paths.lib("template-manager"));
-const Velocity = require(paths.lib("velocity"));
-const PopupMenu = require(paths.lib("popup-menu"));
+const dataManager = require(paths.js.lib("data-manager"))(paths);
+const utility = require(paths.js.lib("utility"));
+const dialogWindow = require(paths.js.lib("dialog-window"));
+const layers = require(paths.js.lib("layer-manager"));
+const templates = require(paths.js.lib("template-manager"));
+const Velocity = require(paths.js.lib("velocity"));
+const PopupMenu = require(paths.js.lib("popup-menu"));
 
-// Load libraries extending existing objects
-require(paths.extension("converter"));
-require(paths.extension("array-extensions"));
-require(paths.extension("html-element-extensions"));
-
-// Load components
-const Component = require(paths.js.component("component"));
-const Window = require(paths.js.component("window"));
-const Section = require(paths.js.component("section"));
-const Panel = require(paths.js.component("panel"));
-const Widget = require(paths.js.component("widget"));
-
-// Load windows
-const MainWindow = require(paths.js.window("main"));
-const InitWindow = require(paths.js.window("init"));
-
-// Load widgets
-const PopupStack = require(paths.js.widget("popup-stack"));
-const SwitchButton = require(paths.js.widget("switch-button"));
-const SwitchBar = require(paths.js.widget("switch-bar"));
-const PopupList = require(paths.js.widget("popup-list"));
-const SvgBarDiagram = require(paths.js.widget("svg-bar-diagram"));
-const KanjiInfoPanel = require(paths.js.widget("kanji-info-panel"));
-const KanjiSearchResultEntry =
-    require(paths.js.widget("kanji-search-result-entry"));
-const DictionarySearchResultEntry =
-    require(paths.js.widget("dictionary-search-result-entry"));
-
+// Load base classes
+const Component = require(paths.js.base("component"));
+const Window = require(paths.js.base("window"));
+const Section = require(paths.js.base("section"));
+const Panel = require(paths.js.base("panel"));
+const Widget = require(paths.js.base("widget"));
 const PinwallWidget = require(paths.js.widget("pinwall-widget"));
-const PinwallNote = require(paths.js.widget("pinwall-note"));
-const SrsStatusDiagram = require(paths.js.widget("srs-status-diagram"));
+
+for (let name of globals.windows) require(paths.js.window(name));
+// TODO: Load all here
+// for (let name of globals.sections) require(paths.js.section(name));
+// for (let name of globals.panels) require(paths.js.panel(name));
+for (let name of globals.widgets) require(paths.js.widget(name));
+for (let name of globals.extensions) require(paths.js.extension(name));
 
 const totalTime = performance.now() - startTime;
 console.log("Loaded all required modules after %f ms", totalTime);
 
-// TODO: Put all of this in a closure
+// TODO: Put all of this in a closure?
 let main;  // TODO: Really fine as global object? Rather pass it to sections?
 let mainWindow;
 let initWindow;

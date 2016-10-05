@@ -67,7 +67,8 @@ class DictionarySection extends Section {
             const entryId = this.lastResult[i];
             const promise = dataManager.content.getDictionaryEntryInfo(entryId)
             .then((info) => {
-                const resultEntry = new DictionarySearchResultEntry();
+                const resultEntry = 
+                    document.createElement("dictionary-search-result-entry");
                 resultEntry.setInfo(info);
                 resultEntry.entryId = entryId;
                 return resultEntry;

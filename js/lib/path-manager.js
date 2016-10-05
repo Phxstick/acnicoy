@@ -47,46 +47,45 @@ module.exports = function (basePath) {
     paths.scoreCalculation = path.resolve(basePath, "data",
                                           "scoreCalculation.json");
 
-    // JS paths for components
+    // JS
     const jsPath = path.resolve(basePath, "js");
+    const baseClassPath = path.resolve(jsPath, "base");
+    const windowsPath = path.resolve(jsPath, "windows");
+    const sectionsPath = path.resolve(jsPath, "sections");
+    const panelsPath = path.resolve(jsPath, "panels");
+    const widgetsPath = path.resolve(jsPath, "widgets");
+    const librariesPath = path.resolve(jsPath, "lib");
+    const extensionsPath = path.resolve(jsPath, "extensions");
+    const dataModulesPath = path.resolve(librariesPath, "data-managers");
     paths.js = {
-        "component": (name) => path.resolve(jsPath, name + ".js"),
-        "window": (name) => path.resolve(jsPath, name + "-window.js"),
-        "section": (name) => path.resolve(jsPath, name + "-section.js"),
-        "panel": (name) => path.resolve(jsPath, name + "-panel.js"),
-        "widget": (name) => path.resolve(jsPath, "widgets", name + ".js")
+        "base": (name) => path.resolve(baseClassPath, name + ".js"),
+        "window": (name) => path.resolve(windowsPath, name + "-window.js"),
+        "section": (name) => path.resolve(sectionsPath, name + "-section.js"),
+        "panel": (name) => path.resolve(panelsPath, name + "-panel.js"),
+        "widget": (name) => path.resolve(widgetsPath, name + ".js"),
+        "lib": (name) => path.resolve(librariesPath, name + ".js"),
+        "extension": (name) => path.resolve(extensionsPath, name + ".js"),
+        "dataModule": (name) => path.resolve(dataModulesPath, name + ".js")
     };
 
-    // HTML paths for components
-    const windowsPath = path.resolve(basePath, "html");
-    const sectionsPath = path.resolve(basePath, "html", "sections");
-    const panelsPath = path.resolve(basePath, "html", "panels");
-    const widgetsPath = path.resolve(basePath, "html", "widgets");
+    // HTML
+    const htmlPath = path.resolve(basePath, "html");
     paths.html = {
-        "window": (name) => path.resolve(windowsPath, name + "-window.html"),
-        "section": (name) => path.resolve(sectionsPath, name + "-section.html"),
-        "panel": (name) => path.resolve(panelsPath, name + "-panel.html"),
-        "widget": (name) => path.resolve(widgetsPath, name + ".html")
+        "window": (name) => path.resolve(htmlPath, name + "-window.html"),
+        "section": (name) => path.resolve(htmlPath, name + "-section.html"),
+        "panel": (name) => path.resolve(htmlPath, name + "-panel.html"),
+        "widget": (name) => path.resolve(htmlPath, name + ".html")
     }
 
     // Templates
     const templatePath = path.resolve(basePath, "templates");
     paths.template = (name) => path.resolve(templatePath, name + ".handlebars");
 
-    // Styles
+    // CSS
     paths.css = (name) => path.resolve(basePath, "css", name + ".css");
     paths.layers = path.resolve(basePath, "css", "layers.css");
     paths.fontAwesome = path.resolve(basePath, "font-awesome",
                                      "css", "font-awesome.min.css");
-
-    // Library and extension scripts
-    const extensionPath = path.resolve(jsPath, "lib", "extensions");
-    paths.extension = (name) => path.resolve(extensionPath, name + ".js");
-    paths.lib = (name) => path.resolve(jsPath, "lib", name + ".js");
-
-    // Data interface modules
-    const dataModulesPath = path.resolve(basePath, "js", "lib","data-managers");
-    paths.modules = (name) => path.resolve(dataModulesPath, name + ".js");
 
     // Language data
     paths.languageData = (language) => ({

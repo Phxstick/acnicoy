@@ -10,14 +10,17 @@ class HomeSection extends Section {
             "click", () => this.addPinwallWidget("pinwall-note"));
         eventEmitter.emit("done-loading");
     }
+
     open() {
         for (let i = 0; i < this.pinwall.children.length - 1; ++i) {
             this.pinwall.children[i].open();
         }
     }
+
     close() {
         this.saveWidgets();
     }
+
     adjustToLanguage(language, secondary) {
         // Clean up old widgets
         while (this.pinwall.children.length > 1) {
@@ -33,6 +36,7 @@ class HomeSection extends Section {
             object.adjustToLanguage(language, secondary);
         }
     }
+
     addPinwallWidget(type) {
         const Type = customElements.get(type);
         const widget = new Type();
@@ -40,6 +44,7 @@ class HomeSection extends Section {
         widget.removeCallback = () => this.pinwall.removeChild(widget);
         return widget;
     }
+
     saveWidgets() {
         dataManager.pinwall.clear();
         for (let i = 0; i < this.pinwall.children.length - 1; ++i) {

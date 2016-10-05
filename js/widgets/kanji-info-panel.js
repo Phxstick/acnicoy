@@ -243,9 +243,9 @@ class KanjiInfoPanel extends Widget {
             wordCol.textContent = dataRow.word;
             tableRow.appendChild(wordCol);
             tableRow.popupMenu(menuItems, () => {
-                return dataManager.vocab.contains(row.word).then((isAdded) =>
-                    isAdded? ["copy-word", "edit-word"] :
-                             ["copy-word", "add-word"]);
+                return dataManager.vocab.contains(dataRow.word)
+                .then((isAdded) => isAdded? ["copy-word", "edit-word"] :
+                                            ["copy-word", "add-word"]);
             });
             // Add readings to the row
             // TODO: Choose most common readings / no outdated ones

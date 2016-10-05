@@ -8,7 +8,6 @@ __ BUGFIXES __
   or meanings
 - Use "contentAvailable" object/function in content datamanager
   to make sure non-available stuff is closed
-- Result in dictionary still not ordered correctly
 - Use flexbox and flexible padding in kanji info panel
 
 __ Fundamentals (Data) __
@@ -41,13 +40,11 @@ __ General __
   --> Also make into custom widget?
 - When choosing comma as separator, allow escaping comma for single translations
 - Implement global tooltip widget --> Add a function to HTMLElement prototype?
-- Backup codeMap in Dropbox
 - Capture focus in panels?
 - Implement convenient "show"/"hide" methods which save last state in element!
 - Use popupMenu separators when context changes?
 
 __ Code __
-- Only hierarchically order one folder of html/js/sass
 - Use CSS variables for all widget styling
 - Replace .button with actual button element (both in css and html)
 - Stop using things like 110% font everywhere - Use as standard font size in
@@ -68,11 +65,6 @@ __ Code __
   once? --> Better performance, centralized resource loading
 
 __ Init section __
-- Open if dataPath in settings is empty
-  => Require setting a data path then (use electrons file dialog here)
-  => If data is found at fiven path, return, otherwise proceed to set first lang
-- Have second part of init section to set first language
-  => Also open if directory in dataPath is empty
 - Allow user initializing with several languages at once
 - Make frame feel 3D with shading effects/border
 
@@ -96,12 +88,6 @@ __ Home section __
 - Display adder-widget only when ctrl is pressed with cursor above section?
 - Customizable bar diagram showing when new items for testing become available
 
-__ Popup-Menu __
-- Have one global popupmenu object (so that only one is always active)
-- Allow filling popupmenu with an array of options (allows storing configs)
-- Check if there is something selected and adjust popupwindow for copying etc.
-  --> Make other copy options more detailed, e.g. "Copy kanji", "Copy word"
-
 __ Popup-List __
 - Make width of popupmenu the width of largest item?
 
@@ -120,10 +106,9 @@ __ Test __
 __ Kanji Info Panel __
 - Allow seeing stroke animation instead of pictures (and customize speed)
 - Use inverted index to quickly load kanji examples
+- Use separators like in kanji search results in detail bar
 
 __ Kanji __
-- Use bottom-animation to slide open kanji info panel (better performance)?
-- Use selection colors when hovering over added kanji?
 - Possibly make mapping from kanji parts to actual parts in SVG drawing
   to make sure all parts are properly highlighted
 - Show info for kanji that are part of the Chinese zodiac
@@ -159,7 +144,6 @@ __ Dictionary __
   presses enter on empty input or clicks some kind of help button
 - Also make entries bigger and move to center when search result is empty
 - Have setting which makes part-of-speech display in Japanese
-- Make each dict-entry a custom widget? Definitely place it in shadow DOM.
 - Use better fonts for small infos (see Jisho)
 
 __ Stats/Achievements __

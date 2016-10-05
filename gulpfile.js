@@ -12,11 +12,11 @@ gulp.task("style", function() {
     var sourcemaps = require("gulp-sourcemaps");
     var autoprefixer = require("autoprefixer");
 
-    return gulp.src(["./sass/*.scss", "./sass/widgets/*.scss"])
+    return gulp.src(["./sass/*.scss"])
         .pipe(sourcemaps.init())
         // .pipe(sass().on("error", () => { sass.logError(); process.exit(1); }))
         .pipe(sass().on("error", sass.logError))
         .pipe(postcss([autoprefixer({ browsers: ["last 2 versions"] })]))
-        .pipe(sourcemaps.write("./css/sourcemaps"))
+        .pipe(sourcemaps.write("./sourcemaps"))
         .pipe(gulp.dest("./css"));
 });

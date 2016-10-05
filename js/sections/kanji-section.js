@@ -156,7 +156,8 @@ class KanjiSection extends Section {
         for (let kanji of this.lastSearchResult) {
             // Fill info frame with data
             promise = dataManager.content.getKanjiInfo(kanji).then((info) =>  {
-                const entry = new KanjiSearchResultEntry();
+                const entry =
+                    document.createElement("kanji-search-result-entry");
                 entry.setInfo(kanji, info);
                 fragment.appendChild(entry);
             });
