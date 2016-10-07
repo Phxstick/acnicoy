@@ -8,6 +8,8 @@ class StatsSection extends Section {
         this.wordsAdded = this.root.getElementById("words-added");
         this.kanjiAdded = this.root.getElementById("kanji-added");
         this.itemsTested = this.root.getElementById("items-tested");
+        this.kanjiDiagrams = this.root.getElementById("kanji-diagrams");
+        this.kanjiAddedFrame = this.root.getElementById("kanji-added-frame");
         this.jouyouKanjiDiagram = this.root.getElementById("jouyou-kanji");
         this.jlptKanjiDiagram = this.root.getElementById("jlpt-kanji");
         // Configure diagram display parameters
@@ -21,15 +23,30 @@ class StatsSection extends Section {
         this.jlptKanjiDiagram.topLineWidth = 2;
         this.jlptKanjiDiagram.margin =
             { top: 0, bottom: 30, left: 20, right: 20 };
-        eventEmitter.emit("done-loading");
     }
+
     open() {
         this.updateStats();
     }
+
     adjustToLanguage(language, secondary) {
-        this.kanjiAdded.parentNode.style.display = 
-            language === "Japanese" ? "flex" : "none";
+        this.jouyouKanjiDiagram.style.display = "none";
+        if (language === "Japanese") {
+            this.kanjiAddedFrame.style.display = "flex";
+            this.kanjiDiagrams.style.display = "flex";
+            if (dataManager.content.isAvailable[language]) {
+                this.jouyouKanjiDiagram.style.display = "block";
+                this.jlptKanjiDiagram.style.display = "block";
+            } else {
+                this.jouyouKanjiDiagram.style.display = "none";
+                this.jlptKanjiDiagram.style.display = "none";
+            }
+        } else {
+            this.kanjiAddedFrame.style.display = "none";
+            this.kanjiDiagrams.style.display = "none";
+        }
     }
+
     updateStats() {
         const promises = [];
         // Display number of items tested in total
@@ -47,46 +64,49 @@ class StatsSection extends Section {
             this.wordsAdded.textContent = amount;
         }));
         if (main.language === "Japanese") {
-            // TODO: Undisplay all these if not japanese!!
             // Display number of kanji added
             promises.push(dataManager.kanji.getAmountAdded().then((amount) => {
                 this.kanjiAdded.textContent = amount;
             }));
             // Display percentages of jouyou kanjj per grade in bar diagram
-            const numKanjiPerGrade = dataManager.content.data.numKanjiPerGrade;
-            dataManager.kanji.getAmountsAddedPerGrade().then((amounts) => {
-                const values = [];
-                const maxValues = [];
-                const descriptions = [];
-                for (let grade = 1; grade <= 6; ++grade) {
-                    values.push(amounts[grade]);
-                    maxValues.push(numKanjiPerGrade[grade]);
-                    descriptions.push(
-                        utility.getOrdinalNumberString(grade));
-                }
-                values.push(amounts[8]);
-                maxValues.push(numKanjiPerGrade[8]);
-                descriptions.push("Sec");
-                utility.finishEventQueue()
-                .then(() => this.jouyouKanjiDiagram.draw(
-                        values, maxValues, descriptions));
-            });
-            // Display percentages of kanji per jlpt level in bar diagram
-            const numKanjiPerJlptLevel =
-                dataManager.content.data.numKanjiPerJlptLevel;
-            dataManager.kanji.getAmountsAddedPerJlptLevel().then((amounts) => {
-                const values = [];
-                const maxValues = [];
-                const descriptions = [];
-                for (let level = 5; level >= 1; --level) {
-                    values.push(amounts[level]);
-                    maxValues.push(numKanjiPerJlptLevel[level]);
-                    descriptions.push(`N${level}`);
-                }
-                utility.finishEventQueue()
-                .then(() => this.jlptKanjiDiagram.draw(
-                        values, maxValues, descriptions));
-            });
+            if (dataManager.content.isAvailable["Japanese"]) {
+                const numKanjiPerGrade =
+                    dataManager.content.data.numKanjiPerGrade;
+                dataManager.kanji.getAmountsAddedPerGrade().then((amounts) => {
+                    const values = [];
+                    const maxValues = [];
+                    const descriptions = [];
+                    for (let grade = 1; grade <= 6; ++grade) {
+                        values.push(amounts[grade]);
+                        maxValues.push(numKanjiPerGrade[grade]);
+                        descriptions.push(
+                            utility.getOrdinalNumberString(grade));
+                    }
+                    values.push(amounts[8]);
+                    maxValues.push(numKanjiPerGrade[8]);
+                    descriptions.push("Sec");
+                    utility.finishEventQueue()
+                    .then(() => this.jouyouKanjiDiagram.draw(
+                            values, maxValues, descriptions));
+                });
+                // Display percentages of kanji per jlpt level in bar diagram
+                const numKanjiPerJlptLevel =
+                    dataManager.content.data.numKanjiPerJlptLevel;
+                dataManager.kanji.getAmountsAddedPerJlptLevel()
+                .then((amounts) => {
+                    const values = [];
+                    const maxValues = [];
+                    const descriptions = [];
+                    for (let level = 5; level >= 1; --level) {
+                        values.push(amounts[level]);
+                        maxValues.push(numKanjiPerJlptLevel[level]);
+                        descriptions.push(`N${level}`);
+                    }
+                    utility.finishEventQueue()
+                    .then(() => this.jlptKanjiDiagram.draw(
+                            values, maxValues, descriptions));
+                });
+            }
         }
         return Promise.all(promises);
     }

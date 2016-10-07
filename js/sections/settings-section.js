@@ -3,7 +3,6 @@
 class SettingsSection extends Section {
     constructor() {
         super("settings");
-        eventEmitter.emit("done-loading");
     }
 }
 

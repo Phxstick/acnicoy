@@ -19,7 +19,7 @@ module.exports = function (paths, modules) {
                 const word = words[i];
                 if (!dataMap[language].wordToLists.has(word))
                     dataMap[language].wordToLists.set(word, []);
-                if (!dataMap[language].wordToLists.get(word).contains(list))
+                if (!dataMap[language].wordToLists.get(word).includes(list))
                     dataMap[language].wordToLists.get(word).push(list);
             }
         }
@@ -46,7 +46,7 @@ module.exports = function (paths, modules) {
 
     vocabLists.isWordInList = function (word, list) {
         if (!wordToLists.has(word)) return false;
-        return wordToLists.get(word).contains(list);
+        return wordToLists.get(word).includes(list);
     };
 
     vocabLists.getListsForWord = function (word) {
@@ -70,7 +70,7 @@ module.exports = function (paths, modules) {
         delete data[oldName];
         // Also rename all occurrences in the inverted index
         for (let [word, lists] of wordToLists) {
-            if (lists.contains(oldName))
+            if (lists.includes(oldName))
                 lists[lists.indexOf(oldName)] = newName;
         }
         return true;
@@ -97,7 +97,7 @@ module.exports = function (paths, modules) {
     vocabLists.addWordToList = function (word, list) {
         if (!wordToLists.has(word))
             wordToLists.set(word, []);
-        if (wordToLists.get(word).contains(list))
+        if (wordToLists.get(word).includes(list))
             return false;
         wordToLists.get(word).push(list);
         data[list].push(word);
@@ -106,7 +106,7 @@ module.exports = function (paths, modules) {
 
     vocabLists.removeWordFromList = function (word, list) {
         if (wordToLists.has(word)) {
-            if (wordToLists.get(word).contains(list)) {
+            if (wordToLists.get(word).includes(list)) {
                 wordToLists.get(word).remove(list);
                 data[list].remove(word);
             }

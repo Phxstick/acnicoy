@@ -28,7 +28,6 @@ class AddKanjiPanel extends Panel {
             "click", () => main.closePanel("add-kanji"));
         this.root.getElementById("save-button").addEventListener(
             "click", () => this.save());
-        eventEmitter.emit("done-loading");
     }
 
     open() {

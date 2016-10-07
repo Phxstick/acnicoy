@@ -6,9 +6,8 @@ __ BUGFIXES __
 - Replace added-button in opened kanji-info-panel if kanji has been added
 - info in details bar should properly be compressed if there are many readings
   or meanings
-- Use "contentAvailable" object/function in content datamanager
-  to make sure non-available stuff is closed
 - Use flexbox and flexible padding in kanji info panel
+- Allow quickly switching between sections without opening multiple ones
 
 __ Fundamentals (Data) __
 - [Consider overhaul of data storage --> Primarily use IDs for words?]
@@ -32,7 +31,6 @@ __ General __
 - For the time being, implement a little vocabulary backup system in order
   to not do this manually anymore.
 - Check out new electron features?
-- Make language content optional and provide language packs for download?
 - CSS containment to increase performance
 - Use slots in custom components whereever useful
 - Make automatically-loading-upon-scrolling-divs into widgets?
@@ -60,9 +58,9 @@ __ Code __
 - Try to generalize as much scss as possibly and extend _base file.
   Split parts of _base file into smaller parts.
 - Remove "data" from content section and always access with "dataMap[...]"?
-- Use document fragment to insert stuff into search results (Done?)
 - Have htmlManager and cssManager which make sure all assets are only loaded
   once? --> Better performance, centralized resource loading
+- Remove main.language/main.language2 ??
 
 __ Init section __
 - Allow user initializing with several languages at once
@@ -210,29 +208,27 @@ __ Resources __
 
 - http://stackoverflow.com/questions/13151693/passing-arguments-to-require-when-loading-module
   --> Use for parameterizing datamanagers?
-https://developers.google.com/web/fundamentals/primers/shadowdom/
-https://developers.google.com/web/fundamentals/primers/customelements/
-https://davidwalsh.name/css-js-animation  <-- Replace jQuery with better stuff
 
 - https://www.thebalance.com/free-cloud-storage-1356638
   Free cloud storage services to save trainer resources and data!
 - For server hosting: 1. RedHat OpenShift, 2. Heroku, 3. 000webhost (PHP)
   --> Use flask(python) or express(nodejs)
  
-- Use native string "includes" function instead of "contains"
-- Shadow DOM v1 (http://caniuse.com/#feat=shadowdomv1)
 - Use selection API  (window.getSelection(), selectionstart, selectionchanged)
   (http://caniuse.com/#feat=selection-api)
-- Use native DOM manipulation conventience methods 
+- Use native DOM manipulation convenience methods 
   (http://caniuse.com/#feat=dom-manip-convenience)
 - Use Element.scrollIntoViewIfNeeded()
   (http://caniuse.com/#feat=scrollintoviewifneeded)
 - http://caniuse.com/#feat=css-focus-within
 - http://caniuse.com/#feat=css-scrollbar
 
-https://github.com/electron/electron/blob/master/docs/api/menu.md
-http://electron.atom.io/docs/api/menu-item/
 http://electron.atom.io/docs/api/web-contents/#event-context-menu
+- Use native browser notification popups?
+- Chrome includes Google’s Native Client. Native Client allows web pages to run
+  native code written in languages like C or C++. The code is executed in a
+  sandbox for security, and it runs at almost-native speeds
+--> Nice
 
 [Steps to install]
 1. Run npm install

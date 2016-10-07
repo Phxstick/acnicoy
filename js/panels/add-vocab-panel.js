@@ -27,7 +27,6 @@ class AddVocabPanel extends Panel {
             "click", () => main.closePanel("add-vocab"));
         this.root.getElementById("save-button").addEventListener(
             "click", () => this.save());
-        eventEmitter.emit("done-loading");
     }
 
     open() {

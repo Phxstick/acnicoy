@@ -67,7 +67,6 @@ class TestSection extends Section {
         });
         // Create popup-menus
         this.testItem.popupMenu(menuItems, ["copy-test-item"]);
-        eventEmitter.emit("done-loading");
     }
 
     /**

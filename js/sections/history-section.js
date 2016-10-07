@@ -24,7 +24,6 @@ class HistorySection extends Section {
                     this.nextRowIndex < this.rows.length)
                 this.displayMoreEntries(displayAmount);
         });
-        eventEmitter.emit("done-loading");
         // Make sure to update table when the vocabulary has been edited
         eventEmitter.on("vocab-changed", () => this.updateTable());
     }

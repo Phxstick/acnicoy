@@ -5,12 +5,22 @@ const sqlite3 = require("sqlite3");
 module.exports = function (paths, modules) {
     const content = { data: null };
     const dataMap = {};
+    const isAvailable = {};
+
+    content.dataMap = dataMap;
+    content.isAvailable = isAvailable;
 
     content.load = function (language) {
         let promise = Promise.resolve();
+        modules.languageSettings.setLanguage(language);
+        const secondaryLanguage = modules.languageSettings.secondaryLanguage;
+        const cPaths = paths.content(language, secondaryLanguage);
+        if (cPaths === null) {  // Content not available
+            isAvailable[language] = false;
+            return;
+        }
+        isAvailable[language] = true;
         if (language === "Japanese") {
-            // TODO: Properly involve secondary language to get paths
-            const cPaths = paths.content["Japanese-English"];
             let query;
             promise = new Promise((resolve) => {
                 // Load content database and attach trainer database to it,
@@ -224,8 +234,6 @@ module.exports = function (paths, modules) {
              ORDER BY d.news_freq DESC`, query + "%", query + "%")
         .then((rows) => rows.map((row) => row.id));
     };
-
-    content.dataMap = dataMap;
 
     return content;
 };

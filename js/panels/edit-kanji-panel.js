@@ -114,7 +114,6 @@ class EditKanjiPanel extends Panel {
         this.root.getElementById("save-button").addEventListener(
             "click", () => { this.save(); main.closePanel("edit-kanji"); });
         // TODO: all-srs-levels popup callback
-        eventEmitter.emit("done-loading");
     }
 
     adjustToLanguage(language, secondary) {

@@ -194,7 +194,7 @@ module.exports = function (paths, modules) {
             }
         });
         return getTranslations(word).then((translations) => {
-            if (!translations.contains(translation))
+            if (!translations.includes(translation))
                 return modules.database.run(
                     "INSERT INTO translations VALUES (?, ?)", word, translation)
                 .then(() => true);
@@ -205,7 +205,7 @@ module.exports = function (paths, modules) {
 
     function addReading(word, reading) {
         return getReadings().then((readings) => {
-            if (!readings.contains(reading))
+            if (!readings.includes(reading))
                 return modules.database.run(
                     "INSERT INTO readings VALUES (?, ?)", word, reading)
                 .then(() => true);

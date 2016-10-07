@@ -8,7 +8,6 @@ class HomeSection extends Section {
         // TODO: Generalize
         this.widgetAdder.addEventListener(
             "click", () => this.addPinwallWidget("pinwall-note"));
-        eventEmitter.emit("done-loading");
     }
 
     open() {

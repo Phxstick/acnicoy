@@ -97,16 +97,29 @@ module.exports = function (basePath) {
     });
 
     // Language content
-    const contentPath = path.resolve(basePath, "data", "language-content");
-    const japEngPath = path.resolve(contentPath, "Japanese-English");
-    paths.content = {
-        "Japanese-English": {
-            database: path.resolve(japEngPath, "Japanese-English.sqlite3"),
-            kanjiStrokes: path.resolve(japEngPath, "kanji-strokes.json"),
-            numbers: path.resolve(japEngPath, "numeric-kanji.json"),
-            counters: path.resolve(japEngPath, "counter-kanji.json"),
-            dictCodeToText: path.resolve(japEngPath, "dict-code-to-text.json")
+    const contentRegister = {
+        "Japanese": {
+            "English": {
+                database: "Japanese-English.sqlite3",
+                kanjiStrokes: "kanji-strokes.json",
+                numbers: "numeric-kanji.json",
+                counters: "counter-kanji.json",
+                dictCodeToText: "dict-code-to-text.json"
+            }
         }
+    };
+    const contentPath = path.resolve(basePath, "data", "language-content");
+
+    // Return null if content for given language pair is not available,
+    // otherwise return an object mapping resource names to absolute paths
+    paths.content = (language, secondaryLanguage) => {
+        const p = path.resolve(contentPath, language + "-" + secondaryLanguage);
+        if (!utility.existsDirectory(p))
+            return null;
+        const resourcePaths = contentRegister[language][secondaryLanguage];
+        for (let resource in resourcePaths)
+            resourcePaths[resource] = path.resolve(p, resourcePaths[resource]);
+        return resourcePaths;
     };
 
     return paths;

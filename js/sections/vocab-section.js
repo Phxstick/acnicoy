@@ -76,8 +76,6 @@ class VocabSection extends Section {
         this.getDomElements();
         this.createDomEventListeners();
         this.createTrainerEventListeners();
-
-        eventEmitter.emit("done-loading");
     }
 
     getDomElements() {

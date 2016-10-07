@@ -71,23 +71,12 @@ class MainWindow extends Window {
                 () => this.openSection("dictionary"));
         this.root.getElementById("find-kanji-button").addEventListener("click",
                 () => this.openSection("kanji"));
-        // TODO: Remove this lateron. Try to handle kanji-section separately
-        // In index, instead use promises from createSections/createPanels
-        this.doneLoading = new Promise((resolve) => {
-            let numLoaded = 0;
-            const total = globals.sections.length + globals.panels.length;
-            eventEmitter.on("done-loading", () => {
-                if (++numLoaded === total)
-                    resolve();
-            });
-        });
     }
 
     createSections () {
         const promises = [];
         this.sections = {};
         for (let name of globals.sections) {
-            require(paths.js.section(name));
             const section = document.createElement(name + "-section");
             section.classList.add("section");
             section.style.display = "none";
@@ -103,7 +92,6 @@ class MainWindow extends Window {
         const promises = [];
         this.panels = {};
         for (let name of globals.panels) {
-            require(paths.js.panel(name));
             const panel = document.createElement(name + "-panel");
             panel.classList.add("panel");
             this.sectionWindow.appendChild(panel);
@@ -114,7 +102,20 @@ class MainWindow extends Window {
         return promises;
     }
 
-    loadLanguages(languages) {
+    processLanguageContent(languages) {
+        const results = [];
+        for (let language of languages) {
+            if (dataManager.content.isAvailable[language]) {
+                for (let name in this.sections) {
+                    results.push(
+                        this.sections[name].processLanguageContent(language));
+                }
+            }
+        }
+        return Promise.all(results);
+    }
+
+    initialize(languages) {
         // Assign callbacks for language popup
         this.languagePopup.onOpen = () => this.fillLanguagePopup(languages);
         this.languagePopup.callback = (_, index) => {
@@ -221,11 +222,20 @@ class MainWindow extends Window {
 
     adjustToLanguage(language, secondary) {
         if (language === "Japanese") {
-            this.findKanjiButton.style.display = "flex";
             this.addKanjiButton.style.display = "flex";
+            if (dataManager.content.isAvailable["Japanese"]) {
+                this.findKanjiButton.style.display = "flex";
+            } else {
+                this.findKanjiButton.style.display = "none";
+            }
         } else {
-            this.findKanjiButton.style.display = "none";
             this.addKanjiButton.style.display = "none";
+            this.findKanjiButton.style.display = "none";
+        }
+        if (dataManager.content.isAvailable[language]) {
+            this.dictionaryButton.style.display = "flex";
+        } else {
+            this.dictionaryButton.style.display = "none";
         }
         this.updateTestButton();
     }

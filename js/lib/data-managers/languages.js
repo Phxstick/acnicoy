@@ -17,11 +17,11 @@ module.exports = function (paths, modules) {
         }
     };
 
-    // Load content and user data for given language
+    // Load user data and content (if available) for given language
     languageManager.load = function (language) {
+        modules.languageSettings.load(language);  // Always load settings first
         const languageDataModules = [
-            "language-settings", "content", "database", "vocab-lists",
-            "stats", "pinwall"
+            "content", "database", "vocab-lists", "stats", "pinwall"
         ];
         const promises = [];
         for (let name of languageDataModules) {
@@ -31,9 +31,9 @@ module.exports = function (paths, modules) {
     };
 
     languageManager.setCurrent = function (language) {
+        modules.languageSettings.setLanguage(language);
         const languageDependentModules = [
-            "language-settings", "content", "database", "vocab-lists",
-            "stats", "pinwall", "test"
+            "content", "database", "vocab-lists", "stats", "pinwall", "test"
         ];
         for (let name of languageDependentModules) {
             modules[name].setLanguage(language);

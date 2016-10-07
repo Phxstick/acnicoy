@@ -59,11 +59,16 @@ class KanjiSection extends Section {
                 this.updateAddedPerGradeCounter(info.grade);
             });
         });
-        dataManager.content.getKanjiList().then((rows) => {
-            this.createKanji(rows);
-            this.displayKanji("grade");
-            eventEmitter.emit("done-loading");
-        });
+    }
+
+    processLanguageContent(language) {
+        // Kanji section is only available for Japanese.
+        if (language === "Japanese") {
+            return dataManager.content.getKanjiList().then((rows) => {
+                this.createKanji(rows);
+                this.displayKanji("grade");
+            });
+        }
     }
 
     createKanji(rows) {
@@ -163,7 +168,7 @@ class KanjiSection extends Section {
             });
             promises.push(promise);
         }
-        Promise.all(promises).then(
+        return Promise.all(promises).then(
             () => this.searchResults.appendChild(fragment));
     }
 }

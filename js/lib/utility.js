@@ -204,6 +204,18 @@ function parseEntries(entryString, separator) {
     return entries;
 }
 
+
+function existsDirectory(path) {
+    try {
+        const stats = fs.lstatSync(path);
+        return stats.isDirectory();
+    } catch (error) {
+        //if (error.errno === -2)
+        return false;
+    }
+}
+
+
 /**
 **  Reduce the pain of creating SVG elements in javascript.
 **/
@@ -313,12 +325,13 @@ function calculateHeaderCellWidths(tableBody, tableHead) {
 // Non DOM-related functions
 module.exports.getTime = getTime;
 module.exports.getShortDateString = getShortDateString;
-module.exports.parseEntries = parseEntries;
 module.exports.parseCssFile = parseCssFile;
 module.exports.setEqual = setEqual;
 module.exports.calculateED = calculateED;
 module.exports.getStringForNumber = getStringForNumber;
 module.exports.getOrdinalNumberString = getOrdinalNumberString;
+module.exports.parseEntries = parseEntries;
+module.exports.existsDirectory = existsDirectory;
 
 // DOM related functions
 module.exports.parseHtmlFile = parseHtmlFile;

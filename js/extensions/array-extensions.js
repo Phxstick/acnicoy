@@ -17,20 +17,12 @@ Array.prototype.sum = function() {
 
 
 /**
-**  Return true if the array contains given value.
-**/
-Array.prototype.contains = function(value) {
-    return this.indexOf(value) > -1;
-};
-
-
-/**
 **  Given one or more values, return true if this array contains only
 **  elements equal to given values.
 **/
 Array.prototype.containsOnly = function(...values) {
     for (let element of this) {
-        if (!values.contains(element)) return false;
+        if (!values.includes(element)) return false;
     }
     return true;
 };

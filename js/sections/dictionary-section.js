@@ -37,7 +37,6 @@ class DictionarySection extends Section {
             if (this.doneLoading && this.nextRowIndex < this.lastResult.length)
                 this.displayMoreResults(loadAmount);
         });
-        eventEmitter.emit("done-loading");
     }
 
     open() {

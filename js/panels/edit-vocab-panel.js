@@ -38,7 +38,7 @@ class EditVocabPanel extends Panel {
                 lists.push(this.listsList.children[i].textContent);
             const newList = this.vocabListSelect.value;
             const word = this.wordLabel.textContent;
-            if (!lists.contains(newList) && newList.length > 0) {
+            if (!lists.includes(newList) && newList.length > 0) {
                 const span = document.createElement("span");
                 span.classList.add("list-entry");
                 span.textContent = newList;
@@ -127,13 +127,6 @@ class EditVocabPanel extends Panel {
         ////         () => dataManager.vocabLists.removeWordFromList(
         ////             this.wordLabel.textContent, span.textContent));
         //// });
-        eventEmitter.emit("done-loading");
-    }
-
-    open () {
-    }
-
-    close() {
     }
 
     adjustToLanguage(language, secondary) {
