@@ -4,7 +4,7 @@ const globals = {
     modules: ["languages", "settings", "language-settings", "vocab-lists",
               "pinwall", "content", "vocab", "kanji", "stats", "srs",
               "test", "history", "database"],
-    windows: ["init", "main"],
+    windows: ["init", "loading", "main"],
     sections: ["home", "stats", "history", "vocab", "settings",
                "test", "dictionary", "kanji"],
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
@@ -64,18 +64,21 @@ let main;
 {
     let mainWindow;
     let initWindow;
+    let loadingWindow;
     let languages;
     let standardLang;
 
     Promise.all([
         // Make sure the windows are all loaded
         new Promise((r) => window.addEventListener("DOMContentLoaded", r)),
-        customElements.whenDefined("main-window"),
-        customElements.whenDefined("init-window")
+        customElements.whenDefined("init-window"),
+        customElements.whenDefined("loading-window"),
+        customElements.whenDefined("main-window")
     ]).then(() => {
         // Get windows as DOM Elements
         mainWindow = document.getElementById("main-window");
         initWindow = document.getElementById("init-window");
+        loadingWindow = document.getElementById("loading-window");
         main = mainWindow;
     }).then(() => {
         // Load data path. If it doesn't exist, let user choose it
@@ -110,7 +113,8 @@ let main;
         //     // TODO: Display error and let user choose new standard lang?
         // }
     }).then(() => {
-        // TODO: At this point, initialization is done -> Display loading window
+        loadingWindow.setStatus("Loading language data...");
+        loadingWindow.style.display = "block";
         initWindow.style.display = "none";
         // Load all language data
         const start = performance.now();
@@ -124,6 +128,7 @@ let main;
         });
     }).then(() => {
         // Create sections and panels in main-window
+        loadingWindow.setStatus("Creating sections...");
         return Promise.all([ main.createSections(), main.createPanels() ]);
     }).then(() => {
         // Set language and initialize stuff in main-window
@@ -131,6 +136,7 @@ let main;
         main.initialize(languages);
     }).then(() => {
         // Create content-related stuff in advance
+        loadingWindow.setStatus("Processing language content...");
         return main.processLanguageContent(languages);
     }).then(() => {
         // Render main-window
@@ -157,7 +163,7 @@ let main;
         registerShortcut("Ctrl+Esc", () => ipcRenderer.send("close-now"));
         return utility.finishEventQueue();
     }).then(() => {
-        // TODO: Now undisplay loading-window again
+        loadingWindow.style.display = "none";
     });/*.catch((error) => {
         console.error(error);
     });*/

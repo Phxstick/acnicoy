@@ -1,0 +1,35 @@
+@import "base";
+
+#window {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-color: dimgray;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--loading-window-layer);
+
+  #inner-frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    #spinner {
+      text-shadow: -1px -1px 1px lightgrey;
+      color: white;
+      margin-bottom: 25px;
+    }
+    #status-message {
+      text-shadow: -1px -1px 1px lightgrey;
+      color: white;
+      font-family: $header-font;
+      font-variant: small-caps;
+      font-size: 150%;
+    }
+  }
+}
