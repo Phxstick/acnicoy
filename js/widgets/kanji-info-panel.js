@@ -117,18 +117,29 @@ class KanjiInfoPanel extends Widget {
         this.examplesLoaded = false;
         this.strokesLoaded = false;
     }
+
+    registerCentralEventListeners() {
+        events.on("kanji-edited", (kanji, result) => {
+            if (this.currentKanji !== kanji) return;
+            if (result === "added") {
+                this.addedLabel.style.display = "block";
+                this.addButton.style.display = "none";
+            } else if (result === "updated") {
+                this.addedLabel.style.display = "none";
+                this.addButton.style.display = "block";
+            }
+        });
+    }
+
     open () {
         if (!this.isOpen) {
             Velocity(this, "slideDown", { duration: 200 });
             this.isOpen = true;
         }
     }
-    close () {
-    }
-    adjustToLanguage(language, secondary) {
-    }
+
     openSection(newSection) {
-        if (newSection === "strokes") {
+        if (newSection === "strokes" || newSection === "info") {
             this.sectionFrames[newSection].style.display = "flex";
         } else {
             this.sectionFrames[newSection].style.display = "block";
@@ -141,6 +152,7 @@ class KanjiInfoPanel extends Widget {
             }
         }
     }
+
     load (kanji) {
         this.examplesLoaded = false;
         this.strokesLoaded = false;
@@ -214,6 +226,7 @@ class KanjiInfoPanel extends Widget {
             }
         });
     }
+
     displayMoreExampleWords(amount) {
         const limit = Math.min(this.nextRowIndex + amount,
                                this.exampleWordRows.length);
@@ -222,6 +235,7 @@ class KanjiInfoPanel extends Widget {
                 this.exampleWordRows.slice(this.nextRowIndex, limit)));
         this.nextRowIndex = limit;
     }
+
     // TODO: Differentiate term "rows" (database rows <-> table rows)...
     createExampleWordRows(dataRows) {
         const fragment = document.createDocumentFragment();
@@ -267,6 +281,7 @@ class KanjiInfoPanel extends Widget {
         }
         return fragment;
     }
+
     displayStrokeGraphics() {
         const kanjiStrokes = dataManager.content.data.kanjiStrokes;
         this.strokeGraphics.empty();

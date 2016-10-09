@@ -219,8 +219,8 @@ class EditVocabPanel extends Panel {
                                       old_translations: oldTranslations,
                                       old_readings: oldReadings }));
         main.closePanel("edit-vocab");
-        eventEmitter.emit("word-deleted", word);
-        eventEmitter.emit("vocab-changed");
+        events.emit("word-deleted", word);
+        events.emit("vocab-changed");
     }
 
     packEditEntry(node, type) {
@@ -359,17 +359,17 @@ class EditVocabPanel extends Panel {
         .then((currentLevel) => {
             const newLevel = parseInt(this.levelPopup.get());
             if (currentLevel !== newLevel) {
-                eventEmitter.emit("vocab-changed");
+                events.emit("vocab-changed");
                 return dataManager.srs.setLevel(
                         word, newLevel, dataManager.test.mode.WORDS);
             }
             // TODO: Emit proper events (with info from edit-word function!)
             if (this.changes.length > 0) {
                 if (this.oldWord !== word) {
-                    eventEmitter.emit("word-deleted", this.oldWord);
-                    eventEmitter.emit("word-added", word);
+                    events.emit("word-deleted", this.oldWord);
+                    events.emit("word-added", word);
                 }
-                eventEmitter.emit("vocab-changed");
+                events.emit("vocab-changed");
                 main.updateStatus("The entry has been updated.");
             } if (this.changes.length === 0 && currentLevel === newLevel) {
                 main.updateStatus("The entry has not been changed.");

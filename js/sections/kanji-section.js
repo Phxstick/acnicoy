@@ -51,10 +51,13 @@ class KanjiSection extends Section {
             this.addedPerGradeCounters[grade] = document.createElement("span");
             this.addedPerGradeCounters[grade].classList.add("statistic-label");
         }
-        eventEmitter.on("kanji-edited", (kanji, type) => {
-            const item = this.root.getElementById(kanji);
-            if (type === "added") item.classList.add("added")
-            else if (type === "removed") item.classList.remove("added")
+    }
+
+    registerCentralEventListeners() {
+        events.on("kanji-edited", (kanji, type) => {
+            const item = this.$(kanji);
+            if (type === "added") item.classList.add("added");
+            else if (type === "removed") item.classList.remove("added");
             dataManager.content.getKanjiInfo(kanji).then((info) => {
                 this.updateAddedPerGradeCounter(info.grade);
             });

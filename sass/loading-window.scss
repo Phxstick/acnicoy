@@ -20,12 +20,12 @@
     justify-content: center;
 
     #spinner {
-      text-shadow: -1px -1px 1px lightgrey;
+      text-shadow: 0 0 1px lightgrey;
       color: white;
       margin-bottom: 25px;
     }
     #status-message {
-      text-shadow: -1px -1px 1px lightgrey;
+      text-shadow: 0 0 1px lightgrey;
       color: white;
       font-family: $header-font;
       font-variant: small-caps;

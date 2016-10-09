@@ -120,8 +120,8 @@ class AddVocabPanel extends Panel {
                main.updateStatus(`${entryString}${numTranslationsAdded} ` +
                                  `translation${string1} been added. ` +
                                  `${failedString}${string2}`);
-               eventEmitter.emit("word-added", word);
-               eventEmitter.emit("vocab-changed");
+               events.emit("word-added", word);
+               events.emit("vocab-changed");
            }
         );
         main.closePanel("add-vocab");

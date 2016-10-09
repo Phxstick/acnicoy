@@ -1,0 +1,9 @@
+@import "init";
+
+#input-frame {
+  display: flex;
+  flex-direction: row;
+  #data-path {
+    flex: 1;
+  }
+}

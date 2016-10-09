@@ -1,7 +1,7 @@
 "use strict";
 
 const Random = require("random-js");
-const random = new Random(Random.engines.nativeMath);
+const random = new Random(Random.engines.browserCrypto);
 
 const menuItems = PopupMenu.registerItems({
     "copy-test-item": {

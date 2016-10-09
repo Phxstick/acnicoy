@@ -4,7 +4,7 @@ const globals = {
     modules: ["languages", "settings", "language-settings", "vocab-lists",
               "pinwall", "content", "vocab", "kanji", "stats", "srs",
               "test", "history", "database"],
-    windows: ["init", "loading", "main"],
+    windows: ["init-path", "init-lang", "loading", "main"],
     sections: ["home", "stats", "history", "vocab", "settings",
                "test", "dictionary", "kanji"],
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
@@ -17,27 +17,16 @@ const globals = {
 
 const startTime = performance.now();
 // Load node modules
-const { ipcRenderer, clipboard, remote } = require("electron");
-const { Menu, MenuItem } = remote;
+const { clipboard } = require("electron");
 const EventEmitter = require("events");
-const languageList = require("languages");
-
-// TODO: Use this for languages init section and settings
-// for (let langcode of languageList.getAllLanguageCode()) {
-//     console.log(languageList.getLanguageInfo(langcode));
-// }
-
-// TODO: Put this into main class?
-const eventEmitter = new EventEmitter();
-// TODO: Make immediately closeable by default, until signal sent
-ipcRenderer.on("closing-window", () => ipcRenderer.send("close-now"));
 
 // Load libraries
-const paths = require("./js/lib/path-manager.js")(__dirname);
+const paths = require(basePath + "/js/lib/path-manager.js")(basePath);
 const dataManager = require(paths.js.lib("data-manager"))(paths);
 const utility = require(paths.js.lib("utility"));
 const dialogWindow = require(paths.js.lib("dialog-window"));
 const layers = require(paths.js.lib("layer-manager"));
+const shortcuts = require(paths.js.lib("shortcut-manager"));
 const templates = require(paths.js.lib("template-manager"));
 const Velocity = require(paths.js.lib("velocity"));
 const PopupMenu = require(paths.js.lib("popup-menu"));
@@ -50,6 +39,7 @@ const Panel = require(paths.js.base("panel"));
 const Widget = require(paths.js.base("widget"));
 const PinwallWidget = require(paths.js.widget("pinwall-widget"));
 
+// Load everything else defined in globals object
 for (let name of globals.windows) require(paths.js.window(name));
 for (let name of globals.sections) require(paths.js.section(name));
 for (let name of globals.panels) require(paths.js.panel(name));
@@ -59,43 +49,55 @@ for (let name of globals.extensions) require(paths.js.extension(name));
 const totalTime = performance.now() - startTime;
 console.log("Loaded all required modules after %f ms", totalTime);
 
-
-let main;
 {
-    let mainWindow;
-    let initWindow;
-    let loadingWindow;
+    window.events = new EventEmitter();  // Communication between components
+    const windows = {};
     let languages;
     let standardLang;
+    let currentWindow;
 
-    Promise.all([
-        // Make sure the windows are all loaded
-        new Promise((r) => window.addEventListener("DOMContentLoaded", r)),
-        customElements.whenDefined("init-window"),
-        customElements.whenDefined("loading-window"),
-        customElements.whenDefined("main-window")
-    ]).then(() => {
-        // Get windows as DOM Elements
-        mainWindow = document.getElementById("main-window");
-        initWindow = document.getElementById("init-window");
-        loadingWindow = document.getElementById("loading-window");
-        main = mainWindow;
+    function openWindow(name, closePrevious=true) {
+        if (closePrevious && currentWindow !== undefined) {
+            windows[currentWindow].style.display = "none";
+        }
+        windows[name].style.display = "block";
+        currentWindow = name;
+    }
+
+    Promise.resolve().then(() => {
+        // Create all windows
+        const windowsLoaded = [];
+        for (let name of globals.windows) {
+            const windowName = name + "-window";
+            windowsLoaded.push(customElements.whenDefined(windowName));
+            windows[name] = document.createElement(windowName);
+            windows[name].classList.add("window");
+            document.body.appendChild(windows[name]);
+        }
+        window.main = windows["main"];
+        return Promise.all(windowsLoaded);
     }).then(() => {
         // Load data path. If it doesn't exist, let user choose it
         if (!paths.getDataPath()) {
-            return initWindow.getNewDataPath()
+            openWindow("init-path");
+            return windows["init-path"].getNewDataPath()
                    .then((newPath) => paths.setDataPath(newPath));
         }
     }).then(() => {
         // Find registered languages. If none exist, let user register one
         languages = dataManager.languages.find();
         if (languages.length === 0) {
-            return initWindow.getNewLanguages()
+            openWindow("init-lang");
+            return windows["init-lang"].getNewLanguages()
                 .then(([lang, secondary, settings]) =>
                     dataManager.languages.add(language, secondary, settings))
                 .then((language) => { languages = [language]; });
         }
     }).then(() => {
+        // Load the global settings. If the file doesn't exist, create it
+        if (!utility.existsFile(paths.globalSettings)) {
+            dataManager.settings.setDefault();
+        }
         dataManager.settings.load();
         standardLang = dataManager.settings["languages"]["standard"];
         // If no standard language has been set yet
@@ -113,9 +115,8 @@ let main;
         //     // TODO: Display error and let user choose new standard lang?
         // }
     }).then(() => {
-        loadingWindow.setStatus("Loading language data...");
-        loadingWindow.style.display = "block";
-        initWindow.style.display = "none";
+        windows["loading"].setStatus("Loading language data...");
+        openWindow("loading");
         // Load all language data
         const start = performance.now();
         const promises = [];
@@ -128,42 +129,19 @@ let main;
         });
     }).then(() => {
         // Create sections and panels in main-window
-        loadingWindow.setStatus("Creating sections...");
+        windows["loading"].setStatus("Creating sections...");
         return Promise.all([ main.createSections(), main.createPanels() ]);
     }).then(() => {
         // Set language and initialize stuff in main-window
         main.setLanguage(standardLang);
         main.initialize(languages);
-    }).then(() => {
-        // Create content-related stuff in advance
-        loadingWindow.setStatus("Processing language content...");
+        windows["loading"].setStatus("Processing language content...");
         return main.processLanguageContent(languages);
     }).then(() => {
-        // Render main-window
-        main.style.display = "block";
-        // TODO: Where to do this exactly?
-        // TODO: Create shortcut-manager for this
-        // TODO Bind help window to F1
-        // Add local shortcuts
-        // Define functions for registering shortcuts
-        window.registerShortcut = (shortcut, callback) => {
-            unregisterShortcut(shortcut);
-            ipcRenderer.send("shortcut", shortcut, true);
-            ipcRenderer.on(shortcut, callback);
-        };
-        window.unregisterShortcut = (shortcut) => {
-            ipcRenderer.send("shortcut", shortcut, false);
-        };
-        registerShortcut("Ctrl+Q", () => ipcRenderer.send("quit"));
-        registerShortcut("Ctrl+A", () => main.openPanel("add-vocab"));
-        registerShortcut("Ctrl+K", () => main.openPanel("add-kanji"));
-        registerShortcut("Ctrl+F", () => main.openSection("dictionary"));
-        registerShortcut("Ctrl+T", () => main.openTestSection());
-        // Define a shortcut to force exit (TODO: Remove later)
-        registerShortcut("Ctrl+Esc", () => ipcRenderer.send("close-now"));
+        openWindow("main", false);
         return utility.finishEventQueue();
     }).then(() => {
-        loadingWindow.style.display = "none";
+        windows["loading"].style.display = "none";
     });/*.catch((error) => {
         console.error(error);
     });*/

@@ -57,8 +57,8 @@ const menuItems = PopupMenu.registerItems({
             if (dialogWindow.confirm(
                    `Are you sure you want to delete the word '${word}'?`)) {
                 dataManager.vocab.remove(word);
-                eventEmitter.emit("word-deleted", word);
-                eventEmitter.emit("vocab-changed");
+                events.emit("word-deleted", word);
+                events.emit("vocab-changed");
             }
         }
     }
@@ -75,7 +75,6 @@ class VocabSection extends Section {
 
         this.getDomElements();
         this.createDomEventListeners();
-        this.createTrainerEventListeners();
     }
 
     getDomElements() {
@@ -174,15 +173,15 @@ class VocabSection extends Section {
         });
     }
 
-    createTrainerEventListeners() {
+    registerCentralEventListeners() {
         // If a vocab item has been deleted, delete it from all lists
-        eventEmitter.on("word-deleted", (word) => {
+        events.on("word-deleted", (word) => {
             utility.removeEntryFromSortedList(this.allWordsList, word);
             utility.removeEntryFromSortedList(this.listContentsList, word);
         });
         // If a new word has been added to the vocabulary ...
-        eventEmitter.on("word-added", (word) => {
-            // ... show it in the list of all words if it matches current filter
+        events.on("word-added", (word) => {
+            // ... show it in list of all words if it matches current filter
             // TODO: More precisely: Check if word matches query
             if (this.allWordsQuery.length === 0) {
                 utility.insertNodeIntoSortedList(
@@ -190,8 +189,9 @@ class VocabSection extends Section {
             }
             // ... show it in list contents if selected list contains it
             if (this.selectedList !== null &&
-                dataManager.vocabLists.isWordInList(word, this.selectedList))
+                dataManager.vocabLists.isWordInList(word, this.selectedList)) {
                 this.createListContentsItem(word);
+            }
         });
     }
     

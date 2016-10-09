@@ -10,6 +10,16 @@ class Component extends HTMLElement {
             style.textContent += `@import url(${paths.fontAwesome})`;
         }
         this.root.appendChild(style);
+
+        // jQuery-like shortcut for getting elements in shadow DOM
+        this.$ = (id) => this.root.getElementById(id);
+        this.registerCentralEventListeners();
+    }
+
+    /**
+    **  This is where global events should be handled.
+    **/
+    registerCentralEventListeners() {
     }
 }
 

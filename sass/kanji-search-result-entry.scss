@@ -79,11 +79,10 @@ span {
       font-size: 80%;
       &:not(:last-child) {
         border-right: 1px solid transparent;
-        border-image: linear-gradient(to bottom, transparent, dimgray,
+        border-image: linear-gradient(to bottom, transparent, gray,
                                       transparent) 0 100%;
         padding-right: 5px;
       }
-      // margin-right: 10px;
       &:not(:first-child) {
         padding-left: 6px;
       }

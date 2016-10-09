@@ -1,5 +1,8 @@
 "use strict";
 
+const { remote } = require("electron");
+const { Menu, MenuItem } = remote;
+
 const popupMenu = new Menu();
 const visibleItems = new Set();
 const previouslyVisibleItems = new Set();

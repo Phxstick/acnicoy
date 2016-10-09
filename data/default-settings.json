@@ -29,5 +29,15 @@
         "font1": { "family": "Helvetica", "size": 11 },
         "font2": { "family": "Century Gothic", "size": 12 },
         "colors": null
+    },
+    "shortcuts": {
+        "quit": "Ctrl+Q",
+        "add-vocab": "Ctrl+A",
+        "add-kanji": "Ctrl+K",
+        "dictionary": "Ctrl+F",
+        "test": "Ctrl+T",
+        "help": "F1",
+        "ignore-answer": "Ctrl+I",
+        "fullscreen": "F11"
     }
 }

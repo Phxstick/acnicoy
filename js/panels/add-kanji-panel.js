@@ -116,7 +116,7 @@ class AddKanjiPanel extends Panel {
         }
         dataManager.kanji.edit(kanji, meanings, on, kun, levels).then(
             (result) => {
-                eventEmitter.emit("kanji-edited", kanji, result);
+                events.emit("kanji-edited", kanji, result);
                 if (result === "added")
                     main.updateStatus(`Kanji ${kanji} has been added.`);
                 else if (result === "updated")

@@ -24,8 +24,11 @@ class HistorySection extends Section {
                     this.nextRowIndex < this.rows.length)
                 this.displayMoreEntries(displayAmount);
         });
+    }
+
+    registerCentralEventListeners() {
         // Make sure to update table when the vocabulary has been edited
-        eventEmitter.on("vocab-changed", () => this.updateTable());
+        events.on("vocab-changed", () => this.updateTable());
     }
 
     open() {

@@ -1,11 +1,6 @@
 'use strict';
-const localShortcut = require("electron-localshortcut");
-const electron = require('electron');
-const app = electron.app;  // Module to control application life.
-const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 
-// Report crashes to our server.
-// electron.crashReporter.start();
+const { ipcMain, app, BrowserWindow } = require('electron');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -33,16 +28,17 @@ app.on('ready', function() {
       icon: "./img/icon.png"
   });
 
-  // and load the index.html of the app.
-  mainWindow.loadURL(`file://${__dirname}/index.html`);
-
-  // mainWindow.maximize();
+  // Load the index.html of the app and execute corresponding script.
+  mainWindow.loadURL(`file://${__dirname}/html/index.html`);
   mainWindow.webContents.openDevTools();
+  mainWindow.webContents.executeJavaScript(`const basePath = "${__dirname}"`);
+  mainWindow.webContents.executeJavaScript(
+          require("fs").readFileSync(`${__dirname}/js/index.js`, "utf-8"));
   // mainWindow.setAutoHideMenuBar(true);
   // mainWindow.setMenuBarVisibility(false);
-  let forceQuit = false;
+  let forceQuit = true; // TODO
 
-  electron.ipcMain.on("close-now", (event) => {
+  ipcMain.on("close-now", (event) => {
       forceQuit = true;
       app.quit();
   });
@@ -59,34 +55,5 @@ app.on('ready', function() {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
-  electron.ipcMain.on("quit", () => app.quit());
-  // TODO: "Object has been destroyed" error for openDevTools?
-  //       Maybe wrong context when calling it like below?
-  var openDevTools = mainWindow.webContents.openDevTools;
-  electron.ipcMain.on("open-debug", openDevTools);
-  // TODO: Move this to shortcut-manager via remote
-  electron.ipcMain.on("choose-data-path", (event, defaultPath) => {
-      const result = electron.dialog.showOpenDialog(mainWindow, {
-          title: "Choose directory for program data",
-          defaultPath: defaultPath,
-          properties: ["openDirectory"] });
-      event.returnValue = result === undefined ? defaultPath : result[0];
-  });
-  electron.ipcMain.on("confirm", (event, text) => {
-      const buttonIndex = electron.dialog.showMessageBox({
-          type: "question", buttons: ["Yes", "No"], defaultId: 1,
-          message: text, title: "Confirm", cancelId: 1 });
-      event.returnValue = buttonIndex === 0;
-  });
-  electron.ipcMain.on("shortcut", (event, shortcut, registerNew) => {
-      if (registerNew) {
-          localShortcut.register(mainWindow, shortcut, () => {
-              event.sender.send(shortcut);
-          });
-      } else {
-          if (localShortcut.isRegistered(mainWindow, shortcut)) {
-              localShortcut.unregister(mainWindow, shortcut);
-          }
-      }
-  });
+  ipcMain.on("quit", () => app.quit());
 });

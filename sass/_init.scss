@@ -1,9 +1,14 @@
 @import "base";
 
-body {
+#window {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
 #init-frame {
@@ -14,6 +19,7 @@ body {
   border-radius: 5px;
   background-color: $view-background;
   color: $view-color;
+  box-shadow: 1px 1px 3px black;
 
   #header {
     background-color: #dddddd;
@@ -27,11 +33,11 @@ body {
     border-top-right-radius: 5px;
   }
 
-  #step-content {
+  #content {
     flex: 1;
     padding: 10px;
 
-    > div > * {
+    > * {
       margin-bottom: 8px;
     }
   }
@@ -51,16 +57,4 @@ body {
 .note {
   color: gray;
   font-size: 80%;
-}
-
-#data-path-input-frame {
-  display: flex;
-  flex-direction: row;
-  #data-path {
-    flex: 1;
-  }
-}
-
-#steps {
-  display: none;
 }

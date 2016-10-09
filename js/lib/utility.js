@@ -204,7 +204,22 @@ function parseEntries(entryString, separator) {
     return entries;
 }
 
+/**
+**  Return true if given path is an existing file.
+**/
+function existsFile(path) {
+    try {
+        const stats = fs.lstatSync(path);
+        return stats.isFile();
+    } catch (error) {
+        //if (error.errno === -2)
+        return false;
+    }
+}
 
+/**
+**  Return true if given path is an existing directory.
+**/
 function existsDirectory(path) {
     try {
         const stats = fs.lstatSync(path);
@@ -331,6 +346,7 @@ module.exports.calculateED = calculateED;
 module.exports.getStringForNumber = getStringForNumber;
 module.exports.getOrdinalNumberString = getOrdinalNumberString;
 module.exports.parseEntries = parseEntries;
+module.exports.existsFile = existsFile;
 module.exports.existsDirectory = existsDirectory;
 
 // DOM related functions

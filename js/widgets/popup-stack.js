@@ -14,7 +14,10 @@ class PopupStack extends Widget {
         // Create widget tree
         this.itemContainer = document.createElement("div");
         this.itemContainer.id = "container";
+        this.shadowDiv = document.createElement("div");
+        this.shadowDiv.id = "shadow";
         this.root.appendChild(this.itemContainer);
+        this.itemContainer.appendChild(this.shadowDiv);
         window.addEventListener("click", () => this.close());
     }
     appendItem (text) {
@@ -66,7 +69,7 @@ class PopupStack extends Widget {
                     item.style.left = `${current}px`;
                 current += itemWidth - this.overlap;
             }
-            // Velocity(this.itemContainer, { "width": current });
+            Velocity(this.shadowDiv, { "width": current });
         }
         this.isOpen = true;
     }
@@ -81,12 +84,14 @@ class PopupStack extends Widget {
                 }
             }
         }
-        // Velocity(this.itemContainer, { "width": "100%" });
+        Velocity(this.shadowDiv, {width: this.itemContainer.offsetWidth + "px"});
         this.isOpen = false;
     }
     clear () {
+        for (let item of this.items) {
+            this.itemContainer.removeChild(item);
+        }
         this.items.length = 0;
-        this.itemContainer.empty();
     }
     disable() {
     }

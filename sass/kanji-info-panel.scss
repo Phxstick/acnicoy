@@ -100,6 +100,7 @@
 #content-frame {
   flex: 1;
   position: relative;
+
   > div {
     position: absolute;
     top: 0;
@@ -109,29 +110,41 @@
     // TODO: Remove this space to allow wider window? Raise close button instead
   }
   #info-frame {
+    display: flex;
+    flex-direction: column;
+
+    > div {
+      &:not(:last-child) {
+        margin-bottom: 10px;
+      }
+      &:first-child {
+        margin-top: 10px;
+      }
+    }
+
     #meanings {
       font-size: 150%;
-      padding: 10px;
     }
     #details-frame {
-      padding: 10px;
       span {
         display: inline-block;
         font-size: 90%;
-        border-radius: 5px;
-        margin-right: 10px;
-        border: 1px solid lightgrey;
+        padding-top: 3px;
+        padding-bottom: 3px;
         color: dimgray;
-        padding: 4px;
-        &:hover {
-          background-color: $view-hover-background;
-          border: 1px solid darken($view-hover-background, 10%);
-          color: $view-hover-color;
+
+        &:not(:first-child) {
+          padding-left: 10px;
+        }
+        &:not(:last-child) {
+          border-right: 1px solid transparent;
+          border-image: linear-gradient(to bottom, transparent, gray,
+                                        transparent) 0 100%;
+          padding-right: 10px;
         }
       }
     }
     #on-frame, #kun-frame {
-      padding: 10px;
       .header {
         font-weight: bold;
         padding-right: 15px;
@@ -141,7 +154,6 @@
       }
     }
     #number-frame {
-      padding: 10px;
       #number-label {
         margin-left: 10px;
         margin-right: 10px;
@@ -153,7 +165,6 @@
       }
     }
     #counter-frame {
-      padding: 10px;
       #counter-label {
         margin-left: 15px;
         font-size: 120%;

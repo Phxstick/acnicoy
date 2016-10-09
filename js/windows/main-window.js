@@ -1,5 +1,7 @@
 "use strict";
 
+const { ipcRenderer } = require("electron");
+
 const menuItems = PopupMenu.registerItems({
     "copy-kanji": {
         label: "Copy kanji",
@@ -141,6 +143,12 @@ class MainWindow extends Window {
                 ipcRenderer.send("close-now");
             }
         });
+        // Register shortcuts
+        shortcuts.register("quit", () => ipcRenderer.send("quit"));
+        shortcuts.register("add-vocab", () => this.openPanel("add-vocab"));
+        shortcuts.register("add-kanji", () => this.openPanel("add-kanji"));
+        shortcuts.register("dictionary", () => this.openSection("dictionary"));
+        shortcuts.register("test", () => this.openTestSection());
     }
 
     openSection(name) {
@@ -231,11 +239,18 @@ class MainWindow extends Window {
         } else {
             this.addKanjiButton.style.display = "none";
             this.findKanjiButton.style.display = "none";
+            if (this.currentSection === "kanji") {
+                this.openSection("home");
+            }
         }
-        if (dataManager.content.isAvailable[language]) {
+        if (language === "Japanese" &&
+                dataManager.content.isAvailable[language]) {
             this.dictionaryButton.style.display = "flex";
         } else {
             this.dictionaryButton.style.display = "none";
+            if (this.currentSection === "dictionary") {
+                this.openSection("home");
+            }
         }
         this.updateTestButton();
     }
