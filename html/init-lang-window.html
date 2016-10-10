@@ -1,26 +1,19 @@
-<span id="window">
-  <span id="init-frame">
-    <div id="header">Add languages</div>
-    <div id="content">
-      <div>Choose the languages you want to learn:</div>
-      <table id="languages-table">
-        <thead>
-          <th>Language</th>
-          <th>Secondary</th>
-          <th>Readings</th>
-          <th>Default</th>
-          <th></th>
-        </thead>
-        <tbody id="languages">
-        </tbody>
-      </table>
-      <button id="add-language-button">
-        Add new language <i class="fa fa-plus"></i>
-      </button>
-      <div class="note">You can also manage your languages in the settings.</div>
+<div id="window">
+  <div id="partitioned-window">
+    <div id="header-frame">
+      <div id="header">Add languages</div>
     </div>
-    <div id="buttons">
+    <div id="main-frame">
+      <div>
+        <div>Choose the languages you want to learn.</div>
+        <div class="note">
+          You can manage your languages in the settings at any time.
+        </div>
+      </div>
+      <language-table id="language-table"></language-table>
+    </div>
+    <div id="button-frame">
       <button id="continue-button">Continue</button>
     </div>
-  </span>
-</span>
+  </div>
+</div>

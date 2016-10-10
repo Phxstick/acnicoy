@@ -1,55 +1,24 @@
 @import "base";
 
 #window {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-#init-frame {
+#partitioned-window {
   width: 80%;
-  display: flex;
-  flex-direction: column;
+  background-color: whitesmoke;
   border: 1px solid dimgray;
-  border-radius: 5px;
-  background-color: $view-background;
-  color: $view-color;
   box-shadow: 1px 1px 3px black;
+}
 
-  #header {
-    background-color: #dddddd;
-    color: dimgray;
-    font-size: 120%;
-    display: flex;
-    font-family: $header-font;
+#button-frame {
+  justify-content: flex-end;
+  padding: 10px;
+  
+  > button {
     padding: 5px;
-    padding-left: 10px;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-  }
-
-  #content {
-    flex: 1;
-    padding: 10px;
-
-    > * {
-      margin-bottom: 8px;
-    }
-  }
-
-  #buttons {
-    padding: 5px;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    
-    > button {
-      padding: 6px;
-    }
   }
 }

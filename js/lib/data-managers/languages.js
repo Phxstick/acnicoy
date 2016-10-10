@@ -42,9 +42,9 @@ module.exports = function (paths, modules) {
     };
 
     // Register a new language with given configuration
-    languageManager.add = function (language, secondary, settings) {
+    languageManager.add = function (language, settings) {
         // TODO: Create language and return promise
-        return language;
+        return Promise.resolve();
     };
 
     return languageManager;

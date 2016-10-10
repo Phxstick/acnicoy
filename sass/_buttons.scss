@@ -3,6 +3,7 @@ button {
   color: $button-color;
   background-color: $button-background;
   border: 1px outset $button-background;
+  padding: 3px;
   // transition-duration: .2s;  // Put into hover class?
   i {
     color: $button-color;

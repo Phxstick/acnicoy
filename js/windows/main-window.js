@@ -134,7 +134,7 @@ class MainWindow extends Window {
             this.updateTestButton();
         }, 300000);  // Every 5 min
         // Confirm close command and save data before exiting the application
-        ipcRenderer.removeAllListeners("closing-window");
+        ipcRenderer.send("activate-controlled-closing");
         ipcRenderer.on("closing-window", () => {
             if (this.sections[this.currentSection].confirmClose()) {
                 this.sections[this.currentSection].close();

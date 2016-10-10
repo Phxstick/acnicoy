@@ -13,6 +13,10 @@ function create() {
     }
 }
 
+function get(name) {
+    return contents[name];
+}
+
 function open(name) {
     // If overlay with given name is already open, just move it to top of stack
     if (openOverlays.includes(name)) {
@@ -44,5 +48,6 @@ function close(name) {
 }
 
 module.exports.create = create;
+module.exports.get = get;
 module.exports.open = open;
 module.exports.close = close;

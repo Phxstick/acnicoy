@@ -1,0 +1,52 @@
+@import "base";
+
+#table {
+  display: none;
+  border-collapse: collapse;
+  border: 1px solid dimgray;
+  padding: 10px;
+}
+
+thead tr {
+  border-bottom: 1px solid grey;
+
+  th {
+    padding: 4px;
+    font-weight: normal;
+    font-family: $header-font;
+  }
+}
+
+tbody tr {
+  padding: 4px;
+
+  td {
+    color: $view-color;
+    text-align: center;
+  }
+
+  &:hover {
+    background-color: $view-hover-background;
+
+    td {
+      color: $view-hover-color;
+    }
+
+    .remove-button {
+      visibility: visible;
+    }
+  }
+}
+
+.remove-button {
+  visibility: hidden;
+
+  i {
+    color: lightcoral;
+    opacity: 0.4;
+    font-size: 150%;
+    &:hover {
+      opacity: 1;
+    }
+  }
+}

@@ -9,8 +9,14 @@ class AddLangOverlay extends Overlay {
         this.secondaryLanguageSelect =
             this.root.getElementById("secondary-language-select");
         this.readingsCheckbox = this.root.getElementById("readings-checkbox");
-        this.$("close-button").addEventListener("click", () => this.close());
-        this.$("cancel-button").addEventListener("click", () => this.close());
+        this.$("close-button").addEventListener("click", () => {
+            this.close();
+            this.reject();
+        });
+        this.$("cancel-button").addEventListener("click", () => {
+            this.close();
+            this.reject();
+        });
         this.$("add-button").addEventListener("click", () => {
             if (!this.languageSelect.value) {
                 dialogWindow.info("Select a language you want to learn.");
@@ -21,23 +27,27 @@ class AddLangOverlay extends Overlay {
                 return;
             }
             this.close()
+            this.resolve();
         });
         this.addButton = this.root.getElementById("add-button");
         this.cancelButton = this.root.getElementById("cancel-button");
+        this.languageSelect.appendChild(utility.createDefaultOption(""));
+        this.secondaryLanguageSelect.appendChild(
+                utility.createDefaultOption(""));
         for (let langcode of languages.getAllLanguageCode()) {
             const option1 = document.createElement("option");
             const option2 = document.createElement("option");
             const language = languages.getLanguageInfo(langcode);
             option1.textContent = language.name;
             option2.textContent = language.name;
-            // if (language.name === "Japanese") option1.selected = true;
-            // if (language.name === "English") option2.selected = true;
             this.languageSelect.appendChild(option1);
             this.secondaryLanguageSelect.appendChild(option2);
         }
     }
     
     open() {
+        this.languageSelect.children[0].setAttribute("selected", "");
+        this.secondaryLanguageSelect.children[0].setAttribute("selected", "");
         this.languageSelect.value = "";
         this.secondaryLanguageSelect.value = "";
         this.readingsCheckbox.checked = false;
@@ -45,11 +55,13 @@ class AddLangOverlay extends Overlay {
 
     getConfig() {
         return new Promise((resolve, reject) => {
-            this.$("cancel-button").addEventListener("click", reject);
-            this.$("add-button").addEventListener("click", () => {
-                resolve({ language: this.languageSelect.value,
-                          secondary: this.secondaryLanguageSelect.value,
-                          readings: this.readingsCheckbox.checked });
+            this.reject = () => reject();
+            this.resolve = () => resolve({
+                language: this.languageSelect.value,
+                settings: {
+                    secondary: this.secondaryLanguageSelect.value,
+                    readings: this.readingsCheckbox.checked
+                }
             });
         });
     }

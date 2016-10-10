@@ -243,6 +243,17 @@ function createSvgNode(type, attributes) {
 }
 
 /**
+**  Create a default option element with empty value for a <select> element.
+**/
+function createDefaultOption(text) {
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = text;
+    defaultOption.setAttribute("selected", "");
+    return defaultOption;
+}
+
+/**
 **  Given an HTMLElement whose children are sorted lexically by textContent,
 **  return the index of the child node containing given text. If no such child
 **  node is found, return the index where the child node would be inserted.
@@ -354,6 +365,7 @@ module.exports.parseHtmlFile = parseHtmlFile;
 module.exports.fragmentFromString = fragmentFromString;
 module.exports.finishEventQueue = finishEventQueue;
 module.exports.createSvgNode = createSvgNode;
+module.exports.createDefaultOption = createDefaultOption;
 module.exports.findIndex = findIndex;
 module.exports.insertNodeIntoSortedList = insertNodeIntoSortedList;
 module.exports.removeEntryFromSortedList = removeEntryFromSortedList;

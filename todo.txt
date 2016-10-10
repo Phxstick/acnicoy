@@ -1,11 +1,7 @@
 __ Up next __
 - Replace .button with actual button element (both in css and html)
-- Differentiate between dark button, light button and other styles
-  --> Have simple light button for overlay windows
 - Allow temporary entries to be closed by clicking anywhere else
   --> Make into widgets?
-- Create overlay widget
-- Implement language creation with overlay widget
 - Add init step for downloading language packs
   --> Use sockets.io/websockets to receive data
 

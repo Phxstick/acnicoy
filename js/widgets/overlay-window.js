@@ -32,7 +32,10 @@ class OverlayWindow extends Widget {
 
     assignContent(content) {
         if (this.frame.children.length > 0) {
-            if (this.frame.firstChild === content) return;
+            if (this.frame.firstChild === content) {
+                content.open();
+                return;
+            }
             this.frame.removeChild(this.frame.firstChild);
         }
         content.open();

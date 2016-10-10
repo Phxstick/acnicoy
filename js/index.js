@@ -12,7 +12,7 @@ const globals = {
     widgets: ["popup-stack", "switch-button", "switch-bar", "popup-list",
               "svg-bar-diagram", "kanji-info-panel", "pinwall-widget",
               "kanji-search-result-entry", "dictionary-search-result-entry",
-              "pinwall-note", "srs-status-diagram"],
+              "pinwall-note", "srs-status-diagram", "language-table"],
     extensions: ["converter", "array-extensions", "html-element-extensions"]
 };
 
@@ -96,10 +96,15 @@ console.log("Loaded all required modules after %f ms", totalTime);
         languages = dataManager.languages.find();
         if (languages.length === 0) {
             openWindow("init-lang");
-            return windows["init-lang"].getNewLanguages()
-                .then(([lang, secondary, settings]) =>
-                    dataManager.languages.add(language, secondary, settings))
-                .then((language) => { languages = [language]; });
+            return windows["init-lang"].getLanguageConfigs().then((configs) => {
+                const promises = [];
+                for (let { language, settings } of configs) {
+                    const p = dataManager.languages.add(language, settings);
+                    promises.push(p);
+                    languages.push(language);
+                }
+                return Promise.all(promises);
+            });
         }
     }).then(() => {
         // Load the global settings. If the file doesn't exist, create it

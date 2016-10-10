@@ -3,23 +3,21 @@
 class InitLangWindow extends Window {
     constructor() {
         super("init-lang");
-        this.continueButton = this.root.getElementById("continue-button");
-        this.addLanguageButton =
-            this.root.getElementById("add-language-button");
-        this.addLanguageButton.addEventListener("click", () => {
-            // TODO: Add new row to languages table
-        });
     }
 
-    getNewLanguages() {
-        this.openStep("add-languages-step");
-        this.header.textContent = "Add languages";
+    getLanguageConfigs() {
         return new Promise((resolve, reject) => {
-            // TODO: Remove old event listener
-            this.continueButton.addEventListener("click",
-                () => resolve(this.dataPathInput.value.trim()));
+            this.$("continue-button").addEventListener("click", () => {
+                const configs = this.$("language-table").getLanguageConfigs();
+                if (configs.length === 0) {
+                    dialogWindow.info("You need to add at least one language.");
+                    return;
+                }
+                console.log(configs);
+                // TODO
+                // resolve(configs);
+            });
         });
-        return ["Japanese", "English", {}];
     }
 }
 

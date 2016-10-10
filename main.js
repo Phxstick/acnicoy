@@ -36,8 +36,12 @@ app.on('ready', function() {
           require("fs").readFileSync(`${__dirname}/js/index.js`, "utf-8"));
   // mainWindow.setAutoHideMenuBar(true);
   // mainWindow.setMenuBarVisibility(false);
-  let forceQuit = true; // TODO
+  let forceQuit = true;
 
+  // Allow mainWindow to control when the app gets closed
+  ipcMain.on("activate-controlled-closing", (event) => {
+      forceQuit = false;
+  });
   ipcMain.on("close-now", (event) => {
       forceQuit = true;
       app.quit();
@@ -48,6 +52,7 @@ app.on('ready', function() {
         event.preventDefault();
     }
   });
+
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {
     // Dereference the window object, usually you would store windows
