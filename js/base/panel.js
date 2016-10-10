@@ -3,16 +3,19 @@
 class Panel extends Component {
     constructor(name, fontAwesome=true) {
         super(name + "-panel", fontAwesome);
-        this.root.appendChild(
-                utility.parseHtmlFile(paths.html.panel(name), true));
+        this.root.appendChild(utility.parseHtmlFile(paths.html.panel(name)));
     }
+
     open() {
     }
+
     confirmClose() {
         return true;
     }
+
     close() {
     }
+
     adjustToLanguage(language, secondary) {
     }
 }

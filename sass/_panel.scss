@@ -1,0 +1,32 @@
+@import "base";
+
+#partitioned-window {
+  height: 100%;
+
+  #header-frame {
+    padding: 0px;
+
+    #header {
+      font-size: 165%;
+    }
+    #close-button > i {
+      font-size: 300%;
+      margin-right: 15px;
+    }
+  }
+
+  #main-frame {
+    padding: 15px;
+
+    > *:not(:last-child) {
+      margin-bottom: 15px;
+    }
+  }
+
+  #button-frame {
+    > button {
+      padding-top: 25px;
+      padding-bottom: 25px;
+    }
+  }
+}

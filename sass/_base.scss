@@ -1,6 +1,11 @@
 @import "variables";
 @import "layers";
 
+@import "views";
+@import "buttons";
+@import "widgets";
+@import "inputs";
+
 * {
   font-family: $font;
   font-size: 100%;
@@ -46,181 +51,56 @@ body {
   right: 0;
 }
 
-button {
-  user-select: none;
-  color: $button-color;
-  background-color: $button-background;
-  border: 1px outset $button-background;
-  // transition-duration: .2s;  // Put into hover class?
-  i {
-    color: $button-color;
-    text-align: center;
-  }
-  &:focus {
-    outline: none !important;
-  }
-  &:hover, &:focus {
-    color: $button-hover-color;
-    background-color: $button-hover-background;
-  }
-  &:active {
-    border: 1px inset $button-active-background;
-    background-color: $button-active-background;
-    color: $button-active-color;
-  }
-  &:disabled {
-    border: 1px solid darken($button-disabled-background, 10%);
-    background-color: $button-disabled-background;
-    color: $button-disabled-color;
-    i {
-      color: $button-disabled-color;
+#partitioned-window {
+  display: flex;
+  flex-direction: column;
+
+  #header-frame {
+    display: flex;
+    flex-direction: row;
+    background-color: #dddddd;
+    padding: 3px;
+
+    #header {
+      color: dimgray;
+      flex: 1;
+      font-size: 130%;
+      display: flex;
+      align-items: center;
+      font-family: $gui-font;
+      margin-left: 10px;
     }
-  }
-}
+    #close-button {
+      display: flex;
+      flex-direction: row;
 
-// TODO: Make all buttons <button> elements!
-// TODO: Use HTML button element instead for focus handling?
-// Alternative: Build custom element t-button
-.button {
-  user-select: none;
-  cursor: $pointer-cursor;
-}
-
-.styled-button {
-  @extend .button;
-  color: $button-color;
-  background: $button-background;
-  border: 0px;
-  text-align: center;
-
-  &:hover {
-    background: lighten($button-background, 20%);
-    color: lighten($button-color, 15%);
-  }
-
-  &:focus {
-    outline: none !important;
-    background: lighten($button-background, 20%);
-    color: lighten($button-color, 15%);
-    // border: 3px solid $button-color;
-  }
-}
-
-/**
- *  View styles
- */
-
-.view {
-  background-color: $view-background;
-  color: $view-color;
-}
-
-.list-view {
-  @extend .view;
-  overflow: auto;
-
-  // Style for view items
-  > div {
-    padding: 2px;
-    &:hover {
-      background-color: $view-hover-background;
-      color: $view-hover-color;
-    }
-    &.selected {
-      background: $view-select-background;
-      color: $view-select-color;
-      &:hover {
-        background: $view-select-background;
-        color: $view-select-color;
+      > i {
+        margin-right: 5px;
+        color: lightcoral;
+        opacity: 0.4;
+        font-size: 160%;
+        &:hover {
+          opacity: 1;
+        }
       }
     }
-    // TODO: 3px borderradius?
   }
-}
 
-.list-view-header {
-  font-size: 110%;
-  background-color: darken($view-background, 5%);
-  font-family: $header-font;
-  padding: 4px;
-  text-align: center;
-  color: dimgray;
-}
+  #main-frame {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
 
-textarea {
-  color: $view-color;
-  background-color:  darken($view-background, 5%);
-  padding: 5px;
-  border: 1px solid dimgray;
-  resize: none;
-  transition: .2s;
-
-  &:focus {
-    outline: none !important;
-    box-shadow: 0 0 5px dimgray;
-    background-color: $view-background;
+    > *:not(:last-child) {
+      margin-bottom: 10px;
+    }
   }
-  &:placeholder-shown {
-    color: lighten($view-color, 30%);
+
+  #button-frame {
+    display: flex;
+    flex-direction: row;
   }
-}
-
-input {
-  color: $view-color;
-  background-color:  darken($view-background, 5%);
-  padding: 5px;
-  border: 1px solid dimgray;
-  transition: .2s;
-
-  &:focus {
-    outline: none !important;
-    box-shadow: 0 0 5px dimgray;
-    background-color: $view-background;
-  }
-  &:placeholder-shown {
-    color: lighten($view-color, 30%);
-  }
-}
-
-select {
-  border: 1px solid dimgray;
-  padding: 3px;
-  font-size: 110%;
-  line-height: 100px;
-  transition: .2s;
-  background-color: darken($view-background, 5%);
-  &:focus {
-    outline: none !important;
-    box-shadow: 0 0 5px dimgray;
-    background-color: $view-background;
-  }
-  option:first-child {
-    color: lighten($view-color, 30%);
-  }
-}
-
-select.empty {
-  color: lighten($view-color, 30%);
-}
-
-/**
- *  Custom widgets
- */
-
-popup-menu {
-  --background-color: firebrick;
-  --color: whitesmoke;
-  --hover-background: indianred;
-  --hover-color: white;
-}
-
-popup-stack {
-  --background-color: $button-background;
-  --color: $button-color;
-  --hover-background: $button-hover-background;
-  --hover-color: $button-hover-color;
-  --select-background: crimson;
-  --select-color: $button-color;
 }
 
 .kanji-info-link {
@@ -228,4 +108,11 @@ popup-stack {
     text-shadow: 0 0 2px lightsalmon;
     color: darkred;
   }
+}
+
+.note {
+  color: gray;
+  font-size: 80%;
+  font-family: Arial; // TODO
+  margin-top: 3px;
 }

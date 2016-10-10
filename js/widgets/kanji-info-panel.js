@@ -1,6 +1,6 @@
 "use strict";
 
-const menuItems = PopupMenu.registerItems({
+const menuItems = popupMenu.registerItems({
     "copy-kanji": {
         label: "Copy kanji",
         click: ({ currentNode }) => {

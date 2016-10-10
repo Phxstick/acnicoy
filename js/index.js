@@ -5,6 +5,7 @@ const globals = {
               "pinwall", "content", "vocab", "kanji", "stats", "srs",
               "test", "history", "database"],
     windows: ["init-path", "init-lang", "loading", "main"],
+    overlays: ["add-lang"],
     sections: ["home", "stats", "history", "vocab", "settings",
                "test", "dictionary", "kanji"],
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
@@ -27,20 +28,25 @@ const utility = require(paths.js.lib("utility"));
 const dialogWindow = require(paths.js.lib("dialog-window"));
 const layers = require(paths.js.lib("layer-manager"));
 const shortcuts = require(paths.js.lib("shortcut-manager"));
+const overlay = require(paths.js.lib("overlay-manager"));
 const templates = require(paths.js.lib("template-manager"));
+const popupMenu = require(paths.js.lib("popup-menu"));
 const Velocity = require(paths.js.lib("velocity"));
-const PopupMenu = require(paths.js.lib("popup-menu"));
 
 // Load base classes
 const Component = require(paths.js.base("component"));
 const Window = require(paths.js.base("window"));
+const Overlay = require(paths.js.base("overlay"));
 const Section = require(paths.js.base("section"));
 const Panel = require(paths.js.base("panel"));
 const Widget = require(paths.js.base("widget"));
+
+const OverlayWindow = require(paths.js.widget("overlay-window"));
 const PinwallWidget = require(paths.js.widget("pinwall-widget"));
 
 // Load everything else defined in globals object
 for (let name of globals.windows) require(paths.js.window(name));
+for (let name of globals.overlays) require(paths.js.overlay(name));
 for (let name of globals.sections) require(paths.js.section(name));
 for (let name of globals.panels) require(paths.js.panel(name));
 for (let name of globals.widgets) require(paths.js.widget(name));
@@ -75,6 +81,8 @@ console.log("Loaded all required modules after %f ms", totalTime);
             document.body.appendChild(windows[name]);
         }
         window.main = windows["main"];
+        // Create overlay windows
+        overlay.create();
         return Promise.all(windowsLoaded);
     }).then(() => {
         // Load data path. If it doesn't exist, let user choose it

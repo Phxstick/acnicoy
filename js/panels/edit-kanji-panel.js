@@ -1,11 +1,11 @@
 "use strict";
 
-const menuItems = PopupMenu.registerItems({
+const menuItems = popupMenu.registerItems({
     "copy-kanji": {
         label: "Copy kanji",
         click: ({ currentNode }) => {
             const kanji = currentNode.textContent;
-            clipboard.writeText(currentNode.textContent);
+            clipboard.writeText(kanji);
         }
     },
     "remove-kanji": {
@@ -18,7 +18,7 @@ const menuItems = PopupMenu.registerItems({
         label: "Add meaning",
         click: ({ data: {section} }) => {
             const item = section.createListItem("", "meaning");
-            section.meaningsList.scrollToBottom;
+            section.meaningsList.scrollToBottom();
             section.packEditEntry(item, "meaning");
         }
     },
@@ -165,7 +165,6 @@ class EditKanjiPanel extends Panel {
 
     createListItem(text, type) {
         const span = document.createElement("span");
-        span.classList.add("list-entry");
         span.textContent = text;
         span.addEventListener("click", () => this.packEditEntry(span, type));
         if (type === "meaning") {

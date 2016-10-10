@@ -1,18 +1,20 @@
-<div id="header-frame">
-  <div id="header">Add word</div>
-  <i id="close-button" class="fa fa-angle-double-left"></i>
-</div>
-<div id="main-frame">
-  <textarea name="word" column="1"></textarea>
-  <textarea name="translations"></textarea>
-  <textarea name="readings" placeholder="Enter readings here"></textarea>
-  <select name="vocab-list"></select>
-  <div id="level-div">
-    <span>Choose an SRS level:</span>
-    <popup-stack id="srs-level"></popup-stack>
+<div id="partitioned-window">
+  <div id="header-frame">
+    <div id="header">Add word</div>
+    <span id="close-button"><i class="fa fa-angle-double-left"></i></span>
   </div>
-</div>
-<div id="button-frame">
-  <button id="save-button">Save</button>
-  <button id="cancel-button">Cancel</button>
+  <div id="main-frame">
+    <textarea name="word" column="1"></textarea>
+    <textarea name="translations"></textarea>
+    <textarea name="readings" placeholder="Enter readings here"></textarea>
+    <select name="vocab-list"></select>
+    <div id="level-div">
+      <span>Choose an SRS level:</span>
+      <popup-stack id="srs-level"></popup-stack>
+    </div>
+  </div>
+  <div id="button-frame" class="dark-button-bar">
+    <button id="save-button">Save</button>
+    <button id="cancel-button">Cancel</button>
+  </div>
 </div>

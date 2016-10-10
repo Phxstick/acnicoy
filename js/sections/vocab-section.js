@@ -1,6 +1,6 @@
 "use strict";
 
-const menuItems = PopupMenu.registerItems({
+const menuItems = popupMenu.registerItems({
     "rename-list": {
         label: "Rename list",
         click: ({ currentNode, data: {section} }) => {
@@ -195,9 +195,6 @@ class VocabSection extends Section {
         });
     }
     
-    createPopupMenus() {
-    }
-
     adjustToLanguage(language, secondary) {
         this.allListsList.empty();
         this.allWordsList.empty();

@@ -1,41 +1,15 @@
-@import "base";
+@import "panel";
 
-body {
-  display: flex;
-  flex-direction: column;
-}
+#partitioned-window > #main-frame {
+  padding-top: 5px;
+  padding-bottom: 10px;
 
-#header-frame {
-  display: flex;
-  background-color: #dddddd;
-  flex-direction: row;
-
-  #header {
-    color: dimgray;
-    flex: 1;
-    font-size: 165%;
-    display: flex;
-    align-items: center;
-    font-family: $gui-font;
-    margin-left: 10px;
-  }
-  #close-button {
-    margin-right: 10px;
-    color: lightcoral;
-    opacity: 0.4;
-    font-size: 300%;
-    &:hover {
-      opacity: 1;
-    }
+  > *:not(:last-child) {
+    margin-bottom: 5px;
   }
 }
 
 #main-frame {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  flex-basis: 0;
-  padding: 15px;
 
   #word-frame {
     display: flex;
@@ -60,12 +34,9 @@ body {
     background-color: darkred;
     color: whitesmoke;
     padding: 3px;
-    margin-top: 5px;
   }
   #translations, #readings, #vocab-lists {
     flex: 1;
-    background-color: $view-background;
-    color: $view-color;
     display: flex;
     flex-direction: column;
     border: 1px solid dimgray;
@@ -97,34 +68,6 @@ body {
 #edit-input {
   border: 0px;
   padding: 2px;
-}
-
-#button-frame {
-  display: flex;
-  flex-direction: row;
-
-  button {
-    @extend .styled-button;
-    flex: 1;
-    font-size: 120%;
-    padding-top: 25px;
-    padding-bottom: 25px;
-    border-top: 1px solid crimson;
-    &:first-child {
-      border-right: 1px solid crimson;
-    }
-  }
-}
-
-.list-entry {
-  display: flex;
-  flex-direction: column;
-  border-radius: 3px;
-  padding: 2px;
-  &:hover {
-    // background-color: #dddddd;
-    background-color: $view-hover-background;
-  }
 }
 
 #srs-level {

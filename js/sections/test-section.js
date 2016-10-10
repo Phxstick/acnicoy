@@ -3,7 +3,7 @@
 const Random = require("random-js");
 const random = new Random(Random.engines.browserCrypto);
 
-const menuItems = PopupMenu.registerItems({
+const menuItems = popupMenu.registerItems({
     "copy-test-item": {
         label: "Copy",
         click: ({ currentNode }) => {

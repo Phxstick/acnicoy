@@ -26,27 +26,23 @@ __ General __
   --> Also make into custom widget?
 - When choosing comma as separator, allow escaping comma for single translations
 - Implement global tooltip widget --> Add a function to HTMLElement prototype?
-- Capture focus in panels?
 - Use popupMenu separators when context changes?
 - How to prevent committing changes after every single db write?
   (And why do the changes in SRS tables cause no perceptible freezes?)
 - Place [about] and [help] buttons somewhere suitable
 - Use overlay to create [about], put credits there
 - Replace native dialog windows with overlays
+- Make custom stylable checkbox
 
 __ Code __
 - Use CSS variables for all widget styling
-- Stop using things like 110% font everywhere - Use as standard font size in
-  _base file instead or in some classes there
 - Don't change event listeners in converter.js but change callback var instead?
-- Put common code for panels in _panel.scss file and import everywhere?
 - Remove inconsistencies in code, e.g. unify glossary ("word" <-> "entry")
 - Rework edit-vocab-panel like edit-kanji-panel (only one function call for
   all the changes, everything logged in dataManager.vocab.editWord)!
 --> Especially logging should be done by the datamanger since it's triggered
     by data changes and doesn't depend on the interface!!
-- Try to generalize as much scss as possibly and extend _base file.
-  Split parts of _base file into smaller parts.
+- Try to generalize as much scss as possibly and extend base scss files.
 - Remove "data" from content section and always access with "dataMap[...]"?
 - Have htmlManager and cssManager which make sure all assets are only loaded
   once? --> Better performance, centralized resource loading
@@ -154,6 +150,8 @@ ___ Future ____________________________________________________________________
   --> Show option in test settings to turn hidden meanings on or off
   --> Allow displaying hidden meanings in kanji info
 - Have invisible translations for synonyms/unnecessary words (e.g. AE <-> BE)
+
+- Proper focus system with frames and elements for tabbing
 
 content-section:
 - Contains a database of custom info cards

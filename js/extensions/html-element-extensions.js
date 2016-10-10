@@ -167,13 +167,13 @@ HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
     if (typeof itemNames === "function") {
         this.popupMenuCallback = (event) => {
             const names = itemNames();
-            PopupMenu.itemsLoaded = Promise.resolve(itemNames())
+            popupMenu.itemsLoaded = Promise.resolve(itemNames())
             .then((names) => {
                 for (let name of names) {
                     const menuItem = menuItems[name];
                     menuItem.currentNode = this;
                     menuItem.data = data;
-                    PopupMenu.visibleItems.add(menuItem);
+                    popupMenu.visibleItems.add(menuItem);
                 }
             });
         };
@@ -185,7 +185,7 @@ HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
                 const menuItem = menuItems[name];
                 menuItem.currentNode = this;
                 menuItem.data = data;
-                PopupMenu.visibleItems.add(menuItem);
+                popupMenu.visibleItems.add(menuItem);
             }
         };
     } else {

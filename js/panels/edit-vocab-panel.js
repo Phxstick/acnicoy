@@ -1,5 +1,89 @@
 "use strict";
 
+const menuItems = popupMenu.registerItems({
+    "copy-word": {
+        label: "Copy item",
+        click: ({ currentNode }) => {
+            const word = currentNode.textContent;
+            clipboard.writeText(word);
+        }
+    },
+    "delete-word": {
+        label: "Delete item",
+        click: ({ currentNode }) => {
+            const word = main.panels["edit-vocab"].wordLabel.textContent;
+            main.panels["edit-vocab"].deleteWord(word);
+        }
+    },
+    "rename-word": {
+        label: "Rename item",
+        click: ({ data: {section} }) => {
+            section.packEditEntry(section.wordLabel, "word");
+        }
+    },
+    "add-translation": {
+        label: "Add meaning",
+        click: ({ data: {section} }) => {
+            const item = section.createListItem("", "translation");
+            section.translationsList.scrollToBottom();
+            section.packEditEntry(item, "translation");
+        }
+    },
+    "delete-translation": {
+        label: "Delete translation",
+        click: ({ currentNode, data: {section} }) => {
+            const word = section.wordLabel.textContent;
+            section.translationsList.removeChild(currentNode);
+            section.changes.push(() => dataManager.vocab.removeTranslation(
+                word, currentNode.textContent));
+            section.changes.push(() => dataManager.history.log(
+                { type: "D", column: "translation", old_entry: word,
+                  old_translations: currentNode.textContent }));
+        }
+    },
+    "modify-translation": {
+        label: "Modify translation",
+        click: ({ currentNode, data: {section} }) => {
+            section.packEditEntry(currentNode, "translation");
+        }
+    },
+    "add-reading": {
+        label: "Add reading",
+        click: ({ data: {section} }) => {
+            const item = section.createListItem("", "reading");
+            section.readingsList.scrollToBottom();
+            section.packEditEntry(item, "reading");
+        }
+    },
+    "delete-reading": {
+        label: "Delete reading",
+        click: ({ currentNode, data: {section} }) => {
+            const word = section.wordLabel.textContent;
+            section.readingsList.removeChild(currentNode);
+            section.changes.push(() => dataManager.vocab.removeReading(
+                word, currentNode.textContent));
+            section.changes.push(() => dataManager.history.log(
+                { type: "D", column: "reading", old_entry: word,
+                  old_readings: currentNode.textContent }));
+        }
+    },
+    "modify-reading": {
+        label: "Modify reading",
+        click: ({ currentNode, data: {section} }) => {
+            section.packEditEntry(currentNode, "reading");
+        }
+    },
+    "remove-from-list": {
+        label: "Remove from list",
+        click: ({ currentNode, data: {section} }) => {
+            section.listsList.removeChild(currentNode);
+            section.changes.push(
+                () => dataManager.vocabLists.removeWordFromList(
+                    section.wordLabel.textContent, currentNode.textContent));
+        }
+    }
+});
+
 class EditVocabPanel extends Panel {
     constructor() {
         super("edit-vocab");
@@ -40,10 +124,10 @@ class EditVocabPanel extends Panel {
             const word = this.wordLabel.textContent;
             if (!lists.includes(newList) && newList.length > 0) {
                 const span = document.createElement("span");
-                span.classList.add("list-entry");
                 span.textContent = newList;
                 this.listsList.appendChild(span);
-                this.listsPopup.attachTo(span);
+                span.popupMenu(menuItems,
+                        ["remove-from-list"], { section: this });
                 this.changes.push(
                     () => dataManager.vocabLists.addWordToList(
                         word, newList));
@@ -56,77 +140,14 @@ class EditVocabPanel extends Panel {
             "click", () => main.closePanel("edit-vocab"));
         this.root.getElementById("save-button").addEventListener(
             "click", () => { this.save(); main.closePanel("edit-vocab"); });
-        //// // Create popup menus
-        //// this.wordPopup = new PopupMenu();
-        //// this.translationsListPopup = new PopupMenu();
-        //// this.readingsListPopup = new PopupMenu();
-        //// this.translationsItemPopup = new PopupMenu();
-        //// this.readingsItemPopup = new PopupMenu();
-        //// this.listsPopup = new PopupMenu();
-        //// this.wordPopup.attachTo(this.wordLabel);
-        //// this.translationsListPopup.attachTo(this.translationsList);
-        //// this.readingsListPopup.attachTo(this.readingsList);
-        //// // Create wordPopup entries
-        //// this.wordPopup.addItem("Copy", () => {
-        ////     clipboard.writeText(this.wordLabel.textContent);
-        //// });
-        //// this.wordPopup.addSeparator();
-        //// this.wordPopup.addItem("Delete item", () => {
-        ////     this.deleteWord(this.wordLabel.textContent);
-        //// });
-        //// this.wordPopup.addItem("Rename item", () => {
-        ////     this.packEditEntry(this.wordLabel, "word");
-        //// });
-        //// // Create translationsListPopup entry
-        //// this.translationsListPopup.addItem("Add translation", () => {
-        ////     const item = this.createListItem("", "translation");
-        ////     this.translationsList.scrollToBottom();
-        ////     this.packEditEntry(item, "translation");
-        //// });
-        //// // Create translationsItemPopup entries
-        //// this.translationsItemPopup.addItem("Delete translation", () => {
-        ////     const span = this.translationsItemPopup.currentObject;
-        ////     const word = this.wordLabel.textContent;
-        ////     this.translationsList.removeChild(span);
-        ////     this.changes.push(() => dataManager.vocab.removeTranslation(
-        ////         word, span.textContent));
-        ////     this.changes.push(() => dataManager.history.log(
-        ////         { type: "D", column: "translation", old_entry: word,
-        ////           old_translations: span.textContent }));
-        //// });
-        //// this.translationsItemPopup.addItem("Modify translation", () => {
-        ////     this.packEditEntry(
-        ////         this.translationsItemPopup.currentObject, "translation");
-        //// });
-        //// // Create readingsListPopup entry
-        //// this.readingsListPopup.addItem("Add reading", () => {
-        ////     const item = this.createListItem("", "reading");
-        ////     this.readingsList.scrollToBottom();
-        ////     this.packEditEntry(item, "reading");
-        //// });
-        //// // Create readingsItemPopup entries
-        //// this.readingsItemPopup.addItem("Delete reading", () => {
-        ////     const span = this.readingsItemPopup.currentObject;
-        ////     const word = this.wordLabel.textContent;
-        ////     this.readingsList.removeChild(span);
-        ////     this.changes.push(() => dataManager.vocab.removeReading(
-        ////         word, span.textContent));
-        ////     this.changes.push(() => dataManager.history.log(
-        ////         { type: "D", column: "reading", old_entry: word,
-        ////           old_readings: span.textContent }));
-        //// });
-        //// this.readingsItemPopup.addItem("Modify reading", () => {
-        ////     this.packEditEntry(
-        ////         this.readingsItemPopup.currentObject, "reading");
-        //// });
-        //// // Create listsPopup entries
-        //// this.listsPopup.addItem("Remove from list", () => {
-        ////     const span = this.listsPopup.currentObject;
-        ////     this.listsList.removeChild(span);
-        ////     this.changes.push(
-        ////         () => dataManager.vocabLists.removeWordFromList(
-        ////             this.wordLabel.textContent, span.textContent));
-        //// });
+        // Create popup menus for static elements
+        this.wordLabel.popupMenu(menuItems,
+                ["copy-word", "delete-word", "rename-word"],
+                { section: this });
+        this.translationsList.popupMenu(
+                menuItems, ["add-translation"], { section: this });
+        this.readingsList.popupMenu(
+                menuItems, ["add-reading"], { section: this });
     }
 
     adjustToLanguage(language, secondary) {
@@ -183,7 +204,6 @@ class EditVocabPanel extends Panel {
 
     createListItem(text, type) {
         const span = document.createElement("span");
-        span.classList.add("list-entry");
         span.textContent = text;
         if (type !== "list") {
             span.addEventListener("click", () =>
@@ -191,13 +211,16 @@ class EditVocabPanel extends Panel {
         }
         if (type === "reading") {
             this.readingsList.appendChild(span);
-            // this.readingsItemPopup.attachTo(span);
+            span.popupMenu(menuItems, ["delete-reading", "modify-reading"],
+                    { section: this });
         } else if (type === "translation") {
             this.translationsList.appendChild(span);
-            // this.translationsItemPopup.attachTo(span);
+            span.popupMenu(menuItems,
+                    ["delete-translation", "modify-translation"],
+                    { section: this });
         } else if (type === "list") {
             this.listsList.appendChild(span);
-            // this.listsPopup.attachTo(span);
+            span.popupMenu(menuItems, ["remove-from-list"], { section: this });
         }
         return span;
     }

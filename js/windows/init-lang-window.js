@@ -1,7 +1,5 @@
 "use strict";
 
-const languageList = require("languages");
-
 class InitLangWindow extends Window {
     constructor() {
         super("init-lang");
@@ -11,10 +9,6 @@ class InitLangWindow extends Window {
         this.addLanguageButton.addEventListener("click", () => {
             // TODO: Add new row to languages table
         });
-        // TODO: Use this for languages init section and settings
-        // for (let langcode of languageList.getAllLanguageCode()) {
-        //     console.log(languageList.getLanguageInfo(langcode));
-        // }
     }
 
     getNewLanguages() {

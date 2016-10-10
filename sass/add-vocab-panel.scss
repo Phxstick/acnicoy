@@ -1,66 +1,7 @@
-@import "base";
+@import "panel";
 
-body {
-  display: flex;
-  flex-direction: column;
-}
-
-#header-frame {
-  display: flex;
-  background-color: #dddddd;
-  flex-direction: row;
-
-  #header {
-    color: dimgray;
-    flex: 1;
-    font-size: 165%;
-    display: flex;
-    align-items: center;
-    font-family: $gui-font;
-    margin-left: 10px;
-  }
-  #close-button {
-    margin-right: 10px;
-    color: lightcoral;
-    opacity: 0.4;
-    font-size: 300%;
-    &:hover {
-      opacity: 1;
-    }
-  }
-}
-
-#main-frame {
+textarea {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 15px;
-  textarea {
-    flex: 1;
-    margin-bottom: 15px;
-  }
-}
-
-
-select[name="vocab-list"] {
-  margin-bottom: 15px;
-}
-
-#button-frame {
-  display: flex;
-  flex-direction: row;
-
-  button {
-    @extend .styled-button;
-    flex: 1;
-    font-size: 120%;
-    padding-top: 25px;
-    padding-bottom: 25px;
-    border-top: 1px solid crimson;
-    &:first-child {
-      border-right: 1px solid crimson;
-    }
-  }
 }
 
 #level-div {

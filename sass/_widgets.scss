@@ -1,0 +1,15 @@
+popup-menu {
+  --background-color: firebrick;
+  --color: whitesmoke;
+  --hover-background: indianred;
+  --hover-color: white;
+}
+
+popup-stack {
+  --background-color: $button-background;
+  --color: $button-color;
+  --hover-background: $button-hover-background;
+  --hover-color: $button-hover-color;
+  --select-background: crimson;
+  --select-color: $button-color;
+}

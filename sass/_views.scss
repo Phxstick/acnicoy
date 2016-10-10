@@ -1,0 +1,35 @@
+.view {
+  background-color: $view-background;
+  color: $view-color;
+}
+
+.list-view {
+  @extend .view;
+  overflow: auto;
+
+  > * {
+    padding: 2px;
+    &:hover {
+      background-color: $view-hover-background;
+      color: $view-hover-color;
+    }
+    &.selected {
+      background: $view-select-background;
+      color: $view-select-color;
+      &:hover {
+        background: $view-select-background;
+        color: $view-select-color;
+      }
+    }
+    // TODO: 3px borderradius?
+  }
+}
+
+.list-view-header {
+  font-size: 110%;
+  background-color: darken($view-background, 5%);
+  font-family: $header-font;
+  padding: 4px;
+  text-align: center;
+  color: dimgray;
+}

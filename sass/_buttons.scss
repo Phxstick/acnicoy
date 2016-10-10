@@ -1,0 +1,109 @@
+button {
+  user-select: none;
+  color: $button-color;
+  background-color: $button-background;
+  border: 1px outset $button-background;
+  // transition-duration: .2s;  // Put into hover class?
+  i {
+    color: $button-color;
+    text-align: center;
+  }
+  &:focus {
+    outline: none !important;
+  }
+  &:hover, &:focus {
+    color: $button-hover-color;
+    background-color: $button-hover-background;
+  }
+  &:active {
+    border: 1px inset $button-active-background;
+    background-color: $button-active-background;
+    color: $button-active-color;
+  }
+  &:disabled {
+    border: 1px solid darken($button-disabled-background, 10%);
+    background-color: $button-disabled-background;
+    color: $button-disabled-color;
+    i {
+      color: $button-disabled-color;
+    }
+  }
+}
+
+// TODO: Make all buttons <button> elements!
+// TODO: Use HTML button element instead for focus handling?
+.button {
+  user-select: none;
+  cursor: $pointer-cursor;
+}
+
+.dark-button {
+  @extend .button;
+  color: $button-color;
+  background: $button-background;
+  border: 0px;
+  text-align: center;
+  font-size: 120%;
+
+  &:hover {
+    background: lighten($button-background, 20%);
+    color: lighten($button-color, 15%);
+  }
+
+  &:focus {
+    outline: none !important;
+    background: lighten($button-background, 20%);
+    color: lighten($button-color, 15%);
+    // border: 3px solid $button-color;
+  }
+}
+
+.light-button {
+  background-color: transparent;
+  padding: 6px;
+  text-align: center;
+  color: dimgray;
+  border: 0px;
+  font: $header-font; // TODO
+  font-size: 120%;
+
+  &:hover {
+    color: black;
+    text-shadow: 0 0 1px dimgray;
+  }
+}
+
+.button-bar {
+  border-top-width: 1px;
+  border-top-style: solid;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+
+  > button {
+    flex: 1;
+
+    &:not(:last-child) {
+      border-right-width: 1px;
+      border-right-style: solid;
+    }
+  }
+}
+
+.dark-button-bar {
+  @extend .button-bar;
+  border-color: crimson;
+  > button {
+    @extend .dark-button;
+    border-color: crimson;
+  }
+}
+
+.light-button-bar {
+  @extend .button-bar;
+  border-color: darkgrey;
+  > button {
+    @extend .light-button;
+    border-color: darkgrey;
+  }
+}

@@ -11,4 +11,9 @@ body {
     height: 100%;
     width: 100%;
   }
+
+  #overlay {
+    position: fixed;
+    z-index: var(--overlay-layer);
+  }
 }
