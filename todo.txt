@@ -1,13 +1,28 @@
 __ Up next __
-- Replace .button with actual button element (both in css and html)
+- Implement choosing standard language
 - Allow temporary entries to be closed by clicking anywhere else
   --> Make into widgets?
 - Add init step for downloading language packs
   --> Use sockets.io/websockets to receive data
-
-
-__ BUGFIXES __
+- Adjust readme (content is optional now!)
+- Upload fonts, font-awesome and Velocity.js aswell?
+- Save total score in settings rather than recalculating every time
+- Make language switching seamless!
+- Merge a bunch of tables, add time_added to vocabulary, remove edit_history
+  (Remove vocabulary_back aswell?)
+  --> Also use transactions for performance!
+      (db.run("BEGIN TRANSACTION");... db.run("END");)
+- Use ES6 proxies more often, e.g. for content section?
+  --> More fine-grained access to datamanager modules
+- Allow user to choose an SRS config when adding a new language
+    --> Add "SRS scheme" to language table
+    --> Provide a bunch of default named SRS configs in default settings
+    --> Put SRS widget into an overlay!
+    --> Allow user registering his own schemes and use these with their names
 - Allow quickly switching between sections without opening multiple ones
+- Put each stacking overlay into it's own frame?
+  --> Shadow the frames behind the top frame with additional filters
+
 
 __ General __
 - Create a proper pointer cursor. Create better normal cursor as well
@@ -46,6 +61,8 @@ __ Code __
 - Implement convenient "show"/"hide" methods which save last state in element!
 - Use slots in custom components whereever useful
 - Make automatically-loading-upon-scrolling-divs into widgets?
+- Make data-manager-modules into subclasses and gather similar code
+  --> Especially if static variables become implemented!!
 
 __ Init window __
 - Make init section feel more welcoming and less plain. Background picture?
@@ -115,7 +132,7 @@ __ History __
 __ Dictionary __
 - Display help info at center of section at the beginning and when the user
   presses enter on empty input or clicks some kind of help button
-- Also make entries bigger and move to center when search result is empty
+- Also make <inputs> bigger and move to center when search result is empty
 - Have setting which makes part-of-speech display in Japanese
 - Use better fonts for small infos (see Jisho)
 
@@ -224,6 +241,9 @@ ___ Resources _________________________________________________________________
 - Chrome includes Google’s Native Client. Native Client allows web pages to run
   native code written in languages like C or C++. The code is executed in a
   sandbox for security, and it runs at almost-native speeds --> Nice
+
+- https://ponyfoo.com/articles/gulp-grunt-whatever
+  --> Learn and replace makefile with gulp?
 
 
 __ Steps to install __

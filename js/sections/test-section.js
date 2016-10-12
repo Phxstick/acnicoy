@@ -92,7 +92,6 @@ class TestSection extends Section {
     close() {
         // ... clear stats bar ?
         // ... clear progress bar ?
-        dataManager.stats.save();
         main.updateTestButton();
         // unregisterShortcut("Ctrl+R");
     }

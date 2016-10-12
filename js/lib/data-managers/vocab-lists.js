@@ -7,8 +7,13 @@ module.exports = function (paths, modules) {
     const dataMap = {};
 
     let data;
-    let currentLanguage;
     let wordToLists;
+
+    // Create the JSON file for vocablists (empty object).
+    vocabLists.create = function (language, settings) {
+        const path = paths.languageData(language).vocabLists;
+        fs.writeFileSync(path, JSON.stringify({}, null, 4));
+    };
 
     vocabLists.load = function (language) {
         const path = paths.languageData(language).vocabLists;
@@ -26,14 +31,16 @@ module.exports = function (paths, modules) {
     };
 
     vocabLists.setLanguage = function (language) {
-        currentLanguage = language;
         data = dataMap[language].data;
         wordToLists = dataMap[language].wordToLists;
     };
 
     vocabLists.save = function () {
-        const path = paths.languageData(currentLanguage).vocabLists;
-        fs.writeFileSync(path, JSON.stringify(data, null, 4));
+        for (let language in dataMap) {
+            const path = paths.languageData(language).vocabLists;
+            fs.writeFileSync(
+                    path, JSON.stringify(dataMap[language].data, null, 4));
+        }
     };
 
     /*

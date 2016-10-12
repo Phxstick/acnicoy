@@ -138,12 +138,12 @@ class MainWindow extends Window {
         ipcRenderer.on("closing-window", () => {
             if (this.sections[this.currentSection].confirmClose()) {
                 this.sections[this.currentSection].close();
-                // TODO: Use global datamanager save function here
-                dataManager.vocabLists.save();
+                dataManager.save();
                 ipcRenderer.send("close-now");
             }
         });
         // Register shortcuts
+        shortcuts.register("force-quit", () => ipcRenderer.send("close-now"));
         shortcuts.register("quit", () => ipcRenderer.send("quit"));
         shortcuts.register("add-vocab", () => this.openPanel("add-vocab"));
         shortcuts.register("add-kanji", () => this.openPanel("add-kanji"));
@@ -260,7 +260,7 @@ class MainWindow extends Window {
             if (!this.sections[this.currentSection].confirmClose()) return;
             this.sections[this.currentSection].close();
         }
-        dataManager.languages.setCurrent(language);
+        dataManager.setLanguage(language);
         this.language = language;
         this.language2 = dataManager.languageSettings.secondaryLanguage;
         this.adjustToLanguage(this.language, this.language2);

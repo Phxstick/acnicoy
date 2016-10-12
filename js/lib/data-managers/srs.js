@@ -64,21 +64,12 @@ module.exports = function (paths, modules) {
     };
 
     srs.getTotalAmountScheduledForLanguages = function (languages) {
-        const currentLanguage = modules.languages.currentLanguage;
-        const modes = {};
-        // Get necessary data for all languages
-        for (let language of languages) {
-            modules.test.setLanguage(language);
-            modes[language] = modules.test.modes;
-        }
-        modules.test.setLanguage(currentLanguage);
-        // Use data to get scheduled words for each language
         const time = utility.getTime();
         const counts = {};
         const promises = [];
         for (let language of languages) {
             counts[language] = 0;
-            for (let mode of modes[language]) {
+            for (let mode of modules.test.modesForLanguage(language)) {
                 const table = modules.test.modeToTable(mode);
                 const promise = modules.database.queryLanguage(language,
                     `SELECT COUNT(entry) AS count FROM ${table}

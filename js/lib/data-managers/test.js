@@ -38,11 +38,16 @@ module.exports = function (paths, modules) {
     };
 
     test.setLanguage = function (language) {
-        if (language === "Japanese")
-            test.modes = [test.mode.WORDS, test.mode.KANJI_MEANINGS,
-                          test.mode.KANJI_ON_YOMI, test.mode.KANJI_KUN_YOMI];
-        else
-            test.modes = [test.mode.WORDS];
+        test.modes = test.modesForLanguage(language);
+    };
+
+    test.modesForLanguage = function (language) {
+        if (language === "Japanese") {
+            return [test.mode.WORDS, test.mode.KANJI_MEANINGS,
+                    test.mode.KANJI_ON_YOMI, test.mode.KANJI_KUN_YOMI];
+        } else {
+            return [test.mode.WORDS];
+        }
     };
 
     return test;

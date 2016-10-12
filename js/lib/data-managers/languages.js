@@ -5,8 +5,6 @@ const fs = require("fs");
 module.exports = function (paths, modules) {
     const languageManager = {};
     
-    languageManager.currentLanguage = null;
-
     // Return list of all registered languages. Create folder if doesn't exist
     languageManager.find = function() {
         try {
@@ -17,34 +15,16 @@ module.exports = function (paths, modules) {
         }
     };
 
-    // Load user data and content (if available) for given language
-    languageManager.load = function (language) {
-        modules.languageSettings.load(language);  // Always load settings first
-        const languageDataModules = [
-            "content", "database", "vocab-lists", "stats", "pinwall"
-        ];
-        const promises = [];
-        for (let name of languageDataModules) {
-            promises.push(modules[name].load(language));
-        }
-        return Promise.all(promises);
-    };
-
-    languageManager.setCurrent = function (language) {
-        modules.languageSettings.setLanguage(language);
-        const languageDependentModules = [
-            "content", "database", "vocab-lists", "stats", "pinwall", "test"
-        ];
-        for (let name of languageDependentModules) {
-            modules[name].setLanguage(language);
-        }
-        languageManager.currentLanguage = language;
-    };
-
     // Register a new language with given configuration
     languageManager.add = function (language, settings) {
-        // TODO: Create language and return promise
-        return Promise.resolve();
+        fs.mkdirSync(paths.languageData(language).directory);
+        const results = [];
+        for (let name in modules) {
+            if (modules[name].hasOwnProperty("create")) {
+                results.push(modules[name].create(language, settings));
+            }
+        }
+        return Promise.all(results);
     };
 
     return languageManager;

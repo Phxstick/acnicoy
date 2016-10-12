@@ -15,7 +15,7 @@
                     2404800, 7761600, 31104000, 1000000000000]
     },
     "languages": {
-        "standard": ""
+        "default": ""
     },
     "print": {
         "sort": 2,
@@ -31,6 +31,7 @@
         "colors": null
     },
     "shortcuts": {
+        "force-quit": "Ctrl+Esc",
         "quit": "Ctrl+Q",
         "add-vocab": "Ctrl+A",
         "add-kanji": "Ctrl+K",

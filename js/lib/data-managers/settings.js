@@ -8,6 +8,7 @@ module.exports = function (paths, modules) {
     settings.setDefault = function() {
         const defaultSettings = fs.readFileSync(paths.defaultSettings);
         fs.writeFileSync(paths.globalSettings, defaultSettings);
+        settings.load();
     }
 
     settings.load = function() {

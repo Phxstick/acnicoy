@@ -94,6 +94,7 @@ module.exports = function (basePath) {
 
     // Language data
     paths.languageData = (language) => ({
+        directory: path.resolve(langPath, language),
         database: path.resolve(langPath, language, "Vocabulary.sqlite"),
         vocabLists: path.resolve(langPath, language, "lists.json"),
         stats: path.resolve(langPath, language, "stats.json"),

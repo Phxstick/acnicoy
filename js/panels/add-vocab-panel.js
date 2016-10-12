@@ -59,7 +59,7 @@ class AddVocabPanel extends Panel {
             this.vocabListSelect.removeChild(this.vocabListSelect.lastChild);
         this.defaultOption = utility.createDefaultOption(
                 "Select a vocabulary list (optional)");
-        this.vocabListSelect.appendChild(defaultOption);
+        this.vocabListSelect.appendChild(this.defaultOption);
         const lists = dataManager.vocabLists.getLists();
         lists.sort();
         for (let list of lists) {

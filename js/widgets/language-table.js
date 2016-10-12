@@ -4,11 +4,18 @@ class LanguageTable extends Widget {
     constructor() {
         super("language-table", true, true);
         // TODO: Add callbacks for settings
+        // TODO: Add table column for SRS scheme, opening srs overylay on click
         this.languageConfigs = [];
         const template = templates.get("language-table-entry");
         this.$("add-language-button").addEventListener("click", () => {
             overlay.open("add-lang");
             overlay.get("add-lang").getConfig().then((config) => {
+                for (let { language } of this.languageConfigs) {
+                    if (config.language === language) {
+                        dialogWindow.info("You cannot add a language twice!"); 
+                        return;
+                    }
+                }
                 this.languageConfigs.push(config);
                 const row =
                     utility.fragmentFromString(template(config)).children[0];

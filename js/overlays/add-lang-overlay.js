@@ -34,7 +34,10 @@ class AddLangOverlay extends Overlay {
         this.languageSelect.appendChild(utility.createDefaultOption(""));
         this.secondaryLanguageSelect.appendChild(
                 utility.createDefaultOption(""));
-        for (let langcode of languages.getAllLanguageCode()) {
+        const languageList = languages.getAllLanguageCode().sort(
+                (l1, l2) => languages.getLanguageInfo(l1).name
+                            < languages.getLanguageInfo(l2).name ? -1 : 1);
+        for (let langcode of languageList) {
             const option1 = document.createElement("option");
             const option2 = document.createElement("option");
             const language = languages.getLanguageInfo(langcode);

@@ -4,7 +4,7 @@ const globals = {
     modules: ["languages", "settings", "language-settings", "vocab-lists",
               "pinwall", "content", "vocab", "kanji", "stats", "srs",
               "test", "history", "database"],
-    windows: ["init-path", "init-lang", "loading", "main"],
+    windows: ["init-path", "init-lang", "init-default-lang", "loading", "main"],
     overlays: ["add-lang"],
     sections: ["home", "stats", "history", "vocab", "settings",
                "test", "dictionary", "kanji"],
@@ -59,15 +59,21 @@ console.log("Loaded all required modules after %f ms", totalTime);
     window.events = new EventEmitter();  // Communication between components
     const windows = {};
     let languages;
-    let standardLang;
+    let defaultLanguage;
     let currentWindow;
 
     function openWindow(name, closePrevious=true) {
+        if (currentWindow === name) return;
         if (closePrevious && currentWindow !== undefined) {
-            windows[currentWindow].style.display = "none";
+            closeWindow(currentWindow);
         }
         windows[name].style.display = "block";
         currentWindow = name;
+    }
+    
+    function closeWindow(name) {
+        windows[name].style.display = "none";
+        currentWindow = undefined;
     }
 
     Promise.resolve().then(() => {
@@ -81,8 +87,7 @@ console.log("Loaded all required modules after %f ms", totalTime);
             document.body.appendChild(windows[name]);
         }
         window.main = windows["main"];
-        // Create overlay windows
-        overlay.create();
+        overlay.create(); // Create overlay windows
         return Promise.all(windowsLoaded);
     }).then(() => {
         // Load data path. If it doesn't exist, let user choose it
@@ -92,11 +97,13 @@ console.log("Loaded all required modules after %f ms", totalTime);
                    .then((newPath) => paths.setDataPath(newPath));
         }
     }).then(() => {
-        // Find registered languages. If none exist, let user register one
+        // Find registered languages. If none exist, let user register new ones
         languages = dataManager.languages.find();
         if (languages.length === 0) {
             openWindow("init-lang");
             return windows["init-lang"].getLanguageConfigs().then((configs) => {
+                openWindow("loading");
+                windows["loading"].setStatus("Creating language files...");
                 const promises = [];
                 for (let { language, settings } of configs) {
                     const p = dataManager.languages.add(language, settings);
@@ -107,26 +114,30 @@ console.log("Loaded all required modules after %f ms", totalTime);
             });
         }
     }).then(() => {
-        // Load the global settings. If the file doesn't exist, create it
-        if (!utility.existsFile(paths.globalSettings)) {
+        // Load the global settings. If they don't exist, create defaults
+        if (utility.existsFile(paths.globalSettings)) {
+            dataManager.settings.load();
+        } else {
             dataManager.settings.setDefault();
         }
-        dataManager.settings.load();
-        standardLang = dataManager.settings["languages"]["standard"];
-        // If no standard language has been set yet
-        if (!standardLang) {
+        defaultLanguage = dataManager.settings["languages"]["default"];
+        // If no default language has been set or if it's not available...
+        if (!defaultLanguage || !languages.includes(defaultLanguage)) {
+            // ... if there's only one language, use it as default language
             if (languages.length === 1) {
-                // Set the one given language as standard
-                dataManager.settings["languages"]["standard"] = languages[0];
+                defaultLanguage = languages[0];
+            // ... otherwise, let user choose the default language
             } else {
-                // TODO: Let user choose one as standard language
+                openWindow("init-default-lang");
+                return windows["init-default-lang"].getDefaultLang(languages)
+                .then((language) => {
+                    defaultLanguage = language;
+                });
             }
         }
-        // TODO: Don't forget to save settings in all cases. Maybe later?
-        // if (!languages.includes(standardLang)) {
-        //     alert("Standard language is not available!");
-        //     // TODO: Display error and let user choose new standard lang?
-        // }
+    }).then(() => {
+        dataManager.settings["languages"]["default"] = defaultLanguage;
+        dataManager.settings.save();
     }).then(() => {
         windows["loading"].setStatus("Loading language data...");
         openWindow("loading");
@@ -134,7 +145,7 @@ console.log("Loaded all required modules after %f ms", totalTime);
         const start = performance.now();
         const promises = [];
         for (let language of languages) {
-            promises.push(dataManager.languages.load(language));
+            promises.push(dataManager.load(language));
         }
         return Promise.all(promises).then(() => {
             const total = performance.now() - startTime;
@@ -146,7 +157,7 @@ console.log("Loaded all required modules after %f ms", totalTime);
         return Promise.all([ main.createSections(), main.createPanels() ]);
     }).then(() => {
         // Set language and initialize stuff in main-window
-        main.setLanguage(standardLang);
+        main.setLanguage(defaultLanguage);
         main.initialize(languages);
         windows["loading"].setStatus("Processing language content...");
         return main.processLanguageContent(languages);
@@ -154,7 +165,7 @@ console.log("Loaded all required modules after %f ms", totalTime);
         openWindow("main", false);
         return utility.finishEventQueue();
     }).then(() => {
-        windows["loading"].style.display = "none";
+        closeWindow("loading");
     });/*.catch((error) => {
         console.error(error);
     });*/

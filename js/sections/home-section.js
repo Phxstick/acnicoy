@@ -54,7 +54,6 @@ class HomeSection extends Section {
             }
             dataManager.pinwall.addWidget(entry);
         }
-        dataManager.pinwall.save();
     }
 }
 

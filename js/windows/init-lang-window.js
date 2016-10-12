@@ -13,9 +13,7 @@ class InitLangWindow extends Window {
                     dialogWindow.info("You need to add at least one language.");
                     return;
                 }
-                console.log(configs);
-                // TODO
-                // resolve(configs);
+                resolve(configs);
             });
         });
     }

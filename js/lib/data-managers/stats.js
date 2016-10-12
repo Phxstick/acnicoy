@@ -7,9 +7,56 @@ module.exports = function (paths, modules) {
     const dataMap = {};
 
     let data;
-    let currentLanguage;
     let levelToScore;
     let scoreCalculation = Object.freeze(require(paths.scoreCalculation));
+
+    stats.create = function (language, settings) {
+        const initialStats = {
+            daily: [],
+            testedPerMode: {},
+            scorePerMode: {}
+        };
+        for (let mode of modules.test.modesForLanguage(language)) {
+            initialStats.testedPerMode[mode] = 0;
+            initialStats.scorePerMode[mode] = 0;
+        }
+        const path = paths.languageData(language).stats;
+        fs.writeFileSync(path, JSON.stringify(initialStats));
+    };
+
+    stats.load = function (language) {
+        dataMap[language] = require(paths.languageData(language).stats);
+    };
+
+    stats.save = function () {
+        for (let language in dataMap) {
+            const path = paths.languageData(language).stats;
+            fs.writeFileSync(path, JSON.stringify(dataMap[language]));
+        }
+    };
+
+    stats.setLanguage = function (language) {
+        data = dataMap[language];
+        // Precalculate amout of score for each SRS level
+        // TODO: How to make sure languageSettings are loaded first?
+        const timeIntervals = modules["language-settings"]["SRS"]["spacing"];
+        levelToScore = { "0": 0 };
+        for (let level = 1; level < timeIntervals.length; ++level) {
+            const totalTime = timeIntervals.slice(1, level + 1).sum();
+            for (let milestone in scoreCalculation["percentages"]) {
+                if (totalTime > parseInt(milestone)) {
+                    levelToScore[level] = 
+                       (scoreCalculation["percentages"][milestone] *
+                        scoreCalculation["scoreMultiplier"]);
+                }
+            }
+        }
+        Object.freeze(levelToScore);
+    };
+
+    /*
+     *  Functions for updating stats
+     */
 
     // TODO: Really necessary?
     // Append the days that have passed since the program was last started
@@ -17,6 +64,11 @@ module.exports = function (paths, modules) {
         const d = new Date();
         const newItems = [];
         let currentDate = [d.getFullYear(), d.getMonth() + 1, d.getDate()];
+        if (data["daily"].length === 0) {
+            data["daily"].push({
+                date: currentDate, score: 0, words: 0, kanji: 0, tested: 0 });
+            return;
+        }
         const lastDate = data["daily"].last().date;
         while (lastDate[0] != currentDate[0] || lastDate[1] != currentDate[1] ||
                lastDate[2] != currentDate[2]) {
@@ -38,38 +90,6 @@ module.exports = function (paths, modules) {
             data["daily"].push(item);
     }
 
-    stats.load = function (language) {
-        dataMap[language] = require(paths.languageData(language).stats);
-    };
-
-    stats.setLanguage = function (language) {
-        data = dataMap[language];
-        currentLanguage = language;
-        // Precalculate amout of score for each SRS level
-        // TODO: How to make sure languageSettings are loaded first?
-        const timeIntervals = modules["language-settings"]["SRS"]["spacing"];
-        levelToScore = { "0": 0 };
-        for (let level = 1; level < timeIntervals.length; ++level) {
-            const totalTime = timeIntervals.slice(1, level + 1).sum();
-            for (let milestone in scoreCalculation["percentages"]) {
-                if (totalTime > parseInt(milestone)) {
-                    levelToScore[level] = 
-                       (scoreCalculation["percentages"][milestone] *
-                        scoreCalculation["scoreMultiplier"]);
-                }
-            }
-        }
-        Object.freeze(levelToScore);
-    };
-
-    stats.save = function () {
-        const path = paths.languageData(currentLanguage).stats;
-        fs.writeFileSync(path, JSON.stringify(data));
-    };
-
-    /*
-     *  Functions for updating stats
-     */
 
     stats.incrementTestedCounter = function (mode) {
         registerPassedDays();
