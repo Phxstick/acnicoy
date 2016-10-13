@@ -1,7 +1,9 @@
 # Acnicoy
 
-Acnicoy is a tool for learning Japanese (and other languages) which implements a [Spaced Repetition System][SRS] (SRS) for memorizing Vocabulary.
-While the basic features work for every language, the program offers a bunch of additional features specifically for learning Japanese.
+Acnicoy is a tool for learning Japanese (and other languages) which implements
+a [Spaced Repetition System][SRS] (SRS) for memorizing Vocabulary.
+While the basic features work for every language, the program offers a bunch of
+additional features specifically for learning Japanese.
 
 ### Features
 The basic features for every language include:
@@ -24,24 +26,21 @@ Features to be implemented:
 
 ### Installation
 
-**NOTE**: The program is not quite ready for use yet. It's still missing some
-initialization functionality and there a few bugs to be squashed first.
-If you would already like to try it, feel free to contact me (See e-mail address
-at the bottom).
+**NOTE**: The program is still missing a bunch of features and it's not fully
+stable, so there's no release yet. You can build it from source instead, as
+described below.
 
-### Building for source
+### Building from source
 Acnicoy requires [Node.js] v5+ to run and uses the [npm package manager][npm].
 To get started, run:
 ```sh
 $ git clone https://github.com/phxstick/acnicoy
 $ npm install
-$ make build
+$ make
 ```
-You also need to download additional data into your cloned repository (such as
-fonts and several open-source language resources) from **TODO**.
-**NOTE**: Currently the program might not work properly without this data. If
-things work out well, this data should become optional in the end, and be
-downloadable as language packs directly through the program.
+You also need to rebuild sqlite3 against electron. The process is explained
+[here](https://github.com/electron/electron/blob/master/docs/tutorial/using-native-node-modules.md).
+
 
 License
 ----

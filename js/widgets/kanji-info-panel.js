@@ -119,15 +119,15 @@ class KanjiInfoPanel extends Widget {
     }
 
     registerCentralEventListeners() {
-        events.on("kanji-edited", (kanji, result) => {
+        events.on("kanji-added", (kanji) => {
             if (this.currentKanji !== kanji) return;
-            if (result === "added") {
-                this.addedLabel.style.display = "block";
-                this.addButton.style.display = "none";
-            } else if (result === "updated") {
-                this.addedLabel.style.display = "none";
-                this.addButton.style.display = "block";
-            }
+            this.addedLabel.style.display = "block";
+            this.addButton.style.display = "none";
+        });
+        events.on("kanji-removed", (kanji) => {
+            if (this.currentKanji !== kanji) return;
+            this.addedLabel.style.display = "none";
+            this.addButton.style.display = "block";
         });
     }
 

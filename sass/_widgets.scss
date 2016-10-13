@@ -6,10 +6,28 @@ popup-menu {
 }
 
 popup-stack {
-  --background-color: $button-background;
-  --color: $button-color;
-  --hover-background: $button-hover-background;
-  --hover-color: $button-hover-color;
-  --select-background: crimson;
-  --select-color: $button-color;
+  &[disabled] {
+    --shadow-color: transparent;
+    > option:checked {
+      color: $button-disabled-color;
+      background-color: $button-disabled-background;
+    }
+  }
+  
+  > option {
+    color: whitesmoke;
+    background-color: $button-background;
+    font-family: $gui-font;
+    font-size: 150%;
+
+    &:hover {
+      background-color: $button-hover-background;
+      color: $button-hover-color;
+    }
+
+    &:checked {
+      color: $button-color;
+      background-color: crimson;
+    }
+  }
 }

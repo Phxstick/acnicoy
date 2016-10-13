@@ -38,7 +38,6 @@ module.exports = function (paths, modules) {
     stats.setLanguage = function (language) {
         data = dataMap[language];
         // Precalculate amout of score for each SRS level
-        // TODO: How to make sure languageSettings are loaded first?
         const timeIntervals = modules["language-settings"]["SRS"]["spacing"];
         levelToScore = { "0": 0 };
         for (let level = 1; level < timeIntervals.length; ++level) {
@@ -111,7 +110,10 @@ module.exports = function (paths, modules) {
         registerPassedDays();
         let difference = levelToScore[newLevel] - levelToScore[oldLevel];
         difference *= scoreCalculation.modeToMultiplier[mode];
-        data["daily"].last()["score"] += difference;
+        // Make sure the result is an integer
+        console.assert(difference - parseInt(difference) < 0.000001,
+            "ERROR: The score is not close enough to an integer: ", difference);
+        data["daily"].last()["score"] += parseInt(difference);
     };
 
     /*
@@ -128,11 +130,12 @@ module.exports = function (paths, modules) {
 
     stats.getTotalScore = function (mode) {
         // TODO: Accumulate score in stats.json instead of recalculating
-        const table = modules.test.modeToTable(mode);
-        const multiplier = scoreCalculation.modeToMultiplier[mode];
-        const addScore = (total, row) => total += levelToScore[row.level];
-        return modules.database.query(`SELECT level FROM ${table}`)
-           .then((rows) => parseInt(rows.reduce(addScore, 0) * multiplier));
+        // const table = modules.test.modeToTable(mode);
+        // const multiplier = scoreCalculation.modeToMultiplier[mode];
+        // const addScore = (total, row) => total += levelToScore[row.level];
+        // return modules.database.query(`SELECT level FROM ${table}`)
+        //    .then((rows) => parseInt(rows.reduce(addScore, 0) * multiplier));
+        return 0;
     };
 
     return stats;

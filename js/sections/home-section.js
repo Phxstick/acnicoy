@@ -21,22 +21,24 @@ class HomeSection extends Section {
     }
 
     adjustToLanguage(language, secondary) {
-        // Clean up old widgets
-        while (this.pinwall.children.length > 1) {
-            this.pinwall.removeChild(this.pinwall.firstChild);
-        }
-        // Create new widgets according to pinwall.json file
+        this.pinwall.innerHTML = "";
+        const fragment = document.createDocumentFragment();
         for (let widget of dataManager.pinwall.getWidgets()) {
-            const object = this.addPinwallWidget(widget.type);
+            const Type = customElements.get(widget.type);
+            const object = new Type();
+            object.removeCallback = () => this.pinwall.removeChild(widget);
             if (widget.type === "pinwall-note") {
                 // TODO: Set size
                 object.setText(widget.text);
             }
             object.adjustToLanguage(language, secondary);
+            fragment.appendChild(object);
         }
+        fragment.appendChild(this.widgetAdder);
+        this.pinwall.appendChild(fragment);
     }
 
-    addPinwallWidget(type) {
+    addPinwallWidgets(type) {
         const Type = customElements.get(type);
         const widget = new Type();
         this.pinwall.insertBefore(widget, this.widgetAdder);

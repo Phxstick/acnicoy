@@ -1,17 +1,11 @@
 __ Up next __
-- Implement choosing standard language
 - Allow temporary entries to be closed by clicking anywhere else
   --> Make into widgets?
 - Add init step for downloading language packs
   --> Use sockets.io/websockets to receive data
-- Adjust readme (content is optional now!)
-- Upload fonts, font-awesome and Velocity.js aswell?
-- Save total score in settings rather than recalculating every time
-- Make language switching seamless!
-- Merge a bunch of tables, add time_added to vocabulary, remove edit_history
-  (Remove vocabulary_back aswell?)
-  --> Also use transactions for performance!
-      (db.run("BEGIN TRANSACTION");... db.run("END");)
+- Save total score in settings rather than recalculating every time !
+  --> Make sure to update correctly with integers!
+- Make language switching seamless (Do sth about vocab section)
 - Use ES6 proxies more often, e.g. for content section?
   --> More fine-grained access to datamanager modules
 - Allow user to choose an SRS config when adding a new language
@@ -22,6 +16,13 @@ __ Up next __
 - Allow quickly switching between sections without opening multiple ones
 - Put each stacking overlay into it's own frame?
   --> Shadow the frames behind the top frame with additional filters
+  --> Let each frame have its own width
+  --> Let each frame decide whether to slide down or appear instantly
+- Rename "updateDailyScore" into "updateScore" and adjust everything
+- Completely rework history section
+  --> Only store and display added entries and kanji
+- Make use of "event.target" and "event.currentTarget" whereever possible
+- Rework popup-list like popup-stack? Or discard that widget?
 
 
 __ General __
@@ -44,15 +45,13 @@ __ General __
 - Use overlay to create [about], put credits there
 - Replace native dialog windows with overlays
 - Make custom stylable checkbox
+- Make text of every GUI-Element unselectable. Maybe by default?
+- Use "!important"-selector to define necessary shadow dom host styles?
 
 __ Code __
 - Use CSS variables for all widget styling
 - Don't change event listeners in converter.js but change callback var instead?
 - Remove inconsistencies in code, e.g. unify glossary ("word" <-> "entry")
-- Rework edit-vocab-panel like edit-kanji-panel (only one function call for
-  all the changes, everything logged in dataManager.vocab.editWord)!
---> Especially logging should be done by the datamanger since it's triggered
-    by data changes and doesn't depend on the interface!!
 - Try to generalize as much scss as possibly and extend base scss files.
 - Remove "data" from content section and always access with "dataMap[...]"?
 - Have htmlManager and cssManager which make sure all assets are only loaded
@@ -63,6 +62,7 @@ __ Code __
 - Make automatically-loading-upon-scrolling-divs into widgets?
 - Make data-manager-modules into subclasses and gather similar code
   --> Especially if static variables become implemented!!
+- use split function from sqlite instead of JS version?
 
 __ Init window __
 - Make init section feel more welcoming and less plain. Background picture?
@@ -125,10 +125,6 @@ __ Vocab __
 __ Svg Bar Diagram __
 - Terminology: Descriptions/Labels??
 
-__ History __
-- Completely rework history section
-  --> Only store and display added entries and kanji
-
 __ Dictionary __
 - Display help info at center of section at the beginning and when the user
   presses enter on empty input or clicks some kind of help button
@@ -156,7 +152,6 @@ ___ Future ____________________________________________________________________
   --> Very problematic for partly added kanji
   --> Would allow more stylish and compact mode presentation
   --> Would allow easier synchronization with Houhou SRS trainer
-- [Consider overhaul of data storage --> Primarily use IDs for words?]
 - Find monolingual dictionary for Japanese
 - Add additional field to kanjiData database for "hidden acceptable meanings",
   containg synonyms or words with very similar meaning?
@@ -224,6 +219,7 @@ ___ Resources _________________________________________________________________
 
 - http://usabilitypost.com/2012/01/10/pressed-button-state-with-css3/#
   --> Use inset shadow to style <button>?
+- https://webkit.org/blog/4096/introducing-shadow-dom-api/
 
 - For server hosting: 1. RedHat OpenShift, 2. Heroku, 3. 000webhost (PHP)
   --> Use flask(python) or express(nodejs)
@@ -244,14 +240,3 @@ ___ Resources _________________________________________________________________
 
 - https://ponyfoo.com/articles/gulp-grunt-whatever
   --> Learn and replace makefile with gulp?
-
-
-__ Steps to install __
-1. Run npm install
-2. Rebuild sqlite3 against electron:
-   https://github.com/electron/electron/blob/master/docs/tutorial/using-native-node-modules.md
-   (Build native node modules against electron. First method works.)
-3. Download font-awesome, call folder "font-awesome", put it in base-directory
-4. Download fonts, put "fonts" folder in base-directory
-5. Download raw language data, adjust path to data in makefile
-6. Run make

@@ -3,164 +3,217 @@
 module.exports = function (paths, modules) {
     const kanjiModule = {};
 
-    // TODO: Split this method from edit-method suitably
-    kanjiModule.add = function (kanji, meanings, onYomi, kunYomi, levels) {
+    kanjiModule.add = function (kanji, values, levels) {
+        let newStatus = "no-change";
+        return kanjiModule.isAdded(kanji).then((alreadyAdded) => {
+            if (!alreadyAdded) {
+                newStatus = "added";
+                modules.stats.incrementKanjiAddedToday();
+                return modules.database.run(
+                    "INSERT INTO kanji (kanji, date_added) VALUES (?, ?)",
+                    kanji, utility.getTime());
+            }
+        }).then(() => {
+            const attributes = ["meanings", "on_yomi", "kun_yomi"];
+            const modes = {
+                "meanings": modules.test.mode.KANJI_MEANINGS,
+                "on_yomi": modules.test.mode.KANJI_ON_YOMI,
+                "kun_yomi": modules.test.mode.KANJI_KUN_YOMI
+            };
+            const promises = [];
+            for (let attribute of attributes) {
+                const mode = modes[attribute];
+                const table = modules.test.modeToTable(mode);
+                const newValues = values[attribute];
+                const newLevel = levels[attribute];
+                const newReviewDate = utility.getTime() +
+                        modules.languageSettings["SRS"]["spacing"][newLevel];
+                let oldValues;
+                let oldLevel;
+                let oldReviewDate;
+                modules.database.run("BEGIN TRANSACTION");
+                const promise = modules.database.query(
+                    // Get old values from the database
+                    `SELECT ${attribute}, level, review_date
+                     FROM ${table} WHERE kanji = ?`, kanji)
+                .then((rows) => { 
+                    if (rows.length) {
+                        oldValues = rows[0][attribute].split(";");
+                        oldLevel = rows[0]["level"];
+                        oldReviewDate = rows[0]["review_date"];
+                    } else {
+                        oldValues = [];
+                    }
+                }).then(() => {
+                    if (oldValues.length > 0 && newValues.length > 0) {
+                        // Add new values and don't overwrite existing ones
+                        for (let value of newValues) {
+                            if (!oldValues.includes(value)) {
+                                oldValues.push(value);
+                            }
+                        }
+                        return modules.database.run(
+                            `UPDATE ${table} SET ${attribute} = ?
+                             WHERE kanji = ?`, oldValues.join(";"), kanji);
+                    } else if (oldValues.length === 0 && newValues.length > 0) {
+                        modules.stats.updateDailyScore(mode, 0, newLevel);
+                        return modules.database.run(
+                            `INSERT INTO ${table}
+                             (kanji, ${attribute}, level, review_date)
+                             VALUES (?, ?, ?, ?)`,
+                            kanji, newValues.join(";"), newLevel,
+                            newReviewDate);
+                    }
+                }).then(() => {
+                     if (newStatus !== "added" &&
+                         !utility.setEqual(new Set(newValues),
+                                           new Set(oldValues)))
+                        newStatus = "updated";
+                });
+                promises.push(promise);
+            }
+            return Promise.all(promises).then(() => {
+                modules.database.run("END");
+                return newStatus;
+            });
+        });
     };
 
-    kanjiModule.edit = function (kanji, meanings, onYomi, kunYomi, levels) {
-      const tables = ["kanji_meanings", "kanji_kun", "kanji_on"];
-      const attributes = ["meaning", "kun_reading", "on_reading"];
-      const names = ["meanings", "kunYomi", "onYomi"];
-      const modes = [modules.test.mode.KANJI_MEANINGS,
-                     modules.test.mode.KANJI_KUN_YOMI,
-                     modules.test.mode.KANJI_ON_YOMI];
-      const newValues = [meanings, kunYomi, onYomi];
-      const statusPromises = [];
-      const promises = [];
-      let entryChanged = false;
-      for (let i = 0; i < tables.length; ++i) {
-        const table = tables[i];
-        const attr = attributes[i];
-        let oldValues = [];
-        const statusPromise = modules.database.query(
-            `SELECT ${attr} FROM ${table} WHERE entry = ?`, kanji)
-        .then((rows) => {
-            // Store old values and remove them from the database
-            rows.forEach((row) => oldValues.push(row[attr]));
-            return modules.database.run(
-                `DELETE FROM ${table} WHERE entry = ?`, kanji); 
-        }).then(() => {
-          // Insert new values
-          for (let value of newValues[i]) {
-            const promise = modules.database.run(
-                `INSERT INTO ${table} VALUES (?, ?)`, kanji, value);
-            promises.push(promise);
-         
-          }
-          // Update SRS system
-          if (newValues[i].length > 0) {
-            const newLevel = levels[names[i]];
-            const spacing =
-                modules["language-settings"]["SRS"]["spacing"][newLevel];
+    kanjiModule.edit = function (kanji, values, levels) {
+        let newStatus = "no-change";
+        const attributes = ["meanings", "on_yomi", "kun_yomi"];
+        const modes = {
+            "meanings": modules.test.mode.KANJI_MEANINGS,
+            "on_yomi": modules.test.mode.KANJI_ON_YOMI,
+            "kun_yomi": modules.test.mode.KANJI_KUN_YOMI
+        };
+        const promises = [];
+        for (let attribute of attributes) {
+            const mode = modes[attribute];
+            const table = modules.test.modeToTable(mode);
+            const newValues = values[attribute];
+            const newLevel = levels[attribute];
+            let newReviewDate = utility.getTime() +
+                    modules.languageSettings["SRS"]["spacing"][newLevel];
+            let oldValues;
+            let oldLevel;
+            let oldReviewDate;
+            modules.database.run("BEGIN TRANSACTION");
             const promise = modules.database.query(
-                `SELECT * FROM ${table}_test WHERE entry = ?`, kanji)
-            .then((rows) => {
-              if (rows.length === 0) {
-                modules.stats.updateDailyScore(modes[i], 0, newLevel);
-                return modules.database.run(
-                    `INSERT INTO ${table}_test VALUES (?, ?, ?)`,
-                    kanji, newLevel, utility.getTime() + spacing);
-              } else {
-                const oldLevel = rows[0].level;
-                if (oldLevel === newLevel) return;
-                entryChanged = true;
-                modules.stats.updateDailyScore(
-                    modes[i], oldLevel, newLevel);
-                return modules.database.run(
-                    `UPDATE ${table}_test SET level = ?, time = ?
-                    WHERE entry = ?`,
-                    newLevel, utility.getTime() + spacing, kanji);
-              }
+                // Get old values from the database
+                `SELECT ${attribute}, level, review_date
+                 FROM ${table} WHERE kanji = ?`, kanji)
+            .then((rows) => { 
+                if (rows.length) {
+                    oldValues = rows[0][attribute].split(";");
+                    oldLevel = rows[0]["level"];
+                    oldReviewDate = rows[0]["review_date"];
+                } else {
+                    oldValues = [];
+                }
+            }).then(() => {
+                // Update database with new values
+                if (oldValues.length > 0 && newValues.length > 0) {
+                    modules.stats.updateDailyScore(mode, oldLevel, newLevel);
+                    // If the level did not change, do not reset review date
+                    if (oldLevel === newLevel) {
+                        newReviewDate = oldReviewDate;
+                    }
+                    return modules.database.run(
+                        `UPDATE ${table}
+                         SET ${attribute} = ?, level = ?, review_date = ?
+                         WHERE kanji = ?`,
+                        newValues.join(";"), newLevel, newReviewDate, kanji);
+                } else if (oldValues.length === 0 && newValues.length > 0) {
+                    modules.stats.updateDailyScore(mode, 0, newLevel);
+                    return modules.database.run(
+                        `INSERT INTO ${table}
+                         (kanji, ${attribute}, level, review_date)
+                         VALUES (?, ?, ?, ?)`,
+                        kanji, newValues.join(";"), newLevel, newReviewDate);
+                } else if (oldValues.length > 0 && newValues.length === 0) {
+                    modules.stats.updateDailyScore(mode, oldLevel, 0);
+                    return modules.database.run(
+                        `DELETE FROM ${table} WHERE kanji = ?`, kanji);
+                }
+            }).then(() => {
+                if (!utility.setEqual(new Set(newValues),
+                                      new Set(oldValues)) ||
+                        (oldLevel !== undefined && oldLevel !== newLevel))
+                    newStatus = "updated";
             });
             promises.push(promise);
-          } else {
-              const promise = modules.database.run(
-                `DELETE FROM ${table}_test WHERE entry = ?`, kanji);
-              promises.push(promise);
-          }
-          // Determine status
-          if (newValues[i].length > 0 && oldValues.length > 0) {
-              if (utility.setEqual(new Set(newValues[i]), new Set(oldValues))) {
-                  return "no-change";
-              } else {
-                  return "updated";
-              }
-          } else if (newValues[i].length > 0) {
-              return "added";
-          } else if (oldValues.length > 0) {
-              return "removed";
-          } else {
-              return "not-added";
-          }
-        });
-        statusPromises.push(statusPromise);
-      }
-      // TODO: Put this at beginning and make database dependencies on this?
-      promises.push(kanjiModule.isAdded().then((alreadyAdded) => {
-        if (!alreadyAdded) {
-          modules.stats.incrementKanjiAddedToday();
-          return modules.database.run(
-              "INSERT INTO kanji VALUES (?, ?)", kanji, utility.getTime());
         }
-      }));
-      if (meanings.length === 0 && onYomi.length === 0 && kunYomi.length === 0) {
-          promises.push(
-              modules.database.run(
-                  "DELETE FROM kanji WHERE entry = ?", kanji));
-      }
-      return Promise.all(statusPromises).then((statuses) => {
         return Promise.all(promises).then(() => {
-          if (statuses.containsOnly("no-change")) return "no-change";
-          if (statuses.containsOnly("added", "not-added")) return "added";
-          if (statuses.containsOnly("removed", "not-added")) return "removed";
-          return "updated";
+            // If there are no new values provided, delete the kanji
+            let totalNumValues = 0;
+            for (let attribute of attributes) {
+                totalNumValues += values[attribute].length;
+            }
+            if (totalNumValues === 0) {
+                newStatus = "removed";
+                return modules.database.run(
+                    "DELETE FROM kanji WHERE kanji = ?", kanji);
+            }
+        }).then(() => {
+            modules.database.run("END");
+            return newStatus;
         });
-      });
     };
 
     kanjiModule.remove = function (kanji) {
-        return edit(kanji, [], [], [], {});
+        return modules.database.run("DELETE FROM kanji WHERE kanji = ?", kanji);
     };
 
+    // Following three functions assume that respective field is not empty 
     kanjiModule.getMeanings = function (kanji) {
         return modules.database.query(
-        "SELECT meaning FROM kanji_meanings WHERE entry = ?", kanji)
-        .then((rows) => rows.map((row) => row.meaning));
+            "SELECT meanings FROM kanji_meanings WHERE kanji = ?", kanji)
+        .then(([{meanings}]) => meanings.split(";"));
     };
-
     kanjiModule.getOnYomi = function (kanji) {
         return modules.database.query(
-        "SELECT on_reading FROM kanji_on WHERE entry = ?", kanji)
-        .then((rows) => rows.map((row) => row.on_reading));
+            "SELECT on_yomi FROM kanji_on_yomi WHERE kanji = ?", kanji)
+        .then(([{on_yomi}]) => on_yomi.split(";"));
     };
-
     kanjiModule.getKunYomi = function (kanji) {
         return modules.database.query(
-        "SELECT kun_reading FROM kanji_kun WHERE entry = ?", kanji)
-        .then((rows) => rows.map((row) => row.kun_reading));
+            "SELECT kun_yomi FROM kanji_kun_yomi WHERE kanji = ?", kanji)
+        .then(([{kun_yomi}]) => kun_yomi.split(";"));
     };
 
     kanjiModule.isAdded = function (kanji) {
         return modules.database.query(
-            "SELECT * FROM kanji WHERE entry = ?", kanji)
-        .then((rows) => rows.length > 0);
+            "SELECT COUNT(*) AS amount FROM kanji WHERE kanji = ?", kanji)
+        .then(([{amount}]) => amount > 0);
     };
 
     kanjiModule.getInfo = function (kanji) {
-        const info = { meanings: [], kunYomi: [], onYomi: [] };
+        const info = { meanings: [], kunYomi: [], onYomi: [],
+                       meaningsLevel: 1, kunYomiLevel: 1, onYomiLevel: 1 };
         return Promise.all([
             modules.database.query(
-              "SELECT meaning FROM kanji_meanings WHERE entry = ?", kanji),
+                `SELECT meanings, level
+                 FROM kanji_meanings WHERE kanji = ?`, kanji),
             modules.database.query(
-              "SELECT kun_reading FROM kanji_kun WHERE entry = ?", kanji),
+                `SELECT kun_yomi, level
+                 FROM kanji_kun_yomi WHERE kanji = ?`, kanji),
             modules.database.query(
-              "SELECT on_reading FROM kanji_on WHERE entry = ?", kanji),
-            modules.database.query(
-              "SELECT level FROM kanji_meanings_test WHERE entry = ?", kanji),
-            modules.database.query(
-              "SELECT level FROM kanji_kun_test WHERE entry = ?", kanji),
-            modules.database.query(
-              "SELECT level FROM kanji_on_test WHERE entry = ?", kanji)
-        ]).then(([meanings, kunYomi, onYomi, meaningsLvl, kunLvl, onLvl]) => {
-            for (let row of meanings) info.meanings.push(row.meaning);
-            for (let row of kunYomi) info.kunYomi.push(row.kun_reading);
-            for (let row of onYomi) info.onYomi.push(row.on_reading);
-            info.meaningsLevel = meaningsLvl ? (meaningsLvl[0] ?
-                                 parseInt(meaningsLvl[0].level) : 1) : 1;
-            info.kunLevel = kunLvl ? (kunLvl[0] ?
-                                 parseInt(kunLvl[0].level) : 1) : 1;
-            info.onLevel = onLvl ? (onLvl[0] ?
-                                 parseInt(onLvl[0].level) : 1) : 1;
+                `SELECT on_yomi, level
+                 FROM kanji_on_yomi WHERE kanji = ?`, kanji)
+        ]).then(([meaningsRows, kunYomiRows, onYomiRows]) => {
+            if (meaningsRows.length) {
+                info.meanings = meaningsRows[0].meanings.split(";");
+                info.meaningsLevel = meaningsRows[0].level;
+            }
+            if (kunYomiRows.length) {
+                info.kunYomi = kunYomiRows[0].kun_yomi.split(";");
+                info.kunYomiLevel = kunYomiRows[0].level;
+            }
+            if (onYomiRows.length) {
+                info.onYomi = onYomiRows[0].on_yomi.split(";");
+                info.onYomiLevel = onYomiRows[0].level;
+            }
             return info;
         });
     };
@@ -170,19 +223,18 @@ module.exports = function (paths, modules) {
                .then(([{amount}]) => amount);
     };
 
-    // TODO: Move part of this to content section?
     kanjiModule.getAmountAddedForGrade = function (grade) {
         return modules.content.dataMap["Japanese"].query(
             `SELECT COUNT(*) AS amount
-             FROM trainer.kanji t JOIN kanji k ON t.entry = k.entry
+             FROM trainer.kanji t JOIN kanji k ON t.kanji = k.entry
              WHERE k.grade = ?`, grade)
         .then(([{amount}]) => amount);
     };
 
     kanjiModule.getAmountsAddedPerGrade = function () {
         return modules.content.dataMap["Japanese"].query(
-            `SELECT k.grade, COUNT(*) AS amount
-             FROM trainer.kanji t JOIN kanji k ON t.entry = k.entry
+            `SELECT k.grade, COUNT(t.kanji) AS amount
+             FROM trainer.kanji t JOIN kanji k ON t.kanji = k.entry
              GROUP BY k.grade`)
         .then((rows) => {
              const result = {};
@@ -196,7 +248,7 @@ module.exports = function (paths, modules) {
     kanjiModule.getAmountsAddedPerJlptLevel = function () {
         return modules.content.dataMap["Japanese"].query(
             `SELECT k.jlpt AS level, COUNT(*) AS amount
-             FROM trainer.kanji t JOIN kanji k ON t.entry = k.entry
+             FROM trainer.kanji t JOIN kanji k ON t.kanji = k.entry
              WHERE k.jlpt IS NOT NULL
              GROUP BY k.jlpt`)
         .then((rows) => {

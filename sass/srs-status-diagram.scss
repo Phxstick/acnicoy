@@ -1,6 +1,6 @@
 @import "base";
 
-table#srs-counts {
+#srs-table {
   background-color: $view-background;
   padding: 10px;
   border-collapse: collapse;
@@ -19,6 +19,10 @@ table#srs-counts {
       &:first-child {
         font-size: 110%;
         border-bottom: none;
+      }
+      &.due {
+        background-color: crimson;
+        color: whitesmoke;
       }
     }
   }

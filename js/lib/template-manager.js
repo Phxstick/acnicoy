@@ -41,3 +41,7 @@ Handlebars.registerHelper("inc", function(number, amount) {
 Handlebars.registerHelper("ifLargerThanOne", function(length, options) {
     return length > 1 ? options.fn(this) : options.inverse(this);
 });
+
+Handlebars.registerHelper("equal", function(a, b, options) {
+    return a === b ? options.fn(this) : options.inverse(this);
+});

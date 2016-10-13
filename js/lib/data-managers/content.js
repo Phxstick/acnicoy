@@ -93,7 +93,7 @@ module.exports = function (paths, modules) {
                     k.jlpt AS jlptLevel,
                     r.radical AS radical,
                     r.name AS radicalName,
-                    (k.entry IN (SELECT entry FROM trainer.kanji)) AS added
+                    (k.entry IN (SELECT kanji FROM trainer.kanji)) AS added
              FROM kanji k JOIN radicals r ON k.radical_id = r.id
              WHERE k.entry = ?`, kanji)
         .then(([row]) => {
@@ -148,7 +148,7 @@ module.exports = function (paths, modules) {
                     k.meanings AS meanings,
                     r.radical AS radical,
                     r.name AS radicalName,
-                    (entry IN (SELECT entry FROM trainer.kanji)) AS added
+                    (entry IN (SELECT kanji FROM trainer.kanji)) AS added
             FROM kanji k JOIN radicals r ON k.radical_id = r.id`);
     };
 

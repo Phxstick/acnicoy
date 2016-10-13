@@ -2,100 +2,107 @@
 
 class PopupStack extends Widget {
     constructor () {
-        super("popup-stack");
-        this.callback = () => { };
-        // Set parameters
+        super("popup-stack", true);
+        this.callback = (label, value) => { };
         this.animated = true;
         this.overlap = 0;
         this.orientation = "horizontal";  // TODO: "vertical"
-        this.items = [];
         this.isOpen = false;
+        this.isDisabled = false;
         this.topItem = null;
-        // Create widget tree
-        this.itemContainer = document.createElement("div");
-        this.itemContainer.id = "container";
-        this.shadowDiv = document.createElement("div");
-        this.shadowDiv.id = "shadow";
-        this.root.appendChild(this.itemContainer);
-        this.itemContainer.appendChild(this.shadowDiv);
         window.addEventListener("click", () => this.close());
-    }
-    appendItem (text) {
-        const newItem = document.createElement("span");
-        newItem.textContent = text;
-        const itemIndex = this.items.length;  // Dangerous
-        newItem.style.zIndex = layers["popup-stack"] + itemIndex;
-        newItem.addEventListener("click", (event) => {
+        this.addEventListener("click", (event) => {
+            if (this.isDisabled) return;
             if (this.isOpen) {
-                this.set(itemIndex);
+                this.set(event.target);
                 this.close();
             } else {
                 this.open();
             }
             event.stopPropagation();
         });
-        this.items.push(newItem);
-        this.itemContainer.appendChild(newItem);
     }
-    removeItem (index) {
+
+    addOption (label, value) {
+        const newItem = document.createElement("option");
+        newItem.label = label;
+        newItem.value = value === undefined ? label : value;
+        this.appendChild(newItem);
     }
-    set (index) {
+
+    set (item) {
         if (this.topItem !== null) {
-            this.topItem.style.zIndex =
-                layers["popup-stack"] + this.topItemIndex;
-            this.topItem.classList.remove("selected");
+            const topItemIndex = this.childrenArray().indexOf(this.topItem);
+            this.topItem.style.zIndex = topItemIndex;
+            this.topItem.removeAttribute("selected");
         }
-        this.topItem = this.items[index];
-        this.topItem.classList.add("selected");
-        this.topItemIndex = index;
-        this.topItem.style.zIndex = layers["popup-stack"] + this.items.length;
-        this.callback(this.get(), this.getIndex());
+        this.topItem = item;
+        this.topItem.setAttribute("selected", "");
+        this.topItem.style.zIndex = this.children.length;
+        this.callback(this.topItem.label, this.topItem.value);
     }
-    get () {
-        return this.topItem.textContent;
+
+    get value() {
+        return this.topItem.value;
     }
-    getIndex () {
-        return this.topItemIndex;
-    }
+
     open () {
-        if (this.items.length === 0) return;
+        if (this.children.length === 0) return;
         if (this.orientation === "horizontal") {
-            const itemWidth = this.items[0].offsetWidth;
+            const itemWidth = this.children[0].offsetWidth;
             let current = 0;
-            for (let item of this.items) {
-                if (this.animated)
-                    Velocity(item, { "left": `${current}px` });
-                else
-                    item.style.left = `${current}px`;
+            for (let i = 0; i < this.children.length; ++i) {
+                this.children[i].style.zIndex = i;
+                if (this.animated) {
+                    Velocity(this.children[i], { "left": `${current}px` });
+                } else {
+                    this.children[i].style.left = `${current}px`;
+                }
                 current += itemWidth - this.overlap;
             }
-            Velocity(this.shadowDiv, { "width": current });
+            this.topItem.style.zIndex = this.children.length;
+            Velocity(this.$("shadow"), { "width": current });
         }
         this.isOpen = true;
     }
+
     close () {
         if (!this.isOpen) return;
         if (this.orientation === "horizontal") {
             if (this.animated) {
-                Velocity(this.items, { "left": "0" });
+                Velocity(this.children, { "left": "0" });
             } else {
-                for (let item of this.items) {
-                    item.style.left = "0";
+                for (let i = 0; i < this.children.length; ++i) {
+                    this.children[i].style.left = "0";
                 }
             }
         }
-        Velocity(this.shadowDiv, {width: this.itemContainer.offsetWidth + "px"});
+        Velocity(this.$("shadow"), {width: this.$("frame").offsetWidth + "px"});
         this.isOpen = false;
     }
-    clear () {
-        for (let item of this.items) {
-            this.itemContainer.removeChild(item);
+
+    // Does not work for some reason...
+    // attributeChangedCallback(name, oldValue, newValue) {
+    //     console.log(name);
+    //     if (name === "disabled") {
+    //         if (newValue == null) console.log("Popup has been enabled.");
+    //         else console.log("Popup has been disabled.");
+    //     }
+    // }
+
+    set disabled(value) {
+        if (value) this.setAttribute("disabled", "");
+        else this.removeAttribute("disabled");
+        // Move this to attributeChangedCallback once it works...
+        this.isDisabled = value;
+        if (this.topItem !== null) {
+            if (value) this.topItem.classList.add("disabled");
+            this.topItem.classList.remove("disabled");
         }
-        this.items.length = 0;
     }
-    disable() {
-    }
-    enable() {
+
+    get disabled() {
+        return this.getAttribute("disabled") !== null;
     }
 }
 

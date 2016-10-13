@@ -6,7 +6,7 @@ const globals = {
               "test", "history", "database"],
     windows: ["init-path", "init-lang", "init-default-lang", "loading", "main"],
     overlays: ["add-lang"],
-    sections: ["home", "stats", "history", "vocab", "settings",
+    sections: ["home", "stats", /*"history",*/ "vocab", "settings",
                "test", "dictionary", "kanji"],
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
     widgets: ["popup-stack", "switch-button", "switch-bar", "popup-list",

@@ -15,9 +15,9 @@ module.exports = function (paths, modules) {
     test.modeToTable = function (mode) {
         switch (mode) {
             case test.mode.WORDS: return "vocabulary";
-            case test.mode.KANJI_MEANINGS: return "kanji_meanings_test";
-            case test.mode.KANJI_ON_YOMI: return "kanji_on_test";
-            case test.mode.KANJI_KUN_YOMI: return "kanji_kun_test";
+            case test.mode.KANJI_MEANINGS: return "kanji_meanings";
+            case test.mode.KANJI_ON_YOMI: return "kanji_on_yomi";
+            case test.mode.KANJI_KUN_YOMI: return "kanji_kun_yomi";
         }
     };
 

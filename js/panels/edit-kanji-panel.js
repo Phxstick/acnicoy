@@ -26,6 +26,8 @@ const menuItems = popupMenu.registerItems({
         label: "Delete meaning",
         click: ({ currentNode, data: {section} }) => {
             section.meaningsList.removeChild(currentNode);
+            if (section.meaningsList.children.length === 0)
+                section.meaningsLevelPopup.disabled = true;
         }
     },
     "modify-meaning": {
@@ -46,6 +48,8 @@ const menuItems = popupMenu.registerItems({
         label: "Delete on-yomi",
         click: ({ currentNode, data: {section} }) => {
             section.onYomiList.removeChild(currentNode);
+            if (section.onYomiList.children.length === 0)
+                section.onYomiLevelPopup.disabled = true;
         }
     },
     "modify-on-yomi": {
@@ -66,6 +70,8 @@ const menuItems = popupMenu.registerItems({
         label: "Delete kun-yomi",
         click: ({ currentNode, data: {section} }) => {
             section.kunYomiList.removeChild(currentNode);
+            if (section.kunYomiList.children.length === 0)
+                section.kunYomiLevelPopup.disabled = true;
         }
     },
     "modify-kun-yomi": {
@@ -89,8 +95,11 @@ class EditKanjiPanel extends Panel {
         this.kunYomiLevelPopup = this.root.getElementById("srs-level-kun-yomi");
         this.onYomiLevelPopup = this.root.getElementById("srs-level-on-yomi");
         this.allLevelsPopup = this.root.getElementById("all-srs-levels");
-        this.levelPopups = [ this.meaningsLevelPopup, this.onYomiLevelPopup,
-                             this.kunYomiLevelPopup, this.allLevelsPopup ];
+        this.typeToPopup = {
+            "meaning": this.meaningsLevelPopup,
+            "on-yomi": this.onYomiLevelPopup,
+            "kun-yomi": this.kunYomiLevelPopup
+        };
         // Create the edit input
         this.editInput = document.createElement("input");
         this.editInput.id = "edit-input";
@@ -102,18 +111,27 @@ class EditKanjiPanel extends Panel {
             }
         });
         // Configure popup-menu for static elements
-        this.kanjiLabel.popupMenu(menuItems, ["copy-kanji", "remove-kanji"]);
-        this.meaningsList.popupMenu(menuItems, ["add-meaning"]);
-        this.onYomiList.popupMenu(menuItems, ["add-on-yomi"]);
-        this.kunYomiList.popupMenu(menuItems, ["add-kun-yomi"]);
+        this.kanjiLabel.popupMenu(menuItems,
+                ["copy-kanji", "remove-kanji"], { section: this });
+        this.meaningsList.popupMenu(
+                menuItems, ["add-meaning"], { section: this });
+        this.onYomiList.popupMenu(menuItems,
+                ["add-on-yomi"], { section: this });
+        this.kunYomiList.popupMenu(menuItems,
+                ["add-kun-yomi"], { section: this });
         // Create closing and saving callbacks
-        this.root.getElementById("close-button").addEventListener(
+        this.$("close-button").addEventListener(
             "click", () => main.closePanel("edit-kanji"));
-        this.root.getElementById("cancel-button").addEventListener(
+        this.$("cancel-button").addEventListener(
             "click", () => main.closePanel("edit-kanji"));
-        this.root.getElementById("save-button").addEventListener(
+        this.$("save-button").addEventListener(
             "click", () => { this.save(); main.closePanel("edit-kanji"); });
-        // TODO: all-srs-levels popup callback
+        this.allLevelsPopup.callback = (label, value) => {
+            const idx = value - 1;
+            this.meaningsLevelPopup.set(this.meaningsLevelPopup.children[idx]);
+            this.onYomiLevelPopup.set(this.onYomiLevelPopup.children[idx]);
+            this.kunYomiLevelPopup.set(this.kunYomiLevelPopup.children[idx]);
+        };
     }
 
     adjustToLanguage(language, secondary) {
@@ -121,15 +139,16 @@ class EditKanjiPanel extends Panel {
         // Fill SRS levels popup stacks
         const numLevels =
             dataManager.languageSettings["SRS"]["spacing"].length;
-        for (let levelPopup of this.levelPopups) {
-            levelPopup.clear();
-            for (let i = 1; i < numLevels; ++i) levelPopup.appendItem(i);
-            levelPopup.set(0);
+        const popups = [ this.allLevelsPopup, this.meaningsLevelPopup,
+                         this.onYomiLevelPopup, this.kunYomiLevelPopup ];
+        for (let levelPopup of popups) {
+            levelPopup.empty();
+            for (let i = 1; i < numLevels; ++i) levelPopup.addOption(i);
         }
     }
 
     load(kanji) {
-        dataManager.kanji.getInfo(kanji).then((info) => {
+        return dataManager.kanji.getInfo(kanji).then((info) => {
             this.meaningsList.empty();
             this.onYomiList.empty();
             this.kunYomiList.empty();
@@ -144,43 +163,38 @@ class EditKanjiPanel extends Panel {
                 this.createListItem(kunYomi, "kun-yomi");
             }
             // Set level popup stacks
-            this.allLevelsPopup.set(0);
-            this.meaningsLevelPopup.set(info.meaningsLevel - 1);
-            this.onYomiLevelPopup.set(info.onLevel - 1);
-            this.kunYomiLevelPopup.set(info.kunLevel - 1);
+            this.allLevelsPopup.set(this.allLevelsPopup.firstChild);
+            this.meaningsLevelPopup.set(
+                    this.meaningsLevelPopup.children[info.meaningsLevel - 1]);
+            this.onYomiLevelPopup.set(
+                    this.onYomiLevelPopup.children[info.onYomiLevel - 1]);
+            this.kunYomiLevelPopup.set(
+                    this.kunYomiLevelPopup.children[info.kunYomiLevel - 1]);
             // Disable level popups if there's no list entry
-            // TODO: Implement disable methods that leave stack empty
-            if (info.onYomi.length === 0) this.onYomiLevelPopup.disable();
-            else this.onYomiLevelPopup.enable();
-            if (info.kunYomi.length === 0) this.kunYomiLevelPopup.disable();
-            else this.kunYomiLevelPopup.enable();
-            // TODO: Delete these after implementing above functions
-            this.onYomiLevelPopup.style.display =
-                info.onYomi.length === 0 ? "none" : "flex";
-            this.kunYomiLevelPopup.style.display =
-                info.kunYomi.length === 0 ? "none" : "flex";
-            this.changes = [];
+            this.meaningsLevelPopup.disabled = info.meanings.length === 0;
+            this.onYomiLevelPopup.disabled = info.onYomi.length === 0;
+            this.kunYomiLevelPopup.disabled = info.kunYomi.length === 0;
         });
     }
 
     createListItem(text, type) {
-        const span = document.createElement("span");
-        span.textContent = text;
-        span.addEventListener("click", () => this.packEditEntry(span, type));
+        const div = document.createElement("div");
+        div.textContent = text;
+        div.addEventListener("click", () => this.packEditEntry(div, type));
         if (type === "meaning") {
-            this.meaningsList.appendChild(span);
-            span.popupMenu(menuItems, ["delete-meaning", "modify-meaning"],
+            this.meaningsList.appendChild(div);
+            div.popupMenu(menuItems, ["delete-meaning", "modify-meaning"],
                            { section: this });
         } else if (type === "kun-yomi") {
-            this.kunYomiList.appendChild(span);
-            span.popupMenu(menuItems, ["delete-kun-yomi", "modify-kun-yomi"],
+            this.kunYomiList.appendChild(div);
+            div.popupMenu(menuItems, ["delete-kun-yomi", "modify-kun-yomi"],
                            { section: this });
         } else if (type === "on-yomi") {
-            this.onYomiList.appendChild(span);
-            span.popupMenu(menuItems, ["delete-on-yomi", "modify-on-yomi"],
+            this.onYomiList.appendChild(div);
+            div.popupMenu(menuItems, ["delete-on-yomi", "modify-on-yomi"],
                            { section: this });
         }
-        return span;
+        return div;
     }
 
     deleteKanji() {
@@ -190,7 +204,7 @@ class EditKanjiPanel extends Panel {
             return;
         dataManager.kanji.remove(kanji);
         main.closePanel("edit-kanji");
-        // TODO: Emit events
+        events.emit("kanji-removed", kanji);
     }
 
     packEditEntry(node, type) {
@@ -216,10 +230,17 @@ class EditKanjiPanel extends Panel {
         // Add callback to unpack entry and pack node again
         this.editInput.unpack = () => {
             const newContent = this.editInput.value.trim();
-            if (newContent.length === 0)
+            if (newContent.length === 0) {
+                if (node.parentNode.children.length === 1) {
+                    this.typeToPopup[type].disabled = true;
+                }
                 node.remove();
-            else
+            } else {
+                if (node.parentNode.children.length === 1) {
+                    this.typeToPopup[type].disabled = false;
+                }
                 node.textContent = newContent;
+            }
             this.editInput.remove();
             if (type === "kun-yomi" || type === "on-yomi")
                 this.editInput.disableKanaInput();
@@ -230,33 +251,27 @@ class EditKanjiPanel extends Panel {
 
     save() {
         const kanji = this.kanjiLabel.textContent;
-        const meanings = [];
-        const onYomi = [];
-        const kunYomi = [];
-        for (let i = 0; i < this.meaningsList.children.length; ++i)
-            meanings.push(this.meaningsList.children[i].textContent);
-        for (let i = 0; i < this.onYomiList.children.length; ++i)
-            onYomi.push(this.onYomiList.children[i].textContent);
-        for (let i = 0; i < this.kunYomiList.children.length; ++i)
-            kunYomi.push(this.kunYomiList.children[i].textContent);
         const levels = {
-            meanings: this.meaningsLevelPopup.get(),
-            onYomi: this.onYomiLevelPopup.get(),
-            kunYomi: this.kunYomiLevelPopup.get()
+            meanings: parseInt(this.meaningsLevelPopup.value),
+            on_yomi: parseInt(this.onYomiLevelPopup.value),
+            kun_yomi: parseInt(this.kunYomiLevelPopup.value)
         };
-        return dataManager.kanji.edit(kanji, meanings, onYomi, kunYomi, levels)
-        .then((newStatus) => {
-            // Display status message
-            if (newStatus === "removed") {
-                main.updateStatus(`The kanji ${kanji} has been removed.`);
-            } else if (newStatus === "updated") {
-                main.updateStatus(`The kanji ${kanji} has been updated.`);
-            } else if (newStatus === "no-change") {
-                main.updateStatus(`The kanji ${kanji} has not been changed.`);
-            } else {
-                throw "New status of edited kanji is invalid!";
+        const values = { meanings: [], on_yomi: [], kun_yomi: [] };
+        for (let i = 0; i < this.meaningsList.children.length; ++i)
+            values.meanings.push(this.meaningsList.children[i].textContent);
+        for (let i = 0; i < this.onYomiList.children.length; ++i)
+            values.on_yomi.push(this.onYomiList.children[i].textContent);
+        for (let i = 0; i < this.kunYomiList.children.length; ++i)
+            values.kun_yomi.push(this.kunYomiList.children[i].textContent);
+        return dataManager.kanji.edit(kanji, values, levels).then((result) => {
+            if (result === "removed") {
+                main.updateStatus(`Kanji ${kanji} has been removed.`);
+                events.emit("kanji-removed", kanji);
+            } else if (result === "updated") {
+                main.updateStatus(`Kanji ${kanji} has been updated.`);
+            } else if (result === "no-change") {
+                main.updateStatus(`Kanji ${kanji} has not been changed.`);
             }
-            // TODO: Emit events
         });
     }
 }

@@ -37,7 +37,7 @@ class AddVocabPanel extends Panel {
         this.wordEntry.value = "";
         this.translationsEntry.value = "";
         this.readingsEntry.value = "";
-        this.levelPopup.set(0);
+        this.levelPopup.set(this.levelPopup.firstChild);
         this.defaultOption.setAttribute("selected", "");
         this.vocabListSelect.value = "";
     }
@@ -49,11 +49,11 @@ class AddVocabPanel extends Panel {
 
     adjustToLanguage(language, secondary) {
         // Fill SRS level popup stack
-        this.levelPopup.clear();
+        this.levelPopup.empty();
         const numLevels =
             dataManager.languageSettings["SRS"]["spacing"].length;
-        for (let i = 1; i < numLevels; ++i) this.levelPopup.appendItem(i);
-        this.levelPopup.set(0);
+        for (let i = 1; i < numLevels; ++i) this.levelPopup.addOption(i);
+        this.levelPopup.set(this.levelPopup.firstChild);
         // Fill vocab list selector
         while (this.vocabListSelect.lastChild !== null)
             this.vocabListSelect.removeChild(this.vocabListSelect.lastChild);
@@ -81,31 +81,29 @@ class AddVocabPanel extends Panel {
         const separator = dataManager.settings["add"]["separator"];
         // Read entered values
         const word = this.wordEntry.value.trim();
-        const level = this.levelPopup.get();
+        const level = parseInt(this.levelPopup.value);
         const list = this.vocabListSelect.value;
         let translations = utility.parseEntries(
             this.translationsEntry.value, separator);
         let readings = utility.parseEntries(
             this.readingsEntry.value, separator);
         // Update status with error messages if something is missing
+        // TODO: Use dialogWindows for this?
         if (word.length === 0) {
             main.updateStatus("The word to be added is missing.");
-            // TODO: Shortly highlight word entry
+            // TODO: Shortly highlight word entry?
             return;
         }
         if (translations.length === 0) {
             main.updateStatus("No translations have been entered.");
-            // TODO: Shortly highlight translations entry
+            // TODO: Shortly highlight translations entry?
             return;
         }
         dataManager.vocab.add(word, translations, readings, level).then(
-           (args) => {
+           ([ entryNew, numTranslationsAdded, numReadingsAdded ]) => {
                if (list.length > 0) {
                    dataManager.vocabLists.addWordToList(word, list);
                }
-               const entryNew = args[0];
-               const numTranslationsAdded = args[1];
-               const numReadingsAdded = args[2];
                const numFailed = translations.length - numTranslationsAdded;
                const string1 = numTranslationsAdded !== 1 ? "s have" :
                                                             " has";

@@ -8,6 +8,12 @@ HTMLElement.prototype.empty = function() {
         this.removeChild(this.lastChild);
 }
 
+/**
+**  Return the children of this element in an array.
+**/
+HTMLElement.prototype.childrenArray = function () {
+    return Array.prototype.slice.call(this.children);
+}
 
 /**
 **  Insert given node as the first child of this node.

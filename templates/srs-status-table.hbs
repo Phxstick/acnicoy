@@ -1,0 +1,19 @@
+<tr>
+  <td><i id="reload-srs" class="fa fa-refresh"></i></td>
+  {{#each modes}}
+    <td>
+      {{#equal this "WORDS"}}Words{{/equal}}
+      {{#equal this "KANJI_MEANINGS"}}Kanji<br>Meanings{{/equal}}
+      {{#equal this "KANJI_ON_YOMI"}}Kanji<br>On Yomi{{/equal}}
+      {{#equal this "KANJI_KUN_YOMI"}}Kanji<br>Kun Yomi{{/equal}}
+    </td>
+  {{/each}}
+</tr>
+{{#each amounts}}
+  <tr>
+    <td>Level {{@key}}</td>
+    {{#each this}}
+      <td {{#if due}}class="due"{{/if}}>{{due}} (+{{scheduled}})</td>
+    {{/each}}
+  </tr>
+{{/each}}

@@ -206,15 +206,14 @@ class MainWindow extends Window {
     };
 
     updateTestButton() {
-        return dataManager.srs.getTotalAmountScheduled()
-        .then((count) => {
-            this.numSrsItemsLabel.textContent = `${count} items`;
-            return count;
+        return dataManager.srs.getTotalAmountDue().then((amount) => {
+            this.numSrsItemsLabel.textContent = `${amount} items`;
+            return amount;
         });
     }
 
     fillLanguagePopup(languages) {
-        dataManager.srs.getTotalAmountScheduledForLanguages(languages)
+        dataManager.srs.getTotalAmountDueForLanguages(languages)
         .then((amounts) => {
             this.languagePopup.clear();
             for (let i = 0; i < languages.length; ++i) {
@@ -276,11 +275,8 @@ class MainWindow extends Window {
     }
 
     makeKanjiInfoLink(element, character) {
-        dataManager.content.dataMap["Japanese"].query(
-            "SELECT count(entry) AS containsChar FROM kanji WHERE entry = ?",
-            character)
-        .then(([{ containsChar }]) => {
-            if (containsChar) {
+        dataManager.content.isKnownKanji(character).then((isKanji) => {
+            if (isKanji) {
                 element.classList.add("kanji-info-link");
                 element.addEventListener("click", () => {
                     this.kanjiInfoPanel.load(character);

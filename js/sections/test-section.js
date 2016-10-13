@@ -312,7 +312,7 @@ class TestSection extends Section {
         const itemList = [];
         const promises = [];
         // Assemble vocabulary part of the testitem list
-        const vocabPart = dataManager.srs.getScheduledVocab().then((words) => {
+        const vocabPart = dataManager.srs.getDueVocab().then((words) => {
             for (let word of words) {
                 promises.push(
                     this._createTestItem(word, dataManager.test.mode.WORDS)
@@ -325,7 +325,7 @@ class TestSection extends Section {
             for (let mode of [dataManager.test.mode.KANJI_MEANINGS,
                               dataManager.test.mode.KANJI_ON_YOMI,
                               dataManager.test.mode.KANJI_KUN_YOMI]) {
-                kanjiParts.push(dataManager.srs.getScheduledKanji(mode)
+                kanjiParts.push(dataManager.srs.getDueKanji(mode)
                 .then((result) => {
                     for (let kanji of result) {
                         promises.push(this._createTestItem(kanji, mode)

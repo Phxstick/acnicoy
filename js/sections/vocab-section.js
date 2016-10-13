@@ -123,12 +123,9 @@ class VocabSection extends Section {
             this.packEditEntry(item);
         });
         this.renameListButton.addEventListener("click", () => {
-            // TODO: Remove guards and properly disable buttons instead
-            if (this.selectedListNode === null) return;
             this.packEditEntry(this.selectedListNode);
         });
         this.deleteListButton.addEventListener("click", () => {
-            if (this.selectedListNode === null) return;
             if (dialogWindow.confirm("Are you sure you want to delete " +
                     "the vocabulary list '" + this.selectedList + "'?")) {
                 dataManager.vocabLists.deleteList(this.selectedList);

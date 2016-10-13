@@ -14,11 +14,11 @@ class AddKanjiPanel extends Panel {
             "textarea[name='on']");
         this.kunEntry = this.root.querySelector(
             "textarea[name='kun']");
-        this.levelPopup = this.root.getElementById("srs-level");
+        this.allLevelsPopup = this.root.getElementById("all-levels");
         this.meaningsLevelPopup =
             this.root.getElementById("srs-level-meanings");
-        this.kunLevelPopup = this.root.getElementById("srs-level-kun");
-        this.onLevelPopup = this.root.getElementById("srs-level-on");
+        this.kunYomiLevelPopup = this.root.getElementById("srs-level-kun");
+        this.onYomiLevelPopup = this.root.getElementById("srs-level-on");
         // Attach event handlers
         this.onEntry.enableKanaInput("kata");
         this.kunEntry.enableKanaInput("hira");
@@ -27,7 +27,13 @@ class AddKanjiPanel extends Panel {
         this.root.getElementById("cancel-button").addEventListener(
             "click", () => main.closePanel("add-kanji"));
         this.root.getElementById("save-button").addEventListener(
-            "click", () => this.save());
+            "click", () => { this.save(); main.closePanel("add-kanji"); });
+        this.allLevelsPopup.callback = (label, value) => {
+            const idx = value - 1;
+            this.meaningsLevelPopup.set(this.meaningsLevelPopup.children[idx]);
+            this.onYomiLevelPopup.set(this.onYomiLevelPopup.children[idx]);
+            this.kunYomiLevelPopup.set(this.kunYomiLevelPopup.children[idx]);
+        };
     }
 
     open() {
@@ -35,10 +41,10 @@ class AddKanjiPanel extends Panel {
         this.kanjiEntry.style.width =
             kanjiStyle.getPropertyValue("font-size");
         this.kanjiEntry.style.display = "block";
-        this.levelPopup.set(0);
-        this.meaningsLevelPopup.set(0);
-        this.kunLevelPopup.set(0);
-        this.onLevelPopup.set(0);
+        this.allLevelsPopup.set(this.allLevelsPopup.firstChild);
+        this.meaningsLevelPopup.set(this.meaningsLevelPopup.firstChild);
+        this.kunYomiLevelPopup.set(this.kunYomiLevelPopup.firstChild);
+        this.onYomiLevelPopup.set(this.onYomiLevelPopup.firstChild);
         if (this.kanjiEntry.textContent.length === 0)
             this.kanjiEntry.focus();
         else
@@ -54,25 +60,15 @@ class AddKanjiPanel extends Panel {
 
     adjustToLanguage(language, secondary) {
         if (language !== "Japanese") return;
-        if (this.doneSetting) return;
         // Fill SRS level popup stack
         const numLevels =
             dataManager.languageSettings["SRS"]["spacing"].length;
-        const popups = [this.levelPopup, this.meaningsLevelPopup,
-                        this.kunLevelPopup, this.onLevelPopup];
+        const popups = [this.allLevelsPopup, this.meaningsLevelPopup,
+                        this.kunYomiLevelPopup, this.onYomiLevelPopup];
         for (let popup of popups) {
-            popup.clear();
-            for (let i = 1; i < numLevels; ++i) popup.appendItem(i);
-            popup.set(0);
+            popup.empty();
+            for (let i = 1; i < numLevels; ++i) popup.addOption(i);
         }
-        // Popup-stack stuff
-        this.levelPopup.callback = (val, index) => {
-            this.meaningsLevelPopup.set(index);
-            this.onLevelPopup.set(index);
-            this.kunLevelPopup.set(index);
-        };
-        // ... Just a workaround
-        this.doneSetting = true;
     }
 
     load(kanji) {
@@ -89,43 +85,44 @@ class AddKanjiPanel extends Panel {
         const trim = (val, index, array) => { array[index] = val.trim(); }
         const notEmpty = (element) => element.length > 0;
         // Read values
-        const kanji = this.kanjiEntry.value;
-        const levels = { meanings: this.meaningsLevelPopup.get(),
-                         kunYomi: this.kunLevelPopup.get(),
-                         onYomi: this.onLevelPopup.get() };
-        let meanings = this.meaningsEntry.value.split(separator);
-        let on = this.onEntry.value.split(separator);
-        let kun = this.kunEntry.value.split(separator);
-        meanings.forEach(trim);
-        on.forEach(trim);
-        kun.forEach(trim);
-        meanings = meanings.filter(notEmpty);
-        on = on.filter(notEmpty);
-        kun = kun.filter(notEmpty);
+        const kanji = this.kanjiEntry.value.trim();
+        const levels = {
+            meanings: parseInt(this.meaningsLevelPopup.value),
+            on_yomi: parseInt(this.onYomiLevelPopup.value),
+            kun_yomi: parseInt(this.kunYomiLevelPopup.value)
+        };
+        const values = {
+            meanings: this.meaningsEntry.value.split(separator),
+            on_yomi: this.onEntry.value.split(separator),
+            kun_yomi: this.kunEntry.value.split(separator)
+        };
+        for (let attribute in values) {
+            values[attribute].forEach(trim);
+            values[attribute] = values[attribute].filter(notEmpty);
+        }
         // Update status with error messages if something is missing
         if (kanji.length === 0) {
             main.updateStatus("The kanji field can not be empty!");
             return;
             // TODO: Also shortly highlight kanji entry field
         }
-        if (meanings.length === 0 && on.length === 0 && kun.length === 0) {
+        if (values.meanings.length === 0 && values.on_yomi.length === 0 &&
+                values.kun_yomi.length === 0) {
             main.updateStatus(
                 "You need to enter some more information to add a kanji!");
             // TODO: Also shortly highlight 3 lower entries
             return;
         }
-        dataManager.kanji.edit(kanji, meanings, on, kun, levels).then(
-            (result) => {
-                events.emit("kanji-edited", kanji, result);
-                if (result === "added")
-                    main.updateStatus(`Kanji ${kanji} has been added.`);
-                else if (result === "updated")
-                    main.updateStatus(`Kanji ${kanji} has been updated.`);
-                else if (result === "removed")
-                    main.updateStatus(`Kanji ${kanji} has been removed.`);
+        return dataManager.kanji.add(kanji, values, levels).then((result) => {
+            if (result === "added") {
+                main.updateStatus(`Kanji ${kanji} has been added.`);
+                events.emit("kanji-added", kanji);
+            } else if (result === "updated") {
+                main.updateStatus(`Kanji ${kanji} has been updated.`);
+            } else if (result === "no-change") {
+                main.updateStatus(`Kanji ${kanji} has not been changed.`);
             }
-        );
-        main.closePanel("add-kanji");
+        });
     }
 }
 

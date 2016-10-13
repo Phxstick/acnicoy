@@ -10,9 +10,8 @@ const menuItems = popupMenu.registerItems({
     },
     "delete-word": {
         label: "Delete item",
-        click: ({ currentNode }) => {
-            const word = main.panels["edit-vocab"].wordLabel.textContent;
-            main.panels["edit-vocab"].deleteWord(word);
+        click: ({ currentNode, data: {section} }) => {
+            section.deleteWord();
         }
     },
     "rename-word": {
@@ -22,7 +21,7 @@ const menuItems = popupMenu.registerItems({
         }
     },
     "add-translation": {
-        label: "Add meaning",
+        label: "Add translation",
         click: ({ data: {section} }) => {
             const item = section.createListItem("", "translation");
             section.translationsList.scrollToBottom();
@@ -32,13 +31,7 @@ const menuItems = popupMenu.registerItems({
     "delete-translation": {
         label: "Delete translation",
         click: ({ currentNode, data: {section} }) => {
-            const word = section.wordLabel.textContent;
             section.translationsList.removeChild(currentNode);
-            section.changes.push(() => dataManager.vocab.removeTranslation(
-                word, currentNode.textContent));
-            section.changes.push(() => dataManager.history.log(
-                { type: "D", column: "translation", old_entry: word,
-                  old_translations: currentNode.textContent }));
         }
     },
     "modify-translation": {
@@ -58,13 +51,7 @@ const menuItems = popupMenu.registerItems({
     "delete-reading": {
         label: "Delete reading",
         click: ({ currentNode, data: {section} }) => {
-            const word = section.wordLabel.textContent;
             section.readingsList.removeChild(currentNode);
-            section.changes.push(() => dataManager.vocab.removeReading(
-                word, currentNode.textContent));
-            section.changes.push(() => dataManager.history.log(
-                { type: "D", column: "reading", old_entry: word,
-                  old_readings: currentNode.textContent }));
         }
     },
     "modify-reading": {
@@ -77,9 +64,6 @@ const menuItems = popupMenu.registerItems({
         label: "Remove from list",
         click: ({ currentNode, data: {section} }) => {
             section.listsList.removeChild(currentNode);
-            section.changes.push(
-                () => dataManager.vocabLists.removeWordFromList(
-                    section.wordLabel.textContent, currentNode.textContent));
         }
     }
 });
@@ -128,9 +112,6 @@ class EditVocabPanel extends Panel {
                 this.listsList.appendChild(span);
                 span.popupMenu(menuItems,
                         ["remove-from-list"], { section: this });
-                this.changes.push(
-                    () => dataManager.vocabLists.addWordToList(
-                        word, newList));
             }
         });
         // Create closing and saving callbacks
@@ -153,9 +134,9 @@ class EditVocabPanel extends Panel {
     adjustToLanguage(language, secondary) {
         // Fill SRS level popup stack
         const numLevels = dataManager.srs.getNumberOfLevels();
-        this.levelPopup.clear();
-        for (let i = 1; i < numLevels; ++i) this.levelPopup.appendItem(i);
-        this.levelPopup.set(0);
+        this.levelPopup.empty();
+        for (let i = 1; i < numLevels; ++i) this.levelPopup.addOption(i);
+        this.levelPopup.set(this.levelPopup.firstChild);
         // Fill vocab list selector
         this.vocabListSelect.empty();
         const defaultOption = document.createElement("option");
@@ -170,17 +151,21 @@ class EditVocabPanel extends Panel {
             option.textContent = list;
             this.vocabListSelect.appendChild(option);
         }
-        this.root.getElementById("readings-frame").style.display =
+        this.$("readings-frame").style.display =
             dataManager.languageSettings["readings"] ? "flex" : "none";
     }
 
     load(word) {
-        Promise.all([
-            dataManager.vocab.getTranslations(word),
-            dataManager.vocab.getReadings(word),
-            dataManager.srs.getLevel(word, dataManager.test.mode.WORDS)])
-        .then(([translations, readings, level]) => {
-            this.oldWord = word;  // Remove lateron
+        this.listsList.empty();
+        const lists = dataManager.vocabLists.getListsForWord(word);
+        for (let list of lists) {
+            this.createListItem(list, "list");
+        }
+        this.defaultListOption.setAttribute("selected", "");
+        this.defaultListOption.value = "";
+        return dataManager.vocab.getInfo(word)
+        .then(({ translations, readings, level }) => {
+            this.originalWord = word;
             this.translationsList.empty();
             this.readingsList.empty();
             this.wordLabel.textContent = word;
@@ -190,16 +175,8 @@ class EditVocabPanel extends Panel {
             for (let reading of readings) {
                 this.createListItem(reading, "reading");
             }
-            this.levelPopup.set(level - 1);
-            this.changes = [];
+            this.levelPopup.set(this.levelPopup.children[level - 1]);
         });
-        this.listsList.empty();
-        const lists = dataManager.vocabLists.getListsForWord(word);
-        for (let list of lists) {
-            this.createListItem(list, "list");
-        }
-        this.defaultListOption.setAttribute("selected", "");
-        this.defaultListOption.value = "";
     }
 
     createListItem(text, type) {
@@ -225,29 +202,17 @@ class EditVocabPanel extends Panel {
         return span;
     }
 
-    deleteWord(word) {
-        if (!dialogWindow.confirm(
-                `Are you sure you want to delete the word '${word}'?`))
-            return;
-        const oldTranslations = [];
-        const oldReadings = [];
-        this.translationsList.children.forEach(
-                (node) => oldTranslations.push(node.textContent));
-        this.readingsList.children.forEach(
-                (node) => oldReadings.push(node.textContent));
-        this.save()
-        .then(() => dataManager.vocab.remove(word))
-        .then(() => dataManager.history.log({ type: "D", column: "entry",
-                                      old_entry: word,
-                                      old_translations: oldTranslations,
-                                      old_readings: oldReadings }));
-        main.closePanel("edit-vocab");
-        events.emit("word-deleted", word);
-        events.emit("vocab-changed");
+    deleteWord() {
+        if (dialogWindow.confirm(`Are you sure you want to delete ` +
+                                 `the word '${this.originalWord}'?`)) {
+            return dataManager.vocab.remove(this.originalWord).then(() => {
+                events.emit("word-deleted", this.originalWord);
+                events.emit("vocab-changed");
+            });
+        }
     }
 
     packEditEntry(node, type) {
-        const word = this.wordLabel.textContent;
         // If the entry is already packed here, do nothing
         if (this.editInput.parentNode === node)
             return;
@@ -256,13 +221,12 @@ class EditVocabPanel extends Panel {
             this.editInput.callback();
             this.editInput.unpack();
         }
-        const oldContent = node.textContent;
         // Pack the edit entry
-        this.editInput.value = oldContent;
+        this.editInput.value = node.textContent;
         node.textContent = "";
         node.appendChild(this.editInput);
         node.style.padding = "0px";
-        if (type === "reading")
+        if (type === "reading" && main.language === "Japanese")
             this.editInput.enableKanaInput("hira");
         // Add callback to unpack entry and pack node again
         this.editInput.unpack = () => {
@@ -276,126 +240,54 @@ class EditVocabPanel extends Panel {
                 this.editInput.disableKanaInput();
             node.style.padding = "2px";
         }
-        // Add callback registering changes to data
-        this.editInput.callback = () => {
-            const newContent = this.editInput.value.trim();
-            if (newContent === oldContent) return;
-            if (oldContent.length > 0) {
-                if (newContent.length > 0) {
-                    // Case that a translation was modified
-                    if (type === "translation") {
-                        this.changes.push(
-                            () => dataManager.vocab.addTranslation(
-                                word, newContent));
-                        this.changes.push(
-                            () => dataManager.history.log(
-                            { type: "R", column: "translation",
-                              old_entry: word, old_translations: oldContent,
-                              new_translations: newContent }));
-                    // Case that a reading was modified
-                    } else if (type === "reading") {
-                        this.changes.push(
-                            () => dataManager.vocab.addReading(
-                                word, newContent));
-                        this.changes.push(
-                            () => dataManager.history.log(
-                            { type: "R", column: "reading", old_entry: word,
-                              old_readings: oldContent,
-                              new_readings: newContent }));
-                    // Case that the word was modified
-                    } else if (type === "word") {
-                        this.changes.push(
-                            () => dataManager.vocab.rename(
-                                oldContent, newContent));
-                        this.changes.push(
-                            () => dataManager.history.log(
-                            { type: "R", column: "entry",
-                              old_entry: oldContent,
-                              new_entry: newContent }));
-                    }
-                } else {
-                    // Case that a translation was removed
-                    if (type === "translation") {
-                        this.changes.push(
-                            () => dataManager.history.log(
-                            { type: "D", column: "translation",
-                              old_entry: word,
-                              old_translations: oldContent }));
-                    // Case that a reading was removed
-                    } else if (type === "reading") {
-                        this.changes.push(
-                            () => dataManager.history.log(
-                            { type: "D", column: "reading", old_entry: word,
-                              old_readings: oldContent }));
-                    // Case that the word was deleted
-                    } else if (type === "word") {
-                        this.deleteWord(oldContent);
-                    }
-                }
-                // In both cases, remove the old reading/translation
-                if (type === "translation") {
-                    this.changes.push(
-                        () => dataManager.vocab.removeTranslation(
-                            word, oldContent));
-                } else if (type === "reading") {
-                    this.changes.push(
-                        () => dataManager.vocab.removeReading(
-                            word, oldContent));
-                }
-            } else {
-                if (newContent.length > 0) {
-                    // Case that a translation was added
-                    if (type === "translation") {
-                        this.changes.push(
-                            () => dataManager.vocab.addTranslation(
-                                word, newContent));
-                        this.changes.push(
-                            () => dataManager.history.log(
-                                { type: "A", column: "translation",
-                                  old_entry: word, 
-                                  new_translations: newContent }));
-
-                    // Case that a reading was added
-                    } else if (type === "reading") {
-                        this.changes.push(
-                            () => dataManager.vocab.addReading(
-                                word, newContent));
-                        this.changes.push(
-                            () => dataManager.history.log(
-                            { type: "A", column: "reading", old_entry: word,
-                              new_readings: newContent }));
-                    }
-                }
-            }
-        };
         this.editInput.focus();
     }
 
     save() {
+        // Assemble all the necessary data
+        const originalWord = this.originalWord;
         const word = this.wordLabel.textContent;
+        const level = parseInt(this.levelPopup.value);
+        const translations = [];
+        const readings = [];
+        const lists = [];
+        for (let i = 0; i < this.translationsList.children.length; ++i)
+            translations.push(this.translationsList.children[i].textContent);
+        for (let i = 0; i < this.readingsList.children.length; ++i)
+            readings.push(this.readingsList.children[i].textContent);
+        for (let i = 0; i < this.listsList.children.length; ++i)
+            lists.push(this.listsList.children[i].textContent);
+        // If the word was renamed, apply this change first
         let promise = Promise.resolve();
-        for (let func of this.changes) {
-            promise = promise.then(func);
+        if (originalWord !== word) {
+            promise = dataManager.vocab.rename(originalWord, word);
+            events.emit("word-deleted", originalWord);
+            events.emit("word-added", word);
         }
         return promise.then(() =>
-                dataManager.srs.getLevel(word, dataManager.test.mode.WORDS))
-        .then((currentLevel) => {
-            const newLevel = parseInt(this.levelPopup.get());
-            if (currentLevel !== newLevel) {
-                events.emit("vocab-changed");
-                return dataManager.srs.setLevel(
-                        word, newLevel, dataManager.test.mode.WORDS);
+            // Apply changes to database
+            dataManager.vocab.edit(word, translations, readings, level)
+        ).then((newStatus) => {
+            // Apply changes to vocab-lists
+            const oldLists = dataManager.vocabLists.getListsForWord(word);
+            for (let list of oldLists) {
+                dataManager.vocabLists.removeWordFromList(word, list);
             }
-            // TODO: Emit proper events (with info from edit-word function!)
-            if (this.changes.length > 0) {
-                if (this.oldWord !== word) {
-                    events.emit("word-deleted", this.oldWord);
-                    events.emit("word-added", word);
-                }
+            for (let list of lists) {
+                dataManager.vocabLists.addWordToList(word, list);
+            }
+            if (newStatus === "removed") {
+                events.emit("word-deleted", originalWord);
+                main.updateStatus("The entry has been removed.");
+            } else if (newStatus === "updated") {
                 events.emit("vocab-changed");
                 main.updateStatus("The entry has been updated.");
-            } if (this.changes.length === 0 && currentLevel === newLevel) {
-                main.updateStatus("The entry has not been changed.");
+            } else if (newStatus === "no-change") {
+                if (originalWord === word) {
+                    main.updateStatus("The entry has not been changed.");
+                } else {
+                    main.updateStatus("The entry has been renamed.");
+                }
             }
         });
     }

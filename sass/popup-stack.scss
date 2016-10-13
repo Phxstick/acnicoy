@@ -6,11 +6,12 @@
   align-content: stretch;
 }
 
-#container {
+#frame {
   position: relative;
   min-width: 10px;
   min-height: 10px;
   width: 100%;
+  // TODO: Use this if vertical
   // height: 100%;
 }
 
@@ -20,29 +21,17 @@
   left: 0;
   right: 0;
   bottom: 0;
-  box-shadow: 0 0 3px gray;
+  box-shadow: 0 0 3px var(--shadow-color, gray);
 }
 
-span {
-  font-family: $gui-font;
-  font-size: 150%;
-  background-color: var(--background-color, darkred);
-  color: var(--color, whitesmoke);
+::slotted(option) {
   position: absolute;
   width: 100%;
   height: 100%;
   left: 0;
   top: 0;
   display: flex;
+  padding: 0px;
   justify-content: center;
   align-items: center;
-
-  &:hover {
-    background-color: var(--hover-background, firebrick);
-    color: var(--hover-color, white);
-  }
-  &.selected {
-    background-color: var(--select-background, crimson);
-    color: var(--select-color, whitesmoke);
-  }
 }

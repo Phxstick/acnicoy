@@ -84,7 +84,7 @@ module.exports = function (basePath) {
 
     // Templates
     const templatePath = path.resolve(basePath, "templates");
-    paths.template = (name) => path.resolve(templatePath, name + ".handlebars");
+    paths.template = (name) => path.resolve(templatePath, name + ".hbs");
 
     // CSS
     paths.css = (name) => path.resolve(basePath, "css", name + ".css");

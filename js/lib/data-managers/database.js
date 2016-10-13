@@ -46,130 +46,64 @@ module.exports = function (paths, modules) {
                 // Create tables
                 db.run(`
                     CREATE TABLE vocabulary (
-                       entry TEXT PRIMARY KEY,
-                       level INTEGER,
-                       time INTEGER )`);
-                db.run(`
-                    CREATE TABLE vocabulary_back (
-                        entry TEXT PRIMARY KEY,
+                        word TEXT PRIMARY KEY,
+                        date_added INTEGER,
                         level INTEGER,
-                        time INTEGER )`);
-                db.run(`
-                    CREATE TABLE translations (
-                        entry TEXT,
-                        translation TEXT,
-                        FOREIGN KEY (entry)
-                            REFERENCES vocabulary (entry)
-                            ON DELETE CASCADE
-                            ON UPDATE CASCADE,
-                        FOREIGN KEY (translation)
-                            REFERENCES vocabulary_back (entry)
-                            ON DELETE CASCADE
-                            ON UPDATE CASCADE )`);
-                db.run(`
-                    CREATE TABLE readings (
-                        entry TEXT,
-                        reading TEXT,
-                        FOREIGN KEY (entry)
-                            REFERENCES vocabulary (entry)
-                            ON DELETE CASCADE
-                            ON UPDATE CASCADE )`);
-                db.run(`
-                    CREATE TABLE edit_history(
-                        id INTEGER PRIMARY KEY,
-                        type CHAR(1),
-                        column CHAR(20),
-                        time INTEGER,
-                        old_entry TEXT,
-                        old_translations TEXT,
-                        old_readings TEXT,
-                        new_entry TEXT,
-                        new_translations TEXT,
-                        new_readings TEXT)`);
+                        review_date INTEGER,
+                        translations TEXT,
+                        readings TEXT )
+                `);
                 if (language === "Japanese") {
                     db.run(`
                         CREATE TABLE kanji (
-                            entry TEXT PRIMARY KEY,
-                            date_added INTEGER)`);
+                            kanji TEXT PRIMARY KEY,
+                            date_added INTEGER )
+                    `);
                     db.run(`
                         CREATE TABLE kanji_meanings (
-                            entry TEXT,
-                            meaning TEXT,
-                            FOREIGN KEY (entry)
-                                REFERENCES kanji (entry)
-                                ON DELETE CASCADE
-                                ON UPDATE CASCADE )`);
-                    db.run(`
-                        CREATE TABLE kanji_on (
-                            entry TEXT,
-                            on_reading TEXT,
-                            FOREIGN KEY (entry)
-                                REFERENCES kanji (entry)
-                                ON DELETE CASCADE
-                                ON UPDATE CASCADE )`);
-                    db.run(`
-                        CREATE TABLE kanji_kun (
-                            entry TEXT,
-                            kun_reading TEXT,
-                            FOREIGN KEY (entry)
-                                REFERENCES kanji (entry)
-                                ON DELETE CASCADE
-                                ON UPDATE CASCADE )`);
-                    db.run(`
-                        CREATE TABLE kanji_meanings_test (
-                            entry TEXT PRIMARY KEY,
+                            kanji TEXT PRIMARY KEY,
+                            meanings TEXT,
                             level INTEGER,
-                            time INTEGER,
-                            FOREIGN KEY (entry)
-                                REFERENCES kanji (entry)
-                                ON DELETE CASCADE
-                                ON UPDATE CASCADE )`);
+                            review_date INTEGER,
+                            FOREIGN KEY (kanji)
+                                REFERENCES kanji (kanji)
+                                ON DELETE CASCADE )
+                    `);
                     db.run(`
-                        CREATE TABLE kanji_on_test (
-                            entry TEXT PRIMARY KEY,
+                        CREATE TABLE kanji_on_yomi (
+                            kanji TEXT PRIMARY KEY,
+                            on_yomi TEXT,
                             level INTEGER,
-                            time INTEGER,
-                            FOREIGN KEY (entry)
-                                REFERENCES kanji (entry)
-                                ON DELETE CASCADE
-                                ON UPDATE CASCADE )`);
+                            review_date INTEGER,
+                            FOREIGN KEY (kanji)
+                                REFERENCES kanji (kanji)
+                                ON DELETE CASCADE )
+                    `);
                     db.run(`
-                        CREATE TABLE kanji_kun_test (
-                            entry TEXT PRIMARY KEY,
+                        CREATE TABLE kanji_kun_yomi (
+                            kanji TEXT PRIMARY KEY,
+                            kun_yomi TEXT,
                             level INTEGER,
-                            time INTEGER,
-                            FOREIGN KEY (entry)
-                                REFERENCES kanji (entry)
-                                ON DELETE CASCADE
-                                ON UPDATE CASCADE )`);
+                            review_date INTEGER,
+                            FOREIGN KEY (kanji)
+                                REFERENCES kanji (kanji)
+                                ON DELETE CASCADE )
+                    `);
                 }
                 // Create indices
-                db.run(`CREATE INDEX vocabulary_time
-                        ON vocabulary (time ASC)`);
-                db.run(`CREATE INDEX vocabulary_back_time
-                        ON vocabulary_back (time ASC)`);
-                db.run(`CREATE INDEX translations_entry
-                        ON translations (entry ASC)`);
-                db.run(`CREATE INDEX translations_translation
-                        ON translations (translation ASC)`);
-                db.run(`CREATE INDEX readings_entry
-                        ON readings (entry ASC)`);
-                db.run(`CREATE INDEX readings_reading
-                        ON readings (reading ASC)`);
+                db.run(`CREATE INDEX vocabulary_date_added
+                        ON vocabulary (date_added DESC)`);
+                db.run(`CREATE INDEX vocabulary_review_date
+                        ON vocabulary (review_date ASC)`);
                 if (language === "Japanese") {
-                    db.run(`CREATE INDEX kanji_meanings_entry
-                            ON kanji_meanings (entry ASC)`);
-                    db.run(`CREATE INDEX kanji_on_entry
-                            ON kanji_on (entry ASC)`);
-                    db.run(`CREATE INDEX kanji_kun_entry
-                            ON kanji_kun (entry ASC)`);
-                    db.run(`CREATE INDEX kanji_meanings_test_time
-                            ON kanji_meanings_test (time ASC)`);
-                    db.run(`CREATE INDEX kanji_on_test_time
-                            ON kanji_on_test (time ASC)`);
-                    db.run(`CREATE INDEX kanji_kun_test_time
-                            ON kanji_kun_test (time ASC)`);
-                    // TODO: More indices?
+                    db.run(`CREATE INDEX kanji_date_added
+                            ON kanji (date_added DESC)`);
+                    db.run(`CREATE INDEX kanji_meanings_review_date
+                            ON kanji_meanings (review_date ASC)`);
+                    db.run(`CREATE INDEX kanji_on_yomi_review_date
+                            ON kanji_on_yomi (review_date ASC)`);
+                    db.run(`CREATE INDEX kanji_kun_yomi_review_date
+                            ON kanji_kun_yomi (review_date ASC)`);
                 }
                 db.run("", resolve);
             });

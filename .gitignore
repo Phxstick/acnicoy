@@ -1,7 +1,5 @@
 *.swp
 css/
-font-awesome*
-fonts/
 node_modules/
 data/language-content
 data/data-path.txt
