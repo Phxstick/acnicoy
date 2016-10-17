@@ -1,85 +1,63 @@
 "use strict";
 
-// TODO: Remake and parameterize
-
 class PopupList extends Widget {
     constructor() {
-        super("popup-list");
-        this.callback = () => { };
+        super("popup-list", true);
+        this.callback = (label, value) => { };
         this.onOpen = () => { };
-        // Set parameters
-        // self.fade = false;
-        this.itemWidth = 30;
-        this.itemHeight = 30;
-        this.items = [];
         this.isOpen = false;
-        // this.style.height = `${this.itemHeight}px`;
-        // this.style.width = `${this.itemWidth}px`;
-        // this.style.display = "inline-block";
-        // Create label
-        this.label = document.createElement("span");
-        this.label.id = "label";
-        this.label.addEventListener("click", (event) => {
-            this.open();
+        this.currentOption = null;
+        window.addEventListener("click", () => this.close());
+        this.$("label").addEventListener("click", (event) => {
+            if (this.isOpen) {
+                this.close();
+            } else {
+                this.open();
+            }
             event.stopPropagation();
         });
-        this.root.appendChild(this.label);
-        // Create popup window
-        this.popupWindow = document.createElement("div");
-        this.popupWindow.id = "popup-window";
-        this.root.appendChild(this.popupWindow);
-    }
-    // TODO
-    setItemHeight () {
-    }
-    setItemWidth () {
-    }
-    appendItem (text) {
-        const newItem = document.createElement("div");
-        newItem.classList.add("item");
-        newItem.textContent = text;
-        const itemIndex = this.items.length;  // Dangerous
-        newItem.addEventListener("click", (event) => {
-            this.set(itemIndex);
+        this.addEventListener("click", (event) => {
+            if (event.target.tagName !== "OPTION") return;
+            this.invoke(event.target);
             this.close();
             event.stopPropagation();
         });
-        this.items.push(newItem);
-        this.popupWindow.appendChild(newItem);
     }
-    removeItem (index) {
+    
+    addOption(label, value) {
+        const option = document.createElement("option");
+        option.label = label;
+        option.value = value === undefined ? label : value;
+        this.appendChild(option);
+        return option;
     }
-    setLabelText(text) {
-        this.label.textContent = text;
+
+    set(option) {
+        if (this.currentOption === option) return;
+        this.currentOption = option;
+        this.$("label").textContent = option.label;
     }
-    set (index) {
-        // TODO: Good idea to return here?
-        if (this.currentItemIndex === index) return;
-        this.currentItemIndex = index;
-        this.label.textContent = this.items[index].textContent;
-        this.callback(this.get(), this.getIndex());
+
+    invoke(option) {
+        this.set(option);
+        this.callback(option.label, option.value);
     }
-    get () {
-        return this.label.textContent;
+
+    get value() {
+        return this.currentOption.value;
     }
-    getIndex () {
-        return this.currentItemIndex;
-    }
-    open () {
+
+    open() {
+        if (this.children.length === 0) return;
         this.isOpen = true;
-        this.popupWindow.style.display = "block";
+        this.$("popup-window").show();
+        this.$("popup-window").style.top = `${this.offsetHeight}px`;
         this.onOpen();
-        this.popupWindow.style.top = `${this.offsetHeight}px`;
     }
-    close () {
+
+    close() {
         this.isOpen = false;
-        this.popupWindow.style.display = "none";
-    }
-    clear () {
-        this.items.length = 0;
-        while (this.popupWindow.firstChild) {
-            this.popupWindow.removeChild(this.popupWindow.firstChild);
-        }
+        this.$("popup-window").hide();
     }
 }
 

@@ -5,7 +5,6 @@
   background-color: indianred;
   display: flex;
   flex-direction: row;
-  align-items: center;
   z-index: var(--menu-bar-layer);
   box-sizing: border-box;
   border-bottom: 1px solid gray;
@@ -13,9 +12,7 @@
 
 #language-popup {
   align-self: stretch;
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
+  z-index: var(--popup-list-layer);
 }
 
 #menu {

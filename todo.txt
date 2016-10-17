@@ -1,13 +1,13 @@
 __ Up next __
 - Allow temporary entries to be closed by clicking anywhere else
   --> Make into widgets?
-- Add init step for downloading language packs
-  --> Use sockets.io/websockets to receive data
+- Implement load function in add-vocab-panel
+- Add popup-menus to dictionary section
 - Save total score in settings rather than recalculating every time !
   --> Make sure to update correctly with integers!
-- Make language switching seamless (Do sth about vocab section)
-- Use ES6 proxies more often, e.g. for content section?
-  --> More fine-grained access to datamanager modules
+  --> Rename "updateDailyScore" into "updateScore" and adjust everything
+
+- Make language switching seamless (Do sth about vocab section?)
 - Allow user to choose an SRS config when adding a new language
     --> Add "SRS scheme" to language table
     --> Provide a bunch of default named SRS configs in default settings
@@ -18,11 +18,11 @@ __ Up next __
   --> Shadow the frames behind the top frame with additional filters
   --> Let each frame have its own width
   --> Let each frame decide whether to slide down or appear instantly
-- Rename "updateDailyScore" into "updateScore" and adjust everything
-- Completely rework history section
-  --> Only store and display added entries and kanji
+- Built "Recently added" functionality into vocab- and kanji-section?
 - Make use of "event.target" and "event.currentTarget" whereever possible
-- Rework popup-list like popup-stack? Or discard that widget?
+- Add init step for downloading language packs
+  --> Use sockets.io/websockets to receive data
+- Use SCSS placeholder selector (%) for classes like .button
 
 
 __ General __
@@ -36,29 +36,26 @@ __ General __
 - CSS containment to increase performance
 - Make kana input entries type katakana when pressing shift.
   --> Also make into custom widget?
-- When choosing comma as separator, allow escaping comma for single translations
+- Allow vocab-add-separators to be escaped for single translations
 - Implement global tooltip widget --> Add a function to HTMLElement prototype?
+  --> Use for kanji hovering (show meanings)
+  --> Use for displaying spacings when hovering over SRS levels
 - Use popupMenu separators when context changes?
-- How to prevent committing changes after every single db write?
-  (And why do the changes in SRS tables cause no perceptible freezes?)
 - Place [about] and [help] buttons somewhere suitable
 - Use overlay to create [about], put credits there
 - Replace native dialog windows with overlays
 - Make custom stylable checkbox
 - Make text of every GUI-Element unselectable. Maybe by default?
 - Use "!important"-selector to define necessary shadow dom host styles?
+- Provide suggestions in add-vocab-panel as clickable spans
+  (left click to edit, right click to remove)
 
 __ Code __
-- Use CSS variables for all widget styling
-- Don't change event listeners in converter.js but change callback var instead?
 - Remove inconsistencies in code, e.g. unify glossary ("word" <-> "entry")
-- Try to generalize as much scss as possibly and extend base scss files.
-- Remove "data" from content section and always access with "dataMap[...]"?
+- Try to generalize as much scss as possible and extend base scss files.
 - Have htmlManager and cssManager which make sure all assets are only loaded
   once? --> Better performance, centralized resource loading
 - Remove main.language/main.language2 ??
-- Implement convenient "show"/"hide" methods which save last state in element!
-- Use slots in custom components whereever useful
 - Make automatically-loading-upon-scrolling-divs into widgets?
 - Make data-manager-modules into subclasses and gather similar code
   --> Especially if static variables become implemented!!
@@ -75,17 +72,12 @@ __ Main window __
 __ Home section __
 - When vocabulary is empty, write very small manual info card into intro section
 - When vocabulary is not empty, display SRS table
-- Create SRS bar diagram for more visual and quick information?
 - Allow collapsing columns in SRS table (--> No partitioning by modes)
 - Make changelog widget for pinwall
 - Make widget-adder a widget aswell (only movable then)?
 - Display adder-widget only when ctrl is pressed with cursor above section?
 - Customizable bar diagram showing when new items for testing become available
   --> Maybe 1 week as standard interval
-
-__ Popup-List __
-- Make width of popuplist the width of largest item?
-
 
 __ Test __
 - Also construct extended solutions in _createTest already ?
@@ -96,7 +88,7 @@ __ Test __
   ==> New stuff appears in batches, and a counter can be shown in intro section
 - Write changed db entries async in small intervals to prevent data loss
 - Show where the entry goes
-- Animate everything (and have setting to to toggle that)
+- Animate everything (and have setting to toggle that)
 
 __ Kanji Info Panel __
 - Allow seeing stroke animation instead of pictures (and customize speed)
@@ -110,17 +102,12 @@ __ Kanji __
 - Have separate table for searching kanji, extend readings by ones without
   a ".", keep all meanings for each kanji
 
-
 __ Edit vocab panel __
 - Remove lists from select element where the word is already in?
-  (How to do this most efficiently?)
-
-__ Edit vocab panel __
-- Create dataManager.kanji.add function for this
 
 __ Vocab __
-- Allow testing oneself on vocabulary lists (add test button in the section)
-- Make sure changes to vocab lists are reflected in add vocab panel (events!)
+- Implementing testing oneself on vocabulary
+- Make sure ALL changes to vocab lists are reflected in add vocab panel
 
 __ Svg Bar Diagram __
 - Terminology: Descriptions/Labels??
@@ -161,6 +148,12 @@ ___ Future ____________________________________________________________________
 
 - Proper focus system with frames and elements for tabbing
 
+- Restructuring: Separate core functionality from language extensions
+  --> Provide interface for extensions, e.g.:
+      --> "addMenuButton(label, callback)" for main-section extensions
+      --> "addStatistic(element)" for stats-section extensions
+  --> Use ES6 proxies for data modules
+
 content-section:
 - Contains a database of custom info cards
 - Allow uploading and sharing vocabulary lists
@@ -173,8 +166,7 @@ ___ List of settings __________________________________________________________
 - [File-Dialog] Change data path
 
 [Language settings]
-- [Widget] Import/Download other language content data
-- [Widget] Add/Remove/Rename Languages
+- [Language widget] Table of languages (Add/Remove/Preferences/Content download)
 
 [Test Settings]
 - [Checkbox] Display test progress
@@ -196,6 +188,7 @@ ___ List of settings __________________________________________________________
 - [Listbox] Cursor selection (Some maybe habe to be unlocked)
        --> Especially drill cursor for large achievement (e.g. 1000 kanji)
 - [Widget] Possibly color settings by changing and recompiling Sass
+           or using CSS variables
 
 [Shortcuts]
 - [Shortcut-widgets] For all known shortcuts in the settings
@@ -208,22 +201,21 @@ ___ List of achievements ______________________________________________________
 
 ___ Resources _________________________________________________________________
 
+Japanese:
 - http://www.tanos.co.uk/jlpt/skills/vocab/  (New JLPT stuff)
   --> Get JLPT lists for words too
 - http://pj.ninjal.ac.jp/corpus_center/bccwj/en/freq-list.html  (Frequencies)
 - http://hiramatu-hifuka.com/onyak/onyak2/josu-ta.html  (Counters)
 - Kanji textbook/Internet frequencies?
-
 - http://www.levelup99.net/businessmanner/cate3post24.html
   (5 types of honorific language, for content section)
 
+CSS/DOM:
 - http://usabilitypost.com/2012/01/10/pressed-button-state-with-css3/#
   --> Use inset shadow to style <button>?
 - https://webkit.org/blog/4096/introducing-shadow-dom-api/
-
-- For server hosting: 1. RedHat OpenShift, 2. Heroku, 3. 000webhost (PHP)
-  --> Use flask(python) or express(nodejs)
- 
+- https://css-tricks.com/snippets/css/complete-guide-grid/
+  --> Basically very powerful 2D-flexboxes
 - Use selection API  (window.getSelection(), selectionstart, selectionchanged)
   (http://caniuse.com/#feat=selection-api)
 - Use native DOM manipulation convenience methods 
@@ -232,6 +224,10 @@ ___ Resources _________________________________________________________________
   (http://caniuse.com/#feat=scrollintoviewifneeded)
 - http://caniuse.com/#feat=css-focus-within
 - http://caniuse.com/#feat=css-scrollbar
+
+- For server hosting: 1. RedHat OpenShift, 2. Heroku, 3. 000webhost (PHP)
+  --> Use flask(python) or express(nodejs)
+- https://www.christophh.net/2012/07/24/php-socket-programming/
 
 - Use native browser notification popups?
 - Chrome includes Google’s Native Client. Native Client allows web pages to run

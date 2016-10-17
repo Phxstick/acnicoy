@@ -27,7 +27,7 @@ module.exports = function (paths, modules) {
         .then(([{amount}]) => amount);
     }
 
-    vocab.search = function (query, { subset }) {
+    vocab.search = function (query, { subset }={}) {
         // TODO: Extend and optimize this function
         // TODO: Add sorting algorithm using scores
         // If no subset of words is given, search entire vocabulary
@@ -41,7 +41,7 @@ module.exports = function (paths, modules) {
                     OR readings LIKE ?`,
                 matchString, matchString, matchString,
                 matchString.toKana("hira"))
-            .then((rows) => rows.forEach((row) => row.word));
+            .then((rows) => rows.map((row) => row.word));
         } else {
             // TODO
         }

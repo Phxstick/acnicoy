@@ -12,7 +12,8 @@ const globals = {
     widgets: ["popup-stack", "switch-button", "switch-bar", "popup-list",
               "svg-bar-diagram", "kanji-info-panel", "pinwall-widget",
               "kanji-search-result-entry", "dictionary-search-result-entry",
-              "pinwall-note", "srs-status-diagram", "language-table"],
+              "pinwall-note", "srs-status-table", "language-table",
+              "language-popup"],
     extensions: ["converter", "array-extensions", "html-element-extensions"]
 };
 
@@ -31,6 +32,7 @@ const shortcuts = require(paths.js.lib("shortcut-manager"));
 const overlay = require(paths.js.lib("overlay-manager"));
 const templates = require(paths.js.lib("template-manager"));
 const popupMenu = require(paths.js.lib("popup-menu"));
+const networkManager = require(paths.js.lib("network-manager"));
 const Velocity = require(paths.js.lib("velocity"));
 
 // Load base classes
@@ -67,12 +69,12 @@ console.log("Loaded all required modules after %f ms", totalTime);
         if (closePrevious && currentWindow !== undefined) {
             closeWindow(currentWindow);
         }
-        windows[name].style.display = "block";
+        windows[name].show();
         currentWindow = name;
     }
     
     function closeWindow(name) {
-        windows[name].style.display = "none";
+        windows[name].hide();
         currentWindow = undefined;
     }
 
@@ -157,8 +159,7 @@ console.log("Loaded all required modules after %f ms", totalTime);
         return Promise.all([ main.createSections(), main.createPanels() ]);
     }).then(() => {
         // Set language and initialize stuff in main-window
-        main.setLanguage(defaultLanguage);
-        main.initialize(languages);
+        main.initialize(languages, defaultLanguage);
         windows["loading"].setStatus("Processing language content...");
         return main.processLanguageContent(languages);
     }).then(() => {

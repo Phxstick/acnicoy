@@ -15,12 +15,12 @@ class KanjiSection extends Section {
         this.showSearchResultsButton =
             this.root.getElementById("show-search-results-button");
         this.showOverviewButton.addEventListener("click", () => {
-            this.overviewWindow.style.display = "block";
-            this.searchWindow.style.display = "none";
+            this.overviewWindow.show();
+            this.searchWindow.hide();
         });
         this.showSearchResultsButton.addEventListener("click", () => {
-            this.overviewWindow.style.display = "none";
-            this.searchWindow.style.display = "block";
+            this.overviewWindow.hide();
+            this.searchWindow.show();
         });
         this.searchByKanjiEntry =
             this.root.getElementById("search-by-kanji-entry");
@@ -40,8 +40,8 @@ class KanjiSection extends Section {
                 this.lastSearchResult = knownKanji;
                 this.searchResults.empty();
                 this.displayMoreSearchResults(10);
-                this.overviewWindow.style.display = "none";
-                this.searchWindow.style.display = "block";
+                this.overviewWindow.hide();
+                this.searchWindow.show();
             });
         });
         this.kanjiContainer = this.root.getElementById("kanji-container");

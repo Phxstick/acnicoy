@@ -1,0 +1,55 @@
+@import "base";
+
+#label {
+  @extend .button;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background-color: $button-background;
+  color: $button-color;
+  padding: 12px;
+  transition: .15s;
+
+  &:hover {
+    background-color: $button-hover-background;
+    color: $button-hover-color;
+  }
+}
+
+#popup-window {
+  position: absolute;
+  display: none;
+  left: 0;
+  box-shadow: 1px 1px 6px #1a1a1a;
+  display: table;
+
+  > div {
+    display: table-row;
+    background-color: $button-background;
+
+    &:hover {
+      background-color: $button-hover-background;
+      color: $button-hover-color;
+    }
+
+    > div {
+      display: table-cell;
+      text-align: center;
+      color: $button-color;
+      padding: 8px;
+
+      &:nth-child(2) {
+        border-left: 1px solid darken($button-color, 30%);
+        color: darken($button-color, 40%);
+
+        &.highlight {
+          color: $button-color;
+          text-shadow: 0 0 1px $button-color;
+        }
+      }
+    }
+  }
+}

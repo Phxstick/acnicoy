@@ -1,6 +1,41 @@
 "use strict";
 
 /**
+**  Return whether this element is displayed.
+**/
+HTMLElement.prototype.isHidden = function() {
+    return getComputedStyle(this, null).getPropertyValue("display") === "none";
+}
+
+const previousDisplayValue = Symbol("previousDisplayValue");
+/**
+**  Set this element's display value to 'none'. Remember old display value.
+**  If the element is already not displayed, do nothing.
+**/
+HTMLElement.prototype.hide = function() {
+    const display = getComputedStyle(this, null).getPropertyValue("display");
+    if (display === "none") return;
+    this[previousDisplayValue] = display;
+    this.style.display = "none";
+}
+
+/**
+**  Set this element's display value to given argument. If no argument is given,
+**  use the previous display value if available, or otherwise 'block'.
+**  If the element already has a display value other than 'none', do nothing.
+**/
+HTMLElement.prototype.show = function(value) {
+    if (!this.isHidden()) return;
+    if (value !== undefined) {
+        this.style.display = value;
+    } else if (this[previousDisplayValue] !== undefined) {
+        this.style.display = this[previousDisplayValue];
+    } else {
+        this.style.display = "block";
+    }
+}
+
+/**
 **  Remove all children elements of this node.
 **/
 HTMLElement.prototype.empty = function() {
@@ -164,7 +199,6 @@ HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
     if (data === undefined) {
         data = {};
     }
-    // TODO: Can I just reassign this.popupMenuCallback?
     if (this.popupMenuCallback !== undefined) {
         this.removeEventListener("contextmenu", this.popupMenuCallback);
     }
@@ -197,5 +231,5 @@ HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
     } else {
         throw Error("Parameter 'itemNames' must be an array or function!");
     }
-    this.addEventListener("contextmenu", this.popupMenuCallback);
+    this.addEventListener("contextmenu", () => this.popupMenuCallback());
 }

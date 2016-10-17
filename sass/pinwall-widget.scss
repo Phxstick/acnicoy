@@ -1,5 +1,9 @@
 @import "base";
 
+:host {
+  display: inline-block;
+}
+
 #window {
   background-color: #dddddd;
   position: relative;

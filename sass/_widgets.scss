@@ -1,16 +1,27 @@
-popup-menu {
-  --background-color: firebrick;
-  --color: whitesmoke;
-  --hover-background: indianred;
-  --hover-color: white;
+popup-list {
+  --label-background: $button-background;
+  --label-color: $button-color;
+  --label-padding: 12px;
+  --label-hover-background: $button-hover-background;
+  --label-hover-color: $button-hover-color;
+
+  > option {
+    color: $button-color;
+    background-color: $button-background;
+    padding: 8px;
+
+    &:hover {
+      background-color: $button-hover-background;
+      color: $button-hover-color;
+    }
+  }
 }
 
 popup-stack {
   &[disabled] {
     --shadow-color: transparent;
     > option:checked {
-      color: $button-disabled-color;
-      background-color: $button-disabled-background;
+      color: crimson;
     }
   }
   

@@ -165,7 +165,7 @@ module.exports = function (paths, modules) {
         return modules.database.run("DELETE FROM kanji WHERE kanji = ?", kanji);
     };
 
-    // Following three functions assume that respective field is not empty 
+    // Following three functions assume that queried field is not empty 
     kanjiModule.getMeanings = function (kanji) {
         return modules.database.query(
             "SELECT meanings FROM kanji_meanings WHERE kanji = ?", kanji)

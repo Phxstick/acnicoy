@@ -1,8 +1,8 @@
 "use strict";
 
-class SrsStatusDiagram extends PinwallWidget {
+class SrsStatusTable extends PinwallWidget {
     constructor() {
-        super("srs-status-diagram", "SRS status diagram");
+        super("srs-status-table", "SRS status table");
         this.srsTable = this.root.getElementById("srs-table");
     }
 
@@ -27,5 +27,5 @@ class SrsStatusDiagram extends PinwallWidget {
     }
 }
 
-customElements.define("srs-status-diagram", SrsStatusDiagram);
-module.exports = SrsStatusDiagram;
+customElements.define("srs-status-table", SrsStatusTable);
+module.exports = SrsStatusTable;

@@ -30,20 +30,20 @@ class StatsSection extends Section {
     }
 
     adjustToLanguage(language, secondary) {
-        this.jouyouKanjiDiagram.style.display = "none";
+        this.jouyouKanjiDiagram.hide();
         if (language === "Japanese") {
-            this.kanjiAddedFrame.style.display = "flex";
-            this.kanjiDiagrams.style.display = "flex";
+            this.kanjiAddedFrame.show();
+            this.kanjiDiagrams.show();
             if (dataManager.content.isAvailable[language]) {
-                this.jouyouKanjiDiagram.style.display = "block";
-                this.jlptKanjiDiagram.style.display = "block";
+                this.jouyouKanjiDiagram.show();
+                this.jlptKanjiDiagram.show();
             } else {
-                this.jouyouKanjiDiagram.style.display = "none";
-                this.jlptKanjiDiagram.style.display = "none";
+                this.jouyouKanjiDiagram.hide();
+                this.jlptKanjiDiagram.hide();
             }
         } else {
-            this.kanjiAddedFrame.style.display = "none";
-            this.kanjiDiagrams.style.display = "none";
+            this.kanjiAddedFrame.hide();
+            this.kanjiDiagrams.hide();
         }
     }
 

@@ -143,8 +143,8 @@ class TestSection extends Section {
             this.modifyItemButton.removeAttribute("disabled");
             // this.statusLabel.style.textShadow = "0 0 1px whitesmoke";
             // Exchange button and entry
-            this.continueButton.style.display = "block";
-            this.answerEntry.style.display = "none";
+            this.continueButton.show();
+            this.answerEntry.hide();
             this.continueButton.focus();
         });
     }
@@ -233,8 +233,8 @@ class TestSection extends Section {
             this.addAnswerButton.setAttribute("disabled", "");
             this.modifyItemButton.setAttribute("disabled", "");
             // Exchange button and entry
-            this.continueButton.style.display = "none";
-            this.answerEntry.style.display = "block";
+            this.continueButton.hide();
+            this.answerEntry.show();
             this.answerEntry.focus();
         });
     }

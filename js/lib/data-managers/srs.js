@@ -64,24 +64,18 @@ module.exports = function (paths, modules) {
         });
     };
 
-    srs.getTotalAmountDueForLanguages = function (languages) {
+    srs.getTotalAmountDueForLanguage = function (language) {
         const time = utility.getTime();
-        const amounts = {};
         const promises = [];
-        for (let language of languages) {
-            amounts[language] = 0;
-            for (let mode of modules.test.modesForLanguage(language)) {
-                const table = modules.test.modeToTable(mode);
-                const promise = modules.database.queryLanguage(language,
-                    `SELECT COUNT(review_date) AS amountDue FROM ${table}
-                     WHERE review_date <= ?`, time)
-                .then(([{amountDue}]) => {
-                    amounts[language] += amountDue;
-                });
-                promises.push(promise);
-            }
+        for (let mode of modules.test.modesForLanguage(language)) {
+            const table = modules.test.modeToTable(mode);
+            const promise = modules.database.queryLanguage(language,
+                `SELECT COUNT(review_date) AS amountDue FROM ${table}
+                 WHERE review_date <= ?`, time)
+            .then(([{amountDue}]) => amountDue);
+            promises.push(promise);
         }
-        return Promise.all(promises).then(() => amounts);
+        return Promise.all(promises).then((amounts) => amounts.sum());
     };
 
     srs.getLevel = function (entry, mode) {

@@ -73,6 +73,16 @@ class MainWindow extends Window {
                 () => this.openSection("dictionary"));
         this.root.getElementById("find-kanji-button").addEventListener("click",
                 () => this.openSection("kanji"));
+        // Language popup events
+        this.languagePopup.callback = (language) => this.setLanguage(language);
+        this.languagePopup.onOpen = (languages) => {
+            for (let language of languages) {
+                dataManager.srs.getTotalAmountDueForLanguage(language)
+                .then((amount) => {
+                    this.languagePopup.setAmountDue(language, amount);
+                });
+            }
+        }
     }
 
     createSections () {
@@ -81,7 +91,7 @@ class MainWindow extends Window {
         for (let name of globals.sections) {
             const section = document.createElement(name + "-section");
             section.classList.add("section");
-            section.style.display = "none";
+            section.hide();
             this.sectionWindow.appendChild(section);
             this.sections[name] = section;
             promises.push(customElements.whenDefined(name + "-section"));
@@ -117,15 +127,15 @@ class MainWindow extends Window {
         return Promise.all(results);
     }
 
-    initialize(languages) {
-        // Assign callbacks for language popup
-        this.languagePopup.onOpen = () => this.fillLanguagePopup(languages);
-        this.languagePopup.callback = (_, index) => {
-            // if (this.language === languages[index]) return;
-            this.setLanguage(languages[index]);
-        };
+    initialize(languages, defaultLanguage) {
+        // Fill language popup
+        for (let language of languages) {
+            this.languagePopup.add(language);
+        }
+        // Set language to default one
+        this.setLanguage(defaultLanguage);
         // Only display home section
-        this.sections["home"].style.display = "block";
+        this.sections["home"].show();
         this.sections["home"].open();
         this.currentSection = "home";
         // Update test button with amount of words to be tested
@@ -212,41 +222,26 @@ class MainWindow extends Window {
         });
     }
 
-    fillLanguagePopup(languages) {
-        dataManager.srs.getTotalAmountDueForLanguages(languages)
-        .then((amounts) => {
-            this.languagePopup.clear();
-            for (let i = 0; i < languages.length; ++i) {
-                if (amounts[languages[i]] > 0) {
-                    this.languagePopup.appendItem(
-                        `${languages[i]} (${amounts[languages[i]]})`);
-                } else {
-                    this.languagePopup.appendItem(languages[i]);
-                }
-            }
-        });
-    }
-
     adjustToLanguage(language, secondary) {
         if (language === "Japanese") {
-            this.addKanjiButton.style.display = "flex";
+            this.addKanjiButton.show();
             if (dataManager.content.isAvailable["Japanese"]) {
-                this.findKanjiButton.style.display = "flex";
+                this.findKanjiButton.show();
             } else {
-                this.findKanjiButton.style.display = "none";
+                this.findKanjiButton.hide();
             }
         } else {
-            this.addKanjiButton.style.display = "none";
-            this.findKanjiButton.style.display = "none";
+            this.addKanjiButton.hide();
+            this.findKanjiButton.hide();
             if (this.currentSection === "kanji") {
                 this.openSection("home");
             }
         }
         if (language === "Japanese" &&
                 dataManager.content.isAvailable[language]) {
-            this.dictionaryButton.style.display = "flex";
+            this.dictionaryButton.show();
         } else {
-            this.dictionaryButton.style.display = "none";
+            this.dictionaryButton.hide();
             if (this.currentSection === "dictionary") {
                 this.openSection("home");
             }
@@ -255,6 +250,7 @@ class MainWindow extends Window {
     }
 
     setLanguage(language) {
+        if (this.language !== undefined && this.language === language) return;
         if (this.currentSection !== null) {
             if (!this.sections[this.currentSection].confirmClose()) return;
             this.sections[this.currentSection].close();
@@ -271,7 +267,7 @@ class MainWindow extends Window {
         }
         if (this.currentSection !== null)
             this.sections[this.currentSection].open();
-        this.languagePopup.setLabelText(language);
+        this.languagePopup.set(language);
     }
 
     makeKanjiInfoLink(element, character) {

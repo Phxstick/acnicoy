@@ -2,16 +2,20 @@
 
 #label {
   @extend .button;
-  background-color: darkred;
-  color: white;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background-color: var(--label-background, lightgrey);
+  color: var(--label-color, #303030);
+  padding: var(--label-padding, 5px);
   transition: .15s;
-  padding: 12px;
 
   &:hover {
-    background-color: crimson;
+    background-color: var(--label-hover-background, lighten(lightgrey, 5%));
+    color: var(--label-hover-color, #303030);
   }
 }
 
@@ -19,17 +23,10 @@
   position: absolute;
   display: none;
   left: 0;
+  box-shadow: 1px 1px 6px #1a1a1a;
+}
 
-  .item {
-    background-color: darkred;
-    color: white;
-    text-align: center;
-    padding: 8px;
-    &:hover {
-      background-color: crimson;
-    }
-  }
-  // box-shadow: 3px 3px 5px #1a1a1a;
-  box-shadow: 0px 0px 6px #1a1a1a;
-  z-index: var(--popup-list-layer);
+::slotted(option) {
+  padding: 5px;
+  text-align: center;
 }

@@ -31,10 +31,10 @@ class LanguageTable extends Widget {
                     this.languageConfigs.remove(config);
                     this.$("table-body").removeChild(row);
                     if (this.languageConfigs.length === 0) {
-                        this.$("table").style.display = "none";
+                        this.$("table").hide();
                     }
                 });
-                this.$("table").style.display = "block";
+                this.$("table").show();
             }).catch((error) => {});
         });
     }

@@ -121,13 +121,13 @@ class KanjiInfoPanel extends Widget {
     registerCentralEventListeners() {
         events.on("kanji-added", (kanji) => {
             if (this.currentKanji !== kanji) return;
-            this.addedLabel.style.display = "block";
-            this.addButton.style.display = "none";
+            this.addedLabel.show();
+            this.addButton.hide();
         });
         events.on("kanji-removed", (kanji) => {
             if (this.currentKanji !== kanji) return;
-            this.addedLabel.style.display = "none";
-            this.addButton.style.display = "block";
+            this.addedLabel.hide();
+            this.addButton.show();
         });
     }
 
@@ -139,15 +139,11 @@ class KanjiInfoPanel extends Widget {
     }
 
     openSection(newSection) {
-        if (newSection === "strokes" || newSection === "info") {
-            this.sectionFrames[newSection].style.display = "flex";
-        } else {
-            this.sectionFrames[newSection].style.display = "block";
-        }
+        this.sectionFrames[newSection].show();
         this.sectionButtons[newSection].classList.add("selected");
         for (let section in this.sectionButtons) {
             if (newSection !== section) {
-                this.sectionFrames[section].style.display = "none";
+                this.sectionFrames[section].hide();
                 this.sectionButtons[section].classList.remove("selected");
             }
         }
@@ -168,10 +164,10 @@ class KanjiInfoPanel extends Widget {
             this.onReadings.textContent = info.onYomi.join("、 ");
             this.kunReadings.textContent = info.kunYomi.join("、 ");
             // Hide on/kun-yomi header label if not available
-            this.onReadingsFrame.style.display =
-                    info.onYomi.length > 0 ? "block" : "none";
-            this.kunReadingsFrame.style.display =
-                    info.kunYomi.length > 0 ? "block" : "none";
+            if (info.onYomi.length > 0) this.onReadingsFrame.show();
+            else this.onReadingsFrame.hide();
+            if (info.kunYomi.length > 0) this.kunReadingsFrame.show();
+            else this.kunReadingsFrame.hide();
             this.detailsFrame.empty();
             // Display misc info spans
             const detailSpans = this.getKanjiDetailSpans(kanji, info);
@@ -182,9 +178,9 @@ class KanjiInfoPanel extends Widget {
             const counterKanji = dataManager.content.data.counterKanji;
             if (kanji in counterKanji) {
                 this.counterLabel.textContent = counterKanji[kanji].join(", ");
-                this.counterFrame.style.display = "block";
+                this.counterFrame.show();
             } else {
-                this.counterFrame.style.display = "none";
+                this.counterFrame.hide();
             }
             // Info kanji is number, display represented number in description
             const numericKanji = dataManager.content.data.numericKanji;
@@ -202,15 +198,15 @@ class KanjiInfoPanel extends Widget {
                 } else {
                     this.numberDetails.textContent = "";
                 }
-                this.numberFrame.style.display = "block";
+                this.numberFrame.show();
             } else {
-                this.numberFrame.style.display = "none";
+                this.numberFrame.hide();
             }
             // Display 'added' sign or button for adding the kanji
-            this.addedLabel.style.display =
-                info.added ? "block" : "none";
-            this.addButton.style.display =
-                info.added ? "none" : "block";
+            if (info.added) this.addedLabel.show();
+            else this.addedLabel.hide();
+            if (info.added) this.addButton.hide();
+            else this.addButton.show();
             // Display number of strokes, radical and kanji parts
             // (In strokes section)
             this.strokeCount.textContent = info.strokes;

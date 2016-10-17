@@ -1,9 +1,10 @@
 {
-  "name": "vocabulary-trainer",
-  "version": "1.0.0",
+  "name": "acnicoy",
+  "version": "0.1.0",
   "description": "A tool for learning Japanese and other languages",
-  "main": "main.js",
   "author": "Daniel Bindemann",
+  "keywords": ["electron", "languages", "Japanese"],
+  "main": "main.js",
   "devDependencies": {
     "autoprefixer": "^6.3.4",
     "gulp": "^3.9.1",

@@ -23,7 +23,7 @@
 #edit-mode {
   flex: 1;
   flex-direction: column;
-  display: none;
+  display: flex;
   #text-entry {
     flex: 1;
   }

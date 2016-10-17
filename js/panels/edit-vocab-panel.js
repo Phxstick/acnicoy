@@ -151,8 +151,9 @@ class EditVocabPanel extends Panel {
             option.textContent = list;
             this.vocabListSelect.appendChild(option);
         }
-        this.$("readings-frame").style.display =
-            dataManager.languageSettings["readings"] ? "flex" : "none";
+        if (dataManager.languageSettings["readings"])
+            this.$("readings-frame").show();
+        else this.$("readings-frame").hide();
     }
 
     load(word) {

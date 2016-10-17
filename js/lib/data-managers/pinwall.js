@@ -10,7 +10,7 @@ module.exports = function(paths, modules) {
 
     pinwall.create = function (language, settings) {
         // TODO: Create intro-message here? Or only for default language?
-        const initialPinwall = [ { type: "srs-status-diagram" } ];
+        const initialPinwall = [ { type: "srs-status-table" } ];
         const path = paths.languageData(language).pinwall;
         fs.writeFileSync(path, JSON.stringify(initialPinwall, null, 4));
     };

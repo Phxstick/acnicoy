@@ -40,7 +40,7 @@ class AddKanjiPanel extends Panel {
         const kanjiStyle = window.getComputedStyle(this.kanjiEntry, null);
         this.kanjiEntry.style.width =
             kanjiStyle.getPropertyValue("font-size");
-        this.kanjiEntry.style.display = "block";
+        this.kanjiEntry.show();
         this.allLevelsPopup.set(this.allLevelsPopup.firstChild);
         this.meaningsLevelPopup.set(this.meaningsLevelPopup.firstChild);
         this.kunYomiLevelPopup.set(this.kunYomiLevelPopup.firstChild);

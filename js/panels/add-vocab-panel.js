@@ -73,8 +73,8 @@ class AddVocabPanel extends Panel {
         this.translationsEntry.placeholder =
             `Enter ${secondary} translations here`;
         // Pack or unpack textarea for readings
-        this.readingsEntry.style.display =
-            dataManager.languageSettings["readings"] ? "block" : "none";
+        if (dataManager.languageSettings["readings"]) this.readingsEntry.show();
+        else this.readingsEntry.hide();
     }
 
     save() {

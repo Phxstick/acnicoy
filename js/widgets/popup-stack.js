@@ -1,18 +1,25 @@
 "use strict";
 
 class PopupStack extends Widget {
-    constructor () {
+
+    static get observedAttributes() {
+        return ["disabled", "orientation", "overlap", "animate"];
+    }
+
+    constructor() {
         super("popup-stack", true);
         this.callback = (label, value) => { };
-        this.animated = true;
-        this.overlap = 0;
-        this.orientation = "horizontal";  // TODO: "vertical"
+        this._attributes = {
+            "animate": true,
+            "disabled": false,
+            "overlap": 0,
+            "orientation": "horizontal"
+        }
         this.isOpen = false;
-        this.isDisabled = false;
         this.topItem = null;
         window.addEventListener("click", () => this.close());
         this.addEventListener("click", (event) => {
-            if (this.isDisabled) return;
+            if (this._attributes["disabled"]) return;
             if (this.isOpen) {
                 this.set(event.target);
                 this.close();
@@ -23,14 +30,14 @@ class PopupStack extends Widget {
         });
     }
 
-    addOption (label, value) {
-        const newItem = document.createElement("option");
-        newItem.label = label;
-        newItem.value = value === undefined ? label : value;
-        this.appendChild(newItem);
+    addOption(label, value) {
+        const option = document.createElement("option");
+        option.label = label;
+        option.value = value === undefined ? label : value;
+        this.appendChild(option);
     }
 
-    set (item) {
+    set(item) {
         if (this.topItem !== null) {
             const topItemIndex = this.childrenArray().indexOf(this.topItem);
             this.topItem.style.zIndex = topItemIndex;
@@ -46,63 +53,127 @@ class PopupStack extends Widget {
         return this.topItem.value;
     }
 
-    open () {
-        if (this.children.length === 0) return;
-        if (this.orientation === "horizontal") {
-            const itemWidth = this.children[0].offsetWidth;
-            let current = 0;
-            for (let i = 0; i < this.children.length; ++i) {
-                this.children[i].style.zIndex = i;
-                if (this.animated) {
-                    Velocity(this.children[i], { "left": `${current}px` });
-                } else {
-                    this.children[i].style.left = `${current}px`;
-                }
-                current += itemWidth - this.overlap;
-            }
-            this.topItem.style.zIndex = this.children.length;
-            Velocity(this.$("shadow"), { "width": current });
+    open() {
+        if (this.isOpen || this.children.length === 0) return;
+        // Set names of the properties to be changed depending on orientation
+        let propertyNames;
+        if (this._attributes["orientation"] === "horizontal") {
+            propertyNames = {
+                size: "offsetWidth", offset: "left", dimension: "width"
+            };
+        } else if (this._attributes["orientation"] === "vertical") {
+            propertyNames = {
+                size: "offsetHeight", offset: "top", dimension: "height"
+            };
         }
+        // Open the popup-stack by animating/setting these property names
+        const itemSize = this.children[0][propertyNames.size];
+        let current = 0;
+        for (let i = 0; i < this.children.length; ++i) {
+            this.children[i].style.zIndex = i;
+            if (this._attributes["animate"]) {
+                Velocity(this.children[i], {
+                    [propertyNames.offset] : `${current}px`
+                });
+            } else {
+                this.children[i].style[propertyNames.offset] = `${current}px`;
+            }
+            current += itemSize - this._attributes["overlap"];
+        }
+        this.topItem.style.zIndex = this.children.length;
+        Velocity(this.$("shadow"), { [propertyNames.dimension] : current });
         this.isOpen = true;
     }
 
-    close () {
+    close() {
         if (!this.isOpen) return;
-        if (this.orientation === "horizontal") {
-            if (this.animated) {
-                Velocity(this.children, { "left": "0" });
-            } else {
-                for (let i = 0; i < this.children.length; ++i) {
-                    this.children[i].style.left = "0";
-                }
+        // Set names of the properties to be changed depending on orientation
+        let propertyNames;
+        if (this._attributes["orientation"] === "horizontal") {
+            propertyNames = {
+                size: "offsetWidth", offset: "left", dimension: "width"
+            };
+        } else if (this._attributes["orientation"] === "vertical") {
+            propertyNames = {
+                size: "offsetHeight", offset: "top", dimension: "height"
+            };
+        }
+        // Close the popup-stack by animating/setting these property names
+        if (this._attributes["animate"]) {
+            Velocity(this.children, { [propertyNames.offset] : "0" });
+        } else {
+            for (let i = 0; i < this.children.length; ++i) {
+                this.children[i].style[propertyNames.offset] = "0";
             }
         }
-        Velocity(this.$("shadow"), {width: this.$("frame").offsetWidth + "px"});
+        Velocity(this.$("shadow"), {
+            [propertyNames.dimension]:
+                this.$("frame")[propertyNames.size] + "px"
+        });
         this.isOpen = false;
     }
 
-    // Does not work for some reason...
-    // attributeChangedCallback(name, oldValue, newValue) {
-    //     console.log(name);
-    //     if (name === "disabled") {
-    //         if (newValue == null) console.log("Popup has been enabled.");
-    //         else console.log("Popup has been disabled.");
-    //     }
-    // }
+    attributeChangedCallback(name, oldValue, newValue) {
+        this.close();
+        if (name === "disabled") {
+            this._attributes["disabled"] = (newValue !== null);
+            if (this.topItem !== null) {
+                if (this._attributes["disabled"]) {
+                    this.topItem.classList.add("disabled");
+                } else {
+                    this.topItem.classList.remove("disabled");
+                }
+            }
+        } else if (name === "orientation") {
+            if (newValue === "horizontal" || newValue === "vertical") {
+                this._attributes["orientation"] = newValue;
+            } else {
+                throw Error("popup-stack orientation must be either " +
+                            "'horizontal' or 'vertical'.");
+            }
+        } else if (name === "overlap") {
+            if (!isNan(newValue)) {
+                this._attributes["overlap"] = parseInt(newValue);
+            } else {
+                throw Error("popup-stack overlap must be an integer.");
+            }
+        } else if (name === "animate") {
+            this._attributes["animate"] = (newValue !== null);
+        }
+    }
 
     set disabled(value) {
         if (value) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
-        // Move this to attributeChangedCallback once it works...
-        this.isDisabled = value;
-        if (this.topItem !== null) {
-            if (value) this.topItem.classList.add("disabled");
-            this.topItem.classList.remove("disabled");
-        }
     }
 
     get disabled() {
-        return this.getAttribute("disabled") !== null;
+        return this.hasAttribute("disabled");
+    }
+
+    set orientation(value) {
+        this.setAttribute("orientation", value);
+    }
+
+    get orientation() {
+        this.getAttribute("orientation");
+    }
+
+    set overlap(value) {
+        this.setAttribute("overlap", value);
+    }
+
+    get overlap() {
+        this.getAttribute("overlap");
+    }
+
+    set animate(value) {
+        if (value) this.setAttribute("animate", "");
+        else this.removeAttribute("animate");
+    }
+
+    get animate() {
+        return this.hasAttribute("animate");
     }
 }
 

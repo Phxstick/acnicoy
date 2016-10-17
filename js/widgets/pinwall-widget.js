@@ -11,25 +11,22 @@ class PinwallWidget extends Widget {
         const windowFrame = root.getElementById("window");
         this.widgetNameLabel = root.getElementById("widget-name");
         this.widgetNameLabel.textContent = label;
-        this.style.display = "inline-block";
         this.removeButton = root.getElementById("remove-button");
         windowFrame.addEventListener("mouseenter", (event) => {
             this.hovering = true;
         });
         windowFrame.addEventListener("mouseleave", (event) => {
             this.hovering = false;
-            if (controlFrame.style.display === "block")
-                controlFrame.style.display = "none";
+            controlFrame.hide();
         });
         document.addEventListener("keydown", (event) => {
-            if (event.ctrlKey && this.hovering &&
-                    controlFrame.style.display !== "block") {
-                controlFrame.style.display = "block";
+            if (event.ctrlKey && this.hovering) {
+                controlFrame.show();
             }
         });
         document.addEventListener("keyup", (event) => {
-            if (!event.ctrlKey && controlFrame.style.display === "block") {
-                controlFrame.style.display = "none";
+            if (!event.ctrlKey) {
+                controlFrame.hide();
             }
         });
         this._removeCallback = () => { };

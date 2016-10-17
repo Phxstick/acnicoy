@@ -40,8 +40,8 @@ module.exports = function (paths, modules) {
     database.create = function (language, settings) {
         const db = new sqlite3.Database(paths.languageData(language).database);
         return new Promise((resolve) => {
-            // TODO: Make this a transaction?
             db.serialize(() => {
+                db.run("BEGIN TRANSACTION");
                 db.run("PRAGMA foreign_keys = ON");
                 // Create tables
                 db.run(`
@@ -105,7 +105,7 @@ module.exports = function (paths, modules) {
                     db.run(`CREATE INDEX kanji_kun_yomi_review_date
                             ON kanji_kun_yomi (review_date ASC)`);
                 }
-                db.run("", resolve);
+                db.run("END", resolve);
             });
         });
     }
