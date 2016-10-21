@@ -18,11 +18,8 @@ popup-list {
 }
 
 popup-stack {
-  &[disabled] {
-    --shadow-color: transparent;
-    > option:checked {
+  &[disabled] > option:checked {
       color: crimson;
-    }
   }
   
   > option {

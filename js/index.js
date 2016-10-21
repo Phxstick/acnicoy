@@ -13,7 +13,7 @@ const globals = {
               "svg-bar-diagram", "kanji-info-panel", "pinwall-widget",
               "kanji-search-result-entry", "dictionary-search-result-entry",
               "pinwall-note", "srs-status-table", "language-table",
-              "language-popup"],
+              "language-popup", "check-box"],
     extensions: ["converter", "array-extensions", "html-element-extensions"]
 };
 

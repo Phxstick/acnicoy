@@ -1,9 +1,10 @@
-@import "base";
-
 :host {
   display: flex;
   align-items: stretch;
   align-content: stretch;
+  &[disabled] {
+    --shadow-color: transparent;
+  }
 }
 
 #frame {
@@ -11,8 +12,7 @@
   min-width: 10px;
   min-height: 10px;
   width: 100%;
-  // TODO: Use this if vertical
-  // height: 100%;
+  height: 100%;
 }
 
 #shadow {

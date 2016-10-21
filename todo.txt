@@ -1,11 +1,14 @@
 __ Up next __
+- Implement progress bar
 - Allow temporary entries to be closed by clicking anywhere else
   --> Make into widgets?
-- Implement load function in add-vocab-panel
 - Add popup-menus to dictionary section
 - Save total score in settings rather than recalculating every time !
   --> Make sure to update correctly with integers!
   --> Rename "updateDailyScore" into "updateScore" and adjust everything
+- Implement load function in add-vocab-panel
+  --> Provide suggestions in add-vocab-panel as clickable spans
+      (left click to edit, right click to remove)
 
 - Make language switching seamless (Do sth about vocab section?)
 - Allow user to choose an SRS config when adding a new language
@@ -20,8 +23,6 @@ __ Up next __
   --> Let each frame decide whether to slide down or appear instantly
 - Built "Recently added" functionality into vocab- and kanji-section?
 - Make use of "event.target" and "event.currentTarget" whereever possible
-- Add init step for downloading language packs
-  --> Use sockets.io/websockets to receive data
 - Use SCSS placeholder selector (%) for classes like .button
 
 
@@ -44,11 +45,10 @@ __ General __
 - Place [about] and [help] buttons somewhere suitable
 - Use overlay to create [about], put credits there
 - Replace native dialog windows with overlays
-- Make custom stylable checkbox
 - Make text of every GUI-Element unselectable. Maybe by default?
 - Use "!important"-selector to define necessary shadow dom host styles?
-- Provide suggestions in add-vocab-panel as clickable spans
-  (left click to edit, right click to remove)
+- Info window when (new) language pack is available for a language
+  --> Allow user to start downloads and link to settings for progress bar
 
 __ Code __
 - Remove inconsistencies in code, e.g. unify glossary ("word" <-> "entry")
@@ -60,6 +60,8 @@ __ Code __
 - Make data-manager-modules into subclasses and gather similar code
   --> Especially if static variables become implemented!!
 - use split function from sqlite instead of JS version?
+- Split widgets into components specific to Acnicoy and base-widgets
+  --> Make base-widgets completely independent of Acnicoy (e.g. no base import)
 
 __ Init window __
 - Make init section feel more welcoming and less plain. Background picture?
@@ -68,6 +70,7 @@ __ Main window __
 - Make special popup list for language popup with two columns
   --> Second column contains number of current test items, highlighted if > 0
   --> Popup automatically uses text in left column only for label
+- Remember where focus was when opening panel, restore after closing panel again
 
 __ Home section __
 - When vocabulary is empty, write very small manual info card into intro section
