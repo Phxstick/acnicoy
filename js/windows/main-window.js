@@ -149,6 +149,7 @@ class MainWindow extends Window {
             if (this.sections[this.currentSection].confirmClose()) {
                 this.sections[this.currentSection].close();
                 dataManager.save();
+                // networkManager.stopAllDownloads();
                 ipcRenderer.send("close-now");
             }
         });

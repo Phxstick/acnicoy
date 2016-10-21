@@ -5,14 +5,9 @@ const fs = require("fs");
 module.exports = function (paths, modules) {
     const languageManager = {};
     
-    // Return list of all registered languages. Create folder if doesn't exist
+    // Return list of all registered languages
     languageManager.find = function() {
-        try {
-            return fs.readdirSync(paths.languages);
-        } catch (error) {
-            if (error.errno === -2) fs.mkdirSync(paths.languages);
-            return [];
-        }
+        return fs.readdirSync(paths.languages);
     };
 
     // Register a new language with given configuration

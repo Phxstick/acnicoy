@@ -14,12 +14,14 @@ module.exports = function (basePath) {
     paths.standardDataPathPrefix = path.resolve(home, "Documents");
     let dataPath = null;
     let langPath = null;
+    let downloadsPath = null;
+    let contentPath = null;
 
     // Try to load path for user data, return true if path could be loaded
     paths.getDataPath = function () {
         let prefix;
         try {
-            prefix = fs.readFileSync(dataPathConfigFile, { encoding: "utf-8" });
+            prefix = fs.readFileSync(dataPathConfigFile, "utf8");
             if (prefix[prefix.length - 1] == "\n")
                 prefix = prefix.slice(0, prefix.length - 1);
         } catch (error) {
@@ -34,12 +36,19 @@ module.exports = function (basePath) {
         fs.writeFileSync(dataPathConfigFile, prefix);
         paths.data = dataPath = path.resolve(prefix, dataPathBaseName);
         paths.languages = langPath = path.resolve(dataPath, "Languages");
+        paths.downloads = downloadsPath = path.resolve(dataPath, "Downloads");
         paths.globalSettings = path.resolve(dataPath, "settings.json");
-        // Create folder if it doesn't exists yet
+        contentPath = path.resolve(dataPath, "Content");
+        // Create folder and subfolders if it doesn't exists yet
         try {
             fs.readdirSync(dataPath);
         } catch (error) {
-            if (error.errno === -2) fs.mkdirSync(dataPath);
+            if (error.errno === -2) {
+                fs.mkdirSync(dataPath);
+                fs.mkdirSync(langPath);
+                fs.mkdirSync(downloadsPath);
+                fs.mkdirSync(contentPath);
+            }
         }
     };
 
@@ -114,7 +123,6 @@ module.exports = function (basePath) {
             }
         }
     };
-    const contentPath = path.resolve(basePath, "data", "language-content");
 
     // Return null if content for given language pair is not available,
     // otherwise return an object mapping resource names to absolute paths
@@ -126,6 +134,17 @@ module.exports = function (basePath) {
         for (let resource in resourcePaths)
             resourcePaths[resource] = path.resolve(p, resourcePaths[resource]);
         return resourcePaths;
+    };
+
+    // Download related
+    paths.downloadDataPart = (filename) => {
+        return path.resolve(downloadsPath, filename + ".part");
+    };
+    paths.downloadData = (filename) => {
+        return path.resolve(downloadsPath, filename); 
+    };
+    paths.downloadDataOffset = (filename) => {
+        return path.resolve(downloadsPath, filename + ".offset"); 
     };
 
     return paths;

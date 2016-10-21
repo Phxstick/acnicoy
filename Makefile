@@ -1,7 +1,7 @@
 PYTHON = python3
 DATA_SCRIPT_PATH = ./createJapaneseData.py
 RESOURCE_PATH = ~/Dropbox/AcnicoyResources
-OUTPUT_PATH = ./data/language-content/Japanese-English
+OUTPUT_PATH = ./language-content/Japanese-English
 
 DICTIONARY_PATH = $(RESOURCE_PATH)/JMdict.xml
 DICT_TEXTS_PATH = $(RESOURCE_PATH)/improved-dictionary-texts.json
@@ -29,12 +29,14 @@ start:
 data: dictionary_data kanji_data
 
 dictionary_data:
+	mkdir -p $(OUTPUT_PATH)
 	$(PYTHON) $(DATA_SCRIPT_PATH) \
         --dict $(DICTIONARY_PATH) \
         --texts $(DICT_TEXTS_PATH) \
         -o $(OUTPUT_PATH)
 
 kanji_data:
+	mkdir -p $(OUTPUT_PATH)
 	$(PYTHON) $(DATA_SCRIPT_PATH) \
         --kanji $(KANJI_PATH) \
         --kanji-meanings $(KANJI_MEANINGS_PATH) \
