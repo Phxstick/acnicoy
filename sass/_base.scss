@@ -6,6 +6,8 @@
 @import "widgets";
 @import "inputs";
 
+@import "mixins";
+
 * {
   font-family: $font;
   font-size: 100%;
@@ -113,6 +115,6 @@ body {
 .note {
   color: gray;
   font-size: 80%;
-  font-family: Arial; // TODO
+  font-family: Arial;
   margin-top: 3px;
 }

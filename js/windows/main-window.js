@@ -58,8 +58,6 @@ class MainWindow extends Window {
                 () => this.openSection("stats"));
         this.root.getElementById("vocab-button").addEventListener("click",
                 () => this.openSection("vocab"));
-        this.root.getElementById("history-button").addEventListener("click",
-                () => this.openSection("history"));
         this.root.getElementById("settings-button").addEventListener("click",
                 () => this.openSection("settings"));
         // Sidebar button events

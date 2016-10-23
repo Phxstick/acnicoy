@@ -1,6 +1,7 @@
 .view {
   background-color: $view-background;
   color: $view-color;
+  contain: strict;
 }
 
 .list-view {

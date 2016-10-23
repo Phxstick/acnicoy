@@ -1,116 +1,145 @@
 @import "base";
 
+#window {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  
+  #bottom {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+
+    #section-window {
+      flex: 1;
+    }
+  }
+}
+
 #menu-bar {
-  height: 10%;
+  height: 59px;
   background-color: indianred;
   display: flex;
   flex-direction: row;
   z-index: var(--menu-bar-layer);
   box-sizing: border-box;
   border-bottom: 1px solid gray;
-}
 
-#language-popup {
-  align-self: stretch;
-  z-index: var(--popup-list-layer);
-}
+  #language-popup {
+    z-index: var(--popup-list-layer);
+  }
 
-#menu {
-  align-self: stretch;
-  display: flex;
-  flex-direction: row;
-  & > i {
-    @extend .button;
+  #menu {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    width: 50px;
-    background: darkred;
-    color: whitesmoke;
-    font-size: 140%;
-    font-family: $gui-font;
-    transition: 0.15s;
-    border-left: 2px solid lighten(darkred, 30%);
-   
-    &:hover {
-      background: crimson;
-      border-left: 6px solid whitesmoke;
+    flex-direction: row;
+
+    > i {
+      @extend %button;
+      @include center-content;
+      box-sizing: border-box;
+      width: 45px;
+      background: $button-background;
+      color: $button-color;
+      font-size: 140%;
+      font-family: $gui-font;
+      transition: 0.15s;
+      border-left: 2px solid lighten($button-background, 30%);
+     
+      &:hover {
+        background: crimson;
+        border-left: 6px solid $button-color;
+      }
     }
   }
-}
 
-div#status-bar {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  #status-bar {
+    @include center-content;
+    flex: 1;
 
-  #status-text {
-    color: #E5E5E5;
-    font-size: 130%;
-    text-shadow: 0px 0px 1px white;
-    text-align: center;
+    #status-text {
+      color: #E5E5E5;
+      font-size: 130%;
+      text-shadow: 0px 0px 1px $button-color;
+      text-align: center;
+    }
   }
 }
 
 #side-bar {
-  // width: 130px;
-  // TODO: Use flexbox to stretch so that width-directive works properly
-  width: 20%;
-  height: 85%;
-  float: left;
+  width: 80px;
   display: flex;
   flex-direction: column;
+  z-index: var(--side-bar-layer);
+  background-color: $button-background;
+  box-shadow: 2px 0 3px dimgray;
 
-  #test-button {
-    flex: 1.4;
-    font-size: 220%;
+  > div {
+    display: flex;
+    flex-direction: column;
+  }
 
-    #num-srs-items {
-      margin-top: 20px;
-      font-size: 50%;
-      color: #DEDEDE;
-      text-shadow: 0 0 2px white;
-      font-family: $gui-font;
+  button {
+    margin: 0;
+    text-align: center;
+    border: 0px;
+    background-color: $button-background;
+    color: $button-color;
+    font-family: $gui-font;
+    transition: background 0.1s linear;
+    &:hover {
+      background: crimson;
+    }
+  }
+  
+  #top-buttons > button {
+    border-bottom: 1px solid grey;
+    font-size: 150%;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-weight: bold;
+
+    &#test-button {
+      padding-top: 16px;
+      padding-bottom: 16px;
+      font-size: 220%;
+      line-height: 100%;
+
+      #num-srs-items {
+        font-size: 50%;
+        line-height: 100%;
+        color: #DEDEDE;
+        text-shadow: 0 0 2px $button-color;
+        font-family: $gui-font;
+      }
     }
   }
 
-  div {
-    @extend .button;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 0px;
-    background-color: darkred;
-    color: white;
-    font-size: 150%;
-    font-stretch: expanded;
+  #padder {
     flex: 1;
-    border: none;
-    border-bottom: 1px solid grey;
-    transition: background 0.1s linear;
-    box-shadow: 2px 0 3px dimgray;
-    font-family: $gui-font;
-    font-weight: bold;
-    z-index: var(--side-bar-layer);
+  }
 
-    &:hover {
-      background: crimson;
+  #bottom-buttons > button {
+    @include center-content;
+    display: flex;
+    flex-direction: row;
+    border-top: 1px solid grey;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    > span {
+      flex: 1;
+      color: inherit;
     }
   }
 }
 
 #section-window {
-  width: 80%;
-  height: 85%;
-  float: right;
   position: relative;
   z-index: var(--section-window-layer);
+  contain: strict;
 }
 
 div#filter {
+  display: none;
   position: absolute;
   background-color: rgba(0, 0, 0, 0.6);
   top: 0;
@@ -118,19 +147,6 @@ div#filter {
   right: 0;
   bottom: 0;
   z-index: var(--section-overlay-layer);
-  display: none;
-}
-
-footer {
-  height: 5%;
-  font-size: 80%;
-  clear: both;
-  background-color: indianred;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--footer-layer);
 }
 
 .section {
@@ -142,14 +158,14 @@ footer {
 }
 
 .panel {
-  width: 400px;  // TODO: Use max-width instead and adjust sliding
+  width: 400px;
   position: absolute;
   left: -400px;
   top: 0px;
   bottom: 0px;
   background-color: whitesmoke;
   z-index: var(--panel-layer);
-  // box-shadow: 2px 0 3px black1;
+  contain: strict;
 }
 
 #kanji-info-panel {
@@ -158,6 +174,5 @@ footer {
   left: 0;
   right: 0;
   bottom: 0;
-  // height: 200px;
   z-index: var(--kanji-info-panel-layer);
 }

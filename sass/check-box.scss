@@ -1,3 +1,5 @@
+@import "mixins";
+
 :host {
   display: inline-block;
   width: 20px;
@@ -6,15 +8,17 @@
   border-radius: 3px;
   border: 1px solid dimgray;
   font-size: 110%;
-  box-shadow: inset 0 0 10px -5px black;
+  box-shadow: inset 0 1px 10px -5px black;
   background-color: whitesmoke;
+
+  &:focus {
+    box-shadow: 0 0 5px dimgray;
+  }
 }
 
 #wrapper {
-  display: flex;
+  @include center-content;
   height: 100%;
-  justify-content: center;
-  align-items: center;
   color: inherit;
   font-size: inherit;
   text-shadow: inherit;
@@ -32,4 +36,3 @@
   font-size: inherit;
   text-shadow: inherit;
 }
-

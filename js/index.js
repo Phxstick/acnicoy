@@ -6,7 +6,7 @@ const globals = {
               "test", "history", "database"],
     windows: ["init-path", "init-lang", "init-default-lang", "loading", "main"],
     overlays: ["add-lang"],
-    sections: ["home", "stats", /*"history",*/ "vocab", "settings",
+    sections: ["home", "stats", "vocab", "settings",
                "test", "dictionary", "kanji"],
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
     widgets: ["popup-stack", "switch-button", "switch-bar", "popup-list",
@@ -21,8 +21,9 @@ const startTime = performance.now();
 // Load node modules
 const { clipboard } = require("electron");
 const EventEmitter = require("events");
+const Velocity = require("velocity-animate");
 
-// Load libraries
+// Load modules
 const paths = require(basePath + "/js/lib/path-manager.js")(basePath);
 const dataManager = require(paths.js.lib("data-manager"))(paths);
 const utility = require(paths.js.lib("utility"));
@@ -33,7 +34,6 @@ const overlay = require(paths.js.lib("overlay-manager"));
 const templates = require(paths.js.lib("template-manager"));
 const popupMenu = require(paths.js.lib("popup-menu"));
 const networkManager = require(paths.js.lib("network-manager"));
-const Velocity = require(paths.js.lib("velocity"));
 
 // Load base classes
 const Component = require(paths.js.base("component"));

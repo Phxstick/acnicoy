@@ -11,12 +11,10 @@ div#general-stats {
   background-color: darkred;
 
   div#top {
-    height: 60%;
-    display: flex;
-    padding: 10px;
+    @include center-content;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    height: 60%;
+    padding: 10px;
 
     span:first-child {
       font-size: 120%;

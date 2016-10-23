@@ -25,11 +25,9 @@ div#status {
 }
 
 #items {
-  flex: 1;
-  display: flex;
+  @include center-content;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  flex: 1;
   
   #test-item {
     font-size: 300%;
@@ -52,24 +50,12 @@ div#status {
 }
 
 input#answer {
-  color: $view-color;
-  background-color: darken($view-background, 5%);
-  border: 1px solid dimgray;
-  padding: 5px;
-  transition: .4s;
   font-size: 130%;
   margin-top: 30px;
   text-align: center;
   width: 40%;
-  &:focus {
-    outline: none !important;
-    // box-shadow: 0 0 5px dimgray;
-    background-color: $view-background;
-  }
-  // &:placeholder-shown {
-  //   color: lighten($view-color, 30%);
-  // }
   box-sizing: border-box;
+  --outer-shadow-color: crimson;
 }
 
 button#continue {
@@ -78,7 +64,6 @@ button#continue {
   color: $view-color;
   &:focus {
     outline: none !important;
-    // box-shadow: 0 0 5px dimgray;
     background-color: $view-background;
   }
   &:hover {
@@ -100,24 +85,19 @@ button#continue {
   font-size: 90%;
   border-top: 1px solid transparent;
   border-bottom: 0px;
-  border-image: linear-gradient(to left, transparent, $button-border-color, transparent) 1 1%;
+  @include fading-border($button-border-color, "horizontal");
 
   button {
-    @extend .button;
-    // TODO: Add vertical gradient to inner button on hover,
-    //       and a diagonal gradient on first-last-child buttons on hover
+    @include center-content;
     flex: 1;
     background-color: transparent;
     background-repeat: no-repeat;
     background-position: center top;
     color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     border-right: 1px solid transparent;
     border-left: 0;
     border-top: 0;
-    border-image: linear-gradient(lighten($button-border-color, 15%), transparent) 1 100%;
+    @include fading-border(lighten($button-border-color, 15%), "to bottom");
     &:hover {
       background-image: linear-gradient(to bottom, darken($button-border-color,
       40%), transparent 75%);

@@ -1,0 +1,21 @@
+@mixin center-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin fading-border($color, $direction: "vertical") {
+  @if $direction == "vertical" {
+    border-image: linear-gradient(to top, transparent, $color, transparent) 1 1%;
+  } @else if $direction == "horizontal" {
+    border-image: linear-gradient(to left, transparent, $color, transparent) 1 1%;
+  } @else if $direction == "to left" {
+    border-image: linear-gradient(to left, transparent, $color) 1 1%;
+  } @else if $direction == "to right" {
+    border-image: linear-gradient(to right, $color, transparent) 1 1%;
+  } @else if $direction == "to top" {
+    border-image: linear-gradient(to top, transparent, $color) 1 1%;
+  } @else if $direction == "to bottom" {
+    border-image: linear-gradient(to bottom, $color, transparent) 1 1%;
+  }
+}

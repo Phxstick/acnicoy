@@ -8,6 +8,7 @@ body {
 #filters {
   display: flex;
   flex-direction: row;
+  flex-shrink: 0;
 
   input {
     flex: 1;

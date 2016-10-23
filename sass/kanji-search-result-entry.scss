@@ -31,7 +31,7 @@ span {
     }
     #added-label {
       flex: 1;
-      @extend .button;
+      @extend %button;
       padding: 3px;
       font-family: $header-font;
       text-align: center;
@@ -42,7 +42,7 @@ span {
     }
     #add-button {
       flex: 1;
-      @extend .button;
+      @extend %button;
       padding: 3px;
       font-family: $header-font;
       text-align: center;

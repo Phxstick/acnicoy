@@ -1,15 +1,13 @@
 @import "base";
 
 :host {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  @extend %button;
+  @include center-content;
   background-color: lightgrey;
   color: grey;
   box-shadow: none;
   border: 1px solid grey;
 
-  @extend .button;
   padding: 8px;
   transition: background .15s ease-out, color .15s ease-out,
               box-shadow .15s ease-out, border-color .15s ease-out;

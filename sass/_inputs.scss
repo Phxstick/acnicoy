@@ -18,14 +18,17 @@ textarea {
 
 input {
   color: $view-color;
-  background-color:  darken($view-background, 5%);
+  background-color: $view-background;
   padding: 5px;
   border: 1px solid dimgray;
-  transition: .2s;
+  transition: box-shadow .2s, border .2s;
+  box-shadow: inset 0 1px 10px -5px black;
 
   &:focus {
     outline: none !important;
-    box-shadow: 0 0 5px dimgray;
+    // box-shadow: inset 0 1px 10px -5px var(--inner-shadow-color, black);;
+    box-shadow: 0 0 5px var(--outer-shadow-color, dimgray);
+    border: 1px solid darkred;
     background-color: $view-background;
   }
   &:placeholder-shown {
@@ -53,9 +56,7 @@ select {
   }
 }
 
-// Cannot be customized...
-// input[type="checkbox"] {
-//   // margin-right: 6px;
-//   width: 15;
-//   height: 15px;
-// }
+check-box:focus {
+  box-shadow: 0 0 5px crimson;
+  border: 1px solid darkred;
+}
