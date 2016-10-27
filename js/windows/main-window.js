@@ -131,44 +131,54 @@ class MainWindow extends Window {
             this.languagePopup.add(language);
         }
         // Set language to default one
-        this.setLanguage(defaultLanguage);
-        // Only display home section
-        this.sections["home"].show();
-        this.sections["home"].open();
-        this.currentSection = "home";
-        // Update test button with amount of words to be tested
-        this.updateTestButton();
-        setInterval(() => {
+        this.setLanguage(defaultLanguage).then(() => {
+            // Only display home section
+            this.sections["home"].show();
+            this.sections["home"].open();
+            this.currentSection = "home";
+            // Update test button with amount of words to be tested
             this.updateTestButton();
-        }, 300000);  // Every 5 min
-        // Confirm close command and save data before exiting the application
-        ipcRenderer.send("activate-controlled-closing");
-        ipcRenderer.on("closing-window", () => {
-            if (this.sections[this.currentSection].confirmClose()) {
-                this.sections[this.currentSection].close();
-                dataManager.save();
-                // networkManager.stopAllDownloads();
-                ipcRenderer.send("close-now");
-            }
+            setInterval(() => {
+                this.updateTestButton();
+            }, 300000);  // Every 5 min
+            // Confirm close command and save data before exiting application
+            ipcRenderer.send("activate-controlled-closing");
+            ipcRenderer.on("closing-window", () => {
+                Promise.resolve(
+                    this.sections[this.currentSection].confirmClose())
+                .then((confirmed) => {
+                    if (!confirmed) return;
+                    this.sections[this.currentSection].close();
+                    dataManager.save();
+                    // networkManager.stopAllDownloads();
+                    ipcRenderer.send("close-now");
+                });
+            });
+            // Register shortcuts
+            shortcuts.register("force-quit",
+                    () => ipcRenderer.send("close-now"));
+            shortcuts.register("quit", () => ipcRenderer.send("quit"));
+            shortcuts.register("add-vocab", () => this.openPanel("add-vocab"));
+            shortcuts.register("add-kanji", () => this.openPanel("add-kanji"));
+            shortcuts.register("dictionary",
+                    () => this.openSection("dictionary"));
+            shortcuts.register("test", () => this.openTestSection());
         });
-        // Register shortcuts
-        shortcuts.register("force-quit", () => ipcRenderer.send("close-now"));
-        shortcuts.register("quit", () => ipcRenderer.send("quit"));
-        shortcuts.register("add-vocab", () => this.openPanel("add-vocab"));
-        shortcuts.register("add-kanji", () => this.openPanel("add-kanji"));
-        shortcuts.register("dictionary", () => this.openSection("dictionary"));
-        shortcuts.register("test", () => this.openTestSection());
     }
 
     openSection(name) {
-        if (this.currentSection == name) return;
-        if (!this.sections[this.currentSection].confirmClose()) return;
-        this.sections[this.currentSection].close();
-        Velocity(this.sections[this.currentSection], "fadeOut").then(() => {
-            this.sections[name].open();
-            Velocity(this.sections[name], "fadeIn");
+        if (this.currentSection === name) return;
+        return Promise.resolve(
+                this.sections[this.currentSection].confirmClose())
+        .then((confirmed) => {
+            if (!confirmed) return;
+            this.sections[this.currentSection].close();
+            Velocity(this.sections[this.currentSection], "fadeOut").then(() => {
+                this.sections[name].open();
+                Velocity(this.sections[name], "fadeIn");
+            });
+            this.currentSection = name;
         });
-        this.currentSection = name;
     }
 
     openPanel(name) {
@@ -216,7 +226,7 @@ class MainWindow extends Window {
 
     updateTestButton() {
         return dataManager.srs.getTotalAmountDue().then((amount) => {
-            this.numSrsItemsLabel.textContent = `${amount} items`;
+            this.numSrsItemsLabel.textContent = amount;
             return amount;
         });
     }
@@ -226,22 +236,15 @@ class MainWindow extends Window {
             this.addKanjiButton.show();
             if (dataManager.content.isAvailable["Japanese"]) {
                 this.findKanjiButton.show();
-            } else {
-                this.findKanjiButton.hide();
+                this.dictionaryButton.show();
             }
         } else {
             this.addKanjiButton.hide();
-            this.findKanjiButton.hide();
-            if (this.currentSection === "kanji") {
-                this.openSection("home");
-            }
-        }
-        if (language === "Japanese" &&
-                dataManager.content.isAvailable[language]) {
-            this.dictionaryButton.show();
-        } else {
             this.dictionaryButton.hide();
-            if (this.currentSection === "dictionary") {
+            this.findKanjiButton.hide();
+            this.kanjiInfoPanel.close();
+            if (this.currentSection === "kanji" ||
+                    this.currentSection === "dictionary") {
                 this.openSection("home");
             }
         }
@@ -250,23 +253,29 @@ class MainWindow extends Window {
 
     setLanguage(language) {
         if (this.language !== undefined && this.language === language) return;
-        if (this.currentSection !== null) {
-            if (!this.sections[this.currentSection].confirmClose()) return;
-            this.sections[this.currentSection].close();
-        }
-        dataManager.setLanguage(language);
-        this.language = language;
-        this.language2 = dataManager.languageSettings.secondaryLanguage;
-        this.adjustToLanguage(this.language, this.language2);
-        for (let key in this.sections) {
-            this.sections[key].adjustToLanguage(this.language, this.language2);
-        }
-        for (let key in this.panels) {
-            this.panels[key].adjustToLanguage(this.language, this.language2);
-        }
-        if (this.currentSection !== null)
-            this.sections[this.currentSection].open();
-        this.languagePopup.set(language);
+        return Promise.resolve(this.currentSection === null ? 
+                true : this.sections[this.currentSection].confirmClose())
+        .then((confirmed) => {
+            if (!confirmed) return;
+            if (this.currentSection !== null) {
+                this.sections[this.currentSection].close();
+            }
+            dataManager.setLanguage(language);
+            this.language = language;
+            this.language2 = dataManager.languageSettings.secondaryLanguage;
+            this.adjustToLanguage(this.language, this.language2);
+            for (let key in this.sections) {
+                this.sections[key].adjustToLanguage(
+                        this.language, this.language2);
+            }
+            for (let key in this.panels) {
+                this.panels[key].adjustToLanguage(
+                        this.language, this.language2);
+            }
+            if (this.currentSection !== null)
+                this.sections[this.currentSection].open();
+            this.languagePopup.set(language);
+        });
     }
 
     makeKanjiInfoLink(element, character) {

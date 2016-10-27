@@ -8,8 +8,8 @@ class LanguageTable extends Widget {
         this.languageConfigs = [];
         const template = templates.get("language-table-entry");
         this.$("add-language-button").addEventListener("click", () => {
-            overlay.open("add-lang");
-            overlay.get("add-lang").getConfig().then((config) => {
+            overlay.open("add-lang").then((config) => {
+                if (config === null) return;
                 for (let { language } of this.languageConfigs) {
                     if (config.language === language) {
                         dialogWindow.info("You cannot add a language twice!"); 
@@ -35,7 +35,7 @@ class LanguageTable extends Widget {
                     }
                 });
                 this.$("table").show();
-            }).catch((error) => {});
+            });
         });
     }
 

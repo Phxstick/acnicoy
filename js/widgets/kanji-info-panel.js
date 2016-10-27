@@ -30,12 +30,11 @@ const menuItems = popupMenu.registerItems({
 });
 
 class KanjiInfoPanel extends Widget {
-    constructor () {
+    constructor() {
         super("kanji-info-panel", true, true);
         this.isOpen = false;
         // Store important DOM elements as properties
         this.frame = this.root.getElementById("window");
-        this.closeButton = this.root.getElementById("close-button");
         this.kanji = this.root.getElementById("kanji");
         this.kanji.popupMenu(menuItems, ["copy-kanji"]);
         this.completeSvg = this.root.getElementById("complete-kanji");
@@ -75,11 +74,7 @@ class KanjiInfoPanel extends Widget {
             });
         }
         // Callbacks
-        this.closeButton.addEventListener("click", () => {
-            Velocity(this, "slideUp", { duration: 200 });
-            this.isOpen = false;
-        });
-        // Create button callbacks
+        this.$("close-button").addEventListener("click", () => this.close());
         this.addButton.addEventListener("click", () => {
             main.panels["add-kanji"].load(this.currentKanji);
             main.openPanel("add-kanji");
@@ -131,11 +126,16 @@ class KanjiInfoPanel extends Widget {
         });
     }
 
-    open () {
-        if (!this.isOpen) {
-            Velocity(this, "slideDown", { duration: 200 });
-            this.isOpen = true;
-        }
+    open() {
+        if (this.isOpen) return;
+        Velocity(this, "slideDown", { duration: 200 });
+        this.isOpen = true;
+    }
+
+    close() {
+        if (!this.isOpen) return;
+        Velocity(this, "slideUp", { duration: 200 });
+        this.isOpen = false;
     }
 
     openSection(newSection) {

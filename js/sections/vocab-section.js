@@ -11,8 +11,10 @@ const menuItems = popupMenu.registerItems({
         label: "Delete list",
         click: ({ currentNode, data: {section} }) => {
             const name = currentNode.textContent;
-            if (dialogWindow.confirm("Are you sure you want to delete " +
-                    "the vocabulary list '" + name + "'?")) {
+            return dialogWindow.confirm(
+                `Are you sure you want to delete the vocabulary list '${name}'?`)
+            .then((confirmed) => {
+                if (!confirmed) return;
                 dataManager.vocabLists.deleteList(name);
                 main.updateStatus(`Deleted list '${name}' and its contents.`);
                 currentNode.remove();
@@ -24,7 +26,7 @@ const menuItems = popupMenu.registerItems({
                     section.deleteListButton.disabled = true;
                     section.testOnListButton.disabled = true;
                 }
-            }
+            });
         }
     },
     "test-on-list": {
@@ -54,12 +56,14 @@ const menuItems = popupMenu.registerItems({
         label: "Remove item from vocabulary",
         click: ({ currentNode, data: {section} }) => {
             const word = currentNode.textContent;
-            if (dialogWindow.confirm(
-                   `Are you sure you want to delete the word '${word}'?`)) {
+            return dialogWindow.confirm(
+                `Are you sure you want to delete the word '${name}'?`)
+            .then((confirmed) => {
+                if (!confirmed) return;
                 dataManager.vocab.remove(word);
                 events.emit("word-deleted", word);
                 events.emit("vocab-changed");
-            }
+            });
         }
     }
 });
@@ -126,8 +130,11 @@ class VocabSection extends Section {
             this.packEditEntry(this.selectedListNode);
         });
         this.deleteListButton.addEventListener("click", () => {
-            if (dialogWindow.confirm("Are you sure you want to delete " +
-                    "the vocabulary list '" + this.selectedList + "'?")) {
+            dialogWindow.confirm(
+                "Are you sure you want to delete " +
+                "the vocabulary list '" + this.selectedList + "'?")
+            .then((confirmed) => {
+                if (!confirmed) return;
                 dataManager.vocabLists.deleteList(this.selectedList);
                 main.updateStatus(
                     `Deleted list '${this.selectedList}' and its contents.`);
@@ -138,7 +145,7 @@ class VocabSection extends Section {
                 this.renameListButton.disabled = true;
                 this.deleteListButton.disabled = true;
                 this.testOnListButton.disabled = true;
-            }
+            });
         });
         this.createDragAndDropListeners();
     }
@@ -357,8 +364,14 @@ class VocabSection extends Section {
                 }
             // Case that an existing vocabulary list was deleted
             } else if (oldName.length > 0) {
-                if (dialogWindow.confirm("Are you sure you want to delete " +
-                        "the vocabulary list '" + oldName + "'?")) {
+                return dialogWindow.confirm(
+                    `Are you sure you want to delete the vocabulary list ` +
+                    `'${oldName}'?`)
+                .then((confirmed) => {
+                    if (!confirmed) {
+                        this.editInput.value = oldName;
+                        return;
+                    }
                     dataManager.vocabLists.deleteList(oldName);
                     if (node === this.selectedListNode) {
                         this.selectedListNode = null;
@@ -369,9 +382,7 @@ class VocabSection extends Section {
                         this.testOnListButton.disabled = true;
                     }
                     main.updateStatus(`Deleted list '${oldName}'.`);
-                } else {
-                    this.editInput.value = oldName;
-                }
+                });
             // Case that a new vocabulary list was added
             } else if (newName.length > 0) {
                 if (dataManager.vocabLists.createList(newName)) {

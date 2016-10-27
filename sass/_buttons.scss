@@ -1,5 +1,4 @@
 button {
-  user-select: none;
   color: $button-color;
   background-color: $button-background;
   border: 1px outset $button-background;
@@ -31,7 +30,6 @@ button {
 }
 
 %button {
-  user-select: none;
   cursor: $pointer-cursor;
 }
 
@@ -57,7 +55,7 @@ button {
 
 .light-button {
   background-color: transparent;
-  padding: 6px;
+  padding: 10px;
   text-align: center;
   color: dimgray;
   border: 0px;

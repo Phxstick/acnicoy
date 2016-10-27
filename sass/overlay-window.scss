@@ -1,28 +1,24 @@
 @import "base";
 
-#filter {
+:host {
   display: none;
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-
-  #wrapper {
-    @include center-content;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-
-    #frame {
-      position: fixed;
-      width: 500px;
-      transform: translate(0, -200px);
-      background-color: whitesmoke;
-    }
-  }
 }
 
+#wrapper {
+  @include center-content;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  > .filter {
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+}

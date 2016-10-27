@@ -41,12 +41,15 @@ select {
   padding: 3px;
   font-size: 110%;
   line-height: 100px;
-  transition: .2s;
+  transition: box-shadow .2s, background-color .2s;
   background-color: darken($view-background, 5%);
   &:focus {
     outline: none !important;
     box-shadow: 0 0 5px dimgray;
     background-color: $view-background;
+  }
+  &:hover {
+    border-color: darkred;
   }
   option:first-child {
     color: lighten($view-color, 30%);
@@ -56,7 +59,12 @@ select {
   }
 }
 
-check-box:focus {
-  box-shadow: 0 0 5px crimson;
-  border: 1px solid darkred;
+check-box {
+  &:focus {
+    box-shadow: 0 0 5px crimson;
+    border: 1px solid darkred;
+  }
+  &:hover {
+    border: 1px solid darkred;
+  }
 }

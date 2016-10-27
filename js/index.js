@@ -5,7 +5,7 @@ const globals = {
               "pinwall", "content", "vocab", "kanji", "stats", "srs",
               "test", "history", "database"],
     windows: ["init-path", "init-lang", "init-default-lang", "loading", "main"],
-    overlays: ["add-lang"],
+    overlays: ["add-lang", "info-dialog", "confirm-dialog"],
     sections: ["home", "stats", "vocab", "settings",
                "test", "dictionary", "kanji"],
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
@@ -90,7 +90,8 @@ console.log("Loaded all required modules after %f ms", totalTime);
         }
         window.main = windows["main"];
         overlay.create(); // Create overlay windows
-        return Promise.all(windowsLoaded);
+        return Promise.all(windowsLoaded)
+        .then(utility.finishEventQueue);
     }).then(() => {
         // Load data path. If it doesn't exist, let user choose it
         if (!paths.getDataPath()) {
@@ -164,10 +165,13 @@ console.log("Loaded all required modules after %f ms", totalTime);
         return main.processLanguageContent(languages);
     }).then(() => {
         openWindow("main", false);
+        // Load any character in kanji info panel to render stuff there
+        // (Prevents buggy animation when first opening the panel)
+        if (dataManager.content.isAvailable["Japanese"]) {
+            main.kanjiInfoPanel.load("字");
+        }
         return utility.finishEventQueue();
     }).then(() => {
         closeWindow("loading");
-    });/*.catch((error) => {
-        console.error(error);
-    });*/
+    });
 }

@@ -13,7 +13,6 @@ body {
   }
 
   #overlay {
-    position: fixed;
     z-index: var(--overlay-layer);
   }
 }

@@ -1,0 +1,10 @@
+@import "overlay";
+
+:host {
+  width: 350px;
+}
+
+#main-frame {
+  @include center-content;
+  min-height: 70px;
+}

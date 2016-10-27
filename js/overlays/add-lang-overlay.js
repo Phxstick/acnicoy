@@ -10,24 +10,29 @@ class AddLangOverlay extends Overlay {
             this.root.getElementById("secondary-language-select");
         this.readingsCheckbox = this.root.getElementById("readings-checkbox");
         this.$("close-button").addEventListener("click", () => {
-            this.close();
-            this.reject();
+            this.resolve(null);
         });
         this.$("cancel-button").addEventListener("click", () => {
-            this.close();
-            this.reject();
+            this.resolve(null);
         });
         this.$("add-button").addEventListener("click", () => {
             if (!this.languageSelect.value) {
-                dialogWindow.info("Select a language you want to learn.");
+                dialogWindow.info(
+                    "You need to select a language you want to learn.");
                 return;
             }
             if (!this.secondaryLanguageSelect.value) {
-                dialogWindow.info("Select a language for translations.");
+                dialogWindow.info(
+                    "You need to select a language for translations.");
                 return;
             }
-            this.close()
-            this.resolve();
+            this.resolve({
+                language: this.languageSelect.value,
+                settings: {
+                    secondary: this.secondaryLanguageSelect.value,
+                    readings: this.readingsCheckbox.checked
+                }
+            });
         });
         this.addButton = this.root.getElementById("add-button");
         this.cancelButton = this.root.getElementById("cancel-button");
@@ -49,24 +54,9 @@ class AddLangOverlay extends Overlay {
     }
     
     open() {
-        this.languageSelect.children[0].setAttribute("selected", "");
-        this.secondaryLanguageSelect.children[0].setAttribute("selected", "");
         this.languageSelect.value = "";
         this.secondaryLanguageSelect.value = "";
         this.readingsCheckbox.checked = false;
-    }
-
-    getConfig() {
-        return new Promise((resolve, reject) => {
-            this.reject = () => reject();
-            this.resolve = () => resolve({
-                language: this.languageSelect.value,
-                settings: {
-                    secondary: this.secondaryLanguageSelect.value,
-                    readings: this.readingsCheckbox.checked
-                }
-            });
-        });
     }
 }
 

@@ -204,13 +204,15 @@ class EditVocabPanel extends Panel {
     }
 
     deleteWord() {
-        if (dialogWindow.confirm(`Are you sure you want to delete ` +
-                                 `the word '${this.originalWord}'?`)) {
+        return dialogWindow.confirm(
+            `Are you sure you want to delete the word '${this.originalWord}'?`)
+        .then((confirmed) => {
+            if (!confirmed) return;
             return dataManager.vocab.remove(this.originalWord).then(() => {
                 events.emit("word-deleted", this.originalWord);
                 events.emit("vocab-changed");
             });
-        }
+        });
     }
 
     packEditEntry(node, type) {

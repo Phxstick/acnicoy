@@ -4,25 +4,15 @@ const { remote, nativeImage } = require("electron");
 const { dialog } = remote;
 
 function confirm(text) {
-    const buttonIndex = dialog.showMessageBox({
-          type: "question", buttons: ["Yes", "No"], defaultId: 1,
-          message: text, title: "Confirm", cancelId: 1
-    });
-    return buttonIndex === 0;
+    return overlay.open("confirm-dialog", text);
 }
 
 function info(text, title="Info") {
-    dialog.showMessageBox({
-        type: "info", buttons: ["'kay"], title: title, message: text
-    });
+    return overlay.open("info-dialog", text, title);
 }
 
 function error(text, title="Error") {
-    // TODO: How to get icon to work?
-    // const img = nativeImage.createFromPath("./img/icon.png");
-    dialog.showMessageBox({
-        type: "error", buttons: ["'Kay"], title: title, message: text
-    });
+    return overlay.open("info-dialog", text, title);
 }
 
 function chooseDataPath(defaultPath) {

@@ -9,7 +9,6 @@
 
   // Main window
   --menu-bar-layer: 51;
-  --footer-layer: 51;  // Needed? Remove footer?
   --side-bar-layer: 50;
 
   // Panels and sections
@@ -18,5 +17,5 @@
   --section-overlay-layer: 3;
   --kanji-info-panel-layer: 2;
   --kanji-control-bar-layer: 1;
-  --section-window-layer: 0;  // Needed?
+  --section-layer: 0;
 }

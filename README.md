@@ -5,26 +5,33 @@ a [Spaced Repetition System][SRS] (SRS) for memorizing Vocabulary.
 While the basic features work for every language, the program offers a bunch of
 additional features specifically for learning Japanese.
 
-### Features
+![Screenshot of Kanji Section](https://dl.dropbox.com/s/3l4wvzq4dow7h22/acnicoy-screenshot-kanji-section-border.png?dl=0)
+
+Features
+----
+
 The basic features for every language include:
 
-  - Create and manage your own vocabulary
-  - Organize similar parts of the vocabulary into lists
-  - Test yourself on the vocabulary using spaced repetition
-  - View statistics illustrating your progress
+* Create and manage your own vocabulary
+* Organize similar parts of the vocabulary into lists
+* Test yourself on the vocabulary using spaced repetition
+* View statistics illustrating your progress
 
 For Japanese language learners, the program additionally offers:
-  - Create and manage a kanji vocabulary
-  - More stats illustrating your kanji learning progress
-  - Look up words in the dictionary (similar to [Jisho] and [Houhou SRS])
-  - Kanji overview and cleanly presented kanji information
+
+* Create and manage a kanji vocabulary
+* More stats illustrating your kanji learning progress
+* Look up words in the dictionary (similar to [Jisho] and [Houhou SRS])
+* Kanji overview and cleanly presented kanji information
 
 Features to be implemented:
-  - Earn achievements for learning progress and unlock design settings
-  - Many settings to customize design, kanji overview, SRS system, and more
-  - ... (the todo-list is fairly large)
 
-### Installation
+* Earn achievements for learning progress and unlock design settings
+* Many settings to customize design, kanji overview, SRS system, and more
+* ... (the todo-list is fairly large)
+
+Installation
+----
 
 **NOTE**: The program is still missing a bunch of features and it's not fully
 stable, so there's no release yet. You can build it from source instead, as
@@ -35,12 +42,9 @@ Acnicoy requires [Node.js] v5+ to run and uses the [npm package manager][npm].
 To get started, run:
 ```sh
 $ git clone https://github.com/phxstick/acnicoy
-$ npm install
-$ make
+$ make install
+$ make build
 ```
-You also need to rebuild sqlite3 against electron. The process is explained
-[here](https://github.com/electron/electron/blob/master/docs/tutorial/using-native-node-modules.md).
-
 
 License
 ----

@@ -37,21 +37,15 @@ body {
   #overview-window {
     .kanji {
       display: inline-block;
-      margin-right: 5px;
-      margin-bottom: 5px;
-      padding: 3px;
+      margin-right: 3px;
+      margin-bottom: 3px;
+      padding: 4px;
       font-size: 140%;
       color: darkred;
 
       &.added {
         color: darkgrey;
       }
-
-      // &:hover {
-      //   color: $select-color;
-      //   background: lighten($select-background, 10%);
-      //   border-radius: 3px;
-      // }
 
       &.selected {
         color: $select-color;

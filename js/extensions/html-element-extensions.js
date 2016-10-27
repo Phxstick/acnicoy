@@ -150,7 +150,7 @@ HTMLElement.prototype.fadeOut = function(distance) {
     const oldOffsetTop = this.offsetTop;
     const oldOffsetLeft = this.offsetLeft;
     fadeOutSpan.textContent = this.textContent;
-    fadeOutSpan.style.width = `${oldWidth}px`;
+    fadeOutSpan.style.width = `${oldWidth + 1}px`;
     fadeOutSpan.style.display = "inline-block";
     fadeOutSpan.style.top = `${oldOffsetTop}px`;
     fadeOutSpan.style.left = `${oldOffsetLeft}px`;
@@ -177,7 +177,7 @@ HTMLElement.prototype.fadeIn = function(distance) {
     fadeInSpan.style.top = `${newOffsetTop}px`;
     fadeInSpan.style.left = `${newOffsetLeft - distance}px`;
     fadeInSpan.style.display = "none";
-    fadeInSpan.style.width = `${newWidth}px`;
+    fadeInSpan.style.width = `${newWidth + 1}px`;
     Velocity(fadeInSpan, { left: `+=${distance}` });
     return Velocity(fadeInSpan, "fadeIn", { queue: false }).then(() => {
         fadeInSpan.remove();

@@ -1,9 +1,13 @@
 "use strict";
 
 class Overlay extends Component {
-    constructor(name, fontAwesome=true) {
-        super(name + "-overlay", fontAwesome);
+    constructor(name, {
+            mode = "slide-down",
+            speed = 300,
+            distance = 150 } = {}) {
+        super(name + "-overlay", true);
         this.name = name;
+        this.displayOptions = { mode, speed, distance };
         this.root.appendChild(utility.parseHtmlFile(paths.html.overlay(name)));
     }
 
@@ -14,10 +18,9 @@ class Overlay extends Component {
     }
 
     /**
-    **  Close this overlay using the overlay manager.
+    **  Called before the overlay is being closed.
     **/
     close() {
-        overlay.close(this.name);
     }
 }
 

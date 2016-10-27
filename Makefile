@@ -2,6 +2,7 @@ PYTHON = python3
 DATA_SCRIPT_PATH = ./createJapaneseData.py
 RESOURCE_PATH = ~/Dropbox/AcnicoyResources
 OUTPUT_PATH = ./language-content/Japanese-English
+ELECTRON_PATH = ./node_modules/.bin/electron
 
 DICTIONARY_PATH = $(RESOURCE_PATH)/JMdict.xml
 DICT_TEXTS_PATH = $(RESOURCE_PATH)/improved-dictionary-texts.json
@@ -12,10 +13,9 @@ KANJI_PARTS_PATH = $(RESOURCE_PATH)/kradfile
 KANJI_STROKES_PATH = $(RESOURCE_PATH)/kanjivg-20150615-2.xml
 KANJI_NUMERALS_PATH = $(RESOURCE_PATH)/numeric-kanji.json
 KANJI_COUNTERS_PATH = $(RESOURCE_PATH)/counter-kanji.json
-NEW_JLPT_N3_PATH = $(RESOURCE_PATH)/new-jlpt-n3-kanji.txt
+NEW_JLPT_N3_PATH = $(RESOURCE_PATH)./new-jlpt-n3-kanji.txt
 
-.PHONY: data dictionary_data kanji_data build start
-
+.PHONY: data dictionary_data kanji_data build start install
 
 all: build
 
@@ -23,8 +23,11 @@ build:
 	gulp
 
 start:
-	./node_modules/.bin/electron .
+	$(ELECTRON_PATH) .
 
+install:
+	npm install
+	bash install.sh $(ELECTRON_PATH)
 
 data: dictionary_data kanji_data
 

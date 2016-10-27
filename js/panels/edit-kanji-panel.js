@@ -199,12 +199,14 @@ class EditKanjiPanel extends Panel {
 
     deleteKanji() {
         const kanji = this.kanjiLabel.textContent;
-        if (!dialogWindow.confirm(
-                `Are you sure you want to remove the kanji '${kanji}'?`))
-            return;
-        dataManager.kanji.remove(kanji);
-        main.closePanel("edit-kanji");
-        events.emit("kanji-removed", kanji);
+        return dialogWindow.confirm(
+            `Are you sure you want to remove the kanji '${kanji}'?`)
+        .then((confirmed) => {
+            if (!confirmed) return;
+            dataManager.kanji.remove(kanji);
+            main.closePanel("edit-kanji");
+            events.emit("kanji-removed", kanji);
+        });
     }
 
     packEditEntry(node, type) {

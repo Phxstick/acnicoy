@@ -13,6 +13,7 @@
   font-size: 100%;
   color: $color;
   cursor: $normal-cursor;
+  user-select: none;
   &::selection {
     color: $select-color;
     background: $select-background;
