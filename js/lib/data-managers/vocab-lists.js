@@ -18,10 +18,10 @@ module.exports = function (paths, modules) {
     vocabLists.load = function (language) {
         const path = paths.languageData(language).vocabLists;
         dataMap[language] = { data: require(path), wordToLists: new Map() };
-        for (let list in dataMap[language].data) {
+        const lists = Reflect.ownKeys(dataMap[language].data);
+        for (const list of lists) {
             const words = dataMap[language].data[list];
-            for (let i = 0; i < words.length; ++i) {
-                const word = words[i];
+            for (const word of words) {
                 if (!dataMap[language].wordToLists.has(word))
                     dataMap[language].wordToLists.set(word, []);
                 if (!dataMap[language].wordToLists.get(word).includes(list))
@@ -36,7 +36,7 @@ module.exports = function (paths, modules) {
     };
 
     vocabLists.save = function () {
-        for (let language in dataMap) {
+        for (const language in dataMap) {
             const path = paths.languageData(language).vocabLists;
             fs.writeFileSync(
                     path, JSON.stringify(dataMap[language].data, null, 4));
@@ -76,7 +76,7 @@ module.exports = function (paths, modules) {
         data[newName] = data[oldName];
         delete data[oldName];
         // Also rename all occurrences in the inverted index
-        for (let [word, lists] of wordToLists) {
+        for (const [word, lists] of wordToLists) {
             if (lists.includes(oldName))
                 lists[lists.indexOf(oldName)] = newName;
         }
@@ -92,7 +92,7 @@ module.exports = function (paths, modules) {
     vocabLists.deleteList = function (name) {
         delete data[name];
         // Also remove all occurrences of the list in the inverted index
-        for (let [word, listNames] of wordToLists) {
+        for (const [word, listNames] of wordToLists) {
             listNames.remove(name);
         }
     };

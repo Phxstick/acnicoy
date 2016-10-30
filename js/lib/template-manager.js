@@ -3,17 +3,17 @@
 const fs = require("fs");
 const Handlebars = require("handlebars");
 
-const templates = {};
+const templates = new Map();
 
 /**
 **  Return template with given name. Load it if it's not registered yet.
 **/
 module.exports.get = function (name) {
-    if (!(name in templates)) {
+    if (!templates.has(name)) {
         const source = fs.readFileSync(paths.template(name), "utf-8");
-        templates[name] = Handlebars.compile(source);
+        templates.set(name, Handlebars.compile(source));
     }
-    return templates[name];
+    return templates.get(name);
 };
 
 /**
@@ -22,7 +22,7 @@ module.exports.get = function (name) {
 
 Handlebars.registerHelper("eachLetter", function(word) {
     let html = "";
-    for (let letter of word) {
+    for (const letter of word) {
         html += `<span>${letter}</span>`;
     }
     return new Handlebars.SafeString(html);

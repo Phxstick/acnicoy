@@ -30,7 +30,7 @@ class KanjiSection extends Section {
             const knownKanji = [];
             const promises = [];
             // Check which characters are known kanji (= in the database)
-            for (let character of queryString) {
+            for (const character of queryString) {
                 const promise = dataManager.content.isKnownKanji(character)
                 .then((isKnown) => isKnown ? knownKanji.push(character) : 0);
                 promises.push(promise);
@@ -80,7 +80,7 @@ class KanjiSection extends Section {
 
     createKanji(rows) {
         const fragment = document.createDocumentFragment();
-        for (let { kanji, added, strokes, grade } of rows) {
+        for (const { kanji, added, strokes, grade } of rows) {
             const kanjiSpan = document.createElement("span");
             kanjiSpan.textContent = kanji;
             kanjiSpan.id = kanji;
@@ -98,13 +98,16 @@ class KanjiSection extends Section {
         this.kanjiContainer.appendChild(fragment);
     }
 
-    displayKanji(ordering, onlyMissing=false, showJinmeiyou=false,
-            showHyougai=false) {
+    displayKanji(ordering, {
+            onlyMissing=false,
+            showJinmeiyou=false,
+            showHyougai=false }={}) {
         this.overview.empty();
         if (onlyMissing) {
             const elements = this.root.getElementsByClassName("added");
-            for (let i = 0; i < elements.length; ++i)
-                elements[i].style.display = "none";
+            for (const element in elements) {
+                element.style.display = "none";
+            }
         }
         let content;
         let title;
@@ -129,15 +132,15 @@ class KanjiSection extends Section {
                 title = document.createElement("dt");
                 content = document.createElement("dd");
                 const selector = ".grade-" + gradeNumbers[i];
-                let spans = this.root.querySelectorAll(selector);
-                let added = this.root.querySelectorAll(selector + ".added");
+                const spans = this.root.querySelectorAll(selector);
+                // const added = this.root.querySelectorAll(selector + ".added");
                 const titleSpan = document.createElement("span");
                 titleSpan.textContent = titles[i];
                 title.appendChild(titleSpan);
                 title.appendChild(this.addedPerGradeCounters[gradeNumbers[i]]);
                 this.updateAddedPerGradeCounter(gradeNumbers[i]);
-                for (let i = 0; i < spans.length; ++i) {
-                    content.appendChild(spans[i]);
+                for (const span of spans) {
+                    content.appendChild(span);
                 }
                 this.overview.appendChild(title);
                 this.overview.appendChild(content);
@@ -164,14 +167,12 @@ class KanjiSection extends Section {
     displayMoreSearchResults(amount) {
         const fragment = document.createDocumentFragment();
         const promises = [];
+        const ResultEntry = customElements.get("kanji-search-result-entry");
         let promise;
-        for (let kanji of this.lastSearchResult) {
+        for (const kanji of this.lastSearchResult) {
             // Fill info frame with data
             promise = dataManager.content.getKanjiInfo(kanji).then((info) =>  {
-                const entry =
-                    document.createElement("kanji-search-result-entry");
-                entry.setInfo(kanji, info);
-                fragment.appendChild(entry);
+                fragment.appendChild(new ResultEntry(kanji, info));
             });
             promises.push(promise);
         }

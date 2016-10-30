@@ -4,6 +4,7 @@ const fs = require("fs");
 
 module.exports = function (paths, modules) {
     const settings = {};
+    let data;
 
     settings.setDefault = function() {
         const defaultSettings = fs.readFileSync(paths.defaultSettings);
@@ -12,16 +13,21 @@ module.exports = function (paths, modules) {
     }
 
     settings.load = function() {
-        const data = require(paths.globalSettings);
-        for (let entry in data) {
-            settings[entry] = data[entry];
-        }
+        data = require(paths.globalSettings);
     };
 
     settings.save = function() {
-        fs.writeFileSync(paths.globalSettings,
-                JSON.stringify(settings, null, 4));
+        fs.writeFileSync(paths.globalSettings, JSON.stringify(data, null, 4));
     };
 
-    return settings;
+    return new Proxy(settings, {
+        get: (target, key) => {
+            if (data !== undefined && Reflect.has(data, key)) return data[key];
+            else return target[key];
+        },
+        set: (target, key, value) => {
+            if (data !== undefined && Reflect.has(data, key)) data[key] = value;
+            else throw Error("You cannot create new settings!")
+        }
+    })
 };

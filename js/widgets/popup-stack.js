@@ -69,14 +69,14 @@ class PopupStack extends Widget {
         // Open the popup-stack by animating/setting these property names
         const itemSize = this.children[0][propertyNames.size];
         let current = 0;
-        for (let i = 0; i < this.children.length; ++i) {
-            this.children[i].style.zIndex = i;
+        for (const child of this.children.length) {
+            child.style.zIndex = i;
             if (this._attributes["animate"]) {
-                Velocity(this.children[i], {
+                Velocity(child, {
                     [propertyNames.offset] : `${current}px`
                 });
             } else {
-                this.children[i].style[propertyNames.offset] = `${current}px`;
+                child.style[propertyNames.offset] = `${current}px`;
             }
             current += itemSize - this._attributes["overlap"];
         }
@@ -102,8 +102,8 @@ class PopupStack extends Widget {
         if (this._attributes["animate"]) {
             Velocity(this.children, { [propertyNames.offset] : "0" });
         } else {
-            for (let i = 0; i < this.children.length; ++i) {
-                this.children[i].style[propertyNames.offset] = "0";
+            for (const child of this.children) {
+                child.style[propertyNames.offset] = "0";
             }
         }
         Velocity(this.$("shadow"), {

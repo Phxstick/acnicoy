@@ -25,7 +25,7 @@ module.exports = function (paths, modules) {
     };
 
     settings.save = function () {
-        for (let language in dataMap) {
+        for (const language in dataMap) {
             const path = paths.languageData(language).settings;
             fs.writeFileSync(path, JSON.stringify(dataMap[language], null, 4));
         }

@@ -17,18 +17,6 @@ Array.prototype.sum = function() {
 
 
 /**
-**  Given one or more values, return true if this array contains only
-**  elements equal to given values.
-**/
-Array.prototype.containsOnly = function(...values) {
-    for (let element of this) {
-        if (!values.includes(element)) return false;
-    }
-    return true;
-};
-
-
-/**
 **  Remove first occurence of given element from the array.
 **/
 Array.prototype.remove = function(value) {

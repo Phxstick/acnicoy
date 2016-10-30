@@ -54,8 +54,9 @@ class StatsSection extends Section {
             dataManager.stats.getNumberOfItemsTested();
         // Display total score for all specified modes
         const totalScorePromises = [];
-        for (let mode of dataManager.test.modes)
+        for (const mode of dataManager.test.modes) {
             totalScorePromises.push(dataManager.stats.getTotalScore(mode));
+        }
         promises.push(Promise.all(totalScorePromises).then((totalScores) => {
             this.totalScore.textContent = totalScores.sum();
         }));

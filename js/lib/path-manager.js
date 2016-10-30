@@ -131,7 +131,7 @@ module.exports = function (basePath) {
         if (!utility.existsDirectory(p))
             return null;
         const resourcePaths = contentRegister[language][secondaryLanguage];
-        for (let resource in resourcePaths)
+        for (const resource in resourcePaths)
             resourcePaths[resource] = path.resolve(p, resourcePaths[resource]);
         return resourcePaths;
     };

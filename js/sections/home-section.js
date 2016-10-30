@@ -11,8 +11,10 @@ class HomeSection extends Section {
     }
 
     open() {
-        for (let i = 0; i < this.pinwall.children.length - 1; ++i) {
-            this.pinwall.children[i].open();
+        for (const child of this.pinwall.children) {
+            if (child !== this.widgetAdder) {
+                child.open();
+            }
         }
     }
 
@@ -23,10 +25,10 @@ class HomeSection extends Section {
     adjustToLanguage(language, secondary) {
         this.pinwall.innerHTML = "";
         const fragment = document.createDocumentFragment();
-        for (let widget of dataManager.pinwall.getWidgets()) {
+        for (const widget of dataManager.pinwall.getWidgets()) {
             const Type = customElements.get(widget.type);
             const object = new Type();
-            object.removeCallback = () => this.pinwall.removeChild(widget);
+            object.removeCallback = () => this.pinwall.removeChild(object);
             if (widget.type === "pinwall-note") {
                 // TODO: Set size
                 object.setText(widget.text);

@@ -76,7 +76,7 @@ class DictionarySection extends Section {
         }
         return Promise.all(entryPromises).then((entries) => {
             const fragment = document.createDocumentFragment();
-            for (let entry of entries) {
+            for (const entry of entries) {
                 fragment.appendChild(entry);
             }
             this.resultList.appendChild(fragment);

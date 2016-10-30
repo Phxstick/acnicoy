@@ -102,8 +102,8 @@ class EditVocabPanel extends Panel {
         // Create callback for adding vocab lists
         this.vocabListAddButton.addEventListener("click", () => {
             const lists = [];
-            for (let i = 0; i < this.listsList.children.length; ++i)
-                lists.push(this.listsList.children[i].textContent);
+            for (const item of this.listsList.children)
+                lists.push(item.textContent);
             const newList = this.vocabListSelect.value;
             const word = this.wordLabel.textContent;
             if (!lists.includes(newList) && newList.length > 0) {
@@ -145,7 +145,7 @@ class EditVocabPanel extends Panel {
         defaultOption.textContent = "Select a vocabulary list to add";
         this.vocabListSelect.appendChild(defaultOption);
         const lists = dataManager.vocabLists.getLists();
-        for (let list of lists) {
+        for (const list of lists) {
             const option = document.createElement("option");
             option.value = list;
             option.textContent = list;
@@ -159,7 +159,7 @@ class EditVocabPanel extends Panel {
     load(word) {
         this.listsList.empty();
         const lists = dataManager.vocabLists.getListsForWord(word);
-        for (let list of lists) {
+        for (const list of lists) {
             this.createListItem(list, "list");
         }
         this.defaultListOption.setAttribute("selected", "");
@@ -170,10 +170,10 @@ class EditVocabPanel extends Panel {
             this.translationsList.empty();
             this.readingsList.empty();
             this.wordLabel.textContent = word;
-            for (let translation of translations) {
+            for (const translation of translations) {
                 this.createListItem(translation, "translation");
             }
-            for (let reading of readings) {
+            for (const reading of readings) {
                 this.createListItem(reading, "reading");
             }
             this.levelPopup.set(this.levelPopup.children[level - 1]);
@@ -254,12 +254,12 @@ class EditVocabPanel extends Panel {
         const translations = [];
         const readings = [];
         const lists = [];
-        for (let i = 0; i < this.translationsList.children.length; ++i)
-            translations.push(this.translationsList.children[i].textContent);
-        for (let i = 0; i < this.readingsList.children.length; ++i)
-            readings.push(this.readingsList.children[i].textContent);
-        for (let i = 0; i < this.listsList.children.length; ++i)
-            lists.push(this.listsList.children[i].textContent);
+        for (const item of this.translationsList.children)
+            translations.push(item.textContent);
+        for (const item of this.readingsList.children)
+            readings.push(item.textContent);
+        for (const item of this.listsList.children)
+            lists.push(item.textContent);
         // If the word was renamed, apply this change first
         let promise = Promise.resolve();
         if (originalWord !== word) {
@@ -273,10 +273,10 @@ class EditVocabPanel extends Panel {
         ).then((newStatus) => {
             // Apply changes to vocab-lists
             const oldLists = dataManager.vocabLists.getListsForWord(word);
-            for (let list of oldLists) {
+            for (const list of oldLists) {
                 dataManager.vocabLists.removeWordFromList(word, list);
             }
-            for (let list of lists) {
+            for (const list of lists) {
                 dataManager.vocabLists.addWordToList(word, list);
             }
             if (newStatus === "removed") {

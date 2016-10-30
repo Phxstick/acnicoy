@@ -14,7 +14,7 @@ module.exports = function (paths, modules) {
     languageManager.add = function (language, settings) {
         fs.mkdirSync(paths.languageData(language).directory);
         const results = [];
-        for (let name in modules) {
+        for (const name in modules) {
             if (modules[name].hasOwnProperty("create")) {
                 results.push(modules[name].create(language, settings));
             }

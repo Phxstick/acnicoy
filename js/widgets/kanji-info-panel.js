@@ -6,26 +6,6 @@ const menuItems = popupMenu.registerItems({
         click: ({ currentNode }) => {
             clipboard.writeText(currentNode.textContent);
         }
-    },
-    "copy-word": {
-        label: "Copy word",
-        click: ({ currentNode }) => {
-            clipboard.writeText(currentNode.word);
-        }
-    },
-    "edit-word": {
-        label: "Edit vocabulary item",
-        click: ({ currentNode }) => {
-            main.panels["edit-vocab"].load(currentNode.word);
-            main.openPanel("edit-vocab");
-        }
-    },
-    "add-word": {
-        label: "Add word to vocabulary",
-        click: ({ currentNode }) => {
-            main.panels["add-vocab"].load(currentNode.wordId, currentNode.word);
-            main.openPanel("add-vocab");
-        }
     }
 });
 
@@ -68,7 +48,7 @@ class KanjiInfoPanel extends Widget {
         };
         this.exampleWords = this.root.getElementById("example-words");
         // Create button callbacks
-        for (let name in this.sectionButtons) {
+        for (const name in this.sectionButtons) {
             this.sectionButtons[name].addEventListener("click", () => {
                 this.openSection(name);
             });
@@ -141,7 +121,7 @@ class KanjiInfoPanel extends Widget {
     openSection(newSection) {
         this.sectionFrames[newSection].show();
         this.sectionButtons[newSection].classList.add("selected");
-        for (let section in this.sectionButtons) {
+        for (const section in this.sectionButtons) {
             if (newSection !== section) {
                 this.sectionFrames[section].hide();
                 this.sectionButtons[section].classList.remove("selected");
@@ -171,7 +151,7 @@ class KanjiInfoPanel extends Widget {
             this.detailsFrame.empty();
             // Display misc info spans
             const detailSpans = this.getKanjiDetailSpans(kanji, info);
-            for (let span of detailSpans) {
+            for (const span of detailSpans) {
                 this.detailsFrame.appendChild(span);
             }
             // If counter kanji: display list of objects counted in description
@@ -215,7 +195,7 @@ class KanjiInfoPanel extends Widget {
                 `${info.radical}  (${info.radicalName})`;
             // List kanji parts
             this.kanjiParts.empty();
-            for (let part of info.parts) {
+            for (const part of info.parts) {
                 const span = document.createElement("span");
                 span.textContent = part;
                 this.kanjiParts.appendChild(span);
@@ -226,56 +206,14 @@ class KanjiInfoPanel extends Widget {
     displayMoreExampleWords(amount) {
         const limit = Math.min(this.nextRowIndex + amount,
                                this.exampleWordRows.length);
-        this.exampleWords.appendChild(
-            this.createExampleWordRows(
-                this.exampleWordRows.slice(this.nextRowIndex, limit)));
-        this.nextRowIndex = limit;
-    }
-
-    // TODO: Differentiate term "rows" (database rows <-> table rows)...
-    createExampleWordRows(dataRows) {
+        const dataRows = this.exampleWordRows.slice(this.nextRowIndex, limit);
         const fragment = document.createDocumentFragment();
-        for (let dataRow of dataRows) {
-            // TODO: Attach popupmenu for adding words
-            const tableRow = document.createElement("tr");
-            // Add colored frequency marker to the row
-            const freqMarker = document.createElement("td");
-            const colorSpan = document.createElement("div");
-            const alpha = dataRow.newsFreq === 0 ? 0 :
-                0.2 + 0.8 * (dataRow.newsFreq - dataRow.newsFreq % 10) / 45;
-            colorSpan.style.backgroundColor = `rgba(0, 255, 0, ${alpha})`;
-            freqMarker.appendChild(colorSpan);
-            tableRow.appendChild(freqMarker);
-            tableRow.word = dataRow.word;
-            tableRow.wordId = dataRow.id;
-            // Add the word to the row
-            const wordCol = document.createElement("td");
-            wordCol.textContent = dataRow.word;
-            tableRow.appendChild(wordCol);
-            tableRow.popupMenu(menuItems, () => {
-                return dataManager.vocab.contains(dataRow.word)
-                .then((isAdded) => isAdded? ["copy-word", "edit-word"] :
-                                            ["copy-word", "add-word"]);
-            });
-            // Add readings to the row
-            // TODO: Choose most common readings / no outdated ones
-            const readingsCol = document.createElement("td");
-            readingsCol.textContent = dataRow.readings.split(";")[0];
-            // .join(", ");
-            tableRow.appendChild(readingsCol);
-            // For each meaning, append a translation
-            const meanings = dataRow.translations.split(";");
-            const translations = [];
-            for (let meaning of meanings) {
-                translations.push(utility.parseEntries(meaning, ",")[0])
-            }
-            const translationsCol = document.createElement("td");
-            translationsCol.textContent = translations.join(", ");
-            tableRow.appendChild(translationsCol);
-            // Append new table row to the fragment
-            fragment.appendChild(tableRow);
+        const ExampleWordEntry = customElements.get("example-word-entry");
+        for (const dataRow of dataRows) {
+            fragment.appendChild(new ExampleWordEntry(dataRow));
         }
-        return fragment;
+        this.exampleWords.appendChild(fragment);
+        this.nextRowIndex = limit;
     }
 
     displayStrokeGraphics() {
@@ -283,11 +221,12 @@ class KanjiInfoPanel extends Widget {
         this.strokeGraphics.empty();
         // If no stroke info is available, display a note
         if (!kanjiStrokes.hasOwnProperty(this.currentKanji)) {
-            const span = document.createElement("span");
-            // TODO: Make this message a bit more stylish (center, ...)
-            span.textContent = "No stroke info available!";
-            this.strokeGraphics.appendChild(span);
+            this.strokeGraphics.hide();
+            this.$("strokes-not-available-info").show();
             return;
+        } else {
+            this.$("strokes-not-available-info").hide();
+            this.strokeGraphics.show();
         }
         const strokes = kanjiStrokes[this.currentKanji];
         while (this.completeSvg.lastChild !== null) {
@@ -301,12 +240,11 @@ class KanjiInfoPanel extends Widget {
         this.completeSvg.setAttribute("viewBox", "0 0 109 109");
         // Draw the complete kanji into the complete-kanji-svg
         const partToPath = {};
-        for (let s of strokes) {
-            const path = utility.createSvgNode(
-                "path", { d: s.stroke });
+        for (const { stroke, parts } of strokes) {
+            const path = utility.createSvgNode("path", { d: stroke });
             this.completeSvg.appendChild(path);
             // Also create a mapping from kanji part to path elements
-            for (let part of s.parts) {
+            for (const part of parts) {
                 if (!(part in partToPath)) {
                     partToPath[part] = [];
                 }
@@ -315,29 +253,24 @@ class KanjiInfoPanel extends Widget {
         }
         // Show kanji diagram with highlighted strokes when hovering
         // over the kanji part corresponding to these strokes
-        for (let i = 0; i < this.kanjiParts.children.length; ++i) {
-            const part = this.kanjiParts.children[i].textContent;
-            this.kanjiParts.children[i].addEventListener("mouseover",
-            () => {
+        for (const item of this.kanjiParts.children) {
+            const part = item.textContent;
+            item.addEventListener("mouseover", () => {
                 this.completeSvg.style.visibility = "visible";
                 this.kanji.style.visibility = "hidden";
                 if (!(part in partToPath)) return;
-                for (let path of partToPath[part]) {
+                for (const path of partToPath[part]) {
                     path.classList.add("highlighted");
-                    // path.setAttribute("stroke", "red");
                 }
             });
-            this.kanjiParts.children[i].addEventListener("mouseout",
-            () => {
+            item.addEventListener("mouseout", () => {
                 this.completeSvg.style.visibility = "hidden";
                 this.kanji.style.visibility = "visible";
                 if (!(part in partToPath)) return;
-                for (let path of partToPath[part]) {
+                for (const path of partToPath[part]) {
                     path.classList.remove("highlighted");
-                    // path.setAttribute("stroke", "black");
                 }
             });
-                
         }
         // For each stroke, create an svg diagram
         for (let i = 0; i < strokes.length; ++i) {

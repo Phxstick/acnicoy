@@ -17,18 +17,16 @@ class DictionarySearchResultEntry extends Widget {
         // Open kanji info panel upon clicking a kanji in the words
         if (info.wordsAndReadings[0].word.length > 0) {
             const mainWordFrame = this.root.getElementById("main-word");
-            for (let i = 0; i < mainWordFrame.children.length; ++i) {
-                main.makeKanjiInfoLink(mainWordFrame.children[i],
-                        mainWordFrame.children[i].textContent);
+            for (const span of mainWordFrame.children) {
+                main.makeKanjiInfoLink(span, span.textContent);
             }
         }
         const variantsFrame = this.root.getElementById("variants");
         if (variantsFrame !== null) {
             for (let i = 1; i < variantsFrame.children.length; ++i) {
                 const wordFrame = variantsFrame.children[i].children[0];
-                for (let i = 0; i < wordFrame.children.length; ++i) {
-                    main.makeKanjiInfoLink(wordFrame.children[i],
-                            wordFrame.children[i].textContent);
+                for (const span of wordFrame.children) {
+                    main.makeKanjiInfoLink(span, span.textContent);
                 }
             }
         }

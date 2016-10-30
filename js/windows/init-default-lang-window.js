@@ -18,7 +18,7 @@ class InitDefaultLangWindow extends Window {
         this.$("default-language").empty();
         this.$("default-language").appendChild(
                 utility.createDefaultOption("Choose default language"));
-        for (let language of languages) {
+        for (const language of languages) {
             const option = document.createElement("option");
             option.textContent = language;
             this.$("default-language").appendChild(option);

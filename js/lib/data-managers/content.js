@@ -45,12 +45,12 @@ module.exports = function (paths, modules) {
             ])).then(([amountPerGrade, amountPerLevel]) => {
                 // Create mapping from jouyou grade to amount
                 const kanjiPerGrade = {};
-                for (let { grade, amount } of amountPerGrade) {
+                for (const { grade, amount } of amountPerGrade) {
                     kanjiPerGrade[grade] = amount;
                 }
                 // Create mapping from jlpt level to amount
                 const kanjiPerJlpt = {};
-                for (let { level, amount } of amountPerLevel) {
+                for (const { level, amount } of amountPerLevel) {
                     kanjiPerJlpt[level] = amount;
                 }
                 // Gather all the content into a frozen object
@@ -176,7 +176,7 @@ module.exports = function (paths, modules) {
             // Provide list of objects containing of a word and its reading
             words = words.split(";");
             info.wordsAndReadings = [];
-            for (let { reading, restricted_to } of readings) {
+            for (const { reading, restricted_to } of readings) {
                 let wordsForThisReading;
                 // If the reading is not restricted to particular given words,
                 // it counts for all words
@@ -185,7 +185,7 @@ module.exports = function (paths, modules) {
                 } else {
                     wordsForThisReading = words;
                 }
-                for (let word of wordsForThisReading) {
+                for (const word of wordsForThisReading) {
                     info.wordsAndReadings.push({
                         word: word, reading: reading
                     });
@@ -194,7 +194,7 @@ module.exports = function (paths, modules) {
             // Provide list of meaning-objects containing translations for this
             // meaning, field of application, etc.
             info.meanings = [];
-            for (let { translations, part_of_speech, field_of_application,
+            for (const { translations, part_of_speech, field_of_application,
                        misc_info, words_restricted_to, readings_restricted_to,
                        dialect } of meanings) {
                 info.meanings.push({

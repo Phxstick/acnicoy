@@ -117,7 +117,7 @@ class TestSection extends Section {
             let isCorrect = true;
             if (!solutions.has(answer)) {
                 let match = false;
-                for (let solution of solutions) {
+                for (const solution of solutions) {
                     if (part !== "readings" && 
                         utility.calculateED(answer, solution)
                             < solution.length / 4)
@@ -199,8 +199,9 @@ class TestSection extends Section {
         }
         // Check if the test is completed (no items left)
         if (items.length === 0) {
-            alert(`Correct: ${this.testInfo.numCorrect}\n` +
-                  `Wrong: ${this.testInfo.numIncorrect}`);
+            dialogWindow.info(
+                `Correct: ${this.testInfo.numCorrect}\n` +
+                `Wrong: ${this.testInfo.numIncorrect}`);
             // TODO: Prepare and show test-complete stuff
             this.testFinished = true;
             main.openSection("home");
@@ -240,7 +241,7 @@ class TestSection extends Section {
     }
 
     _showAnswers(solutions) {
-        for (let solution of solutions) {
+        for (const solution of solutions) {
             const div = document.createElement("div");
             div.textContent = solution;
             this.correctAnswers.appendChild(div);
@@ -259,7 +260,7 @@ class TestSection extends Section {
      * Updates SRS system and daily stats.
      */
     _updateData(item, answeredCorrectly) {
-        let newLevel =
+        const newLevel =
             answeredCorrectly ? item.level + 1 : Math.max(1, item.level - 1);
         dataManager.stats.incrementTestedCounter(item.mode);
         dataManager.stats.updateDailyScore(item.mode, item.level, newLevel);
@@ -274,7 +275,7 @@ class TestSection extends Section {
             const originalSolutions = new Set(result);
             // If the language is English, make solutions without "to" count
             if (main.language2 === "English") {
-                for (let solution of originalSolutions) {
+                for (const solution of originalSolutions) {
                     if (solution.startsWith("to "))
                         solutions.add(solution.slice(3));
                 }
@@ -282,8 +283,9 @@ class TestSection extends Section {
             // Also ignore braces and their content for the solutions
             const pattern = /\(.*?\)/g;
             const temp = new Set(solutions);
-            for (let solution of temp)
+            for (const solution of temp) {
                 solutions.add(solution.replace(pattern, "").trim());
+            }
             return [originalSolutions, solutions];
         });
     }
@@ -313,7 +315,7 @@ class TestSection extends Section {
         const promises = [];
         // Assemble vocabulary part of the testitem list
         const vocabPart = dataManager.srs.getDueVocab().then((words) => {
-            for (let word of words) {
+            for (const word of words) {
                 promises.push(
                     this._createTestItem(word, dataManager.test.mode.WORDS)
                     .then((item) => itemList.push(item)));
@@ -322,12 +324,12 @@ class TestSection extends Section {
         // Assemble kanji part of the testitem list if the language is Japanese
         let kanjiParts = [];
         if (main.language === "Japanese") {
-            for (let mode of [dataManager.test.mode.KANJI_MEANINGS,
-                              dataManager.test.mode.KANJI_ON_YOMI,
-                              dataManager.test.mode.KANJI_KUN_YOMI]) {
+            for (const mode of [dataManager.test.mode.KANJI_MEANINGS,
+                                dataManager.test.mode.KANJI_ON_YOMI,
+                                dataManager.test.mode.KANJI_KUN_YOMI]) {
                 kanjiParts.push(dataManager.srs.getDueKanji(mode)
                 .then((result) => {
-                    for (let kanji of result) {
+                    for (const kanji of result) {
                         promises.push(this._createTestItem(kanji, mode)
                             .then((item) => itemList.push(item)));
                     }

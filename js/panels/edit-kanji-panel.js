@@ -141,7 +141,7 @@ class EditKanjiPanel extends Panel {
             dataManager.languageSettings["SRS"]["spacing"].length;
         const popups = [ this.allLevelsPopup, this.meaningsLevelPopup,
                          this.onYomiLevelPopup, this.kunYomiLevelPopup ];
-        for (let levelPopup of popups) {
+        for (const levelPopup of popups) {
             levelPopup.empty();
             for (let i = 1; i < numLevels; ++i) levelPopup.addOption(i);
         }
@@ -153,13 +153,13 @@ class EditKanjiPanel extends Panel {
             this.onYomiList.empty();
             this.kunYomiList.empty();
             this.kanjiLabel.textContent = kanji;
-            for (let meaning of info.meanings) {
+            for (const meaning of info.meanings) {
                 this.createListItem(meaning, "meaning");
             }
-            for (let onYomi of info.onYomi) {
+            for (const onYomi of info.onYomi) {
                 this.createListItem(onYomi, "on-yomi");
             }
-            for (let kunYomi of info.kunYomi) {
+            for (const kunYomi of info.kunYomi) {
                 this.createListItem(kunYomi, "kun-yomi");
             }
             // Set level popup stacks
@@ -259,12 +259,12 @@ class EditKanjiPanel extends Panel {
             kun_yomi: parseInt(this.kunYomiLevelPopup.value)
         };
         const values = { meanings: [], on_yomi: [], kun_yomi: [] };
-        for (let i = 0; i < this.meaningsList.children.length; ++i)
-            values.meanings.push(this.meaningsList.children[i].textContent);
-        for (let i = 0; i < this.onYomiList.children.length; ++i)
-            values.on_yomi.push(this.onYomiList.children[i].textContent);
-        for (let i = 0; i < this.kunYomiList.children.length; ++i)
-            values.kun_yomi.push(this.kunYomiList.children[i].textContent);
+        for (const item of this.meaningsList.children)
+            values.meanings.push(item.textContent);
+        for (const item of this.onYomiList.children)
+            values.on_yomi.push(item.textContent);
+        for (const item of this.kunYomiList.children)
+            values.kun_yomi.push(item.textContent);
         return dataManager.kanji.edit(kanji, values, levels).then((result) => {
             if (result === "removed") {
                 main.updateStatus(`Kanji ${kanji} has been removed.`);

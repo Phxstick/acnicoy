@@ -16,7 +16,7 @@ function queryServer(queryObject) {
     const downloadScript = "download.php";
     return new Promise((resolve, reject) => {
         const queryArray = [];
-        for (let key in queryObject) {
+        for (const key in queryObject) {
             queryArray.push(key + "=" + queryObject[key]);
         }
         const queryString = queryArray.join("&");
@@ -259,7 +259,7 @@ function stopDownload(filename) {
 }
 
 function stopAllDownloads() {
-    for (let filename in downloads) {
+    for (const filename in downloads) {
         stopDownload(filename);
     }
 }

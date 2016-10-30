@@ -7,7 +7,7 @@ function create() {
     overlayWindow = document.createElement("overlay-window");
     overlayWindow.id = "overlay";
     document.body.appendChild(overlayWindow);
-    for (let name of globals.overlays) {
+    for (const name of globals.overlays) {
         contents[name] = document.createElement(name + "-overlay");
         // (Workaround) Force chromium to apply css to hidden element
         contents[name].style.display = "none";

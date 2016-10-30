@@ -16,7 +16,7 @@ module.exports = function (paths, modules) {
             testedPerMode: {},
             scorePerMode: {}
         };
-        for (let mode of modules.test.modesForLanguage(language)) {
+        for (const mode of modules.test.modesForLanguage(language)) {
             initialStats.testedPerMode[mode] = 0;
             initialStats.scorePerMode[mode] = 0;
         }
@@ -29,7 +29,7 @@ module.exports = function (paths, modules) {
     };
 
     stats.save = function () {
-        for (let language in dataMap) {
+        for (const language in dataMap) {
             const path = paths.languageData(language).stats;
             fs.writeFileSync(path, JSON.stringify(dataMap[language]));
         }
@@ -42,7 +42,7 @@ module.exports = function (paths, modules) {
         levelToScore = { "0": 0 };
         for (let level = 1; level < timeIntervals.length; ++level) {
             const totalTime = timeIntervals.slice(1, level + 1).sum();
-            for (let milestone in scoreCalculation["percentages"]) {
+            for (const milestone in scoreCalculation["percentages"]) {
                 if (totalTime > parseInt(milestone)) {
                     levelToScore[level] = 
                        (scoreCalculation["percentages"][milestone] *
@@ -85,8 +85,7 @@ module.exports = function (paths, modules) {
             currentDate = [year, month, day];
         }
         newItems.reverse();
-        for (let item of newItems)
-            data["daily"].push(item);
+        data["daily"].push(...newItems);
     }
 
 
@@ -122,7 +121,7 @@ module.exports = function (paths, modules) {
 
     stats.getNumberOfItemsTested = function () {
         let total = 0;
-        for (let mode of modules.test.modes) {
+        for (const mode of modules.test.modes) {
             total += data["testedPerMode"][mode];
         }
         return total;

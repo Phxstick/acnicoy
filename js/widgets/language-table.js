@@ -10,7 +10,7 @@ class LanguageTable extends Widget {
         this.$("add-language-button").addEventListener("click", () => {
             overlay.open("add-lang").then((config) => {
                 if (config === null) return;
-                for (let { language } of this.languageConfigs) {
+                for (const { language } of this.languageConfigs) {
                     if (config.language === language) {
                         dialogWindow.info("You cannot add a language twice!"); 
                         return;

@@ -29,11 +29,11 @@ module.exports = function (paths, modules) {
         const promises = [];
         for (let level = 0; level < numLevels; ++level) {
             amounts[level] = {};
-            for (let mode of modules.test.modes) {
+            for (const mode of modules.test.modes) {
                 amounts[level][mode] = { due: 0, scheduled: 0 };
             }
         }
-        for (let mode of modules.test.modes) {
+        for (const mode of modules.test.modes) {
             const table = modules.test.modeToTable(mode);
             promises.push(Promise.all([
                 modules.database.query(
@@ -43,9 +43,9 @@ module.exports = function (paths, modules) {
                     `SELECT level, COUNT(review_date) AS amount FROM ${table}
                      WHERE review_date > ? GROUP BY level`, time)
             ]).then(([amountDue, amountScheduled]) => {
-                for (let { level, amount } of amountDue)
+                for (const { level, amount } of amountDue)
                     amounts[level][mode].due = amount;
-                for (let { level, amount } of amountScheduled)
+                for (const { level, amount } of amountScheduled)
                     amounts[level][mode].scheduled = amount;
             }));
         }
@@ -55,8 +55,8 @@ module.exports = function (paths, modules) {
     srs.getTotalAmountDue = function () {
         return srs.getAmounts().then((amounts) => {
             let total = 0;
-            for (let level in amounts) {
-                for (let mode in amounts[level]) {
+            for (const level in amounts) {
+                for (const mode in amounts[level]) {
                     total += amounts[level][mode].due;
                 }
             }
@@ -67,7 +67,7 @@ module.exports = function (paths, modules) {
     srs.getTotalAmountDueForLanguage = function (language) {
         const time = utility.getTime();
         const promises = [];
-        for (let mode of modules.test.modesForLanguage(language)) {
+        for (const mode of modules.test.modesForLanguage(language)) {
             const table = modules.test.modeToTable(mode);
             const promise = modules.database.queryLanguage(language,
                 `SELECT COUNT(review_date) AS amountDue FROM ${table}

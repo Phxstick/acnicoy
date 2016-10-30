@@ -65,7 +65,7 @@ class AddKanjiPanel extends Panel {
             dataManager.languageSettings["SRS"]["spacing"].length;
         const popups = [this.allLevelsPopup, this.meaningsLevelPopup,
                         this.kunYomiLevelPopup, this.onYomiLevelPopup];
-        for (let popup of popups) {
+        for (const popup of popups) {
             popup.empty();
             for (let i = 1; i < numLevels; ++i) popup.addOption(i);
         }
@@ -96,7 +96,7 @@ class AddKanjiPanel extends Panel {
             on_yomi: this.onEntry.value.split(separator),
             kun_yomi: this.kunEntry.value.split(separator)
         };
-        for (let attribute in values) {
+        for (const attribute in values) {
             values[attribute].forEach(trim);
             values[attribute] = values[attribute].filter(notEmpty);
         }

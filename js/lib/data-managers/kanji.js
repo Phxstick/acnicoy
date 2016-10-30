@@ -21,7 +21,7 @@ module.exports = function (paths, modules) {
                 "kun_yomi": modules.test.mode.KANJI_KUN_YOMI
             };
             const promises = [];
-            for (let attribute of attributes) {
+            for (const attribute of attributes) {
                 const mode = modes[attribute];
                 const table = modules.test.modeToTable(mode);
                 const newValues = values[attribute];
@@ -47,7 +47,7 @@ module.exports = function (paths, modules) {
                 }).then(() => {
                     if (oldValues.length > 0 && newValues.length > 0) {
                         // Add new values and don't overwrite existing ones
-                        for (let value of newValues) {
+                        for (const value of newValues) {
                             if (!oldValues.includes(value)) {
                                 oldValues.push(value);
                             }
@@ -88,7 +88,7 @@ module.exports = function (paths, modules) {
             "kun_yomi": modules.test.mode.KANJI_KUN_YOMI
         };
         const promises = [];
-        for (let attribute of attributes) {
+        for (const attribute of attributes) {
             const mode = modes[attribute];
             const table = modules.test.modeToTable(mode);
             const newValues = values[attribute];
@@ -147,7 +147,7 @@ module.exports = function (paths, modules) {
         return Promise.all(promises).then(() => {
             // If there are no new values provided, delete the kanji
             let totalNumValues = 0;
-            for (let attribute of attributes) {
+            for (const attribute of attributes) {
                 totalNumValues += values[attribute].length;
             }
             if (totalNumValues === 0) {
@@ -238,7 +238,7 @@ module.exports = function (paths, modules) {
              GROUP BY k.grade`)
         .then((rows) => {
              const result = {};
-             for (let { grade, amount } of rows) {
+             for (const { grade, amount } of rows) {
                  result[grade] = amount;
              }
              return result;
@@ -253,7 +253,7 @@ module.exports = function (paths, modules) {
              GROUP BY k.jlpt`)
         .then((rows) => {
             const result = {};
-            for (let { level , amount } of rows) {
+            for (const { level , amount } of rows) {
                 result[level] = amount;
             }
             return result;

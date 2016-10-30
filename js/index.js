@@ -13,7 +13,7 @@ const globals = {
               "svg-bar-diagram", "kanji-info-panel", "pinwall-widget",
               "kanji-search-result-entry", "dictionary-search-result-entry",
               "pinwall-note", "srs-status-table", "language-table",
-              "language-popup", "check-box"],
+              "language-popup", "check-box", "example-word-entry"],
     extensions: ["converter", "array-extensions", "html-element-extensions"]
 };
 
@@ -47,12 +47,12 @@ const OverlayWindow = require(paths.js.widget("overlay-window"));
 const PinwallWidget = require(paths.js.widget("pinwall-widget"));
 
 // Load everything else defined in globals object
-for (let name of globals.windows) require(paths.js.window(name));
-for (let name of globals.overlays) require(paths.js.overlay(name));
-for (let name of globals.sections) require(paths.js.section(name));
-for (let name of globals.panels) require(paths.js.panel(name));
-for (let name of globals.widgets) require(paths.js.widget(name));
-for (let name of globals.extensions) require(paths.js.extension(name));
+for (const name of globals.windows) require(paths.js.window(name));
+for (const name of globals.overlays) require(paths.js.overlay(name));
+for (const name of globals.sections) require(paths.js.section(name));
+for (const name of globals.panels) require(paths.js.panel(name));
+for (const name of globals.widgets) require(paths.js.widget(name));
+for (const name of globals.extensions) require(paths.js.extension(name));
 
 const totalTime = performance.now() - startTime;
 console.log("Loaded all required modules after %f ms", totalTime);
@@ -81,7 +81,7 @@ console.log("Loaded all required modules after %f ms", totalTime);
     Promise.resolve().then(() => {
         // Create all windows
         const windowsLoaded = [];
-        for (let name of globals.windows) {
+        for (const name of globals.windows) {
             const windowName = name + "-window";
             windowsLoaded.push(customElements.whenDefined(windowName));
             windows[name] = document.createElement(windowName);
@@ -108,7 +108,7 @@ console.log("Loaded all required modules after %f ms", totalTime);
                 openWindow("loading");
                 windows["loading"].setStatus("Creating language files...");
                 const promises = [];
-                for (let { language, settings } of configs) {
+                for (const { language, settings } of configs) {
                     const p = dataManager.languages.add(language, settings);
                     promises.push(p);
                     languages.push(language);
@@ -147,7 +147,7 @@ console.log("Loaded all required modules after %f ms", totalTime);
         // Load all language data
         const start = performance.now();
         const promises = [];
-        for (let language of languages) {
+        for (const language of languages) {
             promises.push(dataManager.load(language));
         }
         return Promise.all(promises).then(() => {

@@ -17,7 +17,7 @@ module.exports = function (paths, modules) {
 
     vocab.contains = function (word) {
         return modules.database.query(
-            "SELECT COUNT(word) FROM vocabulary WHERE word = ?", word)
+            "SELECT COUNT(word) AS amount FROM vocabulary WHERE word = ?", word)
         .then(([{amount}]) => amount > 0);
     }
 
@@ -75,9 +75,9 @@ module.exports = function (paths, modules) {
             .then(() => {
                 let numTranslationsAdded = 0;
                 let numReadingsAdded = 0;
-                for (let translation of translations)
+                for (const translation of translations)
                     numTranslationsAdded += !oldTranslations.has(translation);
-                for (let reading of readings)
+                for (const reading of readings)
                     numReadingsAdded += !oldReadings.has(reading);
                 return [false, numTranslationsAdded, numReadingsAdded];
             });
@@ -122,7 +122,7 @@ module.exports = function (paths, modules) {
 
     vocab.remove = function (word) {
         const lists = modules.vocabLists.getListsForWord(word);
-        for (let list of lists) {
+        for (const list of lists) {
             modules.vocabLists.removeWordFromList(word, list);
         }
         return modules.database.run(
@@ -131,7 +131,7 @@ module.exports = function (paths, modules) {
 
     vocab.rename = function (word, newWord) {
         const lists = modules.vocabLists.getListsForWord(word);
-        for (let list of lists) {
+        for (const list of lists) {
             modules.vocabLists.removeWordFromList(word, list);
             modules.vocabLists.addWordToList(newWord, list);
         }

@@ -9,7 +9,7 @@ const previouslyVisibleItems = new Set();
 
 function registerItems(nameToOptions) {
     const menuItems = {};
-    for (let name in nameToOptions) {
+    for (const name in nameToOptions) {
         menuItems[name] = new MenuItem(nameToOptions[name]);
         menuItems[name].visible = false;
         popupMenu.append(menuItems[name]);
@@ -25,12 +25,12 @@ window.addEventListener("contextmenu", (event) => {
         // If the popupmenu has no items, don't display it
         if (visibleItems.size === 0) return;
         // Undisplay previously visible items
-        for (let item of previouslyVisibleItems) {
+        for (const item of previouslyVisibleItems) {
             item.visible = false;
         }
         previouslyVisibleItems.clear();
         // Display new visible items (and remember them for undisplaying again)
-        for (let item of visibleItems) {
+        for (const item of visibleItems) {
             item.visible = true;
             previouslyVisibleItems.add(item);
         }

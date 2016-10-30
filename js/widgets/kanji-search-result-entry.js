@@ -1,11 +1,9 @@
 "use strict";
 
 class KanjiSearchResultEntry extends Widget {
-    constructor () {
+    constructor (kanji, info) {
         super("kanji-search-result-entry");
-    }
-
-    setInfo(kanji, info) {
+        if (info === undefined) return;
         // Adjust data and fill handlebars template
         info.kanji = kanji;
         if (info.frequency === null) {

@@ -5,7 +5,7 @@ const fs = require("fs");
 module.exports = function (paths) {
     const modules = { };
 
-    for (let name of globals.modules) {
+    for (const name of globals.modules) {
         modules[name] = require(paths.js.dataModule(name))(paths, modules);
     }
 
@@ -17,7 +17,7 @@ module.exports = function (paths) {
     modules.load = function (language) {
         modules.languageSettings.load(language);  // Always load settings first
         const results = [];
-        for (let name in modules) {
+        for (const name in modules) {
             if (modules[name].hasOwnProperty("load")) {
                 results.push(modules[name].load(language));
             }
@@ -28,7 +28,7 @@ module.exports = function (paths) {
     // Save user data for all languages
     modules.save = function () {
         const results = [];
-        for (let name in modules) {
+        for (const name in modules) {
             if (modules[name].hasOwnProperty("save")) {
                 results.push(modules[name].save());
             }
@@ -38,7 +38,7 @@ module.exports = function (paths) {
 
     modules.setLanguage = function (language) {
         modules.languageSettings.setLanguage(language);
-        for (let name in modules) {
+        for (const name in modules) {
             if (modules[name].hasOwnProperty("setLanguage")) {
                 modules[name].setLanguage(language);
             }

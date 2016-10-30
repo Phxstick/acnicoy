@@ -23,7 +23,7 @@ app.commandLine.appendSwitch("--enable-blink-features", "CustomElementsV1");
 app.on('ready', function() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-      width: 1050,  // 800
+      width: 1050,  // 810
       height: 600,
       icon: "./img/icon.png"
   });

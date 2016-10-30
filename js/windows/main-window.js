@@ -74,7 +74,7 @@ class MainWindow extends Window {
         // Language popup events
         this.languagePopup.callback = (language) => this.setLanguage(language);
         this.languagePopup.onOpen = (languages) => {
-            for (let language of languages) {
+            for (const language of languages) {
                 dataManager.srs.getTotalAmountDueForLanguage(language)
                 .then((amount) => {
                     this.languagePopup.setAmountDue(language, amount);
@@ -86,7 +86,7 @@ class MainWindow extends Window {
     createSections () {
         const promises = [];
         this.sections = {};
-        for (let name of globals.sections) {
+        for (const name of globals.sections) {
             const section = document.createElement(name + "-section");
             section.classList.add("section");
             section.hide();
@@ -101,7 +101,7 @@ class MainWindow extends Window {
     createPanels () {
         const promises = [];
         this.panels = {};
-        for (let name of globals.panels) {
+        for (const name of globals.panels) {
             const panel = document.createElement(name + "-panel");
             panel.classList.add("panel");
             this.sectionWindow.appendChild(panel);
@@ -114,9 +114,9 @@ class MainWindow extends Window {
 
     processLanguageContent(languages) {
         const results = [];
-        for (let language of languages) {
+        for (const language of languages) {
             if (dataManager.content.isAvailable[language]) {
-                for (let name in this.sections) {
+                for (const name in this.sections) {
                     results.push(
                         this.sections[name].processLanguageContent(language));
                 }
@@ -127,7 +127,7 @@ class MainWindow extends Window {
 
     initialize(languages, defaultLanguage) {
         // Fill language popup
-        for (let language of languages) {
+        for (const language of languages) {
             this.languagePopup.add(language);
         }
         // Set language to default one
@@ -213,7 +213,6 @@ class MainWindow extends Window {
 
     openTestSection() {
         // Update label and open section if there are items to test
-        // [ Somehow move this test to test section lateron? ]
         this.updateTestButton().then((count) => {
             if (count > 0) {
                 this.openSection("test");
@@ -264,11 +263,11 @@ class MainWindow extends Window {
             this.language = language;
             this.language2 = dataManager.languageSettings.secondaryLanguage;
             this.adjustToLanguage(this.language, this.language2);
-            for (let key in this.sections) {
+            for (const key in this.sections) {
                 this.sections[key].adjustToLanguage(
                         this.language, this.language2);
             }
-            for (let key in this.panels) {
+            for (const key in this.panels) {
                 this.panels[key].adjustToLanguage(
                         this.language, this.language2);
             }

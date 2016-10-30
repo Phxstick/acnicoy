@@ -1,0 +1,31 @@
+:host {
+  display: block;
+}
+
+#frame {
+  display: flex;
+  flex-direction: row;
+  > div {
+    flex-shrink: 0;
+    padding: 3px;
+    &:nth-child(1) {
+      width: 10px;
+      padding: 0px;
+      div {
+        width: 100%;
+        height: 100%;
+      }
+    }
+    &:nth-child(2) {
+      width: 80px;
+    }
+    &:nth-child(3) {
+      width: 110px;
+    }
+    &:nth-child(4) {
+      flex-grow: 1;
+      flex-shrink: 1;
+    }
+  }
+}
+

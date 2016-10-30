@@ -11,7 +11,7 @@
   - Provide a bunch of default named SRS configs in default settings
   - Put SRS widget into an overlay!
   - Allow user registering his own schemes and use these with their names
-- Try edit-input changes in stash after electron has chrome 54
+- Try edit-input changes in stash as soon as electron has chrome 54
   (Also remove custom-elements flag in main.js.
    Also make sure edit-input gets closed when clicking somewhere else.)
 - Make language switching seamless (Do sth about vocab section?)
@@ -21,18 +21,18 @@
   - SRS scheme name 
   - Content downloading (Use stylable HTML5 progress bar for this)
   - Standard language (Use checkboxes coordinated with js)
-- Remove lvl 0 from kanji table
-- Things got slower when reworking sass? Maybe because main window is flex now?
 - Celebrate the day async/await is fully supported in electron (maybe with flag)
   - Immediately rewrite index.js chain, main window, datamanager methods
+- When creating a listbox widget, implement ES6 iterator symbol for it
+
+### Fixes
+- Remove lvl 0 from kanji table
+- Things got slower when reworking sass? Maybe because main window is flex now?
+- Seperate meanings in kanji dictionary with ";" instead of "," (and adjust)
 
 ### General
 - Create a proper pointer cursor. Create better normal cursor as well
 - Also use border gradients for shadowing
-- Show interval time when hovering above SRS level somewhere
-- Use inset shadows and class animations to design switch-buttons!
-- For the time being, implement a little vocabulary backup system in order
-  to not do this manually anymore.
 - Check out new electron features?
 - Make kana input entries type katakana when pressing shift.
   - Also make into custom widget?
@@ -61,7 +61,6 @@ once? --> Faster loading, centralized resource loading
 - Split widgets into components specific to Acnicoy and base-widgets
   - Make base-widgets completely independent of Acnicoy (e.g. no base import)
 - Possibly rename *windows* to *screens*
-- Make use of classlist toggle
 - Use `slotchange` events on slots to find out if slotted nodes are changed
 - Replace all sass occurrences of "darkred" with "highlight-color"?
 

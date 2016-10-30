@@ -39,8 +39,7 @@ HTMLElement.prototype.show = function(value) {
 **  Remove all children elements of this node.
 **/
 HTMLElement.prototype.empty = function() {
-    while (this.lastChild !== null)
-        this.removeChild(this.lastChild);
+    this.innerHTML = "";
 }
 
 /**
@@ -128,8 +127,8 @@ HTMLElement.prototype.safeDeepClone = function() {
         }
         // Append children of old node into array for traversing
         const oldSize = nodes.length;
-        for (let i = 0; i < oldNode.children.length; ++i) {
-            nodes.push(oldNode.children[i]);
+        for (const child of oldNode.children) {
+            nodes.push(child);
         }
     }
     return nodeToCopyMap.get(this);
@@ -209,7 +208,7 @@ HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
             const names = itemNames();
             popupMenu.itemsLoaded = Promise.resolve(itemNames())
             .then((names) => {
-                for (let name of names) {
+                for (const name of names) {
                     const menuItem = menuItems[name];
                     menuItem.currentNode = this;
                     menuItem.data = data;
@@ -221,7 +220,7 @@ HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
     } else if (Array.isArray(itemNames)) {
         if (itemNames.length === 0) return;
         this.popupMenuCallback = (event) => {
-            for (let name of itemNames) {
+            for (const name of itemNames) {
                 const menuItem = menuItems[name];
                 menuItem.currentNode = this;
                 menuItem.data = data;

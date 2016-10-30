@@ -108,11 +108,9 @@ class VocabSection extends Section {
                 const query = this.searchAllEntry.value.trim();
                 this.allWordsQuery = query;
                 this.allWordsList.empty();
-                let wordsReceived;
-                if (query.length === 0)
-                    wordsReceived = dataManager.vocab.getAll();
-                else
-                    wordsReceived = dataManager.vocab.search(query);
+                const wordsReceived = query.length === 0 ?
+                    dataManager.vocab.getAll() :
+                    dataManager.vocab.search(query);
                 // If the entry is empty, display all words
                 wordsReceived.then((words) => {
                     words.forEach((word) =>
@@ -207,14 +205,14 @@ class VocabSection extends Section {
         this.selectedListNode = null;
         // Fill the left section with all words in the vocabulary
         dataManager.vocab.getAll().then((words) => {
-            for (let word of words) {
+            for (const word of words) {
                 this.allWordsList.appendChild(this.createAllWordsItem(word));
             }
         });
         const lists = dataManager.vocabLists.getLists();
         lists.sort();
         // Fill the middle section with all vocab list names
-        for (let list of lists) {
+        for (const list of lists) {
             this.createAllListsItem(list);
         }
         // Disable some buttons since no list is selected
@@ -274,7 +272,7 @@ class VocabSection extends Section {
             this.testOnListButton.disabled = false;
             item.classList.add("selected");
             // ... show the contents of the selected list in right section
-            for (let word of dataManager.vocabLists.getWordsForList(listName)) {
+            for (const word of dataManager.vocabLists.getWordsForList(listName)) {
                 this.createListContentsItem(word);
             }
         });
@@ -338,10 +336,9 @@ class VocabSection extends Section {
             this.editInput.remove();
             node.style.padding = "2px";
             // Keep list lexically sorted by inserting node at correct index
-            for (let i = 0; i < this.allListsList.children.length; ++i) {
-                if (this.allListsList.children[i].textContent > newName) {
-                    this.allListsList.insertBefore(
-                            node, this.allListsList.children[i]);
+            for (const item of this.allListsList.children) {
+                if (item.textContent > newName) {
+                    this.allListsList.insertBefore(node, item);
                     break;
                 }
             }

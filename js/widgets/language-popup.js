@@ -57,9 +57,9 @@ class LanguagePopup extends Widget {
         this.$("popup-window").show();
         this.$("popup-window").style.top = `${this.offsetHeight}px`;
         const languages = [];
-        for (let i = 0; i < this.$("popup-window").children.length; ++i) {
-            languages.push(
-                    this.$("popup-window").children[i].children[0].textContent);
+        const options = this.$("popup-window").children;
+        for (const option of options) {
+            languages.push(option.children[0].textContent);
         }
         this.onOpen(languages);
     }
