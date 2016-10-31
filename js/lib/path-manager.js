@@ -54,7 +54,7 @@ module.exports = function (basePath) {
 
     // Global data
     paths.scoreCalculation = path.resolve(basePath, "data",
-                                          "scoreCalculation.json");
+                                          "score-calculation.json");
     paths.defaultSettings = path.resolve(basePath, "data",
                                          "default-settings.json");
 

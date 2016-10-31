@@ -8,7 +8,7 @@ module.exports = function (paths, modules) {
 
     let data;
     let levelToScore;
-    let scoreCalculation = Object.freeze(require(paths.scoreCalculation));
+    const scoreCalculation = Object.freeze(require(paths.scoreCalculation));
 
     stats.create = function (language, settings) {
         const initialStats = {
@@ -25,40 +25,95 @@ module.exports = function (paths, modules) {
     };
 
     stats.load = function (language) {
-        dataMap[language] = require(paths.languageData(language).stats);
+        dataMap[language] = {
+            data: require(paths.languageData(language).stats)
+        };
+        stats.calculateScorePerLevel(language);
+        return stats.recalculateTotalScores(language);
     };
 
     stats.save = function () {
         for (const language in dataMap) {
             const path = paths.languageData(language).stats;
-            fs.writeFileSync(path, JSON.stringify(dataMap[language]));
+            fs.writeFileSync(path, JSON.stringify(dataMap[language].data));
         }
     };
 
     stats.setLanguage = function (language) {
-        data = dataMap[language];
-        // Precalculate amout of score for each SRS level
-        const timeIntervals = modules["language-settings"]["SRS"]["spacing"];
-        levelToScore = { "0": 0 };
-        for (let level = 1; level < timeIntervals.length; ++level) {
-            const totalTime = timeIntervals.slice(1, level + 1).sum();
-            for (const milestone in scoreCalculation["percentages"]) {
-                if (totalTime > parseInt(milestone)) {
-                    levelToScore[level] = 
-                       (scoreCalculation["percentages"][milestone] *
-                        scoreCalculation["scoreMultiplier"]);
-                }
-            }
-        }
-        Object.freeze(levelToScore);
+        ({ data, levelToScore } = dataMap[language]);
     };
 
-    /*
-     *  Functions for updating stats
-     */
+    /* =========================================================================
+        Initialization Functions
+    ========================================================================= */
 
-    // TODO: Really necessary?
-    // Append the days that have passed since the program was last started
+    /**
+     * Calculate amount of score for each SRS level for given language.
+     * Interpolate scores between milestones from scoreCalculation.json.
+     * @param {String} language
+     */
+    stats.calculateScorePerLevel = function (language) {
+        const timeIntervals = modules.languageSettings["SRS"]["spacing"];
+        const milestones =
+            Reflect.ownKeys(scoreCalculation.percentages)
+            .map(timeString => parseInt(timeString))
+            .sort((a, b) => a - b);
+        const percentages = [];
+        for (const milestone of milestones) {
+            percentages.push(scoreCalculation["percentages"][milestone]);
+        }
+        dataMap[language].levelToScore = { "0": 0 };
+        for (let level = 1; level < timeIntervals.length; ++level) {
+            const totalTime = timeIntervals.slice(1, level + 1).sum();
+            if (totalTime > milestones.last()) {
+                dataMap[language].levelToScore[level] = 1;
+                continue;
+            }
+            let i = 1;
+            while (totalTime > milestones[i]) ++i;
+            const milestone = milestones[i];
+            const prevMilestone = milestones[i - 1];
+            const deltaTotal = milestone - prevMilestone;
+            const delta = totalTime - prevMilestone;
+            const ratio = delta / deltaTotal;
+            dataMap[language].levelToScore[level] = (percentages[i - 1]
+                + ratio * (percentages[i] - percentages[i - 1]))
+                * scoreCalculation["scoreMultiplier"];
+        }
+        Object.freeze(dataMap[language].levelToScore);
+    }
+
+    /**
+     * Recalculate total score for each testmode for given language.
+     * @param {String} language
+     * @returns {Promise}
+     */
+    stats.recalculateTotalScores = function (language) {
+        const promises = [];
+        for (const mode of modules.test.modesForLanguage(language)) {
+            const table = modules.test.modeToTable(mode);
+            const multiplier = scoreCalculation.modeToMultiplier[mode];
+            const addScore = (total, row) => {
+                return total + dataMap[language].levelToScore[row.level];
+            };
+            const promise = modules.database.queryLanguage(
+                language, `SELECT level FROM ${table}`)
+            .then((rows) => {
+                dataMap[language].data.scorePerMode[mode] = 
+                    rows.reduce(addScore, 0) * multiplier;
+            });
+            promises.push(promise);
+        }
+        return Promise.all(promises);
+    }
+
+    /* =========================================================================
+        Updating stats
+    ========================================================================= */
+
+    /**
+     * Append the days that have passed since the program was last started.
+     */
     function registerPassedDays() {
         const d = new Date();
         const newItems = [];
@@ -105,36 +160,51 @@ module.exports = function (paths, modules) {
         data["daily"].last()["kanji"]++;
     };
 
-    stats.updateDailyScore = function (mode, oldLevel, newLevel) {
-        registerPassedDays();
-        let difference = levelToScore[newLevel] - levelToScore[oldLevel];
-        difference *= scoreCalculation.modeToMultiplier[mode];
-        // Make sure the result is an integer
-        console.assert(difference - parseInt(difference) < 0.000001,
-            "ERROR: The score is not close enough to an integer: ", difference);
-        data["daily"].last()["score"] += parseInt(difference);
-    };
-
-    /*
-     *  Functions for querying stats
+    /**
+     * Update score according to the amount of score that corresponds to moving
+     * an SRS item of given mode from given old level to given new level.
+     * @param {String} mode - Testmode of the moved SRS item.
+     * @param {Number} oldLevel - Previous SRS level of the moved SRS item.
+     * @param {Number} newLevel - New SRS level of the moved SRS item.
      */
-
-    stats.getNumberOfItemsTested = function () {
-        let total = 0;
-        for (const mode of modules.test.modes) {
-            total += data["testedPerMode"][mode];
-        }
-        return total;
+    stats.updateScore = function (mode, oldLevel, newLevel) {
+        registerPassedDays();
+        const difference = (levelToScore[newLevel] - levelToScore[oldLevel])
+                            * scoreCalculation.modeToMultiplier[mode];
+        data["daily"].last()["score"] += difference;
+        data["scorePerMode"][mode] += difference;
     };
 
-    stats.getTotalScore = function (mode) {
-        // TODO: Accumulate score in stats.json instead of recalculating
-        // const table = modules.test.modeToTable(mode);
-        // const multiplier = scoreCalculation.modeToMultiplier[mode];
-        // const addScore = (total, row) => total += levelToScore[row.level];
-        // return modules.database.query(`SELECT level FROM ${table}`)
-        //    .then((rows) => parseInt(rows.reduce(addScore, 0) * multiplier));
-        return 0;
+    /* =========================================================================
+        Querying stats
+    ========================================================================= */
+
+    /**
+     * Return total number of items tested.
+     * @returns {Number}
+     */
+    stats.getNumberOfItemsTested = function () {
+        return modules.test.modes.reduce((total, mode) => {
+            return total + data["testedPerMode"][mode];
+        }, 0);
+    };
+
+    /**
+     * Return total score for given testmode.
+     * @returns {Number}
+     */
+    stats.getScoreForMode = function (mode) {
+        return data["scorePerMode"][mode];
+    };
+
+    /**
+     * Return total score (Sum of scores for all modes).
+     * @returns {Number}
+     */
+    stats.getTotalScore = function() {
+        return parseInt(modules.test.modes.reduce((total, mode) => {
+           return total + stats.getScoreForMode(mode);
+        }, 0));
     };
 
     return stats;

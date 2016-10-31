@@ -1,8 +1,5 @@
 ### Up next
 - Add popup-menus to dictionary section
-- Save total score in settings rather than recalculating every time !
-  Make sure to update correctly with integers!
-  Rename `updateDailyScore` into `updateScore` and adjust everything
 - Implement load function in add-vocab-panel
   - Provide suggestions in add-vocab-panel as clickable spans
     (left click to edit, right click to remove)
@@ -24,6 +21,7 @@
 - Celebrate the day async/await is fully supported in electron (maybe with flag)
   - Immediately rewrite index.js chain, main window, datamanager methods
 - When creating a listbox widget, implement ES6 iterator symbol for it
+- Make sure stats initialization functions are called on SRS scheme change
 
 ### Fixes
 - Remove lvl 0 from kanji table
@@ -34,7 +32,7 @@
 - Create a proper pointer cursor. Create better normal cursor as well
 - Also use border gradients for shadowing
 - Check out new electron features?
-- Make kana input entries type katakana when pressing shift.
+- Make kana input type katakana when pressing shift.
   - Also make into custom widget?
 - Allow vocab-add-separators to be escaped for single translations
 - Implement global tooltip widget
@@ -69,17 +67,19 @@ once? --> Faster loading, centralized resource loading
 
 ### Main window
 - Remember where focus was when opening panel, restore after closing panel again
+- Create quick start overlay with quick info on structure of the program
+  - Give option to "not display this window again on program start"
+  - Display on program start if not disabled
 
 ### Home section
-- When vocabulary is empty, write very small manual info card into intro section
-- Create SRS info widget (in form of a horizontally stretched div)
-- When vocabulary is not empty, display SRS info widget (bar by default)
-- Allow collapsing columns in SRS table (--> No partitioning by modes)
-- Make changelog widget for pinwall
-- Make widget-adder a widget aswell (only movable then)?
-- Display adder-widget only when ctrl is pressed with cursor above section?
-- Customizable bar diagram showing when new items for testing become available
-  - Maybe 1 week as standard interval
+- Display every widget as block (full width)
+- Possibly create overlay-style sidebar for customizing pinwall
+- Widgets:
+  - Combine notes into single widget?
+  - SRS item bar diagram (customizable, shows when new items become available)
+    - Maybe 1 week as standard interval
+  - SRS info bar
+  - Changelog widget
 
 ### Test section
 - Also construct extended solutions in `_createTest` already ?
@@ -90,6 +90,7 @@ once? --> Faster loading, centralized resource loading
   - New stuff appears in batches, and a counter can be shown in intro section
 - Show where the entry goes
 - Animate everything (and have setting to toggle that)
+- Make test-results overlay
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)

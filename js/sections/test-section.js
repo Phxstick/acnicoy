@@ -69,10 +69,10 @@ class TestSection extends Section {
         this.testItem.popupMenu(menuItems, ["copy-test-item"]);
     }
 
-    /**
-    *   Functions from Section
-    **/
-
+    /* =====================================================================
+        Inherited from Section
+    ===================================================================== */
+    
     open() {
         // ... Adjust widgets to settings
         if (dataManager.settings["test"]["progress_flag"]) {
@@ -101,9 +101,9 @@ class TestSection extends Section {
             dialogWindow.confirm("Are you sure you want to cancel the test?");
     }
 
-    /**
-    *   Private testing functions
-    **/
+    /* =====================================================================
+        Private testing functions
+    ===================================================================== */
 
     _evaluateAnswer() {
         const answer = this.answerEntry.value.trim();
@@ -200,7 +200,7 @@ class TestSection extends Section {
         // Check if the test is completed (no items left)
         if (items.length === 0) {
             dialogWindow.info(
-                `Correct: ${this.testInfo.numCorrect}\n` +
+                `Correct: ${this.testInfo.numCorrect}, ` +
                 `Wrong: ${this.testInfo.numIncorrect}`);
             // TODO: Prepare and show test-complete stuff
             this.testFinished = true;
@@ -263,7 +263,7 @@ class TestSection extends Section {
         const newLevel =
             answeredCorrectly ? item.level + 1 : Math.max(1, item.level - 1);
         dataManager.stats.incrementTestedCounter(item.mode);
-        dataManager.stats.updateDailyScore(item.mode, item.level, newLevel);
+        dataManager.stats.updateScore(item.mode, item.level, newLevel);
         dataManager.srs.setLevel(item.entry, newLevel, item.mode);
     }
 

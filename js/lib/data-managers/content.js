@@ -12,7 +12,6 @@ module.exports = function (paths, modules) {
 
     content.load = function (language) {
         let promise = Promise.resolve();
-        modules.languageSettings.setLanguage(language);
         const secondaryLanguage = modules.languageSettings.secondaryLanguage;
         const cPaths = paths.content(language, secondaryLanguage);
         if (cPaths === null) {  // Content not available

@@ -1,9 +1,9 @@
 "use strict";
 
 const globals = {
-    modules: ["languages", "settings", "language-settings", "vocab-lists",
-              "pinwall", "content", "vocab", "kanji", "stats", "srs",
-              "test", "history", "database"],
+    modules: ["languages", "settings", "language-settings", "database",
+              "vocab-lists", "pinwall", "content", "vocab", "kanji", "stats",
+              "srs", "test", "history"],
     windows: ["init-path", "init-lang", "init-default-lang", "loading", "main"],
     overlays: ["add-lang", "info-dialog", "confirm-dialog"],
     sections: ["home", "stats", "vocab", "settings",

@@ -4,10 +4,6 @@ class StatsSection extends Section {
     constructor() {
         super("stats");
         // Store important elements
-        this.totalScore = this.root.getElementById("total-score");
-        this.wordsAdded = this.root.getElementById("words-added");
-        this.kanjiAdded = this.root.getElementById("kanji-added");
-        this.itemsTested = this.root.getElementById("items-tested");
         this.kanjiDiagrams = this.root.getElementById("kanji-diagrams");
         this.kanjiAddedFrame = this.root.getElementById("kanji-added-frame");
         this.jouyouKanjiDiagram = this.root.getElementById("jouyou-kanji");
@@ -50,24 +46,18 @@ class StatsSection extends Section {
     updateStats() {
         const promises = [];
         // Display number of items tested in total
-        this.itemsTested.textContent =
+        this.$("items-tested").textContent =
             dataManager.stats.getNumberOfItemsTested();
-        // Display total score for all specified modes
-        const totalScorePromises = [];
-        for (const mode of dataManager.test.modes) {
-            totalScorePromises.push(dataManager.stats.getTotalScore(mode));
-        }
-        promises.push(Promise.all(totalScorePromises).then((totalScores) => {
-            this.totalScore.textContent = totalScores.sum();
-        }));
+        // Display total score
+        this.$("total-score").textContent = dataManager.stats.getTotalScore();
         // Display number of words added
         promises.push(dataManager.vocab.size().then((amount) => {
-            this.wordsAdded.textContent = amount;
+            this.$("words-added").textContent = amount;
         }));
         if (main.language === "Japanese") {
             // Display number of kanji added
             promises.push(dataManager.kanji.getAmountAdded().then((amount) => {
-                this.kanjiAdded.textContent = amount;
+                this.$("kanji-added").textContent = amount;
             }));
             // Display percentages of jouyou kanjj per grade in bar diagram
             if (dataManager.content.isAvailable["Japanese"]) {

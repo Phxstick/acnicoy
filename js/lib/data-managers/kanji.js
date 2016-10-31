@@ -56,7 +56,7 @@ module.exports = function (paths, modules) {
                             `UPDATE ${table} SET ${attribute} = ?
                              WHERE kanji = ?`, oldValues.join(";"), kanji);
                     } else if (oldValues.length === 0 && newValues.length > 0) {
-                        modules.stats.updateDailyScore(mode, 0, newLevel);
+                        modules.stats.updateScore(mode, 0, newLevel);
                         return modules.database.run(
                             `INSERT INTO ${table}
                              (kanji, ${attribute}, level, review_date)
@@ -114,7 +114,7 @@ module.exports = function (paths, modules) {
             }).then(() => {
                 // Update database with new values
                 if (oldValues.length > 0 && newValues.length > 0) {
-                    modules.stats.updateDailyScore(mode, oldLevel, newLevel);
+                    modules.stats.updateScore(mode, oldLevel, newLevel);
                     // If the level did not change, do not reset review date
                     if (oldLevel === newLevel) {
                         newReviewDate = oldReviewDate;
@@ -125,14 +125,14 @@ module.exports = function (paths, modules) {
                          WHERE kanji = ?`,
                         newValues.join(";"), newLevel, newReviewDate, kanji);
                 } else if (oldValues.length === 0 && newValues.length > 0) {
-                    modules.stats.updateDailyScore(mode, 0, newLevel);
+                    modules.stats.updateScore(mode, 0, newLevel);
                     return modules.database.run(
                         `INSERT INTO ${table}
                          (kanji, ${attribute}, level, review_date)
                          VALUES (?, ?, ?, ?)`,
                         kanji, newValues.join(";"), newLevel, newReviewDate);
                 } else if (oldValues.length > 0 && newValues.length === 0) {
-                    modules.stats.updateDailyScore(mode, oldLevel, 0);
+                    modules.stats.updateScore(mode, oldLevel, 0);
                     return modules.database.run(
                         `DELETE FROM ${table} WHERE kanji = ?`, kanji);
                 }

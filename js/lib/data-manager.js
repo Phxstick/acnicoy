@@ -16,6 +16,7 @@ module.exports = function (paths) {
     // Load user data and content (if available) for given language
     modules.load = function (language) {
         modules.languageSettings.load(language);  // Always load settings first
+        modules.languageSettings.setLanguage(language);
         const results = [];
         for (const name in modules) {
             if (modules[name].hasOwnProperty("load")) {
