@@ -2,7 +2,7 @@
 
 header_url="https://atom.io/download/atom-shell"
 
-system_arch=$(uname -i)
+system_arch=$(uname -m)
 if [ $system_arch == "x86_64" ]; then
     system_arch="x64"
 elif [ $system_arch == "i386" ]; then
