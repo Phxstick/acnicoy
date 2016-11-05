@@ -137,8 +137,7 @@ class EditKanjiPanel extends Panel {
     adjustToLanguage(language, secondary) {
         if (language !== "Japanese") return;
         // Fill SRS levels popup stacks
-        const numLevels =
-            dataManager.languageSettings["SRS"]["spacing"].length;
+        const numLevels = dataManager.srs.numLevels;
         const popups = [ this.allLevelsPopup, this.meaningsLevelPopup,
                          this.onYomiLevelPopup, this.kunYomiLevelPopup ];
         for (const levelPopup of popups) {

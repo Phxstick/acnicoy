@@ -136,11 +136,15 @@ class MainWindow extends Window {
             this.sections["home"].show();
             this.sections["home"].open();
             this.currentSection = "home";
-            // Update test button with amount of words to be tested
+            // Regularly update test button with amount of words to be tested
             this.updateTestButton();
             setInterval(() => {
                 this.updateTestButton();
-            }, 300000);  // Every 5 min
+            }, 1000 * 60 * 5);  // Every 5 min
+            // Regulary notify user if SRS items are ready to be reviewed
+            setInterval(() => {
+                this.showSrsNotification();
+            }, 1000 * 60 * 15);  // Every 15 min
             // Confirm close command and save data before exiting application
             ipcRenderer.send("activate-controlled-closing");
             ipcRenderer.on("closing-window", () => {
@@ -227,6 +231,30 @@ class MainWindow extends Window {
         return dataManager.srs.getTotalAmountDue().then((amount) => {
             this.numSrsItemsLabel.textContent = amount;
             return amount;
+        });
+    }
+
+    showSrsNotification() {
+        const languages = dataManager.languages.find();
+        const promises = [];
+        for (const language of languages) {
+            promises.push(
+                dataManager.srs.getTotalAmountDueForLanguage(language));
+        }
+        let text = "";
+        Promise.all(promises).then((amounts) => {
+            for (let i = 0; i < languages.length; ++i) {
+                const language = languages[i];
+                const amount = amounts[i];
+                if (amount === 0) continue;
+                if (i > 0) text += "\n";
+                text += `${language} (${amount} items)`;
+            }
+            const notification = new Notification("SRS reviews available", {
+                title: "SRS reviews available",
+                body: text,
+                icon: paths.img.programIcon
+            });
         });
     }
 

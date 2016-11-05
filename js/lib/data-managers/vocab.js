@@ -53,8 +53,7 @@ module.exports = function (paths, modules) {
         .then((rows) => {
             if (!rows.length) {
                 // Word not added. Insert new row into the the vocabulary table
-                const spacing =
-                    modules.languageSettings["SRS"]["spacing"][level];
+                const spacing = modules.srs.intervals[level];
                 return modules.database.run(`
                     INSERT INTO vocabulary
                     (word, date_added, level, review_date,
@@ -107,7 +106,7 @@ module.exports = function (paths, modules) {
                     new Set(oldReadings), new Set(readings)) ||
                 oldLevel !== level;
             // Apply changes to database
-            const spacing = modules.languageSettings["SRS"]["spacing"][level];
+            const spacing = modules.srs.intervals[level];
             const newReviewDate = oldLevel === level ? oldReviewDate :
                 utility.getTime() + spacing;
             return modules.database.run(`

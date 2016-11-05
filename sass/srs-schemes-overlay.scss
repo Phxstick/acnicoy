@@ -1,0 +1,205 @@
+@import "overlay";
+
+:host {
+  width: 550px;
+}
+
+i.fa {
+  color: #999;
+  font-size: 150%;
+  &:hover {
+    color: $color;
+  }
+}
+
+#partitioned-window > #main-frame {
+  min-height: 500px;
+  display: flex;
+  flex-direction: row;
+
+  #schemes-list-frame {
+    width: 160px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+
+    #schemes-list-header-frame {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      #schemes-list-header {
+        flex-grow: 1;
+        font-size: 150%;
+        background-color: transparent;
+      }
+    }
+    #schemes-list {
+      flex-grow: 1;
+      border: 1px solid lightgrey;
+
+      > div {
+        font-size: 110%;
+        padding: 5px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+    }
+  }
+
+  #scheme-frame {
+    flex-grow: 1;
+    @include center-content;
+    flex-direction: column;
+    margin-left: 10px;
+    border-left: 1px solid grey;
+    padding-left: 10px;
+
+    #choose-scheme-info {
+      color: dimgray;
+      font-size: 140%;
+      font-family: $gui-font;
+      text-align: center;
+    }
+    #scheme-details-frame {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-self: stretch;
+
+      #scheme-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 10px;
+
+        #scheme-name {
+          border: 1px solid transparent;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+        #scheme-name-input {
+          color: $view-color;
+          border-bottom: 1px solid gray;
+          background-color: white;
+          border: 1px solid lightgrey;
+          padding: 0px;
+          border-radius: 5px;
+          min-width: 1px;  // Use flex to stretch instead
+        }
+        #scheme-name, #scheme-name-input {
+          flex-grow: 1;
+          font-size: 160%;
+          font-family: $gui-font;
+          padding-left: 8px;
+        }
+        #scheme-buttons {
+          flex-shrink: 0;
+        }
+      }
+
+      #scheme-description, #scheme-description-input {
+        height: 64px;
+        font-size: 15px;
+        line-height: 16px;
+        overflow: auto;
+        padding: 3px;
+        margin-bottom: 10px;
+      }
+      #scheme-description {
+        border: 1px solid transparent;
+      }
+      #scheme-description-input {
+        border: 1px solid lightgrey;
+        background-color: white;
+        border-radius: 5px;
+        color: $view-color;
+      }
+
+      #scheme-levels-frame {
+        flex-grow: 1;
+
+        #scheme-levels {
+          overflow-y: auto;
+        }
+        #scheme-levels > div {
+          @include fading-border(grey, "to right");
+          border-width: 0px 0px 1px 0px;
+          &:first-child {
+            border-top-width: 1px;
+          }
+          display: flex;
+          position: relative;
+          flex-direction: row;
+
+          > .level {
+            @include center-content;
+            width: 60px;
+            font-size: 150%;
+            font-family: $gui-font;
+            border-right: 1px solid lightgrey;
+            padding-right: 8px;
+          }
+          > .interval {
+            @include center-content("vertical");
+            flex-grow: 1;
+            padding-left: 15px;
+          }
+          > .interval-input {
+            flex-grow: 1;
+            padding-left: 15px;
+            border: none;
+            display: none;
+
+            &.invalid {
+              outline: 1px solid red;
+            }
+          }
+          > .remove-level-button {
+            font-size: 150%;
+            display: none;
+            position: absolute;
+            right: 15px;
+            // Workaround for vertical centering
+            top: 0px;
+            bottom: 0px;
+            height: 26px;
+            margin: auto;
+          }
+        }
+        #scheme-levels.edit-mode {
+          > div {
+            > .interval-input {
+              display: block;
+            }
+            > .interval {
+              display: none;
+            }
+            &:hover {
+              // > .interval {
+              //   background: $view-background;
+              // }
+              > .remove-level-button {
+                display: block;
+              }
+            }
+          }
+        }
+        #add-level-button {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          font-size: 130%;
+          font-family: $header-font;
+          color: #999;
+          margin-top: 5px;
+          > * { color: inherit; }
+          &:hover {
+            color: $color;
+          }
+        }
+      }
+    }
+  }
+}

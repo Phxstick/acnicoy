@@ -26,8 +26,8 @@ module.exports = function (paths, modules) {
                 const table = modules.test.modeToTable(mode);
                 const newValues = values[attribute];
                 const newLevel = levels[attribute];
-                const newReviewDate = utility.getTime() +
-                        modules.languageSettings["SRS"]["spacing"][newLevel];
+                const newReviewDate = utility.getTime()
+                                      + modules.srs.intervals[newLevel];
                 let oldValues;
                 let oldLevel;
                 let oldReviewDate;
@@ -93,8 +93,8 @@ module.exports = function (paths, modules) {
             const table = modules.test.modeToTable(mode);
             const newValues = values[attribute];
             const newLevel = levels[attribute];
-            let newReviewDate = utility.getTime() +
-                    modules.languageSettings["SRS"]["spacing"][newLevel];
+            let newReviewDate = utility.getTime()
+                                + modules.srs.intervals[newLevel];
             let oldValues;
             let oldLevel;
             let oldReviewDate;

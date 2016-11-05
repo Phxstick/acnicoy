@@ -2,10 +2,10 @@
 
 const globals = {
     modules: ["languages", "settings", "language-settings", "database",
-              "vocab-lists", "pinwall", "content", "vocab", "kanji", "stats",
-              "srs", "test", "history"],
+              "vocab-lists", "pinwall", "content", "vocab", "kanji", "srs",
+              "stats", "test", "history"],
     windows: ["init-path", "init-lang", "init-default-lang", "loading", "main"],
-    overlays: ["add-lang", "info-dialog", "confirm-dialog"],
+    overlays: ["add-lang", "info-dialog", "confirm-dialog", "srs-schemes"],
     sections: ["home", "stats", "vocab", "settings",
                "test", "dictionary", "kanji"],
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],

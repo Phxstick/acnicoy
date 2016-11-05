@@ -5,7 +5,7 @@ class ConfirmDialogOverlay extends Overlay {
         super("confirm-dialog",
                 { mode: "slide-down", speed: 200, distance: 30 });
         this.$("close-button").addEventListener("click", () => {
-            this.resolve(false);
+            this.resolve(null);
         });
         this.$("yes-button").addEventListener("click", () => {
             this.resolve(true);

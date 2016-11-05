@@ -14,10 +14,11 @@ class AddVocabPanel extends Panel {
             "select[name='vocab-list']");
         this.vocabListSelect.classList.add("empty");
         this.vocabListSelect.addEventListener("change", () => {
-            if (this.vocabListSelect.value.length === 0)
+            if (this.vocabListSelect.value.length === 0) {
                 this.vocabListSelect.classList.add("empty");
-            else
+            } else {
                 this.vocabListSelect.classList.remove("empty");
+            }
         });
         // Attach event handlers
         this.readingsEntry.enableKanaInput("hira");
@@ -50,19 +51,17 @@ class AddVocabPanel extends Panel {
     adjustToLanguage(language, secondary) {
         // Fill SRS level popup stack
         this.levelPopup.empty();
-        const numLevels =
-            dataManager.languageSettings["SRS"]["spacing"].length;
+        const numLevels = dataManager.srs.numLevels;
         for (let i = 1; i < numLevels; ++i) this.levelPopup.addOption(i);
         this.levelPopup.set(this.levelPopup.firstChild);
         // Fill vocab list selector
-        while (this.vocabListSelect.lastChild !== null)
-            this.vocabListSelect.removeChild(this.vocabListSelect.lastChild);
+        this.vocabListSelect.empty();
         this.defaultOption = utility.createDefaultOption(
                 "Select a vocabulary list (optional)");
         this.vocabListSelect.appendChild(this.defaultOption);
         const lists = dataManager.vocabLists.getLists();
         lists.sort();
-        for (let list of lists) {
+        for (const list of lists) {
             const option = document.createElement("option");
             option.value = list;
             option.textContent = list;
@@ -88,9 +87,8 @@ class AddVocabPanel extends Panel {
         let readings = utility.parseEntries(
             this.readingsEntry.value, separator);
         // Update status with error messages if something is missing
-        // TODO: Use dialogWindows for this?
         if (word.length === 0) {
-            main.updateStatus("The word to be added is missing.");
+            dialogWindow.info("The word to be added is missing.");
             // TODO: Shortly highlight word entry?
             return;
         }

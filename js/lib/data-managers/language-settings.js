@@ -11,10 +11,7 @@ module.exports = function (paths, modules) {
         const langSettings = {
             secondaryLanguage: settings.secondary,
             readings: settings.readings,
-            SRS: {  // TODO: Save scheme name from given settings for this
-                spacing: [0, 14400, 28800, 72000, 201600, 590400,
-                          2404800, 7761600, 31104000, 1000000000000]
-            }
+            srs: settings.srs
         };
         const path = paths.languageData(language).settings;
         fs.writeFileSync(path, JSON.stringify(langSettings, null, 4));
@@ -34,6 +31,10 @@ module.exports = function (paths, modules) {
     settings.setLanguage = function (language) {
         data = dataMap[language];
     };
+
+    settings.for = function (language) {
+        return dataMap[language];
+    }
 
     // Return a proxy which allows reading/writing on the data object
     return new Proxy(settings, {

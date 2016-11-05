@@ -20,6 +20,13 @@ module.exports = function (paths, modules) {
         fs.writeFileSync(paths.globalSettings, JSON.stringify(data, null, 4));
     };
 
+    settings.getIntervalsForSrsScheme = function (schemeName) {
+        for (const { name, intervals } of data["srs"]["schemes"]) {
+            if (name === schemeName) return intervals;
+        }
+        throw Error(`SRS scheme with name '${schemeName}' could not be found.`);
+    }
+
     return new Proxy(settings, {
         get: (target, key) => {
             if (data !== undefined && Reflect.has(data, key)) return data[key];

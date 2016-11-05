@@ -2,16 +2,15 @@
 
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 
 module.exports = function (basePath) {
     const paths = {};
 
-    const home = process.env[process.platform == "win32" ?
-                                 "USERPROFILE" : "HOME"];
     const trainerName = "Acnicoy";
     const dataPathBaseName = trainerName + "Data";
     const dataPathConfigFile = path.resolve(basePath, "data", "data-path.txt");
-    paths.standardDataPathPrefix = path.resolve(home, "Documents");
+    paths.standardDataPathPrefix = path.resolve(os.homedir(), "Documents");
     let dataPath = null;
     let langPath = null;
     let downloadsPath = null;
@@ -57,6 +56,9 @@ module.exports = function (basePath) {
                                           "score-calculation.json");
     paths.defaultSettings = path.resolve(basePath, "data",
                                          "default-settings.json");
+    paths.img = {
+        programIcon: path.resolve(basePath, "img", "icon.png")
+    };
 
     // JS
     const jsPath = path.resolve(basePath, "js");

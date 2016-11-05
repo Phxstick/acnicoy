@@ -1,34 +1,47 @@
 {
     "test": {
-        "kanji_flag": 0,
-        "kana_flag": 0,
-        "progress_flag": 1,
-        "stats_flag": 1,
-        "font_size": 16
+        "showProgress": false,
+        "showStats": false,
+        "font": {
+            "size": 24,
+            "family": "TakaoPGothic"
+        }
     },
-    "SRS": {
-        "fill": "random",
-        "threshold": 30,
-        "show_lists": false,
-        "counter": 0,
-        "spacing": [0, 14400, 28800, 72000, 201600, 590400,
-                    2404800, 7761600, 31104000, 1000000000000]
+    "srs": {
+        "schemes": [
+            {
+                "name": "Standard",
+                "intervals": [
+                    "8 hours",
+                    "1 day",
+                    "2 days",
+                    "4 days",
+                    "8 days",
+                    "16 days",
+                    "1 month",
+                    "2 months",
+                    "4 months"],
+                "description": "Standard scheme where each interval is about twice the previous one."
+            },
+            {
+                "name": "Busy",
+                "intervals": [
+                    "20 hours",
+                    "3 days",
+                    "1 week",
+                    "2 weeks",
+                    "1 month",
+                    "2 months",
+                    "4 months"],
+                "description": "Smaller version of the standard scheme with larger intervals at the beginning to increase time efficiency. Final interval lengths are the same to ensure long-time-memorization."
+            }
+        ]
     },
     "languages": {
         "default": ""
     },
-    "print": {
-        "sort": 2,
-        "pad": ".",
-        "readings_flag": 0
-    },
     "add": {
         "separator": ","
-    },
-    "design": {
-        "font1": { "family": "Helvetica", "size": 11 },
-        "font2": { "family": "Century Gothic", "size": 12 },
-        "colors": null
     },
     "shortcuts": {
         "force-quit": "Ctrl+Esc",

@@ -343,7 +343,7 @@ class VocabSection extends Section {
                 }
             }
             if (this.allListsList.children.length === 0 ||
-                    this.allListsList.lastChild.textContent < newName)
+                    this.allListsList.lastElementChild.textContent < newName)
                 this.allListsList.appendChild(node);
         }
         // Add callback registering changes to data

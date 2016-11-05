@@ -83,7 +83,7 @@ button#continue {
   height: 35px;
   width: 70%;
   font-size: 90%;
-  border-top: 1px solid transparent;
+  border-top-width: 1px;
   border-bottom: 0px;
   @include fading-border($button-border-color, "horizontal");
 
@@ -94,7 +94,7 @@ button#continue {
     background-repeat: no-repeat;
     background-position: center top;
     color: white;
-    border-right: 1px solid transparent;
+    border-right-width: 1px;
     border-left: 0;
     border-top: 0;
     @include fading-border(lighten($button-border-color, 15%), "to bottom");

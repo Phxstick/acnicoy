@@ -66,6 +66,14 @@ button {
     color: black;
     text-shadow: 0 0 1px dimgray;
   }
+
+  &:focus {
+    box-shadow: 0 0 3px darkred;
+  }
+
+  &:active {
+    box-shadow: inset 0px 2px 13px -2px #aaa;
+  }
 }
 
 .button-bar {

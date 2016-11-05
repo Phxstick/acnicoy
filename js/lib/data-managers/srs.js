@@ -2,9 +2,13 @@
 
 module.exports = function (paths, modules) {
     const srs = {};
-    
-    srs.getNumberOfLevels = function () {
-        return modules["language-settings"]["SRS"]["spacing"].length;
+
+    srs.setLanguage = function (language) {
+        const scheme = modules.languageSettings["srs"]["scheme"];
+        const timeSpans = modules.settings.getIntervalsForSrsScheme(scheme)
+            .map((timeSpan) => utility.timeSpanStringToSeconds(timeSpan));
+        srs.intervals = Object.freeze([0, ...timeSpans, 1000000000000]);
+        srs.numLevels = srs.intervals.length;
     };
 
     srs.getDueVocab = function () {
@@ -24,10 +28,9 @@ module.exports = function (paths, modules) {
 
     srs.getAmounts = function () {
         const time = utility.getTime();
-        const numLevels = modules["language-settings"]["SRS"]["spacing"].length;
         const amounts = {};
         const promises = [];
-        for (let level = 0; level < numLevels; ++level) {
+        for (let level = 0; level < srs.numLevels; ++level) {
             amounts[level] = {};
             for (const mode of modules.test.modes) {
                 amounts[level][mode] = { due: 0, scheduled: 0 };
@@ -89,7 +92,7 @@ module.exports = function (paths, modules) {
     srs.setLevel = function (entry, newLevel, mode) {
         const table = modules.test.modeToTable(mode);
         const colName = mode === modules.test.mode.WORDS ? "word" : "kanji";
-        const spacing = modules.languageSettings["SRS"]["spacing"][newLevel];
+        const spacing = srs.intervals[newLevel];
         return modules.database.run(
             `UPDATE ${table} SET level = ?, review_date = ?
              WHERE ${colName} = ?`,

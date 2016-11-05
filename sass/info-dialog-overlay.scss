@@ -7,4 +7,6 @@
 #main-frame {
   @include center-content;
   min-height: 70px;
+  text-align: center;
+  line-height: 150%;
 }

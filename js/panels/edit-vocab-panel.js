@@ -133,7 +133,7 @@ class EditVocabPanel extends Panel {
 
     adjustToLanguage(language, secondary) {
         // Fill SRS level popup stack
-        const numLevels = dataManager.srs.getNumberOfLevels();
+        const numLevels = dataManager.srs.numLevels;
         this.levelPopup.empty();
         for (let i = 1; i < numLevels; ++i) this.levelPopup.addOption(i);
         this.levelPopup.set(this.levelPopup.firstChild);

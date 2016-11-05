@@ -53,7 +53,8 @@ module.exports = function (paths, modules) {
      * @param {String} language
      */
     stats.calculateScorePerLevel = function (language) {
-        const timeIntervals = modules.languageSettings["SRS"]["spacing"];
+        modules.srs.setLanguage(language);
+        const timeIntervals = modules.srs.intervals;
         const milestones =
             Reflect.ownKeys(scoreCalculation.percentages)
             .map(timeString => parseInt(timeString))

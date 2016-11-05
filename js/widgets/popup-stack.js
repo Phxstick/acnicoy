@@ -69,7 +69,8 @@ class PopupStack extends Widget {
         // Open the popup-stack by animating/setting these property names
         const itemSize = this.children[0][propertyNames.size];
         let current = 0;
-        for (const child of this.children.length) {
+        for (let i = 0; i < this.children.length; ++i) {
+            const child = this.children[i];
             child.style.zIndex = i;
             if (this._attributes["animate"]) {
                 Velocity(child, {

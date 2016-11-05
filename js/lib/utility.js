@@ -205,6 +205,89 @@ function parseEntries(entryString, separator) {
 }
 
 /**
+ * Parse given string defining a time span into an object.
+ * @param {String} String defining a time span. Is a comma separated sequence
+ *     of parts of the form: "number unit".
+ * @returns {Object} Time span object of the form
+ *     { hours, days, weeks, months, years }.
+ * @throws Will throw an error if argument is not correctly formatted.
+ */
+function timeSpanStringToObject(string) {
+    const parts = string.split(",").map((s) => s.trim());
+    const result = { hours: 0, days: 0, weeks: 0, months: 0, years: 0 };
+    const usedUnits = new Set();
+    for (const part of parts) {
+        const match = part.match(/^(\d+)\s*(\w+)$/);
+        if (match === null) {
+            throw new Error(
+                `Part of the string is incorrectly formatted: '${part}'`
+                + ` (Should be of the form 'number unit')`);
+        }
+        const [number, unit] = match.slice(1).map((s) => s.toLowerCase());
+        switch (unit) {
+        case "h":
+        case "hour":
+        case "hours":
+            result.hours += parseInt(number); break;
+        case "d":
+        case "day":
+        case "days":
+            result.days += parseInt(number); break;
+        case "w":
+        case "week":
+        case "weeks":
+            result.weeks += parseInt(number); break;
+        case "m":
+        case "month":
+        case "months":
+            result.months += parseInt(number); break;
+        case "y":
+        case "year":
+        case "years":
+            result.years += parseInt(number); break;
+        default:
+            throw new Error(
+                `Part of the string is incorrectly formatted: '${part}'`
+                + ` (Unknown unit: '${unit}')`);
+        }
+    }
+    return result;
+}
+
+/**
+ * Return number of seconds in time span specified by given string.
+ * @param {String} String defining a time span. Is a comma separated sequence
+ *     of parts of the form: "number unit".
+ * @returns {Integer}
+ * @throws Will throw an error if argument is not correctly formatted.
+ */
+function timeSpanStringToSeconds(string) {
+    const { hours, days, weeks, months, years } =
+        timeSpanStringToObject(string);
+    return hours * 60 * 60
+           + days * 60 * 60 * 24
+           + weeks * 60 * 60 * 24 * 7
+           + months * 60 * 60 * 24 * 30
+           + years * 60 * 60 * 24 * 365;
+}
+
+/**
+ * Return standard string notation for timespan defined by given object.
+ * @param {Object} object - Object of form { hours, days, weeks, months, years }
+ * @returns {String}
+ */
+function timeSpanObjectToString(object) {
+    const substrings = [];
+    const units = ["years", "months", "weeks", "days", "hours"];
+    for (const unit of units) {
+        const amount = object[unit];
+        if (amount === 0) continue;
+        substrings.push(`${amount} ${amount === 1 ? unit.slice(0, -1) : unit}`);
+    }
+    return substrings.join(", ");
+}
+
+/**
 **  Return true if given path is an existing file.
 **/
 function existsFile(path) {
@@ -357,6 +440,9 @@ module.exports.calculateED = calculateED;
 module.exports.getStringForNumber = getStringForNumber;
 module.exports.getOrdinalNumberString = getOrdinalNumberString;
 module.exports.parseEntries = parseEntries;
+module.exports.timeSpanStringToObject = timeSpanStringToObject;
+module.exports.timeSpanStringToSeconds = timeSpanStringToSeconds;
+module.exports.timeSpanObjectToString = timeSpanObjectToString;
 module.exports.existsFile = existsFile;
 module.exports.existsDirectory = existsDirectory;
 

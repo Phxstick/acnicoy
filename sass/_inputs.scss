@@ -5,9 +5,11 @@ textarea {
   border: 1px solid dimgray;
   resize: none;
   transition: .2s;
+  transition: box-shadow .2s, border .2s;
+  box-shadow: inset 0 1px 10px -5px black;
 
   &:focus {
-    outline: none !important;
+    outline: none;
     box-shadow: 0 0 5px dimgray;
     background-color: $view-background;
   }
