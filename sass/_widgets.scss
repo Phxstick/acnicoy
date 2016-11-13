@@ -2,8 +2,8 @@ popup-list {
   --label-background: $button-background;
   --label-color: $button-color;
   --label-padding: 12px;
-  --label-hover-background: $button-hover-background;
-  --label-hover-color: $button-hover-color;
+  --label-hover-background: $button-background-hover;
+  --label-hover-color: $button-color-hover;
 
   > option {
     color: $button-color;
@@ -11,31 +11,31 @@ popup-list {
     padding: 8px;
 
     &:hover {
-      background-color: $button-hover-background;
-      color: $button-hover-color;
+      background-color: $button-background-hover;
+      color: $button-color-hover;
     }
   }
 }
 
 popup-stack {
   &[disabled] > option:checked {
-      color: crimson;
+      color: transparent;
   }
   
   > option {
     color: whitesmoke;
     background-color: $button-background;
-    font-family: $gui-font;
+    font-family: $light-font;
     font-size: 150%;
 
     &:hover {
-      background-color: $button-hover-background;
-      color: $button-hover-color;
+      background-color: $button-background-hover;
+      color: $button-color-hover;
     }
 
     &:checked {
       color: $button-color;
-      background-color: crimson;
+      background-color: $highlight-background;
     }
   }
 }

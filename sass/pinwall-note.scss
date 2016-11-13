@@ -12,10 +12,10 @@
 #text-div {
   flex: 1;
   color: $view-color;
-  background-color:  darken($view-background, 5%);
+  background-color: $view-background-dark;
   padding: 5px;
   resize: both;
-  border: 1px solid #a9a9a9;
+  border: 1px solid $border-color-dark;
   overflow: auto;
   white-space: pre;
 }
@@ -26,8 +26,6 @@
   display: flex;
   #text-entry {
     flex: 1;
-  }
-  #save-button {
   }
 }
 

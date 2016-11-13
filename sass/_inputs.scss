@@ -1,72 +1,137 @@
 textarea {
-  color: $view-color;
-  background-color:  darken($view-background, 5%);
-  padding: 5px;
-  border: 1px solid dimgray;
+  padding: 0px;
+  border: 0px;
+  background-color: transparent;
+  font-family: inherit;
+  font-size: inherit;
   resize: none;
-  transition: .2s;
-  transition: box-shadow .2s, border .2s;
-  box-shadow: inset 0 1px 10px -5px black;
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 5px dimgray;
-    background-color: $view-background;
   }
-  &:placeholder-shown {
-    color: lighten($view-color, 30%);
+}
+
+textarea.styled {
+  background-color: $input-background;
+  color: $input-color;
+  font-size: 100%;
+  padding: 5px;
+  border: 1px solid $input-border-color;
+  transition: box-shadow .2s, border .2s;
+  box-shadow: $input-inset-shadow;
+
+  &:focus {
+    box-shadow: $input-shadow;
+    background-color: $input-background-focus;
+    color: $input-color-focus;
+  }
+  &:not(:focus):hover {
+    background: $input-background-hover;
+    color: $input-color-hover;
+  }
+  &::placeholder {
+    color: $input-color-placeholder;
   }
 }
 
 input {
-  color: $view-color;
-  background-color: $view-background;
-  padding: 5px;
-  border: 1px solid dimgray;
-  transition: box-shadow .2s, border .2s;
-  box-shadow: inset 0 1px 10px -5px black;
+  padding: 0px;
+  border: 0px;
+  background-color: transparent;
+  font-family: inherit;
+  font-size: inherit;
 
   &:focus {
-    outline: none !important;
-    // box-shadow: inset 0 1px 10px -5px var(--inner-shadow-color, black);;
-    box-shadow: 0 0 5px var(--outer-shadow-color, dimgray);
-    border: 1px solid darkred;
-    background-color: $view-background;
+    outline: none;
   }
+}
+
+input.styled {
+  color: $input-color;
+  background-color: $input-background;
+  padding: 5px;
+  font-size: 120%;
+  border: 1px solid $input-border-color;
+  transition: box-shadow .2s, border .2s;
+  box-shadow: $input-inset-shadow;
+
+  &:focus {
+    box-shadow: $input-shadow;
+    background-color: $input-background-focus;
+    color: $input-color-focus;
+  }
+  &:not(:focus):hover {
+    background: $input-background-hover;
+    color: $input-color-hover;
+  }
+  &::placeholder {
+    color: $input-color-placeholder;
+  }
+}
+
+input.trench {
+  color: $view-color;
+  background-color: $input-background-focus;
+  border: 1px solid lightgrey;
+  border-radius: 5px;
+  box-shadow: $input-inset-shadow;
+
+  &:focus {
+    box-shadow: $input-shadow;
+  }
+  &::placeholder {
+    color: $input-color-placeholder;
+  }
+}
+
+input.light {
+  color: $input-color;
+  padding: 5px;
+
   &:placeholder-shown {
-    color: lighten($view-color, 30%);
+    color: $input-color-placeholder;
+  }
+}
+
+input.inline-edit {
+  color: $input-color;
+  padding: 2px;
+  width: 100%;
+  box-sizing: border-box;
+  &:focus {
+    box-shadow: $input-shadow;
+    background-color: $input-background-focus;
   }
 }
 
 select {
-  border: 1px solid dimgray;
+  border: 1px solid $input-border-color;
   padding: 3px;
   font-size: 110%;
   line-height: 100px;
   transition: box-shadow .2s, background-color .2s;
-  background-color: darken($view-background, 5%);
+  background-color: $input-background;
+
   &:focus {
     outline: none !important;
-    box-shadow: 0 0 5px dimgray;
-    background-color: $view-background;
+    box-shadow: $input-shadow;
+    background-color: $input-background-focus;
   }
   &:hover {
-    border-color: darkred;
+    background-color: $input-background-hover;
   }
-  option:first-child {
-    color: lighten($view-color, 30%);
-  }
-  &.empty {
-    color: lighten($view-color, 30%);
+  option:first-child[value=""] {
+    color: $input-color-placeholder;
   }
 }
 
+
 check-box {
   &:focus {
-    box-shadow: 0 0 5px crimson;
-    border: 1px solid darkred;
+    box-shadow: 0 0 5px $highlight-background;
+    border: 1px solid $highlight-background;
   }
   &:hover {
-    border: 1px solid darkred;
+    border: 1px solid $highlight-background;
   }
 }

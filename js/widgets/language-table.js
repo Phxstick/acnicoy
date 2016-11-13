@@ -3,8 +3,6 @@
 class LanguageTable extends Widget {
     constructor() {
         super("language-table", true, true);
-        // TODO: Add callbacks for settings
-        // TODO: Add table column for SRS scheme, opening srs overylay on click
         this.languageConfigs = [];
         const template = templates.get("language-table-entry");
         this.$("add-language-button").addEventListener("click", () => {
@@ -26,7 +24,7 @@ class LanguageTable extends Widget {
                     config.settings.readings = checkBox.checked;
                 });
                 // Remove language if remove-icon is clicked
-                const removeIcon = row.children[3].children[0];
+                const removeIcon = row.children[4].children[0];
                 removeIcon.addEventListener("click", () => {
                     this.languageConfigs.remove(config);
                     this.$("table-body").removeChild(row);

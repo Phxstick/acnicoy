@@ -1,1 +1,14 @@
 @import "overlay";
+
+select {
+  padding: 10px;
+  width: 100%;
+}
+
+#readings-flag {
+  margin-right: 10px;
+}
+
+button {
+  padding: 10px 15px 10px 0px;
+}

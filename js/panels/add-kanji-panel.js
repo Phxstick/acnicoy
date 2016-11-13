@@ -1,33 +1,22 @@
 "use strict";
 
-// TODO: Restrict character set for kanji entry
-
 class AddKanjiPanel extends Panel {
     constructor() {
         super("add-kanji");
-        // Store important DOM elements as properties
-        this.kanjiEntry = this.root.querySelector(
-            "textarea[name='kanji']");
-        this.meaningsEntry = this.root.querySelector(
-            "textarea[name='meanings']");
-        this.onEntry = this.root.querySelector(
-            "textarea[name='on']");
-        this.kunEntry = this.root.querySelector(
-            "textarea[name='kun']");
-        this.allLevelsPopup = this.root.getElementById("all-levels");
+        this.allLevelsPopup = this.root.getElementById("all-srs-levels");
         this.meaningsLevelPopup =
             this.root.getElementById("srs-level-meanings");
-        this.kunYomiLevelPopup = this.root.getElementById("srs-level-kun");
-        this.onYomiLevelPopup = this.root.getElementById("srs-level-on");
+        this.kunYomiLevelPopup = this.root.getElementById("srs-level-kun-yomi");
+        this.onYomiLevelPopup = this.root.getElementById("srs-level-on-yomi");
         // Attach event handlers
-        this.onEntry.enableKanaInput("kata");
-        this.kunEntry.enableKanaInput("hira");
+        this.$("on-yomi-entry").enableKanaInput("kata");
+        this.$("kun-yomi-entry").enableKanaInput("hira");
         this.root.getElementById("close-button").addEventListener(
             "click", () => main.closePanel("add-kanji"));
         this.root.getElementById("cancel-button").addEventListener(
             "click", () => main.closePanel("add-kanji"));
         this.root.getElementById("save-button").addEventListener(
-            "click", () => { this.save(); main.closePanel("add-kanji"); });
+            "click", () => this.save());
         this.allLevelsPopup.callback = (label, value) => {
             const idx = value - 1;
             this.meaningsLevelPopup.set(this.meaningsLevelPopup.children[idx]);
@@ -37,25 +26,23 @@ class AddKanjiPanel extends Panel {
     }
 
     open() {
-        const kanjiStyle = window.getComputedStyle(this.kanjiEntry, null);
-        this.kanjiEntry.style.width =
-            kanjiStyle.getPropertyValue("font-size");
-        this.kanjiEntry.show();
+        this.$("kanji-entry").style.width =
+            `${this.$("kanji-entry").offsetHeight}px`;
         this.allLevelsPopup.set(this.allLevelsPopup.firstChild);
         this.meaningsLevelPopup.set(this.meaningsLevelPopup.firstChild);
         this.kunYomiLevelPopup.set(this.kunYomiLevelPopup.firstChild);
         this.onYomiLevelPopup.set(this.onYomiLevelPopup.firstChild);
-        if (this.kanjiEntry.textContent.length === 0)
-            this.kanjiEntry.focus();
+        if (this.$("kanji-entry").textContent.length === 0)
+            this.$("kanji-entry").focus();
         else
-            this.meaningsEntry.focus();
+            this.$("meanings-entry").focus();
     }
 
     close() {
-        this.kanjiEntry.value = "";
-        this.meaningsEntry.value = "";
-        this.onEntry.value = "";
-        this.kunEntry.value = "";
+        this.$("kanji-entry").value = "";
+        this.$("meanings-entry").value = "";
+        this.$("on-yomi-entry").value = "";
+        this.$("kun-yomi-entry").value = "";
     }
 
     adjustToLanguage(language, secondary) {
@@ -71,11 +58,11 @@ class AddKanjiPanel extends Panel {
     }
 
     load(kanji) {
-        this.kanjiEntry.value = kanji;
+        this.$("kanji-entry").value = kanji;
         dataManager.content.getKanjiInfo(kanji).then((info) => {
-            this.meaningsEntry.value = info.meanings.join(", ");
-            this.onEntry.value = info.onYomi.join(", ");
-            this.kunEntry.value = info.kunYomi.join(", ");
+            this.$("meanings-entry").value = info.meanings.join(", ");
+            this.$("on-yomi-entry").value = info.onYomi.join(", ");
+            this.$("kun-yomi-entry").value = info.kunYomi.join(", ");
         });
     }
 
@@ -84,16 +71,16 @@ class AddKanjiPanel extends Panel {
         const trim = (val, index, array) => { array[index] = val.trim(); }
         const notEmpty = (element) => element.length > 0;
         // Read values
-        const kanji = this.kanjiEntry.value.trim();
+        const kanji = this.$("kanji-entry").value.trim();
         const levels = {
             meanings: parseInt(this.meaningsLevelPopup.value),
             on_yomi: parseInt(this.onYomiLevelPopup.value),
             kun_yomi: parseInt(this.kunYomiLevelPopup.value)
         };
         const values = {
-            meanings: this.meaningsEntry.value.split(separator),
-            on_yomi: this.onEntry.value.split(separator),
-            kun_yomi: this.kunEntry.value.split(separator)
+            meanings: this.$("meanings-entry").value.split(separator),
+            on_yomi: this.$("on-yomi-entry").value.split(separator),
+            kun_yomi: this.$("kun-yomi-entry").value.split(separator)
         };
         for (const attribute in values) {
             values[attribute].forEach(trim);
@@ -101,15 +88,12 @@ class AddKanjiPanel extends Panel {
         }
         // Update status with error messages if something is missing
         if (kanji.length === 0) {
-            main.updateStatus("The kanji field can not be empty!");
+            dialogWindow.info("You need to enter a kanji to add.")
             return;
-            // TODO: Also shortly highlight kanji entry field
         }
         if (values.meanings.length === 0 && values.on_yomi.length === 0 &&
                 values.kun_yomi.length === 0) {
-            main.updateStatus(
-                "You need to enter some more information to add a kanji!");
-            // TODO: Also shortly highlight 3 lower entries
+            dialogWindow.info("You need to enter more details to add a kanji.");
             return;
         }
         return dataManager.kanji.add(kanji, values, levels).then((result) => {
@@ -121,6 +105,7 @@ class AddKanjiPanel extends Panel {
             } else if (result === "no-change") {
                 main.updateStatus(`Kanji ${kanji} has not been changed.`);
             }
+            main.closePanel("add-kanji");
         });
     }
 }

@@ -54,6 +54,7 @@ module.exports = function (paths, modules) {
             if (!rows.length) {
                 // Word not added. Insert new row into the the vocabulary table
                 const spacing = modules.srs.intervals[level];
+                modules.stats.updateScore(modules.test.mode.WORDS, 0, level);
                 return modules.database.run(`
                     INSERT INTO vocabulary
                     (word, date_added, level, review_date,
@@ -86,7 +87,10 @@ module.exports = function (paths, modules) {
     vocab.edit = function (word, translations, readings, level) {
         // If there are no translations, completely remove the word
         if (!translations.length) {
-            return vocab.remove(word).then(() => "removed");
+            return getSrsLevel(word).then((oldLvl) => {
+                modules.stats.updateScore(modules.test.mode.WORDS, oldLvl, 0);
+                return vocab.remove(word).then(() => "removed");
+            });
         }
         return modules.database.query(
             "SELECT * FROM vocabulary WHERE word = ?", word)
@@ -109,6 +113,7 @@ module.exports = function (paths, modules) {
             const spacing = modules.srs.intervals[level];
             const newReviewDate = oldLevel === level ? oldReviewDate :
                 utility.getTime() + spacing;
+            modules.stats.updateScore(modules.test.mode.WORDS, oldLevel, level);
             return modules.database.run(`
                 UPDATE vocabulary
                 SET translations = ?, readings = ?, level = ?, review_date = ?
@@ -124,8 +129,11 @@ module.exports = function (paths, modules) {
         for (const list of lists) {
             modules.vocabLists.removeWordFromList(word, list);
         }
-        return modules.database.run(
-                "DELETE FROM vocabulary WHERE word = ?", word);
+        return getSrsLevel(word).then((oldLvl) => {
+            modules.stats.updateScore(modules.test.mode.WORDS, oldLvl, 0);
+            return modules.database.run(
+                    "DELETE FROM vocabulary WHERE word = ?", word);
+        });
     }
 
     vocab.rename = function (word, newWord) {

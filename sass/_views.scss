@@ -22,15 +22,14 @@
         color: $view-select-color;
       }
     }
-    // TODO: 3px borderradius?
   }
 }
 
 .list-view-header {
-  font-size: 110%;
-  background-color: darken($view-background, 5%);
+  background-color: $view-header-background;
+  color: $view-header-color;
   font-family: $header-font;
+  font-size: 110%;
   padding: 4px;
   text-align: center;
-  color: dimgray;
 }

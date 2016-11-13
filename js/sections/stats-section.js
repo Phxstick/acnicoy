@@ -10,15 +10,23 @@ class StatsSection extends Section {
         this.jlptKanjiDiagram = this.root.getElementById("jlpt-kanji");
         // Configure diagram display parameters
         this.jouyouKanjiDiagram.barWidth = 35;
-        this.jouyouKanjiDiagram.bottomLineWidth = 2;
-        this.jouyouKanjiDiagram.topLineWidth = 2;
+        this.jouyouKanjiDiagram.bottomLineWidth = 1;
+        this.jouyouKanjiDiagram.topLineWidth = 1;
         this.jouyouKanjiDiagram.margin =
             { top: 0, bottom: 30, left: 20, right: 20 };
         this.jlptKanjiDiagram.barWidth = 35;
-        this.jlptKanjiDiagram.bottomLineWidth = 2;
-        this.jlptKanjiDiagram.topLineWidth = 2;
+        this.jlptKanjiDiagram.bottomLineWidth = 1;
+        this.jlptKanjiDiagram.topLineWidth = 1;
         this.jlptKanjiDiagram.margin =
             { top: 0, bottom: 30, left: 20, right: 20 };
+    }
+
+    registerCentralEventListeners() {
+        events.onAll(
+            ["word-added", "word-deleted", "kanji-added", "kanji-removed"],
+        () => {
+            this.updateStats();
+        });
     }
 
     open() {

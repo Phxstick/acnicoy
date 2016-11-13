@@ -3,119 +3,108 @@
 class AddVocabPanel extends Panel {
     constructor () {
         super("add-vocab");
-        // Store important DOM elements as properties
-        this.wordEntry = this.root.querySelector("textarea[name='word']");
-        this.translationsEntry = this.root.querySelector(
-            "textarea[name='translations']");
-        this.readingsEntry = this.root.querySelector(
-            "textarea[name='readings']");
-        this.levelPopup = this.root.querySelector("#srs-level");
-        this.vocabListSelect = this.root.querySelector(
-            "select[name='vocab-list']");
-        this.vocabListSelect.classList.add("empty");
-        this.vocabListSelect.addEventListener("change", () => {
-            if (this.vocabListSelect.value.length === 0) {
-                this.vocabListSelect.classList.add("empty");
-            } else {
-                this.vocabListSelect.classList.remove("empty");
-            }
-        });
+        this.defaultOption = utility.createDefaultOption(
+                "Select a vocabulary list (optional)");
         // Attach event handlers
-        this.readingsEntry.enableKanaInput("hira");
-        this.root.getElementById("close-button").addEventListener(
+        this.$("close-button").addEventListener(
             "click", () => main.closePanel("add-vocab"));
-        this.root.getElementById("cancel-button").addEventListener(
+        this.$("cancel-button").addEventListener(
             "click", () => main.closePanel("add-vocab"));
-        this.root.getElementById("save-button").addEventListener(
+        this.$("save-button").addEventListener(
             "click", () => this.save());
     }
 
     open() {
-        this.wordEntry.focus();
+        this.$("word-entry").focus();
     }
 
     close() {
-        this.wordEntry.value = "";
-        this.translationsEntry.value = "";
-        this.readingsEntry.value = "";
-        this.levelPopup.set(this.levelPopup.firstChild);
+        this.$("word-entry").value = "";
+        this.$("translations-entry").value = "";
+        this.$("readings-entry").value = "";
+        this.$("srs-level").set(this.$("srs-level").firstChild);
         this.defaultOption.setAttribute("selected", "");
-        this.vocabListSelect.value = "";
+        this.$("vocab-list").value = "";
     }
 
     load(id, word) {
-        this.wordEntry.value = word;
+        this.$("word-entry").value = word;
         // TODO: Load necessary word info into fields here
     }
 
     adjustToLanguage(language, secondary) {
         // Fill SRS level popup stack
-        this.levelPopup.empty();
+        this.$("srs-level").empty();
         const numLevels = dataManager.srs.numLevels;
-        for (let i = 1; i < numLevels; ++i) this.levelPopup.addOption(i);
-        this.levelPopup.set(this.levelPopup.firstChild);
+        for (let i = 1; i < numLevels; ++i) this.$("srs-level").addOption(i);
+        this.$("srs-level").set(this.$("srs-level").firstChild);
         // Fill vocab list selector
-        this.vocabListSelect.empty();
-        this.defaultOption = utility.createDefaultOption(
-                "Select a vocabulary list (optional)");
-        this.vocabListSelect.appendChild(this.defaultOption);
+        this.$("vocab-list").empty();
+        this.$("vocab-list").appendChild(this.defaultOption);
         const lists = dataManager.vocabLists.getLists();
         lists.sort();
         for (const list of lists) {
             const option = document.createElement("option");
             option.value = list;
             option.textContent = list;
-            this.vocabListSelect.appendChild(option);
+            this.$("vocab-list").appendChild(option);
         }
         // Fill entries with placeholders
-        this.wordEntry.placeholder = `Enter ${language} word here`;
-        this.translationsEntry.placeholder =
+        this.$("word-entry").placeholder = `Enter ${language} word here`;
+        this.$("translations-entry").placeholder =
             `Enter ${secondary} translations here`;
         // Pack or unpack textarea for readings
-        if (dataManager.languageSettings["readings"]) this.readingsEntry.show();
-        else this.readingsEntry.hide();
+        if (dataManager.languageSettings["readings"])
+            this.$("readings-entry").show();
+        else
+            this.$("readings-entry").hide();
+        // Adjust to Japanese language
+        if (language === "Japanese") {
+            this.$("readings-entry").enableKanaInput("hira");
+        } else {
+            this.$("readings-entry").disableKanaInput();
+        }
     }
 
     save() {
         const separator = dataManager.settings["add"]["separator"];
         // Read entered values
-        const word = this.wordEntry.value.trim();
-        const level = parseInt(this.levelPopup.value);
-        const list = this.vocabListSelect.value;
+        const word = this.$("word-entry").value.trim();
+        const level = parseInt(this.$("srs-level").value);
+        const list = this.$("vocab-list").value;
         let translations = utility.parseEntries(
-            this.translationsEntry.value, separator);
+            this.$("translations-entry").value, separator);
         let readings = utility.parseEntries(
-            this.readingsEntry.value, separator);
+            this.$("readings-entry").value, separator);
         // Update status with error messages if something is missing
         if (word.length === 0) {
             dialogWindow.info("The word to be added is missing.");
-            // TODO: Shortly highlight word entry?
             return;
         }
         if (translations.length === 0) {
             main.updateStatus("No translations have been entered.");
-            // TODO: Shortly highlight translations entry?
             return;
         }
+        // Add word and update status message
         dataManager.vocab.add(word, translations, readings, level).then(
-           ([ entryNew, numTranslationsAdded, numReadingsAdded ]) => {
-               if (list.length > 0) {
-                   dataManager.vocabLists.addWordToList(word, list);
-               }
-               const numFailed = translations.length - numTranslationsAdded;
-               const string1 = numTranslationsAdded !== 1 ? "s have" :
-                                                            " has";
-               const string2 = numFailed > 1 ? " were already registered" :
-                   (numFailed === 1 ? " was already registered" : "");
-               const failedString = numFailed === 0 ? "" : numFailed;
-               const entryString = entryNew ? "The entry and " : "";
-               // TODO: Include info about readings.
-               main.updateStatus(`${entryString}${numTranslationsAdded} ` +
-                                 `translation${string1} been added. ` +
-                                 `${failedString}${string2}`);
-               events.emit("word-added", word);
-               events.emit("vocab-changed");
-           }
+            ([ entryNew, numTranslationsAdded, numReadingsAdded ]) => {
+                if (list.length > 0) {
+                    dataManager.vocabLists.addWordToList(word, list);
+                }
+                const numFailed = translations.length - numTranslationsAdded;
+                const string1 = numTranslationsAdded !== 1 ? "s have" :
+                                                             " has";
+                const string2 = numFailed > 1 ? " were already registered" :
+                    (numFailed === 1 ? " was already registered" : "");
+                const failedString = numFailed === 0 ? "" : numFailed;
+                const entryString = entryNew ? "The entry and " : "";
+                // TODO: Include info about readings?
+                main.updateStatus(`${entryString}${numTranslationsAdded} ` +
+                                  `translation${string1} been added. ` +
+                                  `${failedString}${string2}`);
+                events.emit("word-added", word);
+                events.emit("vocab-changed");
+            }
         );
         main.closePanel("add-vocab");
     }

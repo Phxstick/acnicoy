@@ -1,13 +1,22 @@
 @import "base";
 
-$button-border-color: white;
+$control-bar-border-color: $test-section-control-bar-border-color;
+$control-bar-disabled-color: $test-section-control-bar-color-disabled;
+$control-bar-button-color: $test-section-control-bar-button-color;
+$test-frame-background: $test-section-test-frame-background;
+$test-frame-color: $test-section-test-frame-color;
+
+$answer-input-margin: 30px;
+$answer-input-width: 300px;
+$answer-input-font-size: 130%;
+$answer-input-padding: 5px;
 
 #top {
   height: 60%;
   display: flex;
   flex-direction: column;
-  background-color: dimgray;
-  color: whitesmoke;
+  background-color: $test-section-test-frame-background;
+  color: $test-section-test-frame-color;
   align-items: center;
 }
 
@@ -18,9 +27,9 @@ $button-border-color: white;
   align-items: center;
 }
 
-div#status {
+#status {
   margin-top: 30px;
-  color: whitesmoke;
+  color: $test-section-test-frame-color;
   font-size: 120%;
 }
 
@@ -31,7 +40,7 @@ div#status {
   
   #test-item {
     font-size: 300%;
-    color: whitesmoke;
+    color: $test-frame-color;
   }
 
   #correct-answers {
@@ -42,39 +51,39 @@ div#status {
     overflow-y: auto;
 
     div {
-      color: whitesmoke;
+      color: $test-frame-color;
       font-size: 120%;
       padding: 2px;
     }
   }
 }
 
-input#answer {
-  font-size: 130%;
-  margin-top: 30px;
+#answer-entry {
+  @extend input.styled;
   text-align: center;
-  width: 40%;
+  font-size: $answer-input-font-size;
+  margin-top: $answer-input-margin;
+  width: $answer-input-width;
+  padding: $answer-input-padding;
   box-sizing: border-box;
-  --outer-shadow-color: crimson;
 }
 
-button#continue {
-  border: 1px solid dimgray;
-  background-color: darken($view-background, 10%);
-  color: $view-color;
+#continue-button {
+  background-color: darken($input-background, 6%);
+  border: 1px solid $input-border-color;
+  color: $input-color;
+  font-family: $button-font;
+  font-size: $answer-input-font-size;
+  margin-top: $answer-input-margin;
+  width: $answer-input-width;
+  padding: $answer-input-padding;
+  box-sizing: border-box;
   &:focus {
-    outline: none !important;
-    background-color: $view-background;
+    box-shadow: none;
   }
   &:hover {
-    background-color: $view-background;
+    background-color: darken($input-background, 10%);
   }
-  border: 1px solid dimgray;
-  padding: 5px;
-  font-size: 130%;
-  margin-top: 30px;
-  width: 40%;
-  box-sizing: border-box;
 }
 
 #button-bar {
@@ -85,7 +94,7 @@ button#continue {
   font-size: 90%;
   border-top-width: 1px;
   border-bottom: 0px;
-  @include fading-border($button-border-color, "horizontal");
+  @include fading-border($control-bar-border-color, "horizontal");
 
   button {
     @include center-content;
@@ -93,30 +102,33 @@ button#continue {
     background-color: transparent;
     background-repeat: no-repeat;
     background-position: center top;
-    color: white;
+    color: $control-bar-button-color;
     border-right-width: 1px;
     border-left: 0;
     border-top: 0;
-    @include fading-border(lighten($button-border-color, 15%), "to bottom");
+    font-family: $button-font;
+    @include fading-border(lighten($control-bar-border-color, 15%),"to bottom");
     &:hover {
-      background-image: linear-gradient(to bottom, darken($button-border-color,
-      40%), transparent 75%);
-      text-shadow: 0 0 1px $button-border-color;
+      background-image: linear-gradient(to bottom,
+        darken($control-bar-border-color, 40%), transparent 75%);
+      text-shadow: 0 0 1px $control-bar-button-color;
     }
     &:first-child {
       border-left: 0;
       &:hover {
-        background-image: linear-gradient(to bottom left, darken($button-border-color, 40%), transparent, transparent);
+        background-image: linear-gradient(to bottom left,
+          darken($control-bar-border-color, 40%), transparent, transparent);
       }
     }
     &:last-child {
       border-right: 0;
       &:hover {
-        background-image: linear-gradient(to bottom right, darken($button-border-color, 40%), transparent, transparent);
+        background-image: linear-gradient(to bottom right,
+          darken($control-bar-border-color, 40%), transparent, transparent);
       }
     }
     &:disabled {
-      color: #999999;
+      color: $control-bar-disabled-color;
       &:hover {
         text-shadow: none;
         background-image: none;

@@ -4,32 +4,32 @@
       <div id="kanji"></div>
       <svg id="complete-kanji"></svg>
     </div>
-    <div id="added-label">[ Added ]</div>
-    <div id="add-button">Add kanji</div>
-    <div id="info-button" class="control-button">Info</div>
-    <div id="strokes-button" class="control-button">Strokes</div>
-    <div id="examples-button" class="control-button">Examples</div>
+    <button id="added-label">[ Added ]</button>
+    <button id="add-button">Add kanji</button>
+    <button id="info-button" class="control-button">Info</button>
+    <button id="strokes-button" class="control-button">Strokes</button>
+    <button id="examples-button" class="control-button">Examples</button>
   </div>
   <div id="content-frame">
     <div id="info-frame">
       <div id="meanings"></div>
       <div id="details-frame"></div>
       <div id="on-frame">
-        <span class="header">On:</span>
-        <span id="on-readings"></span>
+        <span class="details-header">On:</span>
+        <span id="on-readings" class="details-value"></span>
       </div>
       <div id="kun-frame">
-        <span class="header">Kun:</span>
-        <span id="kun-readings"></span>
+        <span class="details-header">Kun:</span>
+        <span id="kun-readings" class="details-value"></span>
       </div>
       <div id="number-frame">
-        <span id="number-header"><b>Numeral</b> for:</span>
-        <span id="number-label"></span>
+        <span id="number-header" class="details-header">Numeral for:</span>
+        <span id="number-label" class="details-value"></span>
         <span id="number-details"></span>
       </div>
       <div id="counter-frame">
-        <span id="counter-header"><b>Counter</b> for:</span>
-        <span id="counter-label"></span>
+        <span id="counter-header" class="details-header">Counter for:</span>
+        <span id="counter-label" class="details-value"></span>
       </div>
     </div>
     <div id="strokes-frame">
@@ -57,5 +57,5 @@
       <div id="example-words"></div>
     </div>
   </div>
-  <i id="close-button" class="fa fa-angle-double-down"></i>
+  <button id="close-button"><i class="fa fa-angle-double-down"></i></button>
 </div>

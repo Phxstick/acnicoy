@@ -1,37 +1,41 @@
 @import "base";
 
 #srs-table {
-  background-color: $view-background;
-  padding: 10px;
+  background-color: $background-color;
   border-collapse: collapse;
-  border: 1px solid #ddd;
+  margin: 4px;
+
   tr {
-    &:first-child {
+    &:first-child > td {
       font-size: 110%;
-      font-family: "Century Gothic";
+      font-family: $header-font;
+    }
+    &:last-child > td {
+      border-bottom: none;
     }
     td {
       padding: 5px;
       margin: 2px;
       text-align: center;
-      color: $view-color;
-      border-bottom: 1px solid #ddd;
+      color: $color;
+      border-bottom: 1px solid $border-color-light;
       &:first-child {
         font-size: 110%;
         border-bottom: none;
+        font-family: $header-font;
       }
       &.due {
-        background-color: crimson;
-        color: whitesmoke;
+        background-color: $highlight-background;
+        color: $highlight-color;
       }
     }
   }
   #reload-srs {
-    // border: none;
-    color: #f7baba;
-    font-size: 120%;
+    color: $reload-button-color;
+    opacity: 0.6;
+    font-size: 140%;
     &:hover {
-      color: #f07575;
+      opacity: 1;
     }
   }
 }

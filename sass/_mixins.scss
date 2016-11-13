@@ -28,3 +28,9 @@
     border-image: linear-gradient(to bottom, $color, transparent) 1 1%;
   }
 }
+
+@mixin justify($top: 0px, $left: 0px) {
+  position: relative;
+  top: $top;
+  left: $left;
+}

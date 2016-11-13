@@ -1,3 +1,4 @@
+@import "assets";
 @import "variables";
 @import "layers";
 
@@ -10,8 +11,6 @@
 
 * {
   font-family: $font;
-  font-size: 100%;
-  color: $color;
   cursor: $normal-cursor;
   user-select: none;
   &::selection {
@@ -25,23 +24,17 @@
     margin: 5px;
   };
   &::-webkit-scrollbar-track {
-    background-color: darken($view-background, 10%);
+    background-color: $scrollbar-track-background;
   }
   &::-webkit-scrollbar-thumb {
-    background-color: darken(lightcoral, 5%);
+    background-color: $scrollbar-thumb-background;
     &:hover {
-      background-color: darken(lightcoral, 10%);
+      background-color: $scrollbar-thumb-background-hover;
     }
     &:active {
-      background-color: darken(lightcoral, 15%);
+      background-color: $scrollbar-thumb-background-active;
     }
   };
-  // &::-webkit-scrollbar-button {
-  //   width: 10px;
-  //   height: 10px;
-  //   background-color: lightcoral;
-  //   color: white;
-  // };
 }
 
 body {
@@ -52,6 +45,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
+  color: #303030;
 }
 
 #partitioned-window {
@@ -61,7 +55,7 @@ body {
   #header-frame {
     display: flex;
     flex-direction: row;
-    background-color: #dddddd;
+    background-color: $background-color-dark;
     padding: 3px;
 
     #header {
@@ -70,7 +64,7 @@ body {
       font-size: 130%;
       display: flex;
       align-items: center;
-      font-family: $gui-font;
+      font-family: $light-font;
       margin-left: 10px;
     }
     #close-button {
@@ -79,7 +73,7 @@ body {
 
       > i {
         margin-right: 5px;
-        color: lightcoral;
+        color: $close-button-color;
         opacity: 0.4;
         font-size: 160%;
         &:hover {
@@ -98,6 +92,10 @@ body {
     > *:not(:last-child) {
       margin-bottom: 10px;
     }
+    > hr {
+      margin-top: 4px;
+      margin-bottom: 14px;
+    }
   }
 
   #button-frame {
@@ -108,14 +106,61 @@ body {
 
 .kanji-info-link {
   &:hover {
-    text-shadow: 0 0 2px lightsalmon;
-    color: darkred;
+    text-shadow: 0 0 2px $link-shadow-color-hover;
+    color: $link-color-hover;
   }
 }
 
 .note {
-  color: gray;
+  color: $color-light;
   font-size: 80%;
-  font-family: Arial;
+  font-family: $small-font;
   margin-top: 3px;
+}
+
+.flex-spacer {
+  flex: 1;
+}
+
+hr {
+  border: 0px;
+  height: 1px;
+  background-color: $border-color-medium;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  margin-left: 0;
+  margin-right: 0;
+
+  &.fading-both {
+    $bc: $border-color-medium;
+    background-color: transparent;
+    background-image: linear-gradient(to right,
+      transparent, $bc, $bc, $bc, $bc, $bc, $bc, $bc, transparent);
+  }
+  
+  &.fading, &.fading-right {
+    $bc: $border-color-medium;
+    background-color: transparent;
+    background-image: linear-gradient(to right, $bc, $bc, transparent);
+  }
+  
+  &.hidden {
+    visibility: hidden;
+  }
+}
+
+// =============================================================================
+// Font awesome icon position adjustment
+// =============================================================================
+
+.fa.fa-plus {
+  @include justify($top: 1px);
+}
+
+.fa.fa-search {
+  @include justify($top: -3px);
+}
+
+.fa.fa-settings {
+  @include justify($top: -2px);
 }

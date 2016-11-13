@@ -1,45 +1,149 @@
-@font-face {
-  font-family: OpenSans-Light;
-  src: url(../fonts/OpenSans-Light.woff);
-}
+// =============================================================================
+// Base colors
+// =============================================================================
 
-@font-face {
-  font-family: TakaoPGothic;
-  src: url(../fonts/TakaoPGothic.ttf);
-}
-
-@font-face {
-  font-family: Questrial;
-  src: url(../fonts/Questrial-Regular.otf) format("opentype");
-}
-
-$font: TakaoPGothic, Helvetica, Verdana, sans-serif;
-$gui-font: OpenSans-Light;
-$header-font: Questrial;
-
-$normal-cursor: url(../img/test_cursor.png), auto;
-$pointer-cursor: url(../img/test_cursor.png), pointer;
-
-// Colors
-$background-color: lightcoral;
-$background: $background-color;
+// General
+$background-color: whitesmoke;
+$background-color-dark: gainsboro;
 $color: #303030;
-$select-color: white;
+$color-light: dimgray;
+$color-lightest: grey;
 $select-background: firebrick;
+$select-color: white;
+$highlight-background: crimson;
+$highlight-color: white;
+$border-color-light: darken($background-color, 20%);
+$border-color-medium: darkgrey;
+$border-color-dark: grey;
 
+// Links (to open another section/panel/overlay, not an http address)
+$link-color: darkred;
+$link-color-hover: darkred;
+$link-shadow-color-hover: lightsalmon;
+
+// Views
 $view-color: #303030;
-$view-background: #FFFFFF;
+$view-color-greyed-out: darkgrey;
+$view-background: #fff;
+$view-background-dark: darken($view-background, 6%);
 $view-hover-color: black;
 $view-hover-background: peachpuff;
 $view-select-color: $select-color;
 $view-select-background: $select-background;
+$view-header-color: dimgray;
+$view-header-background: darken($view-background, 10%);
 
-// Good combo: [Background: firebrick], [color: indianred]
-$button-color: #ddd;
-$button-background: darkred;
-$button-hover-color: whitesmoke;
-$button-hover-background: lighten($button-background, 10%);  //crimson;
-$button-active-color: whitesmoke;
-$button-active-background: lighten($button-background, 15%);  //crimson;
-$button-disabled-color: gray;
-$button-disabled-background: #dddddd;
+// Inputs
+$input-background: darken(white, 5%);
+$input-background-focus: white;
+$input-background-hover: darken(white, 2%);
+$input-color: #303030;
+$input-color-focus: $input-color;
+$input-color-hover: $input-color;
+$input-color-placeholder: darken($input-background, 40%);
+$input-border-color: $border-color-dark;
+
+// Styled button
+$button-color: whitesmoke;
+$button-color-hover: whitesmoke;
+$button-color-active: whitesmoke;
+$button-color-disabled: gray;
+$button-background: firebrick;
+$button-background-hover: lighten($button-background, 6%);
+$button-background-active: lighten($button-background, 6%);
+$button-background-disabled: #dddddd;
+$button-border-color: darken($button-background, 6%);
+$button-shadow-color-focus: darkred;
+$button-shadow-color-active: darken($button-background-active, 10%);
+
+// Light button
+$button-light-color: dimgray;
+$button-light-color-hover: black;
+$button-light-icon-color: #999;
+$button-light-icon-color-hover: dimgray;
+$button-light-shadow-color-active: lighten($button-light-color, 30%);
+
+// Scrollbar
+$scrollbar-track-background: gainsboro;
+$scrollbar-thumb-background: darken(lightcoral, 5%);
+$scrollbar-thumb-background-hover: darken($scrollbar-thumb-background, 5%);
+$scrollbar-thumb-background-active: darken($scrollbar-thumb-background, 10%);
+
+// Diagrams
+$diagram-graphics-color: mix(darkred, whitesmoke, 60%);
+$diagram-graphics-color-hover: mix(darkred, whitesmoke, 80%);
+$diagram-label-color: $color;
+
+// =============================================================================
+// Acnicoy-specific colors
+// =============================================================================
+
+// Main window
+$main-window-background: darkred;
+$main-window-background-hover: crimson;
+$main-window-color: #ddd;
+$main-window-color-hover: #ddd;
+$main-window-border-color: grey;
+
+// Loading window
+$loading-window-background: maroon;
+$loading-window-color: whitesmoke;
+
+// Sections
+$section-background: lightcoral;
+$section-color: #303030;
+
+// Icon colors
+$close-button-color: lightcoral;
+$reload-button-color: lightcoral;
+
+// "Add" button, "Added" label
+$added-label-color: darken(limegreen, 20%);
+$added-label-shadow-color: lawngreen;
+$add-button-color: darkred;
+$add-button-shadow-color: coral;
+$add-button-background-active: darken($view-hover-background, 10%);
+$dictionary-frequent-words-background: #e0ffb3;
+$dictionary-frequent-words-border-color:
+  darken($dictionary-frequent-words-background, 45%);
+$dictionary-semi-frequent-words-background:
+  lighten($dictionary-frequent-words-background, 8%);
+$dictionary-semi-frequent-words-border-color:
+  $dictionary-frequent-words-border-color;
+$kanji-search-results-rare-color: dimgray;
+$kanji-search-results-rare-shadow-color: grey;
+$kanji-search-results-yomi-background: #EEE;
+
+// Test section
+$test-section-control-bar-border-color: white;
+$test-section-control-bar-color-disabled: #999999;
+$test-section-control-bar-button-color: white;
+$test-section-test-frame-background: dimgray;
+$test-section-test-frame-color: whitesmoke;
+
+// Kanji stroke SVGs
+$kanji-strokes-color: #888;
+$kanji-strokes-background: white;
+$kanji-strokes-highlighted-color: black;
+$kanji-strokes-middle-marker-color: #e5e5e5;
+$kanji-strokes-brush-start-color: red;
+
+// Background dimming
+$panel-background-dim-color: rgba(0, 0, 0, 0.6);
+$overlay-background-dim-color: rgba(0, 0, 0, 0.7);
+
+// =============================================================================
+// Other variables (Gradients, shadows, ...)
+// =============================================================================
+
+$vertical-fading-border: linear-gradient(
+  to bottom, transparent, $border-color-dark, transparent) 0 100%;
+
+$wide-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+$slim-shadow-bottom: 0 1px 3px #333;
+$slim-shadow-top: 0 -1px 3px #333;
+$slim-frame-shadow: 0 0 2px darkred;
+$stats-section-text-shadow: 1px 1px 1px dimgray;
+$popup-menu-shadow: 1px 1px 6px #1a1a1a;
+$input-inset-shadow: inset 0 1px 10px -5px black;
+$input-shadow: 0 0 5px $input-border-color;

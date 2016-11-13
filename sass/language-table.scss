@@ -3,15 +3,18 @@
 #table {
   display: none;
   border-collapse: collapse;
-  border: 1px solid dimgray;
+  border: 1px solid $border-color-dark;
   padding: 10px;
+  height: 150px;
 }
 
 thead tr {
-  border-bottom: 1px solid grey;
+  border-bottom: 1px solid $border-color-dark;
 
   th {
-    padding: 4px;
+    padding: 6px;
+    padding-left: 14px;
+    padding-right: 14px;
     font-weight: normal;
     font-family: $header-font;
   }
@@ -21,6 +24,7 @@ tbody tr {
   padding: 4px;
 
   td {
+    padding: 4px;
     color: $view-color;
     text-align: center;
   }
@@ -38,12 +42,20 @@ tbody tr {
   }
 }
 
+#add-language-button {
+  font-size: 120%;
+  i {
+    margin-right: 10px;
+    font-size: 140%;
+  }
+}
+
 .remove-button {
   visibility: hidden;
 
   i {
     color: lightcoral;
-    opacity: 0.4;
+    opacity: 0.6;
     font-size: 150%;
     &:hover {
       opacity: 1;

@@ -1,27 +1,27 @@
 @import "base";
 
 #label {
-  @extend %button;
-  @include center-content;
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  background-color: $button-background;
-  color: $button-color;
-  padding: 12px;
-  transition: .15s;
-
+  padding: 10px;
+  transition: background-color 0.15s, color 0.15s;
   &:hover {
-    background-color: $button-hover-background;
-    color: $button-hover-color;
+    background-color: $main-window-background-hover;
+    color: $main-window-color-hover;
   }
+}
+
+:host(.open) #label {
+  background-color: $main-window-background-hover;
+  color: $main-window-color-hover;
 }
 
 #popup-window {
   position: absolute;
   display: none;
   left: 0;
-  box-shadow: 1px 1px 6px #1a1a1a;
+  box-shadow: $popup-menu-shadow;
   display: table;
 
   > div {
@@ -29,8 +29,8 @@
     background-color: $button-background;
 
     &:hover {
-      background-color: $button-hover-background;
-      color: $button-hover-color;
+      background-color: $button-background-hover;
+      color: $button-color-hover;
     }
 
     > div {
@@ -40,8 +40,8 @@
       padding: 8px;
 
       &:nth-child(2) {
-        border-left: 1px solid darken($button-color, 30%);
-        color: darken($button-color, 40%);
+        border-left: 1px solid $button-border-color;
+        color: transparent;
 
         &.highlight {
           color: $button-color;

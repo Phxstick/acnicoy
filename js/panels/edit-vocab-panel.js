@@ -84,20 +84,13 @@ class EditVocabPanel extends Panel {
         // Create the edit input
         this.editInput = document.createElement("input");
         this.editInput.id = "edit-input";
+        this.editInput.classList.add("inline-edit");
         this.editInput.callback = () => { };
         this.editInput.addEventListener("keypress", (event) => {
             if (event.keyCode === 13) {
                 this.editInput.callback();
                 this.editInput.unpack();
             }
-        });
-        // Configure default entry for vocab list select
-        this.vocabListSelect.classList.add("empty");
-        this.vocabListSelect.addEventListener("change", () => {
-            if (this.vocabListSelect.value.length === 0)
-                this.vocabListSelect.classList.add("empty");
-            else
-                this.vocabListSelect.classList.remove("empty");
         });
         // Create callback for adding vocab lists
         this.vocabListAddButton.addEventListener("click", () => {

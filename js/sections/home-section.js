@@ -4,17 +4,11 @@ class HomeSection extends Section {
     constructor() {
         super("home");
         this.pinwall = this.root.getElementById("pinwall");
-        this.widgetAdder = this.root.getElementById("widget-adder");
-        // TODO: Generalize
-        this.widgetAdder.addEventListener(
-            "click", () => this.addPinwallWidget("pinwall-note"));
     }
 
     open() {
         for (const child of this.pinwall.children) {
-            if (child !== this.widgetAdder) {
-                child.open();
-            }
+            child.open();
         }
     }
 
@@ -36,22 +30,20 @@ class HomeSection extends Section {
             object.adjustToLanguage(language, secondary);
             fragment.appendChild(object);
         }
-        fragment.appendChild(this.widgetAdder);
         this.pinwall.appendChild(fragment);
     }
 
-    addPinwallWidgets(type) {
+    addPinwallWidget(type) {
         const Type = customElements.get(type);
         const widget = new Type();
-        this.pinwall.insertBefore(widget, this.widgetAdder);
+        this.pinwall.appendChild(widget);
         widget.removeCallback = () => this.pinwall.removeChild(widget);
         return widget;
     }
 
     saveWidgets() {
         dataManager.pinwall.clear();
-        for (let i = 0; i < this.pinwall.children.length - 1; ++i) {
-            const widget = this.pinwall.children[i];
+        for (const widget of this.pinwall.children) {
             const entry = { type: widget.tagName.toLowerCase() };
             if (widget.tagName.toLowerCase() === "pinwall-note") {
                 entry.text = widget.getText();

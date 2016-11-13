@@ -103,6 +103,7 @@ class EditKanjiPanel extends Panel {
         // Create the edit input
         this.editInput = document.createElement("input");
         this.editInput.id = "edit-input";
+        this.editInput.classList.add("inline-edit");
         this.editInput.callback = () => { };
         this.editInput.addEventListener("keypress", (event) => {
             if (event.keyCode === 13) {

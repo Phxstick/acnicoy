@@ -6,53 +6,43 @@ class DictionarySection extends Section {
         this.lastResult = [];
         this.doneLoading = false;
         this.nextRowIndex = 0;
-        const loadAmount = 20;  // Amout of entries to load at once
-        // Store important elements as properties
-        this.wordsFilter = this.root.getElementById("words-filter");
-        this.meaningsFilter = this.root.getElementById("meanings-filter");
-        this.resultList = this.root.getElementById("results");
+        this.loadAmount = 20;  // Amout of entries to load at once
+        // Initially hide some elements
+        this.$("results").hide();
+        this.$("no-search-results-info").hide();
         // Bind callbacks
-        this.wordsFilter.addEventListener("keypress", (event) => {
+        this.$("words-filter").addEventListener("keypress", (event) => {
             if (event.keyCode !== 13) return;
-            dataManager.content.getEntryIdsForReadingQuery(
-                    this.wordsFilter.value.trim()).then((idList) => {
-                this.lastResult = idList;
-                this.nextRowIndex = 0;
-                this.resultList.empty();
-                this.displayMoreResults(loadAmount);
-            });
+            this.searchByReading();
         });
-        this.meaningsFilter.addEventListener("keypress", (event) => {
+        this.$("meanings-filter").addEventListener("keypress", (event) => {
             if (event.keyCode !== 13) return;
-            dataManager.content.getEntryIdsForTranslationQuery(
-                    this.meaningsFilter.value.trim()).then((idList) => {
-                this.lastResult = idList;
-                this.nextRowIndex = 0;
-                this.resultList.empty();
-                this.displayMoreResults(loadAmount);
-            });
+            this.searchByMeaning();
         });
+        this.$("words-filter-button").addEventListener("click", () => {
+            this.searchByReading();
+        });
+        this.$("meanings-filter-button").addEventListener("click", () => {
+            this.searchByMeaning();
+        })
         // If the user scrolls almost to table bottom, load more search results
-        this.resultList.uponScrollingBelow(200, () => {
+        this.$("results").uponScrollingBelow(200, () => {
             if (this.doneLoading && this.nextRowIndex < this.lastResult.length)
-                this.displayMoreResults(loadAmount);
+                this.displayMoreResults(this.loadAmount);
         });
-    }
-
-    open() {
     }
 
     adjustToLanguage(language, secondary) {
-        this.resultList.empty();
+        this.$("results").empty();
         if (dataManager.languageSettings.readings) {
-            this.wordsFilter.placeholder = "Filter by words and readings";
+            this.$("words-filter").placeholder = "Filter by words and readings";
         } else {
-            this.wordsFilter.placeholder = "Filter by words";
+            this.$("words-filter").placeholder = "Filter by words";
         }
         if (language === "Japanese") {
-            this.wordsFilter.enableKanaInput("hira");
+            this.$("words-filter").enableKanaInput("hira");
         } else {
-            this.wordsFilter.disableKanaInput();
+            this.$("words-filter").disableKanaInput();
         }
     }
 
@@ -79,14 +69,41 @@ class DictionarySection extends Section {
             for (const entry of entries) {
                 fragment.appendChild(entry);
             }
-            this.resultList.appendChild(fragment);
+            this.$("results").appendChild(fragment);
             this.nextRowIndex = limit;
             return utility.finishEventQueue();
         }).then(() => {
             this.doneLoading = true;
+            this.$("info-frame").hide();
+            this.$("results").show();
+            if (this.lastResult.length > 0) {
+                this.$("no-search-results-info").hide();
+                this.$("results").show();
+            } else {
+                this.$("results").hide();
+                this.$("no-search-results-info").show();
+            }
         });
-        // this.searchStatus.textContent =
-        //  `Displaying ${this.nextRowIndex} of ${this.lastResult.length} results.`;
+    }
+
+    searchByReading() {
+        dataManager.content.getEntryIdsForReadingQuery(
+                this.$("words-filter").value.trim()).then((idList) => {
+            this.lastResult = idList;
+            this.nextRowIndex = 0;
+            this.$("results").empty();
+            this.displayMoreResults(this.loadAmount);
+        });
+    }
+
+    searchByMeaning() {
+        dataManager.content.getEntryIdsForTranslationQuery(
+                this.$("meanings-filter").value.trim()).then((idList) => {
+            this.lastResult = idList;
+            this.nextRowIndex = 0;
+            this.$("results").empty();
+            this.displayMoreResults(this.loadAmount);
+        });
     }
 }
 

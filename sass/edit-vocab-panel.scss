@@ -10,7 +10,6 @@
 }
 
 #main-frame {
-
   #word-frame {
     display: flex;
     flex-direction: row;
@@ -31,15 +30,15 @@
     flex-direction: column;
   }
   #translations-header, #readings-header, #vocab-lists-header {
-    background-color: darkred;
-    color: whitesmoke;
+    background-color: $main-window-background;
+    color: $main-window-color;
     padding: 3px;
   }
   #translations, #readings, #vocab-lists {
     flex: 1;
     display: flex;
     flex-direction: column;
-    border: 1px solid dimgray;
+    border: 1px solid $border-color-dark;
     padding: 3px;
   }
   #vocab-list-select-frame {
@@ -49,27 +48,10 @@
       flex: 1;
     }
     #vocab-list-select-button {
-      background-color: darkred;
-      padding-left: 7px;
+      padding-left: 6px;
       padding-right: 7px;
-      padding-bottom: -2px;
-      display: flex;
-      align-items: center;
-      &:hover {
-        background-color: red;
-      }
-      i {
-        color: white;
-      }
     }
   }
-}
-
-#edit-input {
-  border: 0px;
-  padding: 2px;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 #srs-level {

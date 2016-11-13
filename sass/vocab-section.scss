@@ -3,53 +3,100 @@
 body {
   display: flex;
   flex-direction: row;
+}
 
-  & > div {
+.column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 3px;
+  background-color: $background-color;
+
+  &:not(:first-child) {
+    border-left: 1px solid $border-color-dark;
+  }
+
+  .list-frame {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 3px;
 
-    #all-words, #all-lists, #list-contents {
+    .list-view {
       flex: 1;
+      padding: 3px;
+
+      &.dragover {
+        background-color: $view-hover-background;
+      }
     }
   }
 }
 
-#edit-input {
-  border: 0px;
-  padding: 2px;
-  width: 100%;
-  box-sizing: border-box;
+.info-frame {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+  flex: 1;
+  font-size: 150%;
+  font-family: $light-font;
+  line-height: 120%;
 }
 
-.dragging-over {
+.dragover {
   background-color: $view-hover-background;
-  box-shadow: 0 0 4px peachpuff;
+  box-shadow: 0 0 4px $view-hover-background;
+  
+  &.selected {
+    background-color: mix($view-hover-background, $view-select-background, 50%);
+  }
 }
 
 .already-in-list {
-  color: darkgrey;
+  color: $view-color-greyed-out;
 }
 
-.search-entry {
-  margin-bottom: 5px;
-}
+.search-entry-frame {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid $border-color-dark;
+  margin-bottom: 2px;
 
+  .search-entry {
+    @extend input.light;
+    flex: 1;
+    padding-left: 4px;
+  }
 
-#test-on-list-button {
-  padding: 3px;
-  font-size: large;
+  .search-button {
+    @extend button.light;
+    padding: 8px;
+    font-size: 120%;
+  }
 }
 
 #all-lists-button-frame {
   display: flex;
   flex-direction:row;
+  border-top: 1px solid $border-color-light;
+
   button {
+    @extend button.light;
     flex: 1;
-    padding: 2px;
+    padding: 4px;
+
     i {
-      font-size: 150%;
+      font-size: 140%;
+    }
+    &:not(:first-child) {
+      border-left: 1px solid $border-color-light;
     }
   }
+}
+
+#test-on-list-button {
+  @extend button.light;
+  padding: 4px;
+  font-size: 140%;
+  border-top: 1px solid $border-color-light;
 }

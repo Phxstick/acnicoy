@@ -1,5 +1,6 @@
 "use strict";
 
+
 const Random = require("random-js");
 const random = new Random(Random.engines.browserCrypto);
 
@@ -22,8 +23,8 @@ class TestSection extends Section {
         this.ignoreAnswerButton = this.root.getElementById("ignore-answer");
         this.modifyItemButton = this.root.getElementById("modify-item");
         this.addAnswerButton = this.root.getElementById("add-answer");
-        this.continueButton = this.root.getElementById("continue");
-        this.answerEntry = this.root.getElementById("answer");
+        this.continueButton = this.root.getElementById("continue-button");
+        this.answerEntry = this.root.getElementById("answer-entry");
         this.correctAnswers = this.root.getElementById("correct-answers");
         // Set some numbers and constants
         this.delay = 300;

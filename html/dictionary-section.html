@@ -1,6 +1,30 @@
-<div id="filters">
-  <input id="words-filter" placeholder="Filter by words"></input>
-  <input id="meanings-filter" placeholder="Filter by translations"></input>
+<div id="control-bar">
+  <div id="words-filter-frame">
+    <input id="words-filter" placeholder="Filter by words"></input>
+    <button id="words-filter-button" class="light">
+      <i class="fa fa-search"></i>
+    </button>
+  </div>
+  <div id="meanings-filter-frame">
+    <input id="meanings-filter" placeholder="Filter by translations"></input>
+    <button id="meanings-filter-button" class="light">
+      <i class="fa fa-search"></i>
+    </button>
+  </div>
+  <button id="settings-button" class="light">
+    <i class="fa fa-cog"></i>
+  </button>
 </div>
-<!--div id="status-bar"></div-->
 <div id="results"></div>
+<div id="info-frame">
+  <div>
+    You can search the dictionary using the search bar above.<br>
+    Customize your search settings by clicking the <i class="fa fa-cog"></i>
+    icon.
+  </div>
+</div>
+<div id="no-search-results-info">
+  <div>
+    No search results found.
+  </div>
+</div>

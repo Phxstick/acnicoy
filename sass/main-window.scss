@@ -17,37 +17,35 @@
 }
 
 #menu-bar {
-  height: 59px;
-  background-color: indianred;
+  height: 50px;
   display: flex;
   flex-direction: row;
   z-index: var(--menu-bar-layer);
   box-sizing: border-box;
-  border-bottom: 1px solid gray;
-
-  #language-popup {
-    z-index: var(--popup-list-layer);
-  }
+  background: $main-window-background;
+  color: $main-window-color;
 
   #menu {
     display: flex;
     flex-direction: row;
 
-    > i {
-      @extend %button;
-      @include center-content;
+    > button {
       box-sizing: border-box;
       width: 45px;
-      background: $button-background;
-      color: $button-color;
       font-size: 140%;
-      font-family: $gui-font;
-      transition: 0.15s;
-      border-left: 2px solid lighten($button-background, 30%);
+      font-family: $light-font;
+      transition: background-color 0.15s, color 0.15s, border-width 0.15s;
+      border-left: 1px solid $main-window-border-color;
+
+      &:last-child {
+        border-right: 1px solid $main-window-border-color;
+        width: 47px;
+      }
      
       &:hover {
-        background: crimson;
-        border-left: 6px solid $button-color;
+        background: $main-window-background-hover;
+        color: $main-window-color-hover;
+        border-left: 6px solid $main-window-color;
       }
     }
   }
@@ -57,10 +55,12 @@
     flex: 1;
 
     #status-text {
-      color: #E5E5E5;
-      font-size: 130%;
-      text-shadow: 0px 0px 1px $button-color;
+      font-size: 120%;
+      text-shadow: 0px 0px 1px $main-window-color;
       text-align: center;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      @include justify($top: -1px);
     }
   }
 }
@@ -70,8 +70,9 @@
   display: flex;
   flex-direction: column;
   z-index: var(--side-bar-layer);
-  background-color: $button-background;
-  box-shadow: 2px 0 3px dimgray;
+  background-color: $main-window-background;
+  color: $main-window-color;
+  border-top: 1px solid $main-window-border-color;
 
   > div {
     display: flex;
@@ -79,24 +80,22 @@
   }
 
   button {
-    margin: 0;
-    text-align: center;
-    border: 0px;
-    background-color: $button-background;
-    color: $button-color;
-    font-family: $gui-font;
-    transition: background 0.1s linear;
+    display: flex;
+    flex-direction: column;
+    font-family: $button-font;
+    line-height: 140%;
+    transition: background-color 0.1s linear, color 0.1s linear;
     &:hover {
-      background: crimson;
+      background-color: $main-window-background-hover;
+      color: $main-window-color-hover;
     }
   }
   
   #top-buttons > button {
-    border-bottom: 1px solid grey;
+    border-bottom: 1px solid $main-window-border-color;
     font-size: 150%;
     padding-top: 8px;
     padding-bottom: 8px;
-    font-weight: bold;
 
     &#test-button {
       padding-top: 16px;
@@ -109,34 +108,29 @@
       }
       #num-srs-items, #num-srs-items+span {
         line-height: 120%;
-        display: block;
-        font-size: 50%;
-        color: #DEDEDE;
-        text-shadow: 0 0 2px $button-color;
-        font-family: $gui-font;
+        font-size: 60%;
+        text-shadow: 0 0 1px $main-window-color;
+        font-family: inherit;
       }
     }
   }
 
-  #padder {
-    flex: 1;
-  }
-
   #bottom-buttons > button {
-    @include center-content;
     display: flex;
     flex-direction: row;
-    border-top: 1px solid grey;
-    padding-top: 4px;
-    padding-bottom: 4px;
+    border-top: 1px solid $main-window-border-color;
+    padding-top: 2px;
+    padding-bottom: 2px;
     > span {
       flex: 1;
       color: inherit;
+      font-family: inherit;
     }
   }
 }
 
 #section-window {
+  background-color: $section-background;
   position: relative;
   contain: strict;
 }
@@ -144,7 +138,7 @@
 div#filter {
   display: none;
   position: absolute;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: $panel-background-dim-color;
   top: 0;
   left: 0;
   right: 0;
@@ -167,7 +161,7 @@ div#filter {
   left: -400px;
   top: 0px;
   bottom: 0px;
-  background-color: whitesmoke;
+  background-color: $background-color;
   z-index: var(--panel-layer);
 }
 

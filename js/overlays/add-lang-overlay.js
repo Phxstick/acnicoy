@@ -5,10 +5,6 @@ const languages = require("languages");
 class AddLangOverlay extends Overlay {
     constructor() {
         super("add-lang");
-        this.languageSelect = this.root.getElementById("language-select");
-        this.secondaryLanguageSelect =
-            this.root.getElementById("secondary-language-select");
-        this.readingsCheckbox = this.root.getElementById("readings-checkbox");
         this.$("close-button").addEventListener("click", () => {
             this.resolve(null);
         });
@@ -16,29 +12,31 @@ class AddLangOverlay extends Overlay {
             this.resolve(null);
         });
         this.$("add-button").addEventListener("click", () => {
-            if (!this.languageSelect.value) {
+            if (!this.$("language").value) {
                 dialogWindow.info(
                     "You need to select a language you want to learn.");
                 return;
             }
-            if (!this.secondaryLanguageSelect.value) {
+            if (!this.$("secondary-language").value) {
                 dialogWindow.info(
                     "You need to select a language for translations.");
                 return;
             }
             this.resolve({
-                language: this.languageSelect.value,
+                language: this.$("language").value,
                 settings: {
-                    secondary: this.secondaryLanguageSelect.value,
-                    readings: this.readingsCheckbox.checked
+                    secondary: this.$("secondary-language").value,
+                    readings: this.$("readings-flag").checked,
+                    srs: {
+                        scheme: this.$("srs-scheme").value
+                    }
                 }
             });
         });
-        this.addButton = this.root.getElementById("add-button");
-        this.cancelButton = this.root.getElementById("cancel-button");
-        this.languageSelect.appendChild(utility.createDefaultOption(""));
-        this.secondaryLanguageSelect.appendChild(
-                utility.createDefaultOption(""));
+        this.$("language").appendChild(
+            utility.createDefaultOption("Select foreign language"));
+        this.$("secondary-language").appendChild(
+            utility.createDefaultOption("Select language for translations"));
         const languageList = languages.getAllLanguageCode().sort(
                 (l1, l2) => languages.getLanguageInfo(l1).name
                             < languages.getLanguageInfo(l2).name ? -1 : 1);
@@ -48,15 +46,33 @@ class AddLangOverlay extends Overlay {
             const language = languages.getLanguageInfo(langcode);
             option1.textContent = language.name;
             option2.textContent = language.name;
-            this.languageSelect.appendChild(option1);
-            this.secondaryLanguageSelect.appendChild(option2);
+            this.$("language").appendChild(option1);
+            this.$("secondary-language").appendChild(option2);
         }
+        this.$("srs-scheme").appendChild(
+            utility.createDefaultOption("Select SRS scheme"));
+        this.$("edit-srs-schemes").addEventListener("click", () => {
+            overlay.open("srs-schemes");
+        });
+        events.on("srs-schemes-edited", () => this.loadSrsSchemes());
     }
     
     open() {
-        this.languageSelect.value = "";
-        this.secondaryLanguageSelect.value = "";
-        this.readingsCheckbox.checked = false;
+        this.$("language").value = "";
+        this.$("secondary-language").value = "";
+        this.$("readings-flag").checked = false;
+        this.$("srs-scheme").value = "";
+        this.loadSrsSchemes();
+    }
+
+    // Fill <select> with list of SRS schemes
+    loadSrsSchemes() {
+        this.$("srs-scheme").empty();
+        for (const { name } of dataManager.settings.srs.schemes) {
+            const option = document.createElement("option");
+            option.textContent = name;
+            this.$("srs-scheme").appendChild(option);
+        }
     }
 }
 

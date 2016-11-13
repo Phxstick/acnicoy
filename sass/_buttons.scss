@@ -1,79 +1,85 @@
+@import "mixins";
+
 button {
+  @include center-content;
+  background-color: transparent;
+  padding: 0px;
+  border: 0px;
+  color: inherit;
+  font-size: inherit;
+
+  &:focus {
+    outline: none !important;
+    z-index: 1000;
+  }
+}
+
+button.styled {
   color: $button-color;
   background-color: $button-background;
-  border: 1px outset $button-background;
-  padding: 3px;
-  i {
-    color: $button-color;
-    text-align: center;
-  }
+  padding: 4px;
+  font-size: 120%;
+  border: 1px solid $button-border-color;
+
   &:focus {
-    outline: none !important;
+    box-shadow: 0 0 5px 3px $button-shadow-color-focus;
   }
-  &:hover, &:focus {
-    color: $button-hover-color;
-    background-color: $button-hover-background;
+  &:hover {
+    color: $button-color-hover;
+    background-color: $button-background-hover;
   }
   &:active {
-    border: 1px inset $button-active-background;
-    background-color: $button-active-background;
-    color: $button-active-color;
+    box-shadow: inset 0 0 8px 4px $button-shadow-color-active;
+    background-color: $button-background-active;
+    color: $button-color-active;
   }
   &:disabled {
-    border: 1px solid darken($button-disabled-background, 10%);
-    background-color: $button-disabled-background;
-    color: $button-disabled-color;
-    i {
-      color: $button-disabled-color;
+    background-color: $button-background-disabled;
+    color: $button-color-disabled;
+  }
+}
+
+button.rounded {
+  border-radius: 3px;
+}
+
+button.light {
+  padding: 10px;
+  font-size: 120%;
+  color: $button-light-color;
+  font-family: $header-font;
+
+  > i {
+    color: $button-light-icon-color;
+  }
+  &:hover {
+    color: $button-light-color-hover;
+    text-shadow: 0 0 1px $button-light-color;
+    > i {
+      color: $button-light-icon-color-hover;
     }
   }
-}
-
-%button {
-  cursor: $pointer-cursor;
-}
-
-.dark-button {
-  @extend %button;
-  color: $button-color;
-  background: $button-background;
-  border: 0px;
-  text-align: center;
-  font-size: 120%;
-
-  &:hover {
-    background: lighten($button-background, 20%);
-    color: lighten($button-color, 15%);
-  }
-
   &:focus {
-    outline: none !important;
-    background: lighten($button-background, 20%);
-    color: lighten($button-color, 15%);
+    box-shadow: 0 0 3px $button-shadow-color-focus;
   }
-}
-
-.light-button {
-  background-color: transparent;
-  padding: 10px;
-  text-align: center;
-  color: dimgray;
-  border: 0px;
-  font: $header-font;
-  font-size: 120%;
-
-  &:hover {
-    color: black;
-    text-shadow: 0 0 1px dimgray;
-  }
-
-  &:focus {
-    box-shadow: 0 0 3px darkred;
-  }
-
   &:active {
-    box-shadow: inset 0px 2px 13px -2px #aaa;
+    box-shadow: inset 0px 2px 13px -2px $button-light-shadow-color-active;
   }
+}
+
+button.no-shadow {
+  &:active {
+    box-shadow: none;
+  }
+}
+
+button.link {
+  color: $link-color;
+  &:hover {
+    text-shadow: 0 0 2px $link-shadow-color-hover;
+    color: $link-color-hover;
+  }
+  text-decoration: underline;
 }
 
 .button-bar {
@@ -84,6 +90,7 @@ button {
   flex-direction: row;
 
   > button {
+    border: 0;
     flex: 1;
 
     &:not(:last-child) {
@@ -93,20 +100,20 @@ button {
   }
 }
 
-.dark-button-bar {
+.styled-button-bar {
   @extend .button-bar;
-  border-color: crimson;
+  border-color: $button-border-color;
   > button {
-    @extend .dark-button;
-    border-color: crimson;
+    @extend button.styled;
+    border-color: $button-border-color;
   }
 }
 
 .light-button-bar {
   @extend .button-bar;
-  border-color: darkgrey;
+  border-color: $border-color-dark;
   > button {
-    @extend .light-button;
-    border-color: darkgrey;
+    @extend button.light;
+    border-color: $border-color-dark;
   }
 }

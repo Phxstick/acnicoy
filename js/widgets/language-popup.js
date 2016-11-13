@@ -55,6 +55,7 @@ class LanguagePopup extends Widget {
         if (this.$("popup-window").children.length === 0) return;
         this.isOpen = true;
         this.$("popup-window").show();
+        this.classList.add("open");
         this.$("popup-window").style.top = `${this.offsetHeight}px`;
         const languages = [];
         const options = this.$("popup-window").children;
@@ -67,6 +68,7 @@ class LanguagePopup extends Widget {
     close() {
         this.isOpen = false;
         this.$("popup-window").hide();
+        this.classList.remove("open");
     }
 }
 

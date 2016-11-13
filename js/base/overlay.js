@@ -4,7 +4,7 @@ class Overlay extends Component {
     constructor(name, {
             mode = "slide-down",
             speed = 300,
-            distance = 150 } = {}) {
+            distance = 60 } = {}) {
         super(name + "-overlay", true);
         this.name = name;
         this.displayOptions = { mode, speed, distance };

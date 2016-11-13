@@ -139,7 +139,8 @@ HTMLElement.prototype.safeDeepClone = function() {
 **  Fade out this element while moving it given distance to the right,
 **  starting from the current position.
 **/
-HTMLElement.prototype.fadeOut = function(distance) {
+HTMLElement.prototype.fadeOut = function(
+        { distance=300, duration=500, easing="easeOutSine" }={}) {
     const fadeOutSpan = this.safeDeepClone(); //this.cloneNode(true);
     fadeOutSpan.style.position = "fixed";
     fadeOutSpan.style.overflow = "hidden";
@@ -153,8 +154,9 @@ HTMLElement.prototype.fadeOut = function(distance) {
     fadeOutSpan.style.display = "inline-block";
     fadeOutSpan.style.top = `${oldOffsetTop}px`;
     fadeOutSpan.style.left = `${oldOffsetLeft}px`;
-    Velocity(fadeOutSpan, { left: `+=${distance}` });
-    return Velocity(fadeOutSpan, "fadeOut", { queue: false }).then(() => {
+    const options = { queue: false, duration, easing };
+    Velocity(fadeOutSpan, { left: `+=${distance}` }, options);
+    return Velocity(fadeOutSpan, "fadeOut", options).then(() => {
         fadeOutSpan.remove();
     });
 }
@@ -164,7 +166,8 @@ HTMLElement.prototype.fadeOut = function(distance) {
 **  Fade in this element while moving it given distance to the right,
 **  arriving at the current position.
 **/
-HTMLElement.prototype.fadeIn = function(distance) {
+HTMLElement.prototype.fadeIn = function(
+        { distance=300, duration=500, easing="easeOutSine" }={}) {
     const fadeInSpan = this.safeDeepClone();//this.cloneNode(true);
     fadeInSpan.style.position = "fixed";
     fadeInSpan.style.overflow = "hidden";
@@ -177,8 +180,9 @@ HTMLElement.prototype.fadeIn = function(distance) {
     fadeInSpan.style.left = `${newOffsetLeft - distance}px`;
     fadeInSpan.style.display = "none";
     fadeInSpan.style.width = `${newWidth + 1}px`;
-    Velocity(fadeInSpan, { left: `+=${distance}` });
-    return Velocity(fadeInSpan, "fadeIn", { queue: false }).then(() => {
+    const options = { queue: false, duration, easing };
+    Velocity(fadeInSpan, { left: `+=${distance}` }, options);
+    return Velocity(fadeInSpan, "fadeIn", options).then(() => {
         fadeInSpan.remove();
         this.style.visibility = "visible";
     });
@@ -232,3 +236,12 @@ HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
     }
     this.addEventListener("contextmenu", () => this.popupMenuCallback());
 }
+
+// Don't let buttons take focus when clicked (focus should only show when
+// tabbing through widgets with the keyboard).
+document.addEventListener("mousedown", (event) => {
+    if (event.path[0].tagName === "BUTTON" ||
+            event.path[1].tagName === "BUTTON" ||
+            event.path[2].tagName === "BUTTON")
+        event.preventDefault();
+});

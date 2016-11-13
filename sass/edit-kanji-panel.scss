@@ -36,26 +36,19 @@
 }
 
 #meanings-header, #on-yomi-header, #kun-yomi-header {
-  background-color: darkred;
-  color: whitesmoke;
+  background-color: $main-window-background;
+  color: $main-window-color;
   padding: 3px;
 }
 
 #meanings, #on-yomi, #kun-yomi {
   flex: 1;
-  border: 1px solid dimgray;
+  border: 1px solid $border-color-dark;
   padding: 3px;
 }
 
 #srs-level-meanings, #srs-level-on-yomi, #srs-level-kun-yomi {
   width: 30px;
-}
-
-#edit-input {
-  border: 0px;
-  padding: 2px;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 #all-levels-div {

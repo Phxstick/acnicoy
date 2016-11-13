@@ -193,6 +193,7 @@ class SrsSchemesOverlay extends Overlay {
     }
 
     close() {
+        dataManager.settings.save();
         this.exitEditMode();
         this.hideSchemeDetails();
     }
@@ -352,6 +353,7 @@ class SrsSchemesOverlay extends Overlay {
             intervalLabel.textContent = interval;
             this.selectedScheme.intervals.push(interval)
         }
+        events.emit("srs-schemes-edited");
         return true;
     }
 }

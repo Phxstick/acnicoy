@@ -3,6 +3,7 @@
 body {
   display: flex;
   flex-direction: column;
+  color: $section-color;
 }
 
 #kanji-container {
@@ -12,21 +13,26 @@ body {
 #control-bar {
   display: flex;
   flex-direction: row;
-  background-color: whitesmoke;
-  height: 50px;
-  box-shadow: 0 3px 2px #333333;
+  background-color: $background-color;
+  height: 40px;
+  box-shadow: $slim-shadow-bottom;
   z-index: var(--kanji-control-bar-layer);
 
-  #show-overview-button, #show-search-results-button {
+  #search-button, #show-overview-button, #customize-button {
+    @extend button.light;
     padding-left: 10px;
     padding-right: 10px;
     font-size: 140%;
   }
+  #show-overview-button, #customize-button {
+    border-left: 1px solid $border-color-light;
+  }
 
   #search-by-kanji-entry {
-    flex: 1;
+    @extend input.light;
     font-size: 120%;
-    padding-left: 3px;
+    padding-left: 10px;
+    flex: 1;
   }
 }
 
@@ -41,10 +47,10 @@ body {
       margin-bottom: 3px;
       padding: 4px;
       font-size: 140%;
-      color: darkred;
+      color: $link-color;
 
       &.added {
-        color: darkgrey;
+        color: $view-color-greyed-out;
       }
 
       &.selected {
@@ -67,7 +73,7 @@ body {
 
 dt {
   font-size: 130%;
-margin: 10px;
+  margin: 10px;
   margin-top: 18px;
   font-variant: small-caps;
 }
@@ -75,10 +81,9 @@ margin: 10px;
 dd {
   padding: 10px;
   margin-right: 28px;
-  background: gainsboro;
-  box-shadow: 0px 0px 2px darkred;
+  background: $background-color-dark;
+  box-shadow: $slim-frame-shadow;
 }
-
 
 .statistic-label {
   font-size: 60%;

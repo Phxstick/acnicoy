@@ -1,38 +1,44 @@
 @import "base";
 
-// TODO: Use header font instead of small caps everywhere?
-
 body {
   overflow: auto;
 }
 
-div#general-stats {
-  margin: 20px;
-  background-color: darkred;
+%header {
+  font-size: 140%;
+  font-family: $header-font;
+  font-variant: small-caps;
+}
 
-  div#top {
+.frame {
+  background-color: $background-color;
+  color: $color;
+  box-shadow: $slim-frame-shadow;
+}
+
+#general-stats {
+  margin: 20px;
+
+  #top {
     @include center-content;
     flex-direction: column;
     height: 60%;
     padding: 10px;
 
     span:first-child {
-      font-size: 120%;
-      font-variant: small-caps;
-      text-shadow: 0 0 2px white;
+      @extend %header;
       margin-bottom: 10px;
-      color: white;
     }
 
     span#total-score {
       font-size: 350%;
-      color: white;
-      font-family: $gui-font;
+      font-family: $light-font;
+      text-shadow: $stats-section-text-shadow;
     }
   }
-  div#bottom {
+  #bottom {
     height: 40%;
-    border-top: 1px solid white;
+    border-top: 1px solid $border-color-dark;
     display: flex;
     flex-direction: row;
     
@@ -40,21 +46,18 @@ div#general-stats {
       flex: 1;
       width: 100px;
       padding: 10px;
-      border-left: 1px solid white;
+      border-left: 1px solid $border-color-dark;
       display: flex;
       flex-direction: column;
       align-items: center;
       span:first-child {
-        font-size: 120%;
-        font-variant: small-caps;
-        text-shadow: 0 0 2px white;
+        @extend %header;
         margin-bottom: 10px;
-        color: white;
       }
       span:nth-child(2) {
         font-size: 200%;
-        color: white;
-        font-family: $gui-font;
+        font-family: $light-font;
+        text-shadow: $stats-section-text-shadow;
       }
     }
     div:first-child {
@@ -71,27 +74,23 @@ div#general-stats {
     flex: 1;
     margin: 20px;
     margin-top: 0;
-    background-color: darkred;
     display: flex;
     flex-direction: column;
     .kanji-header {
-      font-family: $header-font;
-      padding: 10px;
+      @extend %header;
+      padding: 5px;
       text-align: center;
-      color: white;
-      font-size: 120%;
-      text-shadow: 0 0 2px white;
     }
     .kanji-diagram {
       --width: 100%;
       --height: 100%;
       flex: 1;
       --bar-border-width: 0;
-      // --bar-border-color: white;
-      --bar-background: white;
-      --top-line-color: white;
-      --bottom-line-color: white;
-      --label-color: white;
+      --bar-background: $diagram-graphics-color;
+      --bar-background-hover: $diagram-graphics-color-hover;
+      --top-line-color: $border-color-dark;
+      --bottom-line-color: $border-color-dark;
+      --label-color: $diagram-label-color;
     }
   }
   #jlpt-kanji-frame {

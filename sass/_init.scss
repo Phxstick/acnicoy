@@ -3,13 +3,14 @@
 #window {
   @include center-content;
   height: 100%;
+  background-color: $section-background;
 }
 
 #partitioned-window {
   width: 80%;
-  background-color: whitesmoke;
-  border: 1px solid dimgray;
-  box-shadow: 1px 1px 3px black;
+  padding: 10px;
+  background-color: $background-color;
+  box-shadow: $wide-shadow;
 }
 
 #button-frame {

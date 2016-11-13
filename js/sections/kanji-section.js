@@ -12,37 +12,20 @@ class KanjiSection extends Section {
         // Buttons for switching between overview and search results
         this.showOverviewButton =
             this.root.getElementById("show-overview-button");
-        this.showSearchResultsButton =
-            this.root.getElementById("show-search-results-button");
+        this.searchButton =
+            this.root.getElementById("search-button");
         this.showOverviewButton.addEventListener("click", () => {
             this.overviewWindow.show();
             this.searchWindow.hide();
         });
-        this.showSearchResultsButton.addEventListener("click", () => {
-            this.overviewWindow.hide();
-            this.searchWindow.show();
+        this.searchButton.addEventListener("click", () => {
+            this.searchByKanji();
         });
         this.searchByKanjiEntry =
             this.root.getElementById("search-by-kanji-entry");
         this.searchByKanjiEntry.addEventListener("keypress", (event) => {
             if (event.keyCode !== 13) return;
-            const queryString = this.searchByKanjiEntry.value.trim();
-            const knownKanji = [];
-            const promises = [];
-            // Check which characters are known kanji (= in the database)
-            for (const character of queryString) {
-                const promise = dataManager.content.isKnownKanji(character)
-                .then((isKnown) => isKnown ? knownKanji.push(character) : 0);
-                promises.push(promise);
-            }
-            // Display kanji in order given in the input field
-            Promise.all(promises).then(() => {
-                this.lastSearchResult = knownKanji;
-                this.searchResults.empty();
-                this.displayMoreSearchResults(10);
-                this.overviewWindow.hide();
-                this.searchWindow.show();
-            });
+            this.searchByKanji();
         });
         this.kanjiContainer = this.root.getElementById("kanji-container");
         // Create counter spans which display amount of added kanji per grade
@@ -178,6 +161,26 @@ class KanjiSection extends Section {
         }
         return Promise.all(promises).then(
             () => this.searchResults.appendChild(fragment));
+    }
+
+    searchByKanji() {
+        const queryString = this.searchByKanjiEntry.value.trim();
+        const knownKanji = [];
+        const promises = [];
+        // Check which characters are known kanji (= in the database)
+        for (const character of queryString) {
+            const promise = dataManager.content.isKnownKanji(character)
+            .then((isKnown) => isKnown ? knownKanji.push(character) : 0);
+            promises.push(promise);
+        }
+        // Display kanji in order given in the input field
+        Promise.all(promises).then(() => {
+            this.lastSearchResult = knownKanji;
+            this.searchResults.empty();
+            this.displayMoreSearchResults(10);
+            this.overviewWindow.hide();
+            this.searchWindow.show();
+        });
     }
 }
 

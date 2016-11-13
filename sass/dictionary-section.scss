@@ -5,32 +5,55 @@ body {
   flex-direction: column;
 }
 
-#filters {
+#control-bar {
+  > *:not(:first-child) {
+    border-left: 1px solid $border-color-light;
+  }
   display: flex;
   flex-direction: row;
+  background-color: $background-color;
+  color: $color;
+  height: 40px;
+  box-shadow: $slim-shadow-bottom;
   flex-shrink: 0;
+  z-index: var(--dictionary-control-bar-layer);
+
+  #words-filter-frame, #meanings-filter-frame {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+  }
 
   input {
-    flex: 1;
-    padding: 7px;
+    @extend input.light;
     font-size: 120%;
-  }
-}
-
-#status-bar {
-  display: flex;
-  flex-direction: row;
-  #search-status {
+    padding-left: 10px;
     flex: 1;
-    padding: 8px;
   }
-  #load-more-results {
-    padding: 8px;
+  button {
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 140%;
   }
 }
 
 #results {
+  flex: 1;
   background-color: $view-background;
   color: $view-color;
   overflow-y: auto;
+}
+
+#info-frame, #no-search-results-info {
+  @include center-content;
+  flex: 1;
+  background-color: $background-color-dark;
+
+  > * {
+    line-height: 150%;
+    color: $color;
+    font-size: 150%;
+    font-family: $light-font;
+    text-align: center;
+  }
 }

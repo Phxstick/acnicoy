@@ -1,60 +1,50 @@
 ### Up next
+- Make language switching seamless (Do sth about vocab section?)
+  - Don't load all vocabulary in vocabulary section
+  - Remove flickering in sections like home/vocabulary
+- Implement migrate-srs-overlay
+  - Make sure to backup user data with useful description before migration
+  - Make sure stats initialization functions are called on SRS scheme change
 - Add popup-menus to dictionary section
 - Implement load function in add-vocab-panel
   - Provide suggestions in add-vocab-panel as clickable spans
     (left click to edit, right click to remove)
-- Allow user to choose an SRS config when adding a new language
-  - Put SRS widget into an overlay!
-  - Allow user registering his own schemes and use these with their names
 - Try edit-input changes in stash as soon as electron has chrome 54
   (Also remove custom-elements flag in main.js.
    Also make sure edit-input gets closed when clicking somewhere else.)
-- Make language switching seamless (Do sth about vocab section?)
 - Allow quickly switching between sections without opening multiple ones
-- Build "Recently added" functionality into vocab- and kanji-section?
 - Celebrate the day async/await is fully supported in electron (maybe with flag)
   - Immediately rewrite index.js chain, main window, datamanager methods
-- When creating a listbox widget, implement ES6 iterator symbol for it
-- Make sure stats initialization functions are called on SRS scheme change
 - Use thin symbols for fa-times, fa-plus etc. when they become available
 - Focus most important element in each overlay upon opening (e.g. buttons)
-- Implement global tooltip widget
+- Implement global tooltip widget (or pure css version)
   - Add a function to HTMLElement prototype?
   - Use for kanji hovering (show meanings)
   - Use for displaying spacings when hovering over SRS levels
 - Have confirmClose-methods on overlays (e.g. srs-schemes-overlay)
-- Make all buttons in sections/panels into light style.
-  - "dark buttons" should be called "menu buttons" and only be used for
-  menu items
-  - "light buttons" should be default buttons used everywhere.
 
 ### Fixes
-- Remove lvl 0 from kanji table
 - Things got slower when reworking sass? Maybe because main window is flex now?
 - Seperate meanings in kanji dictionary with ";" instead of "," (and adjust)
-- Closing several overlays at once doesn't work (see close function)
-- SRS level editing is not stable (Maybe remove ability to edit levels?)
+- SRS level editing is not fully stable (Maybe remove ability to edit levels?)
   - Make sure levels are ordered after resolving invalid values in SRS schemes
   - Make sure empty levels get removed/highlighted without requiring user input
+- Remove flickering when quickly dragging vocab item over list contents column
 
-
+By category
+--------------------------------------------------------------------------------
 ### General
-- Create a proper pointer cursor. Create better normal curshttp://www.skenma.jp/faq/kenma_chigai.htmlor as well
-- Also use border gradients for shadowing
-- Check out new electron features?
-- Make kana input type katakana when pressing shift.
+- Create a proper pointer cursor. Create better normal cursor as well
+- Make kana input type other kana type when pressing shift.
   - Also make into custom widget?
-- Allow vocab-add-separators to be escaped for single translations
 - Use popupMenu separators when context changes?
 - Use overlay to create [about], put credits there
-- Use `!important`-selector to define necessary shadow dom host styles?
 - Info window when (new) language pack is available for a language
   - Allow user to start downloads and link to settings for progress bar
-- Save test state when closing an unfinished test. Only confirm on program exit
-- Close-Panel shortcut (Default: ESC)
-- Allow user to resize kanji info panel
 - Capture focus in overlays (especially dialogs!) and panels
 - Extend markdown-js to suit the purpose of the program
+  - See Japanese stack exchange for furigana syntax
+- Split SRS scheme list from settings to allow easy settings reset
 
 ### Code
 - Remove inconsistencies in code, e.g. unify glossary ("word" <-> "entry")
@@ -69,16 +59,22 @@ once? --> Faster loading, centralized resource loading
   - Make base-widgets completely independent of Acnicoy (e.g. no base import)
 - Possibly rename *windows* to *screens*
 - Use `slotchange` events on slots to find out if slotted nodes are changed
-- Replace all sass occurrences of "darkred" with "highlight-color"?
 - Make partitioned window stuff into class?
-- Use electron.shell.openExternal(link) to open link in default browser
+- Use `electron.shell.openExternal(link)` to open link in default browser
+- Use `position: sticky` for kanji info panel in kanji section?
+- Use ruby annotations for furigana
+- Allow adding text to checkbox in a slot after a margin
+- Rename "overlay" global into "overlays"
+- Simply register event listeners in constructor after all?
 
 ### Init window
 - Make init section feel more welcoming and less plain. Background picture?
+  - Consider including a welcome message
   - Consider putting program name above windows
-  - Maybe something like dark linen as backkground?
+  - Maybe something like dark linen as background?
 
 ### Main window
+- Close-Panel shortcut (Default: ESC)
 - Remember where focus was when opening panel, restore after closing panel again
 - Create quick start overlay with quick info on structure of the program
   - Give option to "not display this window again on program start"
@@ -92,97 +88,75 @@ Or otherwise indicate which section/panel is currently opened?
 - Widgets:
   - Combine notes into single widget?
   - SRS item bar diagram (customizable, shows when new items become available)
-    - Maybe 1 week as standard interval
+    - Maybe 1m/2w as standard interval
   - SRS info bar
     - Allow selecting certain levels to review
   - Changelog widget
 
 ### Test section
+- Save test state when closing an unfinished test. Only confirm on program exit
 - Also construct extended solutions in `_createTest` already ?
 - Properly handle overflow if correct-answer-frame gets too large
   - Try to fade out items at bottom if list is too large,
   remove fading when bottom reached
 - Show where the entry goes
 - Animate everything (and have setting to toggle that)
-- Make test-results into overlay?
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)
-- Use inverted index to quickly load kanji examples (use C++ here)
+- Use mapping to quickly load kanji examples (Store in file)
 - Possibly make mapping from kanji parts to actual parts in SVG drawing
 to make sure all parts are properly highlighted
 - Show info for kanji that are part of the Chinese zodiac
 - Show info for kanji that symbolize a country
 - Have separate table for searching kanji, extend readings by ones without
 a ".", keep all meanings for each kanji
+- Allow user to maximize panel (then display all info in one frame)
+
+### Add Vocab Panel
+- Allow vocab-add-separators to be escaped for single translations
 
 ### Edit Vocab Panel
 - Remove lists from select element where the word is already in?
 
 ### Vocab section
-- Implementing testing oneself on vocabulary
-- Make sure ALL changes to vocab lists are reflected in add vocab panel
+- Implement tests on vocabulary lists
+- Implement searching in vocab lists and list contents
 
 ### Svg Bar Diagram
 - Terminology: *Descriptions*/*Labels*??
 
 ### Dictionary
-- Display help info at center of section at the beginning and when the user
-presses enter on empty input or clicks some kind of help button
-- Also make `<inputs>` bigger and move to center when search result is empty
+- Display link to dictionary section help
 - Have setting which makes part-of-speech display in Japanese
+- Implement customized search settings (open when settings button clicked)
+
+### Kanji section
+- Implement customizing overview
+- Filter duplicates in kanji search
 
 ### Stats/Achievements
 - Use single-bar diagram for kanji progress to display relative to total!
-- Display earned achievement in status bar and make it glow golden to highlight
+- Display earned achievement in status bar and make it glow to highlight
 - Daily stats diagrams below the general stats, next to each other
   - One for mastery points, one for new vocab/kanji added
-  - Allow displaying daily and cumulative progress for each daigram
+  - Allow displaying both daily and cumulative progress for each diagram
   - Also color each bar in two colors according to kanji and vocab progress
-- Bar diagrams showing kanji learned by grade and JLPT next to each other
-- Update at least general stats when words/kanji are added
 - Possibly use D3.js for diagrams?
 
 ### Help
 - Use overlay widget
-
-
-Future
---------------------------------------------------------------------------------
-- Allow converting parts of vocabulary into html/pdf/markdown file
-  - Use electrons builtin for pdf (And a fitting media stylesheet?)
-- Restructuring: Separate core functionality from language extensions
-  - Provide interface for extensions, e.g.:
-    - `addMenuButton(label, callback)` for main-section extensions
-    - `addStatistic(element)` for stats-section extensions
-  - Use ES6 proxies for data modules
-  - Split data generation from makefile into one for each language,
-  along with the py script to generate it
-- Consider making kanji-modes into single one with 2-3 parts for each kanji
-  - Very problematic for partly added kanji
-  - Would allow more stylish and compact mode presentation
-  - Would allow easier synchronization with Houhou SRS
-- Find monolingual dictionary for Japanese
-- Add additional field to kanjiData database for "hidden acceptable meanings",
-  containg synonyms or words with very similar meaning?
-  - Show option in test settings to turn hidden meanings on or off
-  - Allow displaying hidden meanings in kanji info
-- Have invisible translations for synonyms/unnecessary words (e.g. AE <-> BE)
-- Proper focus system with frames and elements for tabbing
-- Zinnia or Tegaki for handwritten character recognition
-- Allow exporting vocabulary somehow (e.g. csv, xml)
-
-### Content section
-- Contains a database of custom info cards
-- Allow uploading and sharing vocabulary lists
-- Offer small coding environment for creating cards with HTML/CSS/JS
+- Use markdown and extend it
+- Create directory tree
 
 List of settings
 --------------------------------------------------------------------------------
-#### Data/General settings
+#### General settings
 - [File-Dialog] Change user data path
 - [Checkbox] Notify me when SRS item reviews are available
   - [Widget] Choose time intervals for notification
+- [Checkbox] Regularly backup data
+  - [Widget] Choose backup interval
 
 #### Language settings
 - [Language widget] Table of languages
@@ -200,8 +174,9 @@ List of settings
 - [Checkbox] Display score gained (with xp-like animations when upated)
 - [Checkbox] Load new test items during test
 - [Checkbox] Color test item background according to test item type?
-  - [Checkbox] Fade test section background
+  - [Checkbox] Fade test item background
 - [Button] Customize SRS schemes
+- [Checkbox] Use flashcard-style testing
 - [Checkbox] Allow ignoring answer per shortcut
   - [Shortcut-Widget] Choose shortcut for ignoring answer
 
@@ -211,17 +186,20 @@ List of settings
 - [Checkbox] Animate Popup stacks
 - [Checkbox] Animate section switching
 - [Checkbox] Compress side bar into icons
-- [Listbox] Cursor selection (Some maybe habe to be unlocked)
-  - Especially drill cursor for large achievement (e.g. 1000 kanji)
-- [Widget] Possibly color settings by changing and recompiling Sass
-           or using CSS variables
+- [Popup-List] Cursor selection (Some have to be unlocked)
+  - Drill cursor for large achievement (e.g. 1000 kanji)
+  - Yona's hairpin cursor for medium achievement (e.g. 300 kanji)
+  - Meliodas' dragon handle for small achievement (e.g. 200 kanji)
+- [Popup-List] Color schemes
+  - By changing and recompiling Sass or using CSS variables
+  - Have "designs" subfolder in sass directory with named sass partials
+  - Definitely implement a default reddish dark scheme
 
 #### Shortcuts
 - [Shortcut-widgets] For all known shortcuts in the settings
 
 List of achievements
 --------------------------------------------------------------------------------
-
 #### Global achievements (Count for all languages)
 - [Diversity] At least 3 languages registered.
 - [Multicultural] At least 6 languages registered.
@@ -235,11 +213,44 @@ List of achievements
 - [Learned] At least 5000 vocabulary items registered.
 - [Master] At least 10000 vocabulary items registered.
 
+Future
+--------------------------------------------------------------------------------
+- Allow converting parts of vocabulary into html/pdf/markdown file
+  - Use electrons builtin for pdf (And a fitting media stylesheet?)
+- Correctly assign furigana
+- Restructuring: Separate core functionality from language extensions
+  - Provide interface for extensions, e.g.:
+    - `addMenuButton(label, callback)` for main-section extensions
+    - `addStatistic(element)` for stats-section extensions
+  - Use ES6 proxies for data modules
+  - Split data generation from makefile into one for each language,
+  along with the py script to generate it
+- Consider making kanji-modes into single one with 2-3 parts for each kanji
+  - Very problematic for partly added kanji
+  - Would allow more stylish and compact mode presentation
+  - Would allow easier importing from Houhou SRS
+- Find monolingual dictionary for Japanese
+- Add additional field to kanjiData database for "hidden acceptable meanings",
+  containg synonyms or words with very similar meaning?
+  - Show option in test settings to turn hidden meanings on or off
+  - Allow displaying hidden meanings in kanji info
+- Have invisible translations for synonyms/unnecessary words (e.g. AE <-> BE)
+- Proper focus system with frames and elements for tabbing
+- Zinnia or Tegaki for handwritten character recognition
+- Allow exporting vocabulary somehow (e.g. csv, xml)
+- Extend vocabulary section to allowing viewing detailed list of vocab items
+
+### Content section
+- Contains a database of custom info cards
+- Allow uploading and sharing vocabulary lists
+- Offer small coding environment for creating cards with extended markdown
+
 Resources
 --------------------------------------------------------------------------------
 #### Japanese
 - [New JLPT stuff](http://www.tanos.co.uk/jlpt/skills/vocab/)
   - Get JLPT lists for words too
+- [Unicode ranges](http://www.rikai.com/library/kanjitables/kanji_codes.unicode.shtml)
 - [Word freq](http://pj.ninjal.ac.jp/corpus_center/bccwj/en/freq-list.html)
 - [Counters](http://hiramatu-hifuka.com/onyak/onyak2/josu-ta.html)
 - Kanji textbook/Internet frequencies?

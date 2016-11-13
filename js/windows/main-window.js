@@ -210,9 +210,9 @@ class MainWindow extends Window {
     }
 
     updateStatus(text) {
-        this.statusText.fadeOut(300);
+        this.statusText.fadeOut();
         this.statusText.textContent = text;
-        this.statusText.fadeIn(300);
+        this.statusText.fadeIn();
     }
 
     openTestSection() {
@@ -250,6 +250,7 @@ class MainWindow extends Window {
                 if (i > 0) text += "\n";
                 text += `${language} (${amount} items)`;
             }
+            if (text.length === 0) return;
             const notification = new Notification("SRS reviews available", {
                 title: "SRS reviews available",
                 body: text,
@@ -302,6 +303,7 @@ class MainWindow extends Window {
             if (this.currentSection !== null)
                 this.sections[this.currentSection].open();
             this.languagePopup.set(language);
+            events.emit("language-changed", language);
         });
     }
 

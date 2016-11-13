@@ -11,7 +11,9 @@ module.exports = function (paths, modules) {
         const langSettings = {
             secondaryLanguage: settings.secondary,
             readings: settings.readings,
-            srs: settings.srs
+            srs: {
+                scheme: settings.srs.scheme
+            }
         };
         const path = paths.languageData(language).settings;
         fs.writeFileSync(path, JSON.stringify(langSettings, null, 4));

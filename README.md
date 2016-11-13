@@ -5,7 +5,7 @@ a [Spaced Repetition System][SRS] (SRS) for memorizing Vocabulary.
 While the basic features work for every language, the program offers a bunch of
 additional features specifically for learning Japanese.
 
-![Screenshot of Kanji Section](https://dl.dropbox.com/s/3l4wvzq4dow7h22/acnicoy-screenshot-kanji-section-border.png?dl=0)
+![Screenshot of Kanji Section](https://dl.dropbox.com/s/wg9a3p6c9n4p0wr/acnicoy-screenshot-kanji-section.png?dl=0)
 
 Features
 ----
@@ -20,7 +20,6 @@ The basic features for every language include:
 For Japanese language learners, the program additionally offers:
 
 * Create and manage a kanji vocabulary
-* More stats illustrating your kanji learning progress
 * Look up words in the dictionary (similar to [Jisho] and [Houhou SRS])
 * Kanji overview and cleanly presented kanji information
 
@@ -33,7 +32,7 @@ Features to be implemented:
 Installation
 ----
 
-**NOTE**: The program is still missing a bunch of features and it's not fully
+The program is still missing a bunch of core features and it's not fully
 stable, so there's no release yet. You can build it from source instead, as
 described below.
 
@@ -45,17 +44,24 @@ $ git clone https://github.com/phxstick/acnicoy
 $ make install
 $ make build
 ```
+You can then run the program using `make start`.
+
+**Note**: Additional data for the Japanese language and updates for it will be
+available for download directly from the program. For now, you can download
+the current version from [here](http://acnicoy.netne.net/Japanese-English.zip)
+and manually place the unzipped data into the "Content" subfolder of your
+"AcnicoyData" folder.
 
 License
 ----
 
-I'm not well versed with licensing. I guess I can just leave this empty for now.
+I'm not well versed with licensing. I'll just leave this empty for now.
 So I guess it's copyrighted until I decide on a proper open-source license.
 
 Credits
 ----
 
-**TODO:** List all used resources here.
+**TODO:** List all used resources here. Will also be listed in the program.
 
 Contact
 ----

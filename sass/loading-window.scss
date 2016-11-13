@@ -7,21 +7,18 @@
   left: 0;
   bottom: 0;
   right: 0;
-  background-color: dimgray;
+  background-color: $loading-window-background;
   z-index: var(--loading-window-layer);
 
   #inner-frame {
     @include center-content;
     flex-direction: column;
+    color: $loading-window-color;
 
     #spinner {
-      text-shadow: 0 0 1px lightgrey;
-      color: white;
       margin-bottom: 25px;
     }
     #status-message {
-      text-shadow: 0 0 1px lightgrey;
-      color: white;
       font-family: $header-font;
       font-variant: small-caps;
       font-size: 150%;

@@ -3,7 +3,7 @@
     <div id="schemes-list-frame">
       <div id="schemes-list-header-frame">
         <div id="schemes-list-header" class="list-view-header">Schemes</div>
-        <i id="add-scheme-button" class="fa fa-plus fa-fw"></i>
+        <button id="add-scheme-button"><i class="fa fa-plus fa-fw"></i></button>
       </div>
       <div id="schemes-list" class="list-view"></div>
     </div>
@@ -16,11 +16,21 @@
           <input id="scheme-name-input" placeholder="Enter scheme name">
           <div id="scheme-name"></div>
           <div id="scheme-buttons">
-            <i id="edit-scheme-button" class="fa fa-pencil fa-fw"></i>
-            <i id="save-scheme-button" class="fa fa-save fa-fw"></i>
-            <i id="cancel-edit-button" class="fa fa-close fa-fw"></i>
-            <i id="copy-scheme-button" class="fa fa-copy fa-fw"></i>
-            <i id="remove-scheme-button" class="fa fa-trash fa-fw"></i>
+            <button id="edit-scheme-button">
+              <i class="fa fa-pencil fa-fw"></i>
+            </button>
+            <button id="save-scheme-button">
+              <i class="fa fa-save fa-fw"></i>
+            </button>
+            <button id="cancel-edit-button">
+              <i class="fa fa-close fa-fw"></i>
+            </button>
+            <button id="copy-scheme-button">
+              <i class="fa fa-copy fa-fw"></i>
+            </button>
+            <button id="remove-scheme-button">
+              <i class="fa fa-trash fa-fw"></i>
+            </button>
           </div>
         </div>
         <textarea id="scheme-description-input"
@@ -28,10 +38,10 @@
         <div id="scheme-description"></div>
         <div id="scheme-levels-frame">
           <div id="scheme-levels"></div>
-          <div id="add-level-button">
+          <button id="add-level-button" class="light no-shadow">
             <i class="fa fa-plus fa-fw"></i>
-            <div>Add level</div>
-          </div>
+            Add level
+          </button>
         </div>
       </div>
     </div>

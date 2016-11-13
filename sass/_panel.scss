@@ -24,6 +24,7 @@
   }
 
   #button-frame {
+    @extend .styled-button-bar;
     > button {
       padding-top: 25px;
       padding-bottom: 25px;

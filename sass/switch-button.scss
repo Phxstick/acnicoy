@@ -1,7 +1,6 @@
-@import "base";
+@import "mixins";
 
 :host {
-  @extend %button;
   @include center-content;
   background-color: lightgrey;
   color: grey;

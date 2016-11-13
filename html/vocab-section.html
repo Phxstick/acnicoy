@@ -1,26 +1,55 @@
-<div id="all-words-frame">
-  <input class="search-entry" id="search-all-entry"
-   placeholder="Search vocabulary"></input>
-  <div class="list-view-header">Vocabulary</div>
-  <div id="all-words" class="list-view"></div>
+<div id="all-words-column" class="column">
+  <div id="empty-vocabulary-info" class="info-frame">
+    Your vocabulary is empty!<br>
+    Add a new item using the button on the side bar.
+  </div>
+  <div id="all-words-frame" class="list-frame">
+    <div class="search-entry-frame">
+      <input class="search-entry" id="search-vocab-entry"
+      placeholder="Search vocabulary"></input>
+      <button id="search-vocab-button" class="search-button">
+        <i class="fa fa-search"></i></button>
+    </div>
+    <div id="all-words" class="list-view"></div>
+  </div>
 </div>
 
-<div id="all-lists-frame">
-  <input class="search-entry" id="find-list-entry"
-   placeholder="Search vocabulary lists"></input>
-  <div class="list-view-header">Vocabulary Lists</div>
-  <div id="all-lists" class="list-view"></div>
+<div id="all-lists-column" class="column">
+  <div id="no-lists-info" class="info-frame">
+    Click the button below to create a new vocabulary list.
+  </div>
+  <div id="all-lists-frame" class="list-frame">
+    <div class="search-entry-frame">
+      <input class="search-entry" id="search-lists-entry"
+                                  placeholder="Search vocabulary lists"></input>
+      <button id="search-lists-button" class="search-button">
+        <i class="fa fa-search"></i></button>
+    </div>
+    <div id="all-lists" class="list-view"></div>
+  </div>
   <div id="all-lists-button-frame">
-    <button id="add-new-list-button"><i class="fa fa-plus"></i></button>
+    <button id="add-list-button"><i class="fa fa-plus"></i></button>
     <button id="rename-list-button"><i class="fa fa-pencil"></i></button>
     <button id="delete-list-button"><i class="fa fa-trash"></i></button>
   </div>
   <button id="test-on-list-button">Test on list</button>
 </div>
 
-<div id="list-contents-frame">
-  <input class="search-entry" id="find-list-contents-entry"
-   placeholder="Search list contents"></input>
-  <div class="list-view-header">List contents</div>
-  <div id="list-contents" class="list-view"></div>
+<div id="list-contents-column" class="column">
+  <div id="no-list-selected-info" class="info-frame">
+    Select a vocabulary list in the middle column to see its contents.
+  </div>
+  <div id="no-list-contents-info" class="info-frame">
+    This list is empty.<br>
+    Drag words from the left column here to add them.
+  </div>
+  <div id="list-contents-frame" class="list-frame">
+    <div class="search-entry-frame">
+      <input class="search-entry" id="search-list-contents-entry"
+      placeholder="Search list contents"></input>
+      <button id="search-list-contents-button" class="search-button">
+        <i class="fa fa-search"></i></button>
+    </div>
+    <div id="list-contents" class="list-view"></div>
+  </div>
 </div>

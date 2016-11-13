@@ -2,21 +2,24 @@
 
 .small {
   font-size: 80%;
-  color: grey;
+  color: $color-lightest;
+  font-family: $small-font;
 }
 
 #frame {
   display: flex;
   flex-direction: row;
   padding: 5px;
-  border-bottom: 1px solid darken($view-background, 30%);
+  border-bottom: 1px solid $border-color-light;
 
   &.frequent {
-    background-color: #e0ffb3;
+    background-color: $dictionary-frequent-words-background;
+    border-bottom: 1px solid $dictionary-frequent-words-border-color;
   }
 
   &.semi-frequent {
-    background-color: lighten(#e0ffb3, 5%);
+    background-color: $dictionary-semi-frequent-words-background;
+    border-bottom: 1px solid $dictionary-semi-frequent-words-border-color;
   }
 
   #word-frame {
@@ -54,7 +57,7 @@
         }
         .translations ~ span {
           @extend .small;
-          &::after:not(:last-child) {
+          &:not(:last-child)::after {
             content: ", ";
           }
         }

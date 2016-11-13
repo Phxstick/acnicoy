@@ -14,7 +14,8 @@ const globals = {
               "kanji-search-result-entry", "dictionary-search-result-entry",
               "pinwall-note", "srs-status-table", "language-table",
               "language-popup", "check-box", "example-word-entry"],
-    extensions: ["converter", "array-extensions", "html-element-extensions"]
+    extensions: ["converter", "array-extensions", "html-element-extensions",
+                 "event-emitter-extensions"]
 };
 
 const startTime = performance.now();
@@ -100,6 +101,12 @@ console.log("Loaded all required modules after %f ms", totalTime);
                    .then((newPath) => paths.setDataPath(newPath));
         }
     }).then(() => {
+        // Load the global settings. If they don't exist, create defaults
+        if (utility.existsFile(paths.globalSettings)) {
+            dataManager.settings.load();
+        } else {
+            dataManager.settings.setDefault();
+        }
         // Find registered languages. If none exist, let user register new ones
         languages = dataManager.languages.find();
         if (languages.length === 0) {
@@ -117,12 +124,6 @@ console.log("Loaded all required modules after %f ms", totalTime);
             });
         }
     }).then(() => {
-        // Load the global settings. If they don't exist, create defaults
-        if (utility.existsFile(paths.globalSettings)) {
-            dataManager.settings.load();
-        } else {
-            dataManager.settings.setDefault();
-        }
         defaultLanguage = dataManager.settings["languages"]["default"];
         // If no default language has been set or if it's not available...
         if (!defaultLanguage || !languages.includes(defaultLanguage)) {

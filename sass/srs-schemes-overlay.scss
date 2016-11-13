@@ -4,14 +4,6 @@
   width: 550px;
 }
 
-i.fa {
-  color: #999;
-  font-size: 150%;
-  &:hover {
-    color: $color;
-  }
-}
-
 #partitioned-window > #main-frame {
   min-height: 500px;
   display: flex;
@@ -33,10 +25,16 @@ i.fa {
         font-size: 150%;
         background-color: transparent;
       }
+      #add-scheme-button {
+        @extend button.light;
+        @extend button.no-shadow;
+        font-size: 150%;
+        padding: 4px;
+      }
     }
     #schemes-list {
       flex-grow: 1;
-      border: 1px solid lightgrey;
+      border: 1px solid $border-color-light;
 
       > div {
         font-size: 110%;
@@ -52,13 +50,13 @@ i.fa {
     @include center-content;
     flex-direction: column;
     margin-left: 10px;
-    border-left: 1px solid grey;
+    border-left: 1px solid $border-color-dark;
     padding-left: 10px;
 
     #choose-scheme-info {
-      color: dimgray;
+      color: $color-light;
       font-size: 140%;
-      font-family: $gui-font;
+      font-family: $light-font;
       text-align: center;
     }
     #scheme-details-frame {
@@ -80,21 +78,24 @@ i.fa {
           text-overflow: ellipsis;
         }
         #scheme-name-input {
-          color: $view-color;
-          border-bottom: 1px solid gray;
-          background-color: white;
-          border: 1px solid lightgrey;
+          @extend input.trench;
           padding: 0px;
-          border-radius: 5px;
-          min-width: 1px;  // Use flex to stretch instead
+          min-width: 1px;  // Stretch with flex
         }
         #scheme-name, #scheme-name-input {
           flex-grow: 1;
           font-size: 160%;
-          font-family: $gui-font;
+          font-family: $light-font;
           padding-left: 8px;
         }
         #scheme-buttons {
+          > button {
+            padding: 1px;
+            @extend button.light;
+            @extend button.no-shadow;
+            font-size: 150%;
+            display: inline-block;
+          }
           flex-shrink: 0;
         }
       }
@@ -111,10 +112,7 @@ i.fa {
         border: 1px solid transparent;
       }
       #scheme-description-input {
-        border: 1px solid lightgrey;
-        background-color: white;
-        border-radius: 5px;
-        color: $view-color;
+        @extend input.trench;
       }
 
       #scheme-levels-frame {
@@ -124,7 +122,7 @@ i.fa {
           overflow-y: auto;
         }
         #scheme-levels > div {
-          @include fading-border(grey, "to right");
+          @include fading-border($border-color-dark, "to right");
           border-width: 0px 0px 1px 0px;
           &:first-child {
             border-top-width: 1px;
@@ -137,8 +135,8 @@ i.fa {
             @include center-content;
             width: 60px;
             font-size: 150%;
-            font-family: $gui-font;
-            border-right: 1px solid lightgrey;
+            font-family: $light-font;
+            border-right: 1px solid $border-color-light;
             padding-right: 8px;
           }
           > .interval {
@@ -147,6 +145,9 @@ i.fa {
             padding-left: 15px;
           }
           > .interval-input {
+            @extend input.styled;
+            font-size: 100%;
+            background-color: $input-background-focus;
             flex-grow: 1;
             padding-left: 15px;
             border: none;
@@ -177,9 +178,6 @@ i.fa {
               display: none;
             }
             &:hover {
-              // > .interval {
-              //   background: $view-background;
-              // }
               > .remove-level-button {
                 display: block;
               }
@@ -187,16 +185,10 @@ i.fa {
           }
         }
         #add-level-button {
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          font-size: 130%;
-          font-family: $header-font;
-          color: #999;
-          margin-top: 5px;
-          > * { color: inherit; }
-          &:hover {
-            color: $color;
+          padding: 8px;
+          font-size: 140%;
+          > i {
+            padding-right: 8px;
           }
         }
       }

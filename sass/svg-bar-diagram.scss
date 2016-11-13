@@ -11,10 +11,8 @@ svg {
     stroke: var(--bar-border-color, dimgray);
     stroke-width: var(--bar-border-width, 1);
     fill: var(--bar-background, limegreen);
-    // TODO: Make this customizable
-    fill-opacity: 0.6;
     &:hover {
-      fill-opacity: 1;
+      fill: var(--bar-background-hover, green);
     }
   }
 

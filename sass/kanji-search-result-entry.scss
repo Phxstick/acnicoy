@@ -8,19 +8,23 @@ span {
   display: flex;
   flex-direction: row;
   padding: 3px;
-  border-bottom: 1px solid darken($view-background, 30%);
+  border-bottom: 1px solid $border-color-light;
 
   #left-frame {
+    display: flex;
+    flex-direction: column;
     margin-left: 3px;
     margin-right: 4px;
+    width: 60px;
+
     #kanji {
       font-size: 250%;
       padding: 5px;
       text-shadow: -0.5px -0.5px 0.5px $color;
       text-align: center;
       &.rare {
-        color: dimgray;
-        text-shadow: -0.5px -0.5px 0.5px grey;
+        color: $kanji-search-results-rare-color;
+        text-shadow:-0.5px -0.5px 0.5px $kanji-search-results-rare-shadow-color;
         &:hover {
           @extend .kanji-info-link;
         }
@@ -30,37 +34,32 @@ span {
       }
     }
     #added-label {
-      flex: 1;
-      @extend %button;
       padding: 3px;
       font-family: $header-font;
       text-align: center;
-      color: darken(limegreen, 20%);
+      color: $added-label-color;
       &:hover {
-        text-shadow: 0 0 1px lawngreen;
+        text-shadow: 0 0 1px $added-label-shadow-color;
       }
     }
     #add-button {
-      flex: 1;
-      @extend %button;
       padding: 3px;
       font-family: $header-font;
       text-align: center;
-      color: darkred;
+      color: $add-button-color;
       &:hover {
-        text-shadow: 0 0 1px coral;
+        text-shadow: 0 0 1px $add-button-shadow-color;
         background: $view-hover-background;
       }
       &:active {
-        background-color: darken($view-hover-background, 10%);
+        background-color: $add-button-background-active;
       }
     }
     #strokes-link, #examples-link {
       font-size: 80%;
-      color: darkred;
+      color: $link-color;
       text-align: center;
       margin-top: 3px;
-      // TODO
     }
   }
 
@@ -77,16 +76,16 @@ span {
       padding-top: 2px;
       padding-bottom: 2px;
       font-size: 80%;
+
       &:not(:last-child) {
         border-right: 1px solid transparent;
-        border-image: linear-gradient(to bottom, transparent, gray,
-                                      transparent) 0 100%;
+        border-image: $vertical-fading-border;
         padding-right: 5px;
       }
       &:not(:first-child) {
         padding-left: 6px;
       }
-      color: #666;
+      color: $color-light;
     }
 
     .yomi-frame {
@@ -94,7 +93,9 @@ span {
 
       .yomi-header {
         font-size: 80%;
-        font-color: dimgray;
+        font-color: $color-light;
+        font-family: $header-font;
+        margin-right: 5px;
       }
 
       .yomi {
@@ -102,7 +103,7 @@ span {
         padding: 2px;
         border-radius: 4px;
         margin-right: 6px;
-        background-color: #EEE; // #F5F5F5;
+        background-color: $kanji-search-results-yomi-background;
       }
     }
   }

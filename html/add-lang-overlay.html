@@ -5,23 +5,27 @@
   </div>
   <div id="main-frame">
     <div>
-      <div>Choose foreign language:</div>
-      <select id="language-select"></select>
+      <select id="language"></select>
     </div>
     <div>
-      <div>Choose language for translations:</div>
-      <select id="secondary-language-select"></select>
+      <select id="secondary-language"></select>
       <div class="note">Recommended: Your native language.</div>
     </div>
+    <hr class="fading">
     <div>
       <div>
-        <check-box id="readings-checkbox"></check-box>
+        <check-box id="readings-flag"></check-box>
         <span>Add word readings</span>
       </div>
       <div class="note">
         Useful if the target language has many irregular readings or uses a
         different writing system (e.g. Chinese, Japanese).
       </div>
+    </div>
+    <hr class="fading">
+    <div>
+      <select id="srs-scheme"></select>
+      <button id="edit-srs-schemes" class="link">Edit SRS schemes</button>
     </div>
   </div>
   <div id="button-frame" class="light-button-bar">

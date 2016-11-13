@@ -10,10 +10,12 @@
   {{/each}}
 </tr>
 {{#each amounts}}
+  {{#unless @first}}
   <tr>
     <td>Level {{@key}}</td>
-    {{#each this}}
-      <td {{#if due}}class="due"{{/if}}>{{due}} (+{{scheduled}})</td>
-    {{/each}}
+      {{#each this}}
+        <td {{#if due}}class="due"{{/if}}>{{due}} (+{{scheduled}})</td>
+      {{/each}}
   </tr>
+  {{/unless}}
 {{/each}}
