@@ -124,6 +124,15 @@ class EditVocabPanel extends Panel {
                 menuItems, ["add-reading"], { section: this });
     }
 
+    registerCentralEventListeners() {
+        events.onAll(["language-changed", "srs-scheme-changed"], () => {
+            for (let i = 1; i < this.$("srs-level").children.length + 1; ++i) {
+                const option = this.$("srs-level").children[i - 1];
+                option.dataset.tooltip = dataManager.srs.intervalTexts[i];
+            }
+        });
+    }
+
     adjustToLanguage(language, secondary) {
         // Fill SRS level popup stack
         const numLevels = dataManager.srs.numLevels;
@@ -202,6 +211,7 @@ class EditVocabPanel extends Panel {
         .then((confirmed) => {
             if (!confirmed) return;
             return dataManager.vocab.remove(this.originalWord).then(() => {
+                main.closePanel("edit-vocab");
                 events.emit("word-deleted", this.originalWord);
                 events.emit("vocab-changed");
             });

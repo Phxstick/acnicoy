@@ -35,6 +35,7 @@ class PopupStack extends Widget {
         option.label = label;
         option.value = value === undefined ? label : value;
         this.appendChild(option);
+        return option;
     }
 
     set(item) {

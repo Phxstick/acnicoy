@@ -92,8 +92,7 @@ $answer-input-padding: 5px;
   height: 35px;
   width: 70%;
   font-size: 90%;
-  border-top-width: 1px;
-  border-bottom: 0px;
+  border-width: 1px 0 0 0;
   @include fading-border($control-bar-border-color, "horizontal");
 
   button {

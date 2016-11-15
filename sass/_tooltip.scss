@@ -1,0 +1,137 @@
+/** 
+* CSS Variables:
+* --tooltip-font-size  (Default: 1rem)
+* --tooltip-speed      (Default: 0.4s)
+* --tooltip-delay      (Default: 0s)
+*/
+
+// SASS Parameters
+$spacing: 1px;  // Distance between element and tooltip arrow
+$arrow-width: 10px;
+$arrow-height: 5px;
+$slide-distance: 6px;
+
+
+// Calculated parameters
+$offset-tooltip-start:
+  calc(100% + #{$slide-distance} + #{$arrow-height} + #{$spacing});
+$offset-arrow-start: calc(100% + #{$slide-distance} + #{$spacing});
+$offset-tooltip: calc(100% + #{$arrow-height} + #{$spacing});
+$offset-arrow: calc(100% + #{$spacing});
+
+// Animation definitions
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slide-tooltip-down {
+  from { bottom: $offset-tooltip-start; }
+  to { bottom: $offset-tooltip; }
+}
+@keyframes slide-arrow-down {
+  from { bottom: $offset-arrow-start; }
+  to { bottom: $offset-arrow; }
+}
+@keyframes slide-tooltip-up {
+  from { top: $offset-tooltip-start; }
+  to { top: $offset-tooltip; }
+}
+@keyframes slide-arrow-up {
+  from { top: $offset-arrow-start; }
+  to { top: $offset-arrow; }
+}
+@keyframes slide-tooltip-to-left {
+  from { right: $offset-tooltip-start; }
+  to { right: $offset-tooltip; }
+}
+@keyframes slide-arrow-to-left {
+  from { right: $offset-arrow-start; }
+  to { right: $offset-arrow; }
+}
+@keyframes slide-tooltip-to-right {
+  from { left: $offset-tooltip-start; }
+  to { left: $offset-tooltip; }
+}
+@keyframes slide-arrow-to-right {
+  from { left: $offset-arrow-start; }
+  to { left: $offset-arrow; }
+}
+
+
+[data-tooltip] {
+  position: relative;
+
+  &:after, &:before {
+    display: none;
+    position: absolute;
+    opacity: 0;
+  }
+  &:after {
+    content: attr(data-tooltip);
+    font-family: $tooltip-font;
+    font-size: var(--tooltip-font-size, 1rem);
+    left: -40%;
+    background-color: $tooltip-background;
+    white-space: nowrap;
+    color: $tooltip-color;
+    padding: 5px 10px;
+    border-radius: 10px; 
+    box-shadow: 0 0 5px $tooltip-shadow-color;
+    text-shadow: none;
+  }
+
+  &:before {
+    content: "";
+    width: 0;
+    height: 0;
+    border-style: solid;
+    z-index: 1;
+  }
+
+  &:hover:after, &:hover:before {
+    display: block;
+    animation: {
+      duration: var(--tooltip-speed, .4s);
+      delay: var(--tooltip-delay, 0s);
+      fill-mode: forwards;
+    }
+  }
+
+  // Fade and slide tooltip window on hovering
+  &[data-tooltip-pos="top"]:hover:after, &:not([data-tooltip-pos]):hover:after {
+    animation-name: fade, slide-tooltip-down;
+  }
+  &[data-tooltip-pos="right"]:hover:after {
+    animation-name: fade, slide-tooltip-to-left;
+  }
+  &[data-tooltip-pos="bottom"]:hover:after {
+    animation-name: fade, slide-tooltip-up;
+  }
+  &[data-tooltip-pos="left"]:hover:after {
+    animation-name: fade, slide-tooltip-to-right;
+  }
+
+  // Fade, slide and shape tooltip arrow
+  &[data-tooltip-pos="top"]:hover:before,
+      &:not([data-tooltip-pos]):hover:before {
+    animation-name: fade, slide-arrow-down;
+    border-width: $arrow-height ($arrow-width / 2) 0 ($arrow-width / 2);
+    border-color: $tooltip-background transparent transparent transparent;
+  }
+  &[data-tooltip-pos="right"]:hover:before {
+    animation-name: fade, slide-arrow-to-left;
+    border-width: ($arrow-width / 2) $arrow-height ($arrow-width / 2) 0 ;
+    border-color: transparent $tooltip-background transparent transparent;
+  }
+  &[data-tooltip-pos="bottom"]:hover:before {
+    animation-name: fade, slide-arrow-up;
+    border-width: 0 ($arrow-width / 2) $arrow-height ($arrow-width / 2);
+    border-color: transparent transparent $tooltip-background transparent;
+  }
+  &[data-tooltip-pos="left"]:hover:before {
+    animation-name: fade, slide-arrow-to-right;
+    border-width: ($arrow-width / 2) 0 ($arrow-width / 2) $arrow-height;
+    border-color: transparent transparent transparent $tooltip-background;
+  }
+}
+

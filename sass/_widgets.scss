@@ -18,10 +18,11 @@ popup-list {
 }
 
 popup-stack {
+  --tooltip-speed: 0s;
+
   &[disabled] > option:checked {
       color: transparent;
   }
-  
   > option {
     color: whitesmoke;
     background-color: $button-background;

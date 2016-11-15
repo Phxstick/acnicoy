@@ -14,6 +14,15 @@ class AddVocabPanel extends Panel {
             "click", () => this.save());
     }
 
+    registerCentralEventListeners() {
+        events.onAll(["language-changed", "srs-scheme-changed"], () => {
+            for (let i = 1; i < this.$("srs-level").children.length + 1; ++i) {
+                const option = this.$("srs-level").children[i - 1];
+                option.dataset.tooltip = dataManager.srs.intervalTexts[i];
+            }
+        });
+    }
+
     open() {
         this.$("word-entry").focus();
     }
@@ -60,8 +69,10 @@ class AddVocabPanel extends Panel {
             this.$("readings-entry").hide();
         // Adjust to Japanese language
         if (language === "Japanese") {
+            this.$("word-entry").enableKanaInput("hira");
             this.$("readings-entry").enableKanaInput("hira");
         } else {
+            this.$("word-entry").disableKanaInput("hira");
             this.$("readings-entry").disableKanaInput();
         }
     }

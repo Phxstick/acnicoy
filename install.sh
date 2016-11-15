@@ -1,6 +1,6 @@
 #!/bin/bash
 
-header_url="https://atom.io/download/atom-shell"
+header_url="https://atom.io/download/electron"
 
 system_arch=$(uname -i)
 if [ $system_arch == "x86_64" ]; then

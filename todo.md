@@ -17,10 +17,6 @@
   - Immediately rewrite index.js chain, main window, datamanager methods
 - Use thin symbols for fa-times, fa-plus etc. when they become available
 - Focus most important element in each overlay upon opening (e.g. buttons)
-- Implement global tooltip widget (or pure css version)
-  - Add a function to HTMLElement prototype?
-  - Use for kanji hovering (show meanings)
-  - Use for displaying spacings when hovering over SRS levels
 - Have confirmClose-methods on overlays (e.g. srs-schemes-overlay)
 
 ### Fixes
@@ -30,6 +26,10 @@
   - Make sure levels are ordered after resolving invalid values in SRS schemes
   - Make sure empty levels get removed/highlighted without requiring user input
 - Remove flickering when quickly dragging vocab item over list contents column
+- CSS Tooltip Issues (Need to make a widget):
+  - z-index is incorrect
+  - can leave view
+  - Memory hog
 
 By category
 --------------------------------------------------------------------------------
@@ -45,6 +45,8 @@ By category
 - Extend markdown-js to suit the purpose of the program
   - See Japanese stack exchange for furigana syntax
 - Split SRS scheme list from settings to allow easy settings reset
+- Create a custom menu bar
+- Shortcut for reloading program (and make it work...)
 
 ### Code
 - Remove inconsistencies in code, e.g. unify glossary ("word" <-> "entry")
@@ -87,6 +89,7 @@ Or otherwise indicate which section/panel is currently opened?
 - Possibly create overlay-style sidebar for customizing pinwall
 - Widgets:
   - Combine notes into single widget?
+    - Allow writing notes in markdown format, render when saving the note
   - SRS item bar diagram (customizable, shows when new items become available)
     - Maybe 1m/2w as standard interval
   - SRS info bar
@@ -157,6 +160,8 @@ List of settings
   - [Widget] Choose time intervals for notification
 - [Checkbox] Regularly backup data
   - [Widget] Choose backup interval
+- [Button] Check for program updates (Check automatically every ~1 hour)
+  - [Button] Update program (Do so safely)
 
 #### Language settings
 - [Language widget] Table of languages
@@ -193,7 +198,8 @@ List of settings
 - [Popup-List] Color schemes
   - By changing and recompiling Sass or using CSS variables
   - Have "designs" subfolder in sass directory with named sass partials
-  - Definitely implement a default reddish dark scheme
+  - Definitely implement dark version for current default scheme
+  - Solarized (Light/Dark) and Ubuntu (Light/Dark) Color schemes
 
 #### Shortcuts
 - [Shortcut-widgets] For all known shortcuts in the settings
@@ -267,6 +273,7 @@ Resources
 - Use `Element.scrollIntoViewIfNeeded()`
 - [Focus within](http://caniuse.com/#feat=css-focus-within)
 - [Scrollbar styling](http://caniuse.com/#feat=css-scrollbar)
+- [CSS triangles](http://apps.eky.hk/css-triangle-generator/)
 
 #### Misc
 - [Learn gulp?](https://ponyfoo.com/articles/gulp-grunt-whatever)

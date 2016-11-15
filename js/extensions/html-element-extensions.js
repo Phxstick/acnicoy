@@ -209,7 +209,6 @@ HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
     // opening the popupWindow
     if (typeof itemNames === "function") {
         this.popupMenuCallback = (event) => {
-            const names = itemNames();
             popupMenu.itemsLoaded = Promise.resolve(itemNames())
             .then((names) => {
                 for (const name of names) {

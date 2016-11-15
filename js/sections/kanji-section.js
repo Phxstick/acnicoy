@@ -55,13 +55,15 @@ class KanjiSection extends Section {
         // Kanji section is only available for Japanese.
         if (language === "Japanese") {
             return dataManager.content.getKanjiList().then((rows) => {
-                this.createKanji(rows);
-                this.displayKanji("grade");
+                return this.createKanji(rows).then(() => {
+                    this.displayKanji("grade");
+                });
             });
         }
     }
 
     createKanji(rows) {
+        const promises = [];
         const fragment = document.createDocumentFragment();
         for (const { kanji, added, strokes, grade } of rows) {
             const kanjiSpan = document.createElement("span");
@@ -69,7 +71,7 @@ class KanjiSection extends Section {
             kanjiSpan.id = kanji;
             kanjiSpan.className = 
               `${added ? "added" : ""} grade-${grade} strokes-${strokes} kanji`;
-            main.makeKanjiInfoLink(kanjiSpan, kanji);
+            promises.push(main.makeKanjiInfoLink(kanjiSpan, kanji));
             kanjiSpan.addEventListener("click", () => {
                 if (this.selectedKanji !== null)
                     this.selectedKanji.classList.remove("selected");
@@ -79,6 +81,7 @@ class KanjiSection extends Section {
             fragment.appendChild(kanjiSpan);
         }
         this.kanjiContainer.appendChild(fragment);
+        return Promise.all(promises);
     }
 
     displayKanji(ordering, {

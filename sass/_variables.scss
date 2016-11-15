@@ -1,4 +1,22 @@
 // =============================================================================
+// Cursors
+// =============================================================================
+
+$normal-cursor: $test-cursor, auto;
+$pointer-cursor: $test-cursor, pointer;
+
+// =============================================================================
+// Fonts
+// =============================================================================
+
+$font: TakaoPGothic, Helvetica, Verdana, sans-serif;
+$light-font: OpenSans-Light;
+$header-font: Questrial;
+$button-font: $header-font;
+$small-font: Arial;
+$tooltip-font: $header-font;
+
+// =============================================================================
 // Base colors
 // =============================================================================
 
@@ -20,6 +38,13 @@ $border-color-dark: grey;
 $link-color: darkred;
 $link-color-hover: darkred;
 $link-shadow-color-hover: lightsalmon;
+
+$info-color: $link-color; // Element with a tooltip
+
+// Tooltips
+$tooltip-background: darkred;
+$tooltip-color: white;
+$tooltip-shadow-color: white;
 
 // Views
 $view-color: #303030;

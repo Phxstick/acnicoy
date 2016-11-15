@@ -308,7 +308,7 @@ class MainWindow extends Window {
     }
 
     makeKanjiInfoLink(element, character) {
-        dataManager.content.isKnownKanji(character).then((isKanji) => {
+        return dataManager.content.isKnownKanji(character).then((isKanji) => {
             if (isKanji) {
                 element.classList.add("kanji-info-link");
                 element.addEventListener("click", () => {
@@ -318,9 +318,10 @@ class MainWindow extends Window {
             }
             element.popupMenu(menuItems, () => {
                 return dataManager.kanji.isAdded(character)
-                .then((isAdded) => 
-                    ["copy-kanji", "view-kanji-info",
-                     isAdded? "edit-kanji" : "add-kanji"]);
+                .then((isAdded) => {
+                    return ["copy-kanji", "view-kanji-info",
+                            isAdded ? "edit-kanji" : "add-kanji"];
+                });
             });
         });
     }

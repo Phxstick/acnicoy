@@ -1,5 +1,5 @@
 // =============================================================================
-// Fonts
+// Font definitions
 // =============================================================================
 
 @font-face {
@@ -17,16 +17,8 @@
   src: url(../fonts/Questrial-Regular.otf) format("opentype");
 }
 
-$font: TakaoPGothic, Helvetica, Verdana, sans-serif;
-$light-font: OpenSans-Light;
-$header-font: Questrial;
-$button-font: $header-font;
-$small-font: Arial;
-
 // =============================================================================
-// Cursors
+// Cursor loading
 // =============================================================================
 
-$normal-cursor: url(../img/test_cursor.png), auto;
-$pointer-cursor: url(../img/test_cursor.png), pointer;
-
+$test-cursor: url(../img/test_cursor.png);

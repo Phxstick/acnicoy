@@ -135,6 +135,19 @@ class EditKanjiPanel extends Panel {
         };
     }
 
+    registerCentralEventListeners() {
+        events.onAll(["language-changed", "srs-scheme-changed"], () => {
+            const popups = [this.allLevelsPopup, this.meaningsLevelPopup,
+                            this.kunYomiLevelPopup, this.onYomiLevelPopup];
+            for (const popup of popups) {
+                for (let i = 1; i < popup.children.length + 1; ++i) {
+                    const option = popup.children[i - 1];
+                    option.dataset.tooltip = dataManager.srs.intervalTexts[i];
+                }
+            }
+        });
+    }
+
     adjustToLanguage(language, secondary) {
         if (language !== "Japanese") return;
         // Fill SRS levels popup stacks

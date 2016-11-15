@@ -2,6 +2,7 @@
 @import "variables";
 @import "layers";
 
+@import "tooltip";
 @import "views";
 @import "buttons";
 @import "widgets";
@@ -105,10 +106,15 @@ body {
 }
 
 .kanji-info-link {
+  --tooltip-delay: 0.4s;
   &:hover {
     text-shadow: 0 0 2px $link-shadow-color-hover;
     color: $link-color-hover;
   }
+}
+
+.info {
+  color: $info-color;
 }
 
 .note {

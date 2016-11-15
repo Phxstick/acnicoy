@@ -25,6 +25,7 @@ class StatsSection extends Section {
         events.onAll(
             ["word-added", "word-deleted", "kanji-added", "kanji-removed"],
         () => {
+            if (this.isHidden()) return;
             this.updateStats();
         });
     }
@@ -85,8 +86,10 @@ class StatsSection extends Section {
                     maxValues.push(numKanjiPerGrade[8]);
                     descriptions.push("Sec");
                     utility.finishEventQueue()
-                    .then(() => this.jouyouKanjiDiagram.draw(
-                            values, maxValues, descriptions));
+                    .then(() => {
+                        this.jouyouKanjiDiagram.draw(
+                            values, maxValues, descriptions);
+                    });
                 });
                 // Display percentages of kanji per jlpt level in bar diagram
                 const numKanjiPerJlptLevel =
@@ -102,8 +105,10 @@ class StatsSection extends Section {
                         descriptions.push(`N${level}`);
                     }
                     utility.finishEventQueue()
-                    .then(() => this.jlptKanjiDiagram.draw(
-                            values, maxValues, descriptions));
+                    .then(() => {
+                        this.jlptKanjiDiagram.draw(
+                            values, maxValues, descriptions)
+                    });
                 });
             }
         }

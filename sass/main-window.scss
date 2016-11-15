@@ -36,6 +36,7 @@
       font-family: $light-font;
       transition: background-color 0.15s, color 0.15s, border-width 0.15s;
       border-left: 1px solid $main-window-border-color;
+      --tooltip-delay: 0.5s;
 
       &:last-child {
         border-right: 1px solid $main-window-border-color;

@@ -5,9 +5,11 @@ module.exports = function (paths, modules) {
 
     srs.setLanguage = function (language) {
         const scheme = modules.languageSettings["srs"]["scheme"];
-        const timeSpans = modules.settings.getIntervalsForSrsScheme(scheme)
-            .map((timeSpan) => utility.timeSpanStringToSeconds(timeSpan));
+        const timeSpanNames = modules.settings.getIntervalsForSrsScheme(scheme);
+        const timeSpans =
+            timeSpanNames.map((t) => utility.timeSpanStringToSeconds(t));
         srs.intervals = Object.freeze([0, ...timeSpans, 1000000000000]);
+        srs.intervalTexts = Object.freeze([0, ...timeSpanNames, "Infinity"]);
         srs.numLevels = srs.intervals.length;
     };
 

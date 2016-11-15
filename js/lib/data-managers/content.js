@@ -53,8 +53,6 @@ module.exports = function (paths, modules) {
                     kanjiPerJlpt[level] = amount;
                 }
                 // Gather all the content into a frozen object
-                // TODO: Directly put these into content object...?
-                // TODO: Along with all functions for Japanese?
                 dataMap["Japanese"] = Object.freeze({
                     query: query,
                     numKanjiPerGrade: Object.freeze(kanjiPerGrade),
@@ -102,6 +100,17 @@ module.exports = function (paths, modules) {
             return row;
         });
     };
+
+    // Lightweight method for getting only kanji meanings
+    content.getKanjiMeanings = function(kanji) {
+        return dataMap["Japanese"].query(
+            `SELECT k.meanings AS meanings
+             FROM kanji k
+             WHERE k.entry = ?`, kanji)
+        .then(([row]) => {
+            return row.meanings ? row.meanings.split(",") : [];
+        });
+    }
 
     // TODO: Better naming? (since it returns rows, not words)
     content.getExampleWordsForKanji = function (kanji) {

@@ -38,9 +38,10 @@ body {
 
 #bottom {
   flex: 1;
-  overflow: auto;
+  overflow-y: auto;
 
   #overview-window {
+    overflow-x: hidden;
     .kanji {
       display: inline-block;
       margin-right: 3px;
