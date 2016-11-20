@@ -172,16 +172,17 @@ class MainWindow extends Window {
 
     openSection(name) {
         if (this.currentSection === name) return;
+        const currentSection = this.currentSection;
+        this.currentSection = name;
         return Promise.resolve(
-                this.sections[this.currentSection].confirmClose())
+                this.sections[currentSection].confirmClose())
         .then((confirmed) => {
             if (!confirmed) return;
-            this.sections[this.currentSection].close();
-            Velocity(this.sections[this.currentSection], "fadeOut").then(() => {
+            this.sections[currentSection].close();
+            Velocity(this.sections[currentSection], "fadeOut").then(() => {
                 this.sections[name].open();
                 Velocity(this.sections[name], "fadeIn");
             });
-            this.currentSection = name;
         });
     }
 

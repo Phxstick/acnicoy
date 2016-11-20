@@ -1,35 +1,37 @@
 ### Up next
-- Make language switching seamless (Do sth about vocab section?)
-  - Don't load all vocabulary in vocabulary section
-  - Remove flickering in sections like home/vocabulary
 - Implement migrate-srs-overlay
   - Make sure to backup user data with useful description before migration
   - Make sure stats initialization functions are called on SRS scheme change
-- Add popup-menus to dictionary section
+  - Emit event to allow every section/panel/etc. to adapt
 - Implement load function in add-vocab-panel
-  - Provide suggestions in add-vocab-panel as clickable spans
+  - Provide suggestions in add-vocab-panel as clickable spans?
     (left click to edit, right click to remove)
+  - If element has very few translations/meanings, immediately fill these in
 - Try edit-input changes in stash as soon as electron has chrome 54
   (Also remove custom-elements flag in main.js.
    Also make sure edit-input gets closed when clicking somewhere else.)
-- Allow quickly switching between sections without opening multiple ones
 - Celebrate the day async/await is fully supported in electron (maybe with flag)
   - Immediately rewrite index.js chain, main window, datamanager methods
 - Use thin symbols for fa-times, fa-plus etc. when they become available
 - Focus most important element in each overlay upon opening (e.g. buttons)
 - Have confirmClose-methods on overlays (e.g. srs-schemes-overlay)
+- Implement language settings and some others
+- Rework home-section
 
 ### Fixes
 - Things got slower when reworking sass? Maybe because main window is flex now?
 - Seperate meanings in kanji dictionary with ";" instead of "," (and adjust)
+- Fix switching between sections
 - SRS level editing is not fully stable (Maybe remove ability to edit levels?)
   - Make sure levels are ordered after resolving invalid values in SRS schemes
   - Make sure empty levels get removed/highlighted without requiring user input
 - Remove flickering when quickly dragging vocab item over list contents column
-- CSS Tooltip Issues (Need to make a widget):
-  - z-index is incorrect
+- CSS Tooltip Issues (Need to make a widget I guess):
+  - z-index is incorrect (Applied workaround)
   - can leave view
-  - Memory hog
+  - Memory hog when using on many elements
+- Make language switching seamless
+  - Hide flickering in sections like home/vocabulary
 
 By category
 --------------------------------------------------------------------------------
@@ -44,9 +46,11 @@ By category
 - Capture focus in overlays (especially dialogs!) and panels
 - Extend markdown-js to suit the purpose of the program
   - See Japanese stack exchange for furigana syntax
-- Split SRS scheme list from settings to allow easy settings reset
 - Create a custom menu bar
-- Shortcut for reloading program (and make it work...)
+- Expose shortcut for reloading program?
+- Store user data path somewhere else (e.g. localStorage/`app.getPath(name)`)
+  - Also store downloaded content and language packs somewhere else to allow
+    putting all user data (including backups) into Dropbox
 
 ### Code
 - Remove inconsistencies in code, e.g. unify glossary ("word" <-> "entry")
@@ -68,6 +72,8 @@ once? --> Faster loading, centralized resource loading
 - Allow adding text to checkbox in a slot after a margin
 - Rename "overlay" global into "overlays"
 - Simply register event listeners in constructor after all?
+- Solve design dilemma with tabbed frame
+  - Allow full styling of all frames while keeping it semantic
 
 ### Init window
 - Make init section feel more welcoming and less plain. Background picture?
@@ -137,6 +143,7 @@ a ".", keep all meanings for each kanji
 ### Kanji section
 - Implement customizing overview
 - Filter duplicates in kanji search
+- Display search info when searching with empty bar (or list all added kanji?)
 
 ### Stats/Achievements
 - Use single-bar diagram for kanji progress to display relative to total!
@@ -151,6 +158,24 @@ a ".", keep all meanings for each kanji
 - Use overlay widget
 - Use markdown and extend it
 - Create directory tree
+
+#### Help structure:
+- Introduction
+- Quick start
+- [Separator]
+- SRS
+  - Overview
+  - Editing schemes
+  - Migrating items
+- Vocabulary
+  - Editing
+  - Vocabulary lists
+- Home section
+- Testing
+- [Separator]
+- Japanese
+  - Dictionary
+  - Kanji section
 
 List of settings
 --------------------------------------------------------------------------------
@@ -245,6 +270,7 @@ Future
 - Zinnia or Tegaki for handwritten character recognition
 - Allow exporting vocabulary somehow (e.g. csv, xml)
 - Extend vocabulary section to allowing viewing detailed list of vocab items
+- Migrate to Typescript?
 
 ### Content section
 - Contains a database of custom info cards

@@ -180,7 +180,7 @@ module.exports = function (paths, modules) {
             dataMap["Japanese"].query(
                 `SELECT reading, restricted_to FROM readings WHERE id = ?`, id)
         ]).then(([[{ words, news_freq }], meanings, readings]) => {
-            const info = {};
+            const info = { id };
             // Provide list of objects containing of a word and its reading
             words = words.split(";");
             info.wordsAndReadings = [];

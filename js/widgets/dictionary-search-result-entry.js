@@ -1,5 +1,29 @@
 "use strict";
 
+const menuItems = popupMenu.registerItems({
+    "copy-word": {
+        label: "Copy word",
+        click: ({ currentNode }) => {
+            clipboard.writeText(currentNode.dataset.mainWord);
+        }
+    },
+    "edit-word": {
+        label: "Edit vocabulary item",
+        click: ({ currentNode }) => {
+            main.panels["edit-vocab"].load(currentNode.dataset.mainWord);
+            main.openPanel("edit-vocab");
+        }
+    },
+    "add-word": {
+        label: "Add word to vocabulary",
+        click: ({ currentNode }) => {
+            main.panels["add-vocab"].load(
+                currentNode.dataset.id, currentNode.dataset.mainWord);
+            main.openPanel("add-vocab");
+        }
+    }
+});
+
 class DictionarySearchResultEntry extends Widget {
     constructor () {
         super("dictionary-search-result-entry");
@@ -30,6 +54,13 @@ class DictionarySearchResultEntry extends Widget {
                 }
             }
         }
+        this.dataset.mainWord = info.id;
+        this.dataset.mainWord = info.wordsAndReadings[0].word;
+        this.popupMenu(menuItems, () => {
+            return dataManager.vocab.contains(this.dataset.mainWord)
+            .then((isAdded) => isAdded? ["copy-word", "edit-word"] :
+                                        ["copy-word", "add-word"]);
+        });
     }
 }
 

@@ -13,7 +13,8 @@ module.exports = function (paths, modules) {
             readings: settings.readings,
             srs: {
                 scheme: settings.srs.scheme
-            }
+            },
+            hidden: false
         };
         const path = paths.languageData(language).settings;
         fs.writeFileSync(path, JSON.stringify(langSettings, null, 4));

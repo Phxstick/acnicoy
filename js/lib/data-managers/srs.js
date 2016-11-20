@@ -3,9 +3,29 @@
 module.exports = function (paths, modules) {
     const srs = {};
 
+    srs.loadSchemes = function() {
+        if (!utility.existsFile(paths.srsSchemes)) {
+            const defaultSrsSchemes = fs.readFileSync(paths.defaultSrsSchemes);
+            fs.writeFileSync(paths.srsSchemes, defaultSrsSchemes);
+        }
+        srs.schemes = require(paths.srsSchemes);
+    };
+
+    srs.saveSchemes = function() {
+        fs.writeFileSync(
+            paths.srsSchemes, JSON.stringify(srs.schemes, null, 4));
+    };
+
+    srs.getIntervalsForScheme = function (schemeName) {
+        for (const { name, intervals } of srs.schemes) {
+            if (name === schemeName) return intervals;
+        }
+        throw Error(`SRS scheme with name '${schemeName}' could not be found.`);
+    };
+
     srs.setLanguage = function (language) {
         const scheme = modules.languageSettings["srs"]["scheme"];
-        const timeSpanNames = modules.settings.getIntervalsForSrsScheme(scheme);
+        const timeSpanNames = srs.getIntervalsForScheme(scheme);
         const timeSpans =
             timeSpanNames.map((t) => utility.timeSpanStringToSeconds(t));
         srs.intervals = Object.freeze([0, ...timeSpans, 1000000000000]);

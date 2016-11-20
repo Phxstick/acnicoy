@@ -31,9 +31,6 @@ app.on('ready', function() {
   // Load the index.html of the app and execute corresponding script.
   mainWindow.loadURL(`file://${__dirname}/html/index.html`);
   mainWindow.webContents.openDevTools();
-  mainWindow.webContents.executeJavaScript(`const basePath = "${__dirname}"`);
-  mainWindow.webContents.executeJavaScript(
-          require("fs").readFileSync(`${__dirname}/js/index.js`, "utf-8"));
   // mainWindow.setAutoHideMenuBar(true);
   // mainWindow.setMenuBarVisibility(false);
   let forceQuit = true;

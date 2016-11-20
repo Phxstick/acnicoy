@@ -5,10 +5,9 @@ class Overlay extends Component {
             mode = "slide-down",
             speed = 300,
             distance = 60 } = {}) {
-        super(name + "-overlay", true);
+        super(name + "-overlay");
         this.name = name;
         this.displayOptions = { mode, speed, distance };
-        this.root.appendChild(utility.parseHtmlFile(paths.html.overlay(name)));
     }
 
     /**

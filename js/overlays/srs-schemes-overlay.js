@@ -71,7 +71,7 @@ class SrsSchemesOverlay extends Overlay {
                 if (!confirmed) return;
                 // TODO: If scheme is used, migrate SRS item
                 this.$("schemes-list").removeChild(this.selectedSchemeItem);
-                dataManager.settings.srs.schemes.remove(this.selectedScheme);
+                dataManager.srs.schemes.remove(this.selectedScheme);
                 this.hideSchemeDetails();
             });
         });
@@ -184,7 +184,7 @@ class SrsSchemesOverlay extends Overlay {
         this.$("scheme-details-frame").hide();
         this.$("choose-scheme-info").show();
         this.$("schemes-list").empty();
-        for (const schemeOptions of dataManager.settings.srs.schemes) {
+        for (const schemeOptions of dataManager.srs.schemes) {
             const item = document.createElement("div");
             item.textContent = schemeOptions.name;
             this.schemeItemToOptions.set(item, schemeOptions);
@@ -193,7 +193,7 @@ class SrsSchemesOverlay extends Overlay {
     }
 
     close() {
-        dataManager.settings.save();
+        dataManager.srs.saveSchemes();
         this.exitEditMode();
         this.hideSchemeDetails();
     }
@@ -325,7 +325,7 @@ class SrsSchemesOverlay extends Overlay {
             this.$("schemes-list").appendChild(this.selectedSchemeItem);
             this.schemeItemToOptions.set(
                 this.selectedSchemeItem, this.selectedScheme);
-            dataManager.settings.srs.schemes.push(this.selectedScheme);
+            dataManager.srs.schemes.push(this.selectedScheme);
         }
         // Apply changed name
         const oldName = this.selectedScheme.name;

@@ -68,7 +68,7 @@ class AddLangOverlay extends Overlay {
     // Fill <select> with list of SRS schemes
     loadSrsSchemes() {
         this.$("srs-scheme").empty();
-        for (const { name } of dataManager.settings.srs.schemes) {
+        for (const { name } of dataManager.srs.schemes) {
             const option = document.createElement("option");
             option.textContent = name;
             this.$("srs-scheme").appendChild(option);

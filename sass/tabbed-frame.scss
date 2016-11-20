@@ -1,0 +1,36 @@
+@import "base";
+
+:host([data-tab-layout="horizontal"]), :host(:not([data-tab-layout])) {
+  #window {
+    flex-direction: column;
+  }
+  #tabs {
+    flex-direction: row;
+  }
+}
+:host([data-tab-layout="vertical"]) {
+  #window {
+    flex-direction: row;
+  }
+  #tabs {
+    flex-direction: column;
+  }
+}
+
+#window {
+  height: 100%;
+  display: flex;
+  #tabs {
+    display: flex;
+    font-family: var(--font-family, initial);
+    font-size: var(--font-size, initial);
+    > div {
+      flex: 1;
+    }
+    background-color: var(--tabs-frame-background, initial);
+  }
+
+  #frame {
+    flex: 1;
+  }
+}

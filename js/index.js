@@ -13,18 +13,20 @@ const globals = {
               "svg-bar-diagram", "kanji-info-panel", "pinwall-widget",
               "kanji-search-result-entry", "dictionary-search-result-entry",
               "pinwall-note", "srs-status-table", "language-table",
-              "language-popup", "check-box", "example-word-entry"],
+              "language-popup", "check-box", "example-word-entry",
+              "tabbed-frame"],
     extensions: ["converter", "array-extensions", "html-element-extensions",
                  "event-emitter-extensions"]
 };
 
 const startTime = performance.now();
 // Load node modules
-const { clipboard } = require("electron");
+const { clipboard, remote } = require("electron");
 const EventEmitter = require("events");
 const Velocity = require("velocity-animate");
 
 // Load modules
+const basePath = remote.app.getAppPath();
 const paths = require(basePath + "/js/lib/path-manager.js")(basePath);
 const dataManager = require(paths.js.lib("data-manager"))(paths);
 const utility = require(paths.js.lib("utility"));
@@ -78,8 +80,10 @@ console.log("Loaded all required modules after %f ms", totalTime);
         windows[name].hide();
         currentWindow = undefined;
     }
-
-    Promise.resolve().then(() => {
+    
+    new Promise((resolve) => {
+        window.onload = resolve;
+    }).then(() => {
         // Create all windows
         const windowsLoaded = [];
         for (const name of globals.windows) {
@@ -107,6 +111,8 @@ console.log("Loaded all required modules after %f ms", totalTime);
         } else {
             dataManager.settings.setDefault();
         }
+        // Load registered srs-schemes
+        dataManager.srs.loadSchemes();
         // Find registered languages. If none exist, let user register new ones
         languages = dataManager.languages.find();
         if (languages.length === 0) {

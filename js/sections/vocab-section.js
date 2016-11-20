@@ -128,6 +128,16 @@ class VocabSection extends Section {
                 }
             });
         }
+        // If user scrolls almost to bottom in vocabulary view, load more words
+        const displayAmount = 80;
+        const criticalDistance = 100;
+        this.initialDisplayAmount = 40;
+        this.vocabResultLoaded = false;
+        this.$("all-words").uponScrollingBelow(criticalDistance, () => {
+            if (this.nextRowIndex > 0 && this.vocabResultLoaded &&
+                    this.nextRowIndex < this.vocabResultRows.length)
+                this.loadMoreVocabulary(displayAmount);
+        });
     }
 
     registerCentralEventListeners() {
@@ -193,13 +203,13 @@ class VocabSection extends Section {
         this.$("all-lists").empty();
         this.$("all-words").empty();
         this.deselectList();
-        // Fill the left section with all words in the vocabulary
+        // Fill the left section with first words in the vocabulary
         dataManager.vocab.getAll().then((words) => {
-            const fragment = document.createDocumentFragment();
-            for (const word of words) {
-                fragment.appendChild(this.createAllWordsItem(word));
-            }
-            this.$("all-words").appendChild(fragment);
+            this.nextRowIndex = 0;
+            this.vocabResultRows = words;
+            this.loadMoreVocabulary(this.initialDisplayAmount);
+            this.$("all-words").scrollToTop();
+            this.vocabResultLoaded = true;
         });
         const lists = dataManager.vocabLists.getLists();
         lists.sort();
@@ -209,6 +219,18 @@ class VocabSection extends Section {
             fragment.appendChild(this.createAllListsItem(list));
         }
         this.$("all-lists").appendChild(fragment);
+    }
+
+    loadMoreVocabulary(amount) {
+        const limit = Math.min(this.nextRowIndex + amount,
+                               this.vocabResultRows.length);
+        const words = this.vocabResultRows.slice(this.nextRowIndex, limit);
+        const fragment = document.createDocumentFragment();
+        for (const word of words) {
+            fragment.appendChild(this.createAllWordsItem(word));
+        }
+        this.$("all-words").appendChild(fragment);
+        this.nextRowIndex = limit;
     }
 
     createAllWordsItem(word) {
@@ -425,11 +447,12 @@ class VocabSection extends Section {
             dataManager.vocab.search(query);
         // If the entry is empty, display all words
         wordsReceived.then((words) => {
-            const fragment = document.createDocumentFragment();
-            for (const word of words) {
-                fragment.appendChild(this.createAllWordsItem(word));
-            }
-            this.$("all-words").appendChild(fragment);
+            this.$("all-words").empty();
+            this.nextRowIndex = 0;
+            this.vocabResultRows = words;
+            this.loadMoreVocabulary(this.initialDisplayAmount);
+            this.$("all-words").scrollToTop();
+            this.vocabResultLoaded = true;
         });
     }
 }

@@ -2,7 +2,7 @@
 
 class PinwallWidget extends Widget {
     constructor (name, label) {
-        super("pinwall-widget", true, true);
+        super("pinwall-widget");
         const root = this.root;
         this.hovering = false;
         this.contentFrame = root.getElementById("content-frame");
@@ -37,16 +37,11 @@ class PinwallWidget extends Widget {
         style.textContent = `@import url(${paths.css(name)});`
         style.textContent += `@import url(${paths.fontAwesome})`;
         this.root.appendChild(style);
-        this.root.appendChild(utility.parseHtmlFile(paths.html.widget(name)));
+        this.root.appendChild(utility.parseHtmlFile(paths.html(name)));
     }
-    adjustToLanguage(language, secondary) {
-    }
-    open() {
-    }
+
     set removeCallback(value) {
         this._removeCallback = value;
-        // this.removeButton.removeEventListener("click");
-        // this.removeButton.addEventListener("click", value);
     }
 }
 

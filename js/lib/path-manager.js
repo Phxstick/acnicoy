@@ -37,6 +37,7 @@ module.exports = function (basePath) {
         paths.languages = langPath = path.resolve(dataPath, "Languages");
         paths.downloads = downloadsPath = path.resolve(dataPath, "Downloads");
         paths.globalSettings = path.resolve(dataPath, "settings.json");
+        paths.srsSchemes = path.resolve(dataPath, "srs-schemes.json")
         contentPath = path.resolve(dataPath, "Content");
         // Create folder and subfolders if it doesn't exists yet
         try {
@@ -56,6 +57,8 @@ module.exports = function (basePath) {
                                           "score-calculation.json");
     paths.defaultSettings = path.resolve(basePath, "data",
                                          "default-settings.json");
+    paths.defaultSrsSchemes = path.resolve(basePath, "data",
+                                           "default-srs-schemes.json");
     paths.img = {
         programIcon: path.resolve(basePath, "img", "icon.png")
     };
@@ -85,13 +88,7 @@ module.exports = function (basePath) {
 
     // HTML
     const htmlPath = path.resolve(basePath, "html");
-    paths.html = {
-        "window": (name) => path.resolve(htmlPath, name + "-window.html"),
-        "overlay": (name) => path.resolve(htmlPath, name + "-overlay.html"),
-        "section": (name) => path.resolve(htmlPath, name + "-section.html"),
-        "panel": (name) => path.resolve(htmlPath, name + "-panel.html"),
-        "widget": (name) => path.resolve(htmlPath, name + ".html")
-    }
+    paths.html = (name) => path.resolve(htmlPath, name + ".html");
 
     // Templates
     const templatePath = path.resolve(basePath, "templates");

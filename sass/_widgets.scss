@@ -32,6 +32,9 @@ popup-stack {
     &:hover {
       background-color: $button-background-hover;
       color: $button-color-hover;
+      // Raise element to make sure tooltips are visible on hovering
+      // FIXME: This is a workaround and causes bugs. Try to circumvent issue
+      z-index: 900 !important;
     }
 
     &:checked {
