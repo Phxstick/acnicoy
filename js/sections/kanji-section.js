@@ -5,29 +5,21 @@ class KanjiSection extends Section {
         super("kanji");
         this.lastSearchResult = [];
         this.selectedKanji = null;
-        this.overviewWindow = this.root.getElementById("overview-window");
-        this.searchWindow = this.root.getElementById("search-window");
-        this.overview = this.root.getElementById("overview");
-        this.searchResults = this.root.getElementById("search-results");
-        // Buttons for switching between overview and search results
-        this.showOverviewButton =
-            this.root.getElementById("show-overview-button");
-        this.searchButton =
-            this.root.getElementById("search-button");
-        this.showOverviewButton.addEventListener("click", () => {
-            this.overviewWindow.show();
-            this.searchWindow.hide();
+        // Add event listeners
+        this.$("show-overview-button").addEventListener("click", () => {
+            this.$("overview-pane").show();
+            this.$("search-pane").hide();
         });
-        this.searchButton.addEventListener("click", () => {
+        this.$("search-button").addEventListener("click", () => {
             this.searchByKanji();
         });
-        this.searchByKanjiEntry =
-            this.root.getElementById("search-by-kanji-entry");
-        this.searchByKanjiEntry.addEventListener("keypress", (event) => {
+        this.$("search-entry").addEventListener("keypress", (event) => {
             if (event.keyCode !== 13) return;
             this.searchByKanji();
         });
-        this.kanjiContainer = this.root.getElementById("kanji-container");
+        this.$("settings-button").addEventListener("click", () => {
+            main.updateStatus("Not yet implemented!");
+        })
         // Create counter spans which display amount of added kanji per grade
         this.addedPerGradeCounters = {};
         for (let grade = 0; grade <= 9; ++grade) {
@@ -80,7 +72,7 @@ class KanjiSection extends Section {
             });
             fragment.appendChild(kanjiSpan);
         }
-        this.kanjiContainer.appendChild(fragment);
+        this.$("kanji-container").appendChild(fragment);
         return Promise.all(promises);
     }
 
@@ -88,7 +80,8 @@ class KanjiSection extends Section {
             onlyMissing=false,
             showJinmeiyou=false,
             showHyougai=false }={}) {
-        this.overview.empty();
+        const kanjiOverview = this.$("kanji-overview");
+        kanjiOverview.empty();
         if (onlyMissing) {
             const elements = this.root.getElementsByClassName("added");
             for (const element in elements) {
@@ -128,8 +121,8 @@ class KanjiSection extends Section {
                 for (const span of spans) {
                     content.appendChild(span);
                 }
-                this.overview.appendChild(title);
-                this.overview.appendChild(content);
+                kanjiOverview.appendChild(title);
+                kanjiOverview.appendChild(content);
             }
         }
     }
@@ -163,11 +156,11 @@ class KanjiSection extends Section {
             promises.push(promise);
         }
         return Promise.all(promises).then(
-            () => this.searchResults.appendChild(fragment));
+            () => this.$("search-results").appendChild(fragment));
     }
 
     searchByKanji() {
-        const queryString = this.searchByKanjiEntry.value.trim();
+        const queryString = this.$("search-entry").value.trim();
         const knownKanji = [];
         const promises = [];
         // Check which characters are known kanji (= in the database)
@@ -179,10 +172,10 @@ class KanjiSection extends Section {
         // Display kanji in order given in the input field
         Promise.all(promises).then(() => {
             this.lastSearchResult = knownKanji;
-            this.searchResults.empty();
+            this.$("search-results").empty();
             this.displayMoreSearchResults(10);
-            this.overviewWindow.hide();
-            this.searchWindow.show();
+            this.$("overview-pane").hide();
+            this.$("search-pane").show();
         });
     }
 }

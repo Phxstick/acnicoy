@@ -17,9 +17,9 @@ const menuItems = popupMenu.registerItems({
     "add-word": {
         label: "Add word to vocabulary",
         click: ({ currentNode }) => {
-            main.panels["add-vocab"].load(
+            main.suggestionPanes["add-vocab"].load(
                 currentNode.dataset.id, currentNode.dataset.mainWord);
-            main.openPanel("add-vocab");
+            main.openPanel("add-vocab", { showSuggestions: true });
         }
     }
 });
@@ -54,8 +54,11 @@ class DictionarySearchResultEntry extends Widget {
                 }
             }
         }
-        this.dataset.mainWord = info.id;
+        this.dataset.id = info.id;
         this.dataset.mainWord = info.wordsAndReadings[0].word;
+        if (this.dataset.mainWord.length === 0) {
+            this.dataset.mainWord = info.wordsAndReadings[0].reading;
+        }
         this.popupMenu(menuItems, () => {
             return dataManager.vocab.contains(this.dataset.mainWord)
             .then((isAdded) => isAdded? ["copy-word", "edit-word"] :

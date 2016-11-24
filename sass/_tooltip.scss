@@ -67,6 +67,7 @@ $offset-arrow: calc(100% + #{$spacing});
     opacity: 0;
   }
   &:after {
+    pointer-events: none;
     content: attr(data-tooltip);
     font-family: $tooltip-font;
     font-size: var(--tooltip-font-size, 1rem);
@@ -81,6 +82,7 @@ $offset-arrow: calc(100% + #{$spacing});
   }
 
   &:before {
+    pointer-events: none;
     content: "";
     width: 0;
     height: 0;

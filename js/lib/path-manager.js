@@ -70,6 +70,7 @@ module.exports = function (basePath) {
     const overlaysPath = path.resolve(jsPath, "overlays");
     const sectionsPath = path.resolve(jsPath, "sections");
     const panelsPath = path.resolve(jsPath, "panels");
+    const suggestionPanesPath = path.resolve(jsPath, "suggestion-panes");
     const widgetsPath = path.resolve(jsPath, "widgets");
     const librariesPath = path.resolve(jsPath, "lib");
     const extensionsPath = path.resolve(jsPath, "extensions");
@@ -80,6 +81,8 @@ module.exports = function (basePath) {
         "overlay": (name) => path.resolve(overlaysPath, name + "-overlay.js"),
         "section": (name) => path.resolve(sectionsPath, name + "-section.js"),
         "panel": (name) => path.resolve(panelsPath, name + "-panel.js"),
+        "suggestionPane": (name) => path.resolve(
+            suggestionPanesPath, name + "-suggestion-pane.js"),
         "widget": (name) => path.resolve(widgetsPath, name + ".js"),
         "lib": (name) => path.resolve(librariesPath, name + ".js"),
         "extension": (name) => path.resolve(extensionsPath, name + ".js"),

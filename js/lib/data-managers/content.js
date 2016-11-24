@@ -194,9 +194,7 @@ module.exports = function (paths, modules) {
                     wordsForThisReading = words;
                 }
                 for (const word of wordsForThisReading) {
-                    info.wordsAndReadings.push({
-                        word: word, reading: reading
-                    });
+                    info.wordsAndReadings.push({ word, reading });
                 }
             }
             // Provide list of meaning-objects containing translations for this

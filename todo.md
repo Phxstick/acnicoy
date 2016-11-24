@@ -3,20 +3,18 @@
   - Make sure to backup user data with useful description before migration
   - Make sure stats initialization functions are called on SRS scheme change
   - Emit event to allow every section/panel/etc. to adapt
-- Implement load function in add-vocab-panel
-  - Provide suggestions in add-vocab-panel as clickable spans?
-    (left click to edit, right click to remove)
-  - If element has very few translations/meanings, immediately fill these in
 - Try edit-input changes in stash as soon as electron has chrome 54
-  (Also remove custom-elements flag in main.js.
-   Also make sure edit-input gets closed when clicking somewhere else.)
+  - Remove custom-elements flag in main.js.
+  - Make sure edit-input gets closed when clicking somewhere else
+- Make loading of diagrams in stats-section work consistently
+- Rework home-section
+- Add context menu items for copying/pasting on selections
+- Implement language settings (and optionally others already)
 - Celebrate the day async/await is fully supported in electron (maybe with flag)
   - Immediately rewrite index.js chain, main window, datamanager methods
-- Use thin symbols for fa-times, fa-plus etc. when they become available
+- Use thin symbols for fa-times, fa-plus etc. as soon as they become available
 - Focus most important element in each overlay upon opening (e.g. buttons)
 - Have confirmClose-methods on overlays (e.g. srs-schemes-overlay)
-- Implement language settings and some others
-- Rework home-section
 
 ### Fixes
 - Things got slower when reworking sass? Maybe because main window is flex now?
@@ -39,41 +37,53 @@ By category
 - Create a proper pointer cursor. Create better normal cursor as well
 - Make kana input type other kana type when pressing shift.
   - Also make into custom widget?
-- Use popupMenu separators when context changes?
-- Use overlay to create [about], put credits there
+- Use popupMenu separators when context changes? (see e.g. dictionary entry)
+  - Or rather split menu entries into groups to seperate by? (e.g. copy/paste)
 - Info window when (new) language pack is available for a language
   - Allow user to start downloads and link to settings for progress bar
 - Capture focus in overlays (especially dialogs!) and panels
-- Extend markdown-js to suit the purpose of the program
-  - See Japanese stack exchange for furigana syntax
 - Create a custom menu bar
 - Expose shortcut for reloading program?
+- Implement suggestion windows for other panels
+  - Remove `globals.suggestionPanes` and use `globals.panels` instead
 - Store user data path somewhere else (e.g. localStorage/`app.getPath(name)`)
   - Also store downloaded content and language packs somewhere else to allow
     putting all user data (including backups) into Dropbox
+- Make semicolon standard separator to fix some bugs with language data
 
 ### Code
+##### Naming
+- Rename panels into "panes" or "sliding-panes"?
+- Probably rename "window" to "screen"?
+- Rename "overlay" global into "overlays"
+- Name elements on pinwall "tiles/cards" instead of "widgets"?
+- Use folder "widgets" only for base widgets, put everything else directly into
+  a folder called "gui-components"
+  - Adjust pathManager and index.js
 - Remove inconsistencies in code, e.g. unify glossary ("word" <-> "entry")
+  - Especially in dataManager
+##### Refactoring
 - Have htmlManager and cssManager which make sure all assets are only loaded
 once? --> Faster loading, centralized resource loading
 - Remove `main.language`/`main.language2` ??
 - Make automatically-loading-upon-scrolling-divs into widgets?
 - Make data-manager-modules into subclasses and gather similar code
-  - Especially if static variables become implemented!!
-- use split function from sqlite instead of JS version?
+  - Especially if static variables become implemented (or Typescript is used)!
 - Split widgets into components specific to Acnicoy and base-widgets
   - Make base-widgets completely independent of Acnicoy (e.g. no base import)
-- Possibly rename *windows* to *screens*
-- Use `slotchange` events on slots to find out if slotted nodes are changed
 - Make partitioned window stuff into class?
-- Use `electron.shell.openExternal(link)` to open link in default browser
-- Use `position: sticky` for kanji info panel in kanji section?
-- Use ruby annotations for furigana
-- Allow adding text to checkbox in a slot after a margin
-- Rename "overlay" global into "overlays"
-- Simply register event listeners in constructor after all?
 - Solve design dilemma with tabbed frame
   - Allow full styling of all frames while keeping it semantic
+- Simply register event listeners in constructor after all?
+##### Adaptions
+- Use `position: sticky` for kanji info panel in kanji section?
+- use split function from sqlite instead of JS version?
+- Use ruby annotations for furigana
+- Allow adding text to checkbox in a slot after a margin
+- Use CSS counters where necessary (Especially srs-schemes-overlay)
+- Extend markdown-js to suit the purpose of the program
+  - See Japanese stack exchange for furigana syntax
+  - Provide easy way create kanji-links (or just scan through markdown)
 
 ### Init window
 - Make init section feel more welcoming and less plain. Background picture?
@@ -93,6 +103,8 @@ Or otherwise indicate which section/panel is currently opened?
 ### Home section
 - Display every widget as block (full width)
 - Possibly create overlay-style sidebar for customizing pinwall
+  - Make sidebar invisible and only open upon clicking wrench-icon?
+  - Differentiate between normal mode and customize-mode
 - Widgets:
   - Combine notes into single widget?
     - Allow writing notes in markdown format, render when saving the note
@@ -100,7 +112,7 @@ Or otherwise indicate which section/panel is currently opened?
     - Maybe 1m/2w as standard interval
   - SRS info bar
     - Allow selecting certain levels to review
-  - Changelog widget
+  - Changelog widget (Save changelogs in local storage somewhere)
 
 ### Test section
 - Save test state when closing an unfinished test. Only confirm on program exit
@@ -144,6 +156,22 @@ a ".", keep all meanings for each kanji
 - Implement customizing overview
 - Filter duplicates in kanji search
 - Display search info when searching with empty bar (or list all added kanji?)
+Implement following settings:
+- Overview customization:
+  - Display kanji by:
+    * [Radiobutton] grade [default]
+    * [Radiobutton] frequency
+    * [Radiobutton] JLPT level
+    * [Radiobutton] stroke count
+    * [Radiobutton] radical
+  - [Checkbox] Display Jinmeiyou kanji [default OFF]
+  - [Checkbox] Display hyougai kanji [default OFF]
+  - [Checkbox] Display added kanji [default ON]
+- Search customization:
+  - Search by:
+    * [Radiobutton] kanji [default]
+    * [Radiobutton] meanings
+    * [Radiobutton] yomi (Also change to kana-input)
 
 ### Stats/Achievements
 - Use single-bar diagram for kanji progress to display relative to total!
@@ -158,7 +186,6 @@ a ".", keep all meanings for each kanji
 - Use overlay widget
 - Use markdown and extend it
 - Create directory tree
-
 #### Help structure:
 - Introduction
 - Quick start
@@ -169,13 +196,20 @@ a ".", keep all meanings for each kanji
   - Migrating items
 - Vocabulary
   - Editing
-  - Vocabulary lists
+  - Lists
 - Home section
 - Testing
 - [Separator]
 - Japanese
   - Dictionary
   - Kanji section
+
+### About
+- Use overlay and include (hardcoded is fine I guess):
+  - Tribute to base technologies (Electron and node.js)
+  - List of all used language recources as links
+  - Link to project on Github and link to feedback opportunity
+  - Specify used license
 
 List of settings
 --------------------------------------------------------------------------------
@@ -221,13 +255,15 @@ List of settings
   - Yona's hairpin cursor for medium achievement (e.g. 300 kanji)
   - Meliodas' dragon handle for small achievement (e.g. 200 kanji)
 - [Popup-List] Color schemes
-  - By changing and recompiling Sass or using CSS variables
   - Have "designs" subfolder in sass directory with named sass partials
   - Definitely implement dark version for current default scheme
   - Solarized (Light/Dark) and Ubuntu (Light/Dark) Color schemes
 
 #### Shortcuts
 - [Shortcut-widgets] For all known shortcuts in the settings
+
+#### TODO: Categorize these
+- [Radiobuttons] Choose separator for separating translations/readings
 
 List of achievements
 --------------------------------------------------------------------------------
@@ -270,7 +306,9 @@ Future
 - Zinnia or Tegaki for handwritten character recognition
 - Allow exporting vocabulary somehow (e.g. csv, xml)
 - Extend vocabulary section to allowing viewing detailed list of vocab items
-- Migrate to Typescript?
+- Split kanji meanings into groups too?
+  - Adjust kanji info panel and suggestion windows for kanji panels
+- Migrate to Typescript (And offer interfaces for language extensions)?
 
 ### Content section
 - Contains a database of custom info cards
@@ -302,6 +340,7 @@ Resources
 - [CSS triangles](http://apps.eky.hk/css-triangle-generator/)
 
 #### Misc
+- Use `electron.shell.openExternal(link)` to open link in default browser
 - [Learn gulp?](https://ponyfoo.com/articles/gulp-grunt-whatever)
 - Use C++ in Chromium
 

@@ -17,9 +17,9 @@ const menuItems = popupMenu.registerItems({
     "add-word": {
         label: "Add word to vocabulary",
         click: ({ currentNode }) => {
-            main.panels["add-vocab"].load(
+            main.suggestionPanes["add-vocab"].load(
                 currentNode.dataset.wordId, currentNode.dataset.word);
-            main.openPanel("add-vocab");
+            main.openPanel("add-vocab", { showSuggestions: true });
         }
     }
 });

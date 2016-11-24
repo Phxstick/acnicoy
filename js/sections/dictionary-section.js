@@ -25,6 +25,9 @@ class DictionarySection extends Section {
         this.$("meanings-filter-button").addEventListener("click", () => {
             this.searchByMeaning();
         })
+        this.$("settings-button").addEventListener("click", () => {
+            main.updateStatus("Not yet implemented!");
+        })
         // If the user scrolls almost to table bottom, load more search results
         this.$("results").uponScrollingBelow(200, () => {
             if (this.doneLoading && this.nextRowIndex < this.lastResult.length)

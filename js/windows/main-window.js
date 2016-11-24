@@ -38,46 +38,41 @@ const menuItems = popupMenu.registerItems({
 class MainWindow extends Window {
     constructor () {
         super("main");
-        // Store important DOM elements as members
-        this.sectionWindow = this.root.getElementById("section-window");
-        this.statusText = this.root.getElementById("status-text");
-        this.filter = this.root.getElementById("filter");
-        this.numSrsItemsLabel = this.root.getElementById("num-srs-items");
-        this.statusBar = this.root.getElementById("status-text");
-        this.languagePopup = this.root.getElementById("language-popup");
-        this.dictionaryButton = this.root.getElementById("dictionary-button");
-        this.findKanjiButton = this.root.getElementById("find-kanji-button");
-        this.addKanjiButton = this.root.getElementById("add-kanji-button");
-        this.kanjiInfoPanel = this.root.getElementById("kanji-info-panel");
+        this.panelSlideDuration = "normal";
+        this.sectionFadeDuration = 250;
+        this.sections = {};
+        this.panels = {};
+        this.suggestionPanes = {};
+        this.kanjiInfoPanel = this.$("kanji-info-panel");
         // Top menu button events
-        this.root.getElementById("exit-button").addEventListener("click",
+        this.$("exit-button").addEventListener("click",
                 () => ipcRenderer.send("quit"));
-        this.root.getElementById("home-button").addEventListener("click",
+        this.$("home-button").addEventListener("click",
                 () => this.openSection("home"));
-        this.root.getElementById("stats-button").addEventListener("click",
+        this.$("stats-button").addEventListener("click",
                 () => this.openSection("stats"));
-        this.root.getElementById("vocab-button").addEventListener("click",
+        this.$("vocab-button").addEventListener("click",
                 () => this.openSection("vocab"));
-        this.root.getElementById("settings-button").addEventListener("click",
+        this.$("settings-button").addEventListener("click",
                 () => this.openSection("settings"));
         // Sidebar button events
-        this.root.getElementById("add-vocab-button").addEventListener("click",
+        this.$("add-vocab-button").addEventListener("click",
                 () => this.openPanel("add-vocab"));
-        this.root.getElementById("add-kanji-button").addEventListener("click",
+        this.$("add-kanji-button").addEventListener("click",
                 () => this.openPanel("add-kanji"));
-        this.root.getElementById("test-button").addEventListener("click",
+        this.$("test-button").addEventListener("click",
                 () => this.openTestSection());
-        this.root.getElementById("dictionary-button").addEventListener("click",
+        this.$("dictionary-button").addEventListener("click",
                 () => this.openSection("dictionary"));
-        this.root.getElementById("find-kanji-button").addEventListener("click",
+        this.$("find-kanji-button").addEventListener("click",
                 () => this.openSection("kanji"));
         // Language popup events
-        this.languagePopup.callback = (language) => this.setLanguage(language);
-        this.languagePopup.onOpen = (languages) => {
+        this.$("language-popup").callback = (lang) => this.setLanguage(lang);
+        this.$("language-popup").onOpen = (languages) => {
             for (const language of languages) {
                 dataManager.srs.getTotalAmountDueForLanguage(language)
                 .then((amount) => {
-                    this.languagePopup.setAmountDue(language, amount);
+                    this.$("language-popup").setAmountDue(language, amount);
                 });
             }
         }
@@ -85,12 +80,11 @@ class MainWindow extends Window {
 
     createSections () {
         const promises = [];
-        this.sections = {};
         for (const name of globals.sections) {
             const section = document.createElement(name + "-section");
             section.classList.add("section");
             section.hide();
-            this.sectionWindow.appendChild(section);
+            this.$("section-frame").appendChild(section);
             this.sections[name] = section;
             promises.push(customElements.whenDefined(name + "-section"));
         }
@@ -100,15 +94,29 @@ class MainWindow extends Window {
 
     createPanels () {
         const promises = [];
-        this.panels = {};
         for (const name of globals.panels) {
             const panel = document.createElement(name + "-panel");
-            panel.classList.add("panel");
-            this.sectionWindow.appendChild(panel);
+            panel.classList.add("sliding-pane");
+            this.$("section-frame").appendChild(panel);
             this.panels[name] = panel;
             promises.push(customElements.whenDefined(name + "-panel"));
         }
         this.currentPanel = null;
+        return promises;
+    }
+
+    createSuggestionPanes () {
+        const promises = [];
+        for (const name of globals.suggestionPanes) {
+            const suggestionPane = 
+                document.createElement(name + "-suggestion-pane");
+            suggestionPane.classList.add("suggestion-pane");
+            suggestionPane.hide();
+            this.$("section-frame").appendChild(suggestionPane);
+            this.suggestionPanes[name] = suggestionPane;
+            promises.push(customElements.whenDefined(
+                name + "-suggestion-pane"));
+        }
         return promises;
     }
 
@@ -128,7 +136,7 @@ class MainWindow extends Window {
     initialize(languages, defaultLanguage) {
         // Fill language popup
         for (const language of languages) {
-            this.languagePopup.add(language);
+            this.$("language-popup").add(language);
         }
         // Set language to default one
         this.setLanguage(defaultLanguage).then(() => {
@@ -179,41 +187,55 @@ class MainWindow extends Window {
         .then((confirmed) => {
             if (!confirmed) return;
             this.sections[currentSection].close();
-            Velocity(this.sections[currentSection], "fadeOut").then(() => {
+            Velocity(this.sections[currentSection], "fadeOut",
+                { duration: this.sectionFadeDuration })
+            .then(() => {
                 this.sections[name].open();
-                Velocity(this.sections[name], "fadeIn");
+                Velocity(this.sections[name], "fadeIn",
+                    { duration: this.sectionFadeDuration });
             });
         });
     }
 
-    openPanel(name) {
+    openPanel(name, { showSuggestions=false }={}) {
         const currentPanel = this.currentPanel;
         if (currentPanel !== null) {
             this.closePanel(currentPanel, currentPanel === name);
             if (currentPanel === name) return;
         } else {
-            Velocity(this.filter, "fadeIn");
+            Velocity(this.$("filter"), "fadeIn",
+                { duration: this.panelSlideDuration });
         }
         this.panels[name].style.zIndex = layers["panel"];
+        this.$("filter").classList.toggle("dark", showSuggestions);
         this.currentPanel = name;
         this.panels[name].open();
-        Velocity(this.panels[name], { left: "0px" });
+        Velocity(this.panels[name],
+                { left: "0px" }, { duration: this.panelSlideDuration });
+        if (showSuggestions) {
+            Velocity(this.suggestionPanes[name], "fadeIn",
+                { duration: this.panelSlideDuration });
+        }
     }
 
     closePanel(name, noOtherPanelOpening=true) {
         const panel = this.panels[name];
-        Velocity(panel, { left: "-400px" }).then(() => panel.close());
+        Velocity(panel, { left: "-400px" },
+            { duration: this.panelSlideDuration}).then(() => panel.close());
         panel.style.zIndex = layers["closing-panel"];
         if (noOtherPanelOpening) {
             this.currentPanel = null;
-            Velocity(this.filter, "fadeOut");
+            Velocity(this.$("filter"), "fadeOut",
+                { duration: this.panelSlideDuration });
         }
+        Velocity(this.suggestionPanes[name], "fadeOut",
+            { duration: this.panelSlideDuration });
     }
 
     updateStatus(text) {
-        this.statusText.fadeOut();
-        this.statusText.textContent = text;
-        this.statusText.fadeIn();
+        this.$("status-text").fadeOut();
+        this.$("status-text").textContent = text;
+        this.$("status-text").fadeIn();
     }
 
     openTestSection() {
@@ -230,7 +252,7 @@ class MainWindow extends Window {
 
     updateTestButton() {
         return dataManager.srs.getTotalAmountDue().then((amount) => {
-            this.numSrsItemsLabel.textContent = amount;
+            this.$("num-srs-items").textContent = amount;
             return amount;
         });
     }
@@ -262,15 +284,15 @@ class MainWindow extends Window {
 
     adjustToLanguage(language, secondary) {
         if (language === "Japanese") {
-            this.addKanjiButton.show();
+            this.$("add-kanji-button").show();
             if (dataManager.content.isAvailable["Japanese"]) {
-                this.findKanjiButton.show();
-                this.dictionaryButton.show();
+                this.$("find-kanji-button").show();
+                this.$("dictionary-button").show();
             }
         } else {
-            this.addKanjiButton.hide();
-            this.dictionaryButton.hide();
-            this.findKanjiButton.hide();
+            this.$("add-kanji-button").hide();
+            this.$("dictionary-button").hide();
+            this.$("find-kanji-button").hide();
             this.kanjiInfoPanel.close();
             if (this.currentSection === "kanji" ||
                     this.currentSection === "dictionary") {
@@ -303,7 +325,7 @@ class MainWindow extends Window {
             }
             if (this.currentSection !== null)
                 this.sections[this.currentSection].open();
-            this.languagePopup.set(language);
+            this.$("language-popup").set(language);
             events.emit("language-changed", language);
         });
     }

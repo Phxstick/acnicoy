@@ -1,0 +1,119 @@
+@import "base";
+
+$group-number-width: 25px;
+
+#suggestions-window {
+  color: $suggestions-window-color;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  #suggestions-window-header {
+    font-size: 165%;
+    font-family: $light-font;
+    @include fading-border($suggestions-window-color, "to right");
+    border-width: 0;
+    border-bottom-width: 1px;
+    width: 100%;
+    padding-left: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    height: 48px;  // TODO: Better way without hard-coding?
+    box-sizing: border-box;
+  }
+
+  #suggestions-window-content {
+    flex: 1;
+    padding: 15px 0px 0px 10px;
+    overflow-y: auto;
+  }
+}
+
+.suggestions-row {
+  margin-bottom: 25px;
+
+  .suggestion-row-header {
+    font-size: 150%;
+    font-family: $light-font;
+    margin-bottom: 4px;
+    // margin-left: -10px;
+    // padding-left: 10px;
+    // &:hover {
+    //   $c: $suggestion-group-selector-hover-background;
+    //   background: linear-gradient(to right, $c, transparent);
+    // }
+  }
+  .suggestion {
+    font-size: 110%;
+    display: inline-block;
+    color: $suggestion-color;
+    padding: 5px;
+    background-color: $suggestion-background;
+    border-radius: 6px;
+    margin-right: 5px;
+    margin-top: 2px;
+
+    &:hover {
+      background-color: $suggestion-background-hover;
+      color: $suggestion-color-hover;
+    }
+    &[selected] {
+      background-color: $suggestion-background-selected;
+      color: $suggestion-color-selected;
+    }
+  }
+}
+
+.suggestion-groups-row {
+  @extend .suggestions-row;
+  counter-reset: group-counter;
+
+  .suggestion-group-frame {
+    position: relative;
+
+    .suggestion-group-selector {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: -7px;
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+      &:hover {
+        $c: $suggestion-group-selector-hover-background;
+        background: linear-gradient(to right, $c, transparent);
+      }
+    }
+    .suggestion-group {
+      margin-left: $group-number-width;
+      position: relative;
+      padding-top: 3px;
+      padding-bottom: 5px;
+      z-index: 1;
+
+      &::before {
+        pointer-events: none;
+        position: absolute;
+        counter-increment: group-counter;
+        content: counter(group-counter) ".";
+        right: 100%;
+        font-size: 120%;
+        width: $group-number-width;
+        font-family: $header-font;
+        margin-top: 5px;
+      }
+    }
+    // Don't display number if there's only one group
+    &:only-child {
+      .suggestion-group {
+        margin-left: 0;
+        &::before {
+          display: none;
+        }
+      }
+      .suggestion-group-selector {
+        left: 0;
+      }
+    }
+  }
+}

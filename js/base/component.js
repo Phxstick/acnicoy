@@ -16,7 +16,7 @@ class Component extends HTMLElement {
         this.root.appendChild(style);
         // jQuery-like shortcut for getting elements in shadow DOM
         this.$ = (id) => this.root.getElementById(id);
-        this.$$ = (query) => this.root.querySelector(query);
+        this.$$ = (query) => this.root.querySelectorAll(query);
         this.registerCentralEventListeners();
     }
 

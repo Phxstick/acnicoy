@@ -47,12 +47,18 @@
         {{#each wordsAndReadings}}
           {{#if @index}}
             <span class="variant">
-              <span class="word">
-                {{eachLetter word}}
-              </span>
-              <span class="reading">
-                【{{this.reading}}】{{#unless @last}}、{{/unless}}
-              </span>
+              {{#if this.word.length}}
+                <span class="word">
+                  {{eachLetter word}}
+                </span>
+                <span class="reading">
+                  【{{this.reading}}】{{#unless @last}}、{{/unless}}
+                </span>
+              {{else}}
+                <span class="word">
+                  {{this.reading}} {{#unless @last}}、{{/unless}}
+                </span>
+              {{/if}}
             </span>
           {{/if}}
         {{/each}}

@@ -18,17 +18,17 @@ body {
   box-shadow: $slim-shadow-bottom;
   z-index: var(--kanji-control-bar-layer);
 
-  #search-button, #show-overview-button, #customize-button {
+  #search-button, #show-overview-button, #settings-button {
     @extend button.light;
     padding-left: 10px;
     padding-right: 10px;
     font-size: 140%;
   }
-  #show-overview-button, #customize-button {
+  #show-overview-button, #settings-button {
     border-left: 1px solid $border-color-light;
   }
 
-  #search-by-kanji-entry {
+  #search-entry {
     @extend input.light;
     font-size: 120%;
     padding-left: 10px;
@@ -36,11 +36,11 @@ body {
   }
 }
 
-#bottom {
+#bottom-frame {
   flex: 1;
   overflow-y: auto;
 
-  #overview-window {
+  #overview-pane {
     overflow-x: hidden;
     .kanji {
       display: inline-block;
@@ -62,7 +62,7 @@ body {
     }
   }
 
-  #search-window {
+  #search-pane {
     display: none;
   }
 }
@@ -87,6 +87,7 @@ dd {
 }
 
 .statistic-label {
-  font-size: 60%;
+  font-size: 0.8rem;
+  font-family: $small-font;
   margin-left: 10px;
 }

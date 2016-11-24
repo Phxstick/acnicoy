@@ -13,8 +13,7 @@ class SwitchButton extends Widget {
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === "pushed") {
-            if (newValue === null) this.classList.remove("pushed");
-            else this.classList.add("pushed");
+            this.classList.toggle("pushed", newValue !== null);
         }
     }
 

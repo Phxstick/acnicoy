@@ -7,7 +7,7 @@ class CheckBox extends Widget {
     }
 
     constructor() {
-        super("check-box", true, true);
+        super("check-box");
         this.callback = (value) => { };
         this._attributes = {
             "checked": false,
@@ -48,8 +48,7 @@ class CheckBox extends Widget {
             const checked = newValue === null ? false : true;
             this._attributes["checked"] = checked;
             this.invoke(checked);
-            if (checked) this.$("wrapper").classList.add("checked");
-            else this.$("wrapper").classList.remove("checked");
+            this.$("wrapper").classList.toggle("checked", checked);
         }
     }
 }

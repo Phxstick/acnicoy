@@ -70,6 +70,7 @@ body {
 
   .search-button {
     @extend button.light;
+    @extend button.no-shadow;
     padding: 8px;
     font-size: 120%;
   }

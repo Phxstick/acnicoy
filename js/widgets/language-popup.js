@@ -34,8 +34,7 @@ class LanguagePopup extends Widget {
     setAmountDue(language, amount) {
         const amountLabel = this.$("amount-due-" + language);
         amountLabel.textContent = amount;
-        if (amount > 0) amountLabel.classList.add("highlight");
-        else amountLabel.classList.remove("highlight");
+        amountLabel.classList.toggle("highlight", amount > 0);
     }
 
     set(language) {

@@ -1,7 +1,7 @@
 "use strict";
 
 /**
-**  Returns the last element of an array.
+**  Returns the last element of this array.
 **/
 Array.prototype.last = function() {
     return this[this.length - 1];
@@ -9,7 +9,7 @@ Array.prototype.last = function() {
 
 
 /**
-**  Sum up the integers in the array.
+**  Sum up the integers in this array.
 **/
 Array.prototype.sum = function() {
     return this.reduce((total, value) => total + value, 0);
@@ -17,7 +17,7 @@ Array.prototype.sum = function() {
 
 
 /**
-**  Remove first occurence of given element from the array.
+**  Remove first occurence of given element from this array.
 **/
 Array.prototype.remove = function(value) {
     const index = this.indexOf(value);
@@ -26,6 +26,12 @@ Array.prototype.remove = function(value) {
     return true;
 }
 
+/**
+**  Remove all elements from this array.
+**/
+Array.prototype.clear = function() {
+    this.length = 0;
+}
 
 /**
 ** Return a new array with all empty strings removed. Works best if most of

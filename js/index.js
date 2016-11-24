@@ -9,6 +9,7 @@ const globals = {
     sections: ["home", "stats", "vocab", "settings",
                "test", "dictionary", "kanji"],
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
+    suggestionPanes: ["add-vocab"],
     widgets: ["popup-stack", "switch-button", "switch-bar", "popup-list",
               "svg-bar-diagram", "kanji-info-panel", "pinwall-widget",
               "kanji-search-result-entry", "dictionary-search-result-entry",
@@ -54,6 +55,8 @@ for (const name of globals.windows) require(paths.js.window(name));
 for (const name of globals.overlays) require(paths.js.overlay(name));
 for (const name of globals.sections) require(paths.js.section(name));
 for (const name of globals.panels) require(paths.js.panel(name));
+for (const name of globals.suggestionPanes)
+    require(paths.js.suggestionPane(name));
 for (const name of globals.widgets) require(paths.js.widget(name));
 for (const name of globals.extensions) require(paths.js.extension(name));
 
@@ -164,7 +167,11 @@ console.log("Loaded all required modules after %f ms", totalTime);
     }).then(() => {
         // Create sections and panels in main-window
         windows["loading"].setStatus("Creating sections...");
-        return Promise.all([ main.createSections(), main.createPanels() ]);
+        return Promise.all([
+            main.createSections(),
+            main.createPanels(),
+            main.createSuggestionPanes()
+        ]);
     }).then(() => {
         // Set language and initialize stuff in main-window
         main.initialize(languages, defaultLanguage);

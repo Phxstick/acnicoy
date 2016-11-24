@@ -120,11 +120,8 @@ class PopupStack extends Widget {
         if (name === "disabled") {
             this._attributes["disabled"] = (newValue !== null);
             if (this.topItem !== null) {
-                if (this._attributes["disabled"]) {
-                    this.topItem.classList.add("disabled");
-                } else {
-                    this.topItem.classList.remove("disabled");
-                }
+                this.topItem.classList.toggle(
+                    "disabled", this._attributes["disabled"]);
             }
         } else if (name === "orientation") {
             if (newValue === "horizontal" || newValue === "vertical") {

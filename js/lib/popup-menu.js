@@ -18,7 +18,6 @@ function registerItems(nameToOptions) {
 }
 
 window.addEventListener("contextmenu", (event) => {
-    // TODO: Also display items for copying/pasting here if necessary
     event.preventDefault();
     // Wait until the items to be displayed are determined
     module.exports.itemsLoaded.then(() => {

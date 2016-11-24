@@ -39,7 +39,8 @@ $link-color: darkred;
 $link-color-hover: darkred;
 $link-shadow-color-hover: lightsalmon;
 
-$info-color: $link-color; // Element with a tooltip
+// Element with a tooltip
+$info-color: $link-color;
 
 // Tooltips
 $tooltip-background: darkred;
@@ -154,16 +155,29 @@ $kanji-strokes-middle-marker-color: #e5e5e5;
 $kanji-strokes-brush-start-color: red;
 
 // Background dimming
-$panel-background-dim-color: rgba(0, 0, 0, 0.6);
-$overlay-background-dim-color: rgba(0, 0, 0, 0.7);
+$panel-dim-background: rgba(0, 0, 0, 0.6);
+$panel-dim-background-dark: rgba(0, 0, 0, 0.9);
+$overlay-dim-background: rgba(0, 0, 0, 0.7);
+
+// Suggestion window
+$suggestions-window-color: rgba(255, 255, 255, 0.9);
+$suggestion-background: rgba(255, 255, 255, 0.7);
+$suggestion-background-hover: rgba(255, 255, 255, 0.85);
+$suggestion-background-selected: whitesmoke;
+$suggestion-color: black;
+$suggestion-color-hover: black;
+$suggestion-color-selected: $color;
+$suggestion-group-selector-hover-background: rgba(255, 255, 255, 0.35);
 
 // =============================================================================
-// Other variables (Gradients, shadows, ...)
+// Other variables
 // =============================================================================
 
+// Gradients
 $vertical-fading-border: linear-gradient(
   to bottom, transparent, $border-color-dark, transparent) 0 100%;
 
+// Shadows
 $wide-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 $slim-shadow-bottom: 0 1px 3px #333;
 $slim-shadow-top: 0 -1px 3px #333;
@@ -172,3 +186,8 @@ $stats-section-text-shadow: 1px 1px 1px dimgray;
 $popup-menu-shadow: 1px 1px 6px #1a1a1a;
 $input-inset-shadow: inset 0 1px 10px -5px black;
 $input-shadow: 0 0 5px $input-border-color;
+
+// Sizes
+$side-bar-width: 80px;
+$menu-bar-height: 50px;
+$panel-width: 400px;

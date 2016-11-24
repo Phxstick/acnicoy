@@ -10,14 +10,14 @@
     display: flex;
     flex-direction: row;
 
-    #section-window {
+    #section-frame {
       flex: 1;
     }
   }
 }
 
 #menu-bar {
-  height: 50px;
+  height: $menu-bar-height;
   display: flex;
   flex-direction: row;
   z-index: var(--menu-bar-layer);
@@ -67,7 +67,7 @@
 }
 
 #side-bar {
-  width: 80px;
+  width: $side-bar-width;
   display: flex;
   flex-direction: column;
   z-index: var(--side-bar-layer);
@@ -130,21 +130,24 @@
   }
 }
 
-#section-window {
+#section-frame {
   background-color: $section-background;
   position: relative;
   contain: strict;
 }
 
-div#filter {
+#filter {
   display: none;
   position: absolute;
-  background-color: $panel-background-dim-color;
+  background-color: $panel-dim-background;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: var(--section-overlay-layer);
+  &.dark {
+    background-color: $panel-dim-background-dark;
+  }
 }
 
 .section {
@@ -156,14 +159,23 @@ div#filter {
   z-index: var(--section-layer);
 }
 
-.panel {
-  width: 400px;
+.sliding-pane {
+  width: $panel-width;
   position: absolute;
-  left: -400px;
-  top: 0px;
-  bottom: 0px;
+  left: -$panel-width;
+  top: 0;
+  bottom: 0;
   background-color: $background-color;
   z-index: var(--panel-layer);
+}
+
+.suggestion-pane {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: $panel-width;
+  z-index: var(--suggestion-pane-layer);
 }
 
 #kanji-info-panel {

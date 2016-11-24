@@ -36,11 +36,6 @@ class AddVocabPanel extends Panel {
         this.$("vocab-list").value = "";
     }
 
-    load(id, word) {
-        this.$("word-entry").value = word;
-        // TODO: Load necessary word info into fields here
-    }
-
     adjustToLanguage(language, secondary) {
         // Fill SRS level popup stack
         this.$("srs-level").empty();
@@ -109,7 +104,6 @@ class AddVocabPanel extends Panel {
                     (numFailed === 1 ? " was already registered" : "");
                 const failedString = numFailed === 0 ? "" : numFailed;
                 const entryString = entryNew ? "The entry and " : "";
-                // TODO: Include info about readings?
                 main.updateStatus(`${entryString}${numTranslationsAdded} ` +
                                   `translation${string1} been added. ` +
                                   `${failedString}${string2}`);

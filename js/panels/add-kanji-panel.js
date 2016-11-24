@@ -71,6 +71,7 @@ class AddKanjiPanel extends Panel {
     }
 
     load(kanji) {
+        // TODO: Replace this method with a suggestion pane
         this.$("kanji-entry").value = kanji;
         dataManager.content.getKanjiInfo(kanji).then((info) => {
             this.$("meanings-entry").value = info.meanings.join(", ");
