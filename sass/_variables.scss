@@ -54,8 +54,13 @@ $view-background: #fff;
 $view-background-dark: darken($view-background, 6%);
 $view-hover-color: black;
 $view-hover-background: peachpuff;
+$view-hover-background-light: lighten(peachpuff, 6%);
+$view-hover-border-color: darken($view-hover-background, 30%);
 $view-select-color: $select-color;
 $view-select-background: $select-background;
+$view-edit-background: #fde8ec;
+$view-edit-color: black;
+$view-edit-border-color: $highlight-background;
 $view-header-color: dimgray;
 $view-header-background: darken($view-background, 10%);
 
@@ -86,6 +91,7 @@ $button-shadow-color-active: darken($button-background-active, 10%);
 $button-light-color: dimgray;
 $button-light-color-hover: black;
 $button-light-icon-color: #999;
+$button-light-icon-color-lightest: #bbb;
 $button-light-icon-color-hover: dimgray;
 $button-light-shadow-color-active: lighten($button-light-color, 30%);
 
@@ -146,6 +152,8 @@ $test-section-control-bar-color-disabled: #999999;
 $test-section-control-bar-button-color: white;
 $test-section-test-frame-background: dimgray;
 $test-section-test-frame-color: whitesmoke;
+$test-section-correct-color: lawngreen;
+$test-section-incorrect-color: orange;
 
 // Kanji stroke SVGs
 $kanji-strokes-color: #888;

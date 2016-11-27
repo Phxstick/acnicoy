@@ -67,6 +67,14 @@ button.light {
   }
 }
 
+button.lightest {
+  @extend button.light;
+  color: $button-light-icon-color;
+  i {
+    color: $button-light-icon-color-lightest;
+  }
+}
+
 button.no-shadow {
   &:active {
     box-shadow: none;

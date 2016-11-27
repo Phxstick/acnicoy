@@ -3,20 +3,20 @@
   - Make sure to backup user data with useful description before migration
   - Make sure stats initialization functions are called on SRS scheme change
   - Emit event to allow every section/panel/etc. to adapt
-- Try edit-input changes in stash as soon as electron has chrome 54
-  - Remove custom-elements flag in main.js.
-  - Make sure edit-input gets closed when clicking somewhere else
-- Make loading of diagrams in stats-section work consistently
 - Rework home-section
 - Add context menu items for copying/pasting on selections
 - Implement language settings (and optionally others already)
-- Celebrate the day async/await is fully supported in electron (maybe with flag)
-  - Immediately rewrite index.js chain, main window, datamanager methods
-- Use thin symbols for fa-times, fa-plus etc. as soon as they become available
 - Focus most important element in each overlay upon opening (e.g. buttons)
 - Have confirmClose-methods on overlays (e.g. srs-schemes-overlay)
 
+### As soon as available
+- Celebrate the day async/await is fully supported in electron (maybe with flag)
+  - Immediately rewrite index.js chain, main window, datamanager methods
+- Remove custom-elements-flag in main.js (as soon as electron has chrome v54)
+- Use thin symbols for fa-times, fa-plus etc. where fitting
+
 ### Fixes
+- Make loading of diagrams in stats-section work consistently
 - Things got slower when reworking sass? Maybe because main window is flex now?
 - Seperate meanings in kanji dictionary with ";" instead of "," (and adjust)
 - Fix switching between sections
@@ -57,6 +57,7 @@ By category
 - Probably rename "window" to "screen"?
 - Rename "overlay" global into "overlays"
 - Name elements on pinwall "tiles/cards" instead of "widgets"?
+- Call "popupMenu" "contextMenu" instead
 - Use folder "widgets" only for base widgets, put everything else directly into
   a folder called "gui-components"
   - Adjust pathManager and index.js
@@ -88,7 +89,7 @@ once? --> Faster loading, centralized resource loading
 ### Init window
 - Make init section feel more welcoming and less plain. Background picture?
   - Consider including a welcome message
-  - Consider putting program name above windows
+  - Consider putting program name above panes
   - Maybe something like dark linen as background?
 
 ### Main window
@@ -108,6 +109,7 @@ Or otherwise indicate which section/panel is currently opened?
 - Widgets:
   - Combine notes into single widget?
     - Allow writing notes in markdown format, render when saving the note
+    - Use `contenteditable` attribute for editing
   - SRS item bar diagram (customizable, shows when new items become available)
     - Maybe 1m/2w as standard interval
   - SRS info bar
@@ -151,6 +153,7 @@ a ".", keep all meanings for each kanji
 - Display link to dictionary section help
 - Have setting which makes part-of-speech display in Japanese
 - Implement customized search settings (open when settings button clicked)
+- Implement Better sort algorithm including word-length
 
 ### Kanji section
 - Implement customizing overview

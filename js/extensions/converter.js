@@ -188,17 +188,16 @@ String.prototype.toKana = function(type, ignoreN) {
 }
 
 function kanaInput(input, type, event) {
-    const key = String.fromCharCode(event.which);
     const pos = input.selectionStart;
     let text = input.value;
     let replaced = false;
-    if (key === "n" && pos > 0 && text[pos - 1] === "n") {
+    if (event.key === "n" && pos > 0 && text[pos - 1] === "n") {
         text = text.slice(0, pos - 1) +
                (type === "hira" ? "ん" : "ン") +
                text.slice(pos);
         replaced = true;
-    } else if (romajiChars.has(key)) {
-        text = text.slice(0, pos) + key + text.slice(pos);
+    } else if (romajiChars.has(event.key)) {
+        text = text.slice(0, pos) + event.key + text.slice(pos);
     } else {
         return;
     }
@@ -218,6 +217,49 @@ HTMLTextAreaElement.prototype.enableKanaInput = function(type) {
 
 HTMLInputElement.prototype.disableKanaInput =
 HTMLTextAreaElement.prototype.disableKanaInput = function() {
+    if (this.currentInputMethod !== undefined) {
+        this.removeEventListener("keypress", this.currentInputMethod);
+        this.currentInputMethod = undefined;
+    }
+}
+
+// Function for converting text in HTMLElements with "contenteditable".
+// This requires the shadow root as parameter in order to get current selection.
+function kanaInputRoot(input, type, root, event) {
+    const { anchorOffset: pos, anchorNode: node } = root.getSelection();
+    let text = input.textContent;
+    let replaced = false;
+    if (event.key === "n" && pos > 0 && text[pos - 1] === "n") {
+        text = text.slice(0, pos - 1) +
+               (type === "hira" ? "ん" : "ン") +
+               text.slice(pos);
+        replaced = true;
+    } else if (romajiChars.has(event.key)) {
+        text = text.slice(0, pos) + event.key + text.slice(pos);
+    } else {
+        return;
+    }
+    input.textContent = text.toKana(type, true);
+    const newPos =
+        pos + 1 - (text.length - input.textContent.length) - replaced;
+    const newTextNode = input.firstChild;
+    const range = document.createRange();
+    range.setStart(newTextNode, newPos);
+    range.setEnd(newTextNode, newPos);
+    const selection = root.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    event.preventDefault();
+}
+
+HTMLElement.prototype.enableKanaInput = function(type, root) {
+    if (this.currentInputMethod !== undefined)
+        this.disableKanaInput();
+    this.currentInputMethod = (event) => kanaInputRoot(this, type, root, event);
+    this.addEventListener("keypress", this.currentInputMethod);
+}
+
+HTMLElement.prototype.disableKanaInput = function() {
     if (this.currentInputMethod !== undefined) {
         this.removeEventListener("keypress", this.currentInputMethod);
         this.currentInputMethod = undefined;

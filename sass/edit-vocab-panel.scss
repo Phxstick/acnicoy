@@ -13,15 +13,33 @@
   #word-frame {
     display: flex;
     flex-direction: row;
-    #word {
-      font-size: 150%;
+    #word-wrapper {
+      @include center-content("vertical");
       flex: 1;
-      padding: 4px;
-      overflow-x: auto;
+      
+      #word {
+        font-size: 180%;
+        padding: 4px;
+        border-radius: 6px;
+        border: 1px solid transparent;
+
+        &:hover {
+          background-color: $view-hover-background;
+          color: $view-hover-color;
+        }
+        &:focus {
+          background-color: $view-edit-background;
+          color: $view-edit-color;
+          border-color: $view-edit-border-color;
+          outline: none;
+        }
+      }
     }
     #level-header {
       font-size: 80%;
       margin-bottom: 3px;
+      font-family: $small-font;
+      text-align: center;
     }
   }
   #translations-frame, #readings-frame, #vocab-lists-frame {
@@ -30,24 +48,28 @@
     flex-direction: column;
   }
   #translations-header, #readings-header, #vocab-lists-header {
-    background-color: $main-window-background;
-    color: $main-window-color;
-    padding: 3px;
+    @extend .light-item-view-header;
+    .add-button {
+      @extend button.lightest;
+      @extend button.no-shadow;
+      font-size: 90%;
+      display: inline-block;
+      padding: 0;
+      margin-left: 10px;
+    }
   }
   #translations, #readings, #vocab-lists {
+    @extend .light-item-view;
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid $border-color-dark;
-    padding: 3px;
   }
   #vocab-list-select-frame {
     display: flex;
     flex-direction: row;
-    #vocab-list-select {
+    #select-vocab-list {
       flex: 1;
+      border-right: 0;
     }
-    #vocab-list-select-button {
+    #add-vocab-list-button {
       padding-left: 6px;
       padding-right: 7px;
     }

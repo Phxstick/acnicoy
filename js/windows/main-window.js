@@ -38,7 +38,7 @@ const menuItems = popupMenu.registerItems({
 class MainWindow extends Window {
     constructor () {
         super("main");
-        this.panelSlideDuration = "normal";
+        this.panelSlideDuration = 350;
         this.sectionFadeDuration = 250;
         this.sections = {};
         this.panels = {};

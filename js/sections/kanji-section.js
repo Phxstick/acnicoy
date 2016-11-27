@@ -14,7 +14,7 @@ class KanjiSection extends Section {
             this.searchByKanji();
         });
         this.$("search-entry").addEventListener("keypress", (event) => {
-            if (event.keyCode !== 13) return;
+            if (event.key !== "Enter") return;
             this.searchByKanji();
         });
         this.$("settings-button").addEventListener("click", () => {

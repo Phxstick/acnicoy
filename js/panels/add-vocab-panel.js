@@ -57,11 +57,9 @@ class AddVocabPanel extends Panel {
         this.$("word-entry").placeholder = `Enter ${language} word here`;
         this.$("translations-entry").placeholder =
             `Enter ${secondary} translations here`;
-        // Pack or unpack textarea for readings
-        if (dataManager.languageSettings["readings"])
-            this.$("readings-entry").show();
-        else
-            this.$("readings-entry").hide();
+        // Show or hide textarea for readings
+        this.$("readings-entry").toggleDisplay(
+            dataManager.languageSettings["readings"]);
         // Adjust to Japanese language
         if (language === "Japanese") {
             this.$("word-entry").enableKanaInput("hira");

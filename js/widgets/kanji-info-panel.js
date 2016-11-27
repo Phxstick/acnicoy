@@ -144,10 +144,8 @@ class KanjiInfoPanel extends Widget {
             this.onReadings.textContent = info.onYomi.join("、 ");
             this.kunReadings.textContent = info.kunYomi.join("、 ");
             // Hide on/kun-yomi header label if not available
-            if (info.onYomi.length > 0) this.onReadingsFrame.show();
-            else this.onReadingsFrame.hide();
-            if (info.kunYomi.length > 0) this.kunReadingsFrame.show();
-            else this.kunReadingsFrame.hide();
+            this.onReadingsFrame.toggleDisplay(info.onYomi.length > 0);
+            this.kunReadingsFrame.toggleDisplay(info.kunYomi.length > 0);
             this.detailsFrame.empty();
             // Display misc info spans
             const detailSpans = this.getKanjiDetailSpans(kanji, info);
@@ -158,10 +156,8 @@ class KanjiInfoPanel extends Widget {
             const counterKanji = dataManager.content.data.counterKanji;
             if (kanji in counterKanji) {
                 this.counterLabel.textContent = counterKanji[kanji].join(", ");
-                this.counterFrame.show();
-            } else {
-                this.counterFrame.hide();
             }
+            this.counterFrame.toggleDisplay(kanji in counterKanji);
             // Info kanji is number, display represented number in description
             const numericKanji = dataManager.content.data.numericKanji;
             if (kanji in numericKanji.kanjiToNumber) {
@@ -178,15 +174,11 @@ class KanjiInfoPanel extends Widget {
                 } else {
                     this.numberDetails.textContent = "";
                 }
-                this.numberFrame.show();
-            } else {
-                this.numberFrame.hide();
             }
+            this.numberFrame.toggleDisplay(kanji in numericKanji.kanjiToNumber);
             // Display 'added' sign or button for adding the kanji
-            if (info.added) this.addedLabel.show();
-            else this.addedLabel.hide();
-            if (info.added) this.addButton.hide();
-            else this.addButton.show();
+            this.addedLabel.toggleDisplay(info.added);
+            this.addButton.toggleDisplay(!info.added);
             // Display number of strokes, radical and kanji parts
             // (In strokes section)
             this.strokeCount.textContent = info.strokes;
@@ -220,14 +212,10 @@ class KanjiInfoPanel extends Widget {
         const kanjiStrokes = dataManager.content.data.kanjiStrokes;
         this.strokeGraphics.empty();
         // If no stroke info is available, display a note
-        if (!kanjiStrokes.hasOwnProperty(this.currentKanji)) {
-            this.strokeGraphics.hide();
-            this.$("strokes-not-available-info").show();
-            return;
-        } else {
-            this.$("strokes-not-available-info").hide();
-            this.strokeGraphics.show();
-        }
+        const strokesAvailable = kanjiStrokes.hasOwnProperty(this.currentKanji);
+        this.strokeGraphics.toggleDisplay(strokesAvailable);
+        this.$("strokes-not-available-info").toggleDisplay(!strokesAvailable);
+        if (!strokesAvailable) return;
         const strokes = kanjiStrokes[this.currentKanji];
         while (this.completeSvg.lastChild !== null) {
             this.completeSvg.removeChild(this.completeSvg.lastChild);

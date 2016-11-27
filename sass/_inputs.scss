@@ -93,17 +93,6 @@ input.light {
   }
 }
 
-input.inline-edit {
-  color: $input-color;
-  padding: 2px;
-  width: 100%;
-  box-sizing: border-box;
-  &:focus {
-    box-shadow: $input-shadow;
-    background-color: $input-background-focus;
-  }
-}
-
 select {
   border: 1px solid $input-border-color;
   padding: 3px;

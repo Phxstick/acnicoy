@@ -50,6 +50,10 @@ class PopupStack extends Widget {
         this.callback(this.topItem.label, this.topItem.value);
     }
 
+    setByIndex(index) {
+        this.set(this.children[index]);
+    }
+
     get value() {
         return this.topItem.value;
     }

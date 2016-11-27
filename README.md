@@ -27,7 +27,7 @@ Features to be implemented:
 
 * Earn achievements for learning progress and unlock design settings
 * Many settings to customize design, kanji overview, SRS system, and more
-* ... (the todo-list is fairly large)
+* ... and other features (the [todo-list](./todo.md) is fairly large)
 
 Installation
 ----

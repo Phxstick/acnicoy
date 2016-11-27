@@ -12,11 +12,11 @@ class DictionarySection extends Section {
         this.$("no-search-results-info").hide();
         // Bind callbacks
         this.$("words-filter").addEventListener("keypress", (event) => {
-            if (event.keyCode !== 13) return;
+            if (event.key !== "Enter") return;
             this.searchByReading();
         });
         this.$("meanings-filter").addEventListener("keypress", (event) => {
-            if (event.keyCode !== 13) return;
+            if (event.key !== "Enter") return;
             this.searchByMeaning();
         });
         this.$("words-filter-button").addEventListener("click", () => {
@@ -78,14 +78,9 @@ class DictionarySection extends Section {
         }).then(() => {
             this.doneLoading = true;
             this.$("info-frame").hide();
-            this.$("results").show();
-            if (this.lastResult.length > 0) {
-                this.$("no-search-results-info").hide();
-                this.$("results").show();
-            } else {
-                this.$("results").hide();
-                this.$("no-search-results-info").show();
-            }
+            this.$("no-search-results-info").toggleDisplay(
+                this.lastResult.length === 0);
+            this.$("results").toggleDisplay(this.lastResult.length > 0);
         });
     }
 

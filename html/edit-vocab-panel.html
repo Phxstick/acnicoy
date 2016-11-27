@@ -1,30 +1,42 @@
 <div id="partitioned-window">
   <div id="header-frame">
-    <div id="header">Edit panel</div>
+    <div id="header">Edit word</div>
     <span id="close-button"><i class="fa fa-angle-double-left"></i></span>
   </div>
   <div id="main-frame">
     <div id="word-frame">
-      <div id="word"></div>
+      <div id="word-wrapper">
+        <div id="word" contenteditable="true"></div>
+      </div>
       <div>
-        <div id="level-header">Level:</div>
+        <div id="level-header">Level</div>
         <popup-stack id="srs-level"></popup-stack>
       </div>
     </div>
     <div id="translations-frame">
-      <div id="translations-header">Translations</div>
-      <div id="translations" class="list-view"></div>
+      <div id="translations-header">
+        Translations
+        <button id="add-translation-button" class="add-button">
+          <i class="fa fa-plus"></i>
+        </button>
+      </div>
+      <div id="translations"></div>
     </div>
     <div id="readings-frame">
-      <div id="readings-header">Readings</div>
-      <div id="readings" class="list-view"></div>
+      <div id="readings-header">
+        Readings
+        <button id="add-reading-button" class="add-button">
+          <i class="fa fa-plus"></i>
+        </button>
+      </div>
+      <div id="readings"></div>
     </div>
     <div id="vocab-lists-frame">
       <div id="vocab-lists-header">Vocabulary lists</div>
-      <div id="vocab-lists" class="list-view"></div>
+      <div id="vocab-lists"></div>
       <div id="vocab-list-select-frame">
-        <select id="vocab-list-select"></select>
-        <button id="vocab-list-select-button" class="styled">
+        <select id="select-vocab-list"></select>
+        <button id="add-vocab-list-button" class="styled">
           <i class="fa fa-plus fa-1g"></i>
         </button>
       </div>

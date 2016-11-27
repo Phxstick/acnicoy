@@ -31,6 +31,12 @@ $answer-input-padding: 5px;
   margin-top: 30px;
   color: $test-section-test-frame-color;
   font-size: 120%;
+  &.correct {
+    color: $test-section-correct-color;
+  }
+  &.incorrect {
+    color: $test-section-incorrect-color;
+  }
 }
 
 #items {

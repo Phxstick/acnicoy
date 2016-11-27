@@ -36,6 +36,21 @@ HTMLElement.prototype.show = function(value) {
 }
 
 /**
+**  Show this element if given condition is true, otherwise hide it.
+**  @param {Boolean} condition - Indicates whether to show or hide this element.
+**  @param {String} [displayValue] - If this element will be shown, use
+**      this parameter as CSS value for the display property.
+**/
+HTMLElement.prototype.toggleDisplay =
+        function(condition, displayValue) {
+    if (condition) {
+        this.show(displayValue);
+    } else {
+        this.hide();
+    }
+}
+
+/**
 **  Remove all children elements of this node.
 **/
 HTMLElement.prototype.empty = function() {

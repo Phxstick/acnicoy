@@ -33,3 +33,38 @@
   padding: 4px;
   text-align: center;
 }
+
+.light-item-view-header {
+  padding: 3px;
+  font-size: 140%;
+  font-family: $light-font;
+}
+
+.light-item-view {
+  background-color: transparent;
+  padding: 3px;
+  padding-right: 0;  // Children have margin-right already
+
+  > * {
+    display: inline-block;
+    padding: 5px;
+    border: 1px solid $border-color-dark;
+    border-radius: 6px;
+    background-color: $view-background;
+    margin-right: 5px;
+    margin-bottom: 2px;
+    min-width: 15px;
+
+    &:hover {
+      background-color: $view-hover-background-light;
+      border-color: $view-hover-border-color;
+      color: $view-hover-color;
+    }
+    &:focus {
+      outline: none;
+      background-color: $view-edit-background;
+      border-color: $view-edit-border-color;
+      color: $view-edit-color;
+    }
+  }
+}

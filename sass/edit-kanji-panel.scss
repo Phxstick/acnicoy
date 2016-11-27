@@ -36,19 +36,30 @@
 }
 
 #meanings-header, #on-yomi-header, #kun-yomi-header {
-  background-color: $main-window-background;
-  color: $main-window-color;
-  padding: 3px;
+  @extend .light-item-view-header;
+  .add-button {
+    @extend button.lightest;
+    @extend button.no-shadow;
+    font-size: 90%;
+    display: inline-block;
+    padding: 0;
+    margin-left: 10px;
+  }
+  display: flex;
+  flex-direction: row;
 }
 
 #meanings, #on-yomi, #kun-yomi {
+  @extend .light-item-view;
+  overflow-y: auto;
   flex: 1;
-  border: 1px solid $border-color-dark;
-  padding: 3px;
 }
 
 #srs-level-meanings, #srs-level-on-yomi, #srs-level-kun-yomi {
   width: 30px;
+  height: 30px;
+  margin-right: 10px;
+  font-size: 1rem;
 }
 
 #all-levels-div {

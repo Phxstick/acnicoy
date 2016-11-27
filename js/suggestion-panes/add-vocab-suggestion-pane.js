@@ -156,7 +156,7 @@ class AddVocabSuggestionPane extends Widget {
             this.selectedVariantNode = node;
             // Only display meanings which are valid for this word
             for (const [tslGroup, words] of this.restrictedMeaningsToWords) {
-                tslGroup.parentNode[words.includes(word) ? "show" : "hide"]();
+                tslGroup.parentNode.toggleDisplay(words.includes(word));
                 if (!words.includes(word)) {
                     for (const translation of tslGroup.children) {
                         this.deselectSuggestionNode(translation, "translation");

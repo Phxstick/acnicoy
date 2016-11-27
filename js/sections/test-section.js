@@ -43,7 +43,7 @@ class TestSection extends Section {
         });
         this.answerEntry.addEventListener("keypress", (event) => {
             const time = new Date().getTime();
-            if (event.which === 13 && time - this.lastPress > this.delay) {
+            if (event.key === "Enter" && time - this.lastPress > this.delay) {
                 this._evaluateAnswer();
                 this.lastPress = time;
             }
@@ -77,14 +77,14 @@ class TestSection extends Section {
     open() {
         // ... Adjust widgets to settings
         if (dataManager.settings["test"]["progress_flag"]) {
-            // ... pack progress bar
+            // ... show progress bar
         } else {
-            // ... unpack progress bar
+            // ... hide progress bar
         }
         if (dataManager.settings["test"]["stats_flag"]) {
-            // ... pack stats bar
+            // ... show stats bar
         } else {
-            // ... unpack stats bar
+            // ... hide stats bar
         }
         this.testFinished = false;
         this._createTest();
@@ -137,12 +137,11 @@ class TestSection extends Section {
             this._showAnswers(originalSolutions);
             this.statusLabel.textContent = isCorrect ?
                 "Correct answer!" : "Wrong answer!";
-            this.statusLabel.style.color = isCorrect ?
-                "lawngreen" : "orange";
+            this.statusLabel.classList.toggle("correct", isCorrect);
+            this.statusLabel.classList.toggle("incorrect", !isCorrect);
             this.ignoreAnswerButton.removeAttribute("disabled");
             if (!isCorrect) this.addAnswerButton.removeAttribute("disabled");
             this.modifyItemButton.removeAttribute("disabled");
-            // this.statusLabel.style.textShadow = "0 0 1px whitesmoke";
             // Exchange button and entry
             this.continueButton.show();
             this.answerEntry.hide();
@@ -151,7 +150,8 @@ class TestSection extends Section {
     }
 
     _prepareMode(mode, part) {
-        this.statusLabel.style.color = "whitesmoke";
+        this.statusLabel.classList.remove("correct");
+        this.statusLabel.classList.remove("incorrect");
         // Choose right input method (for translations or readings)
         if (mode === dataManager.test.mode.KANJI_KUN_YOMI)
             this.answerEntry.enableKanaInput("hira");
