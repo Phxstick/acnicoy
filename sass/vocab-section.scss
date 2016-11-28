@@ -76,13 +76,6 @@ body {
   }
 }
 
-#all-lists > [contenteditable]:focus {
-  outline: none;
-  color: $input-color;
-  background-color: $input-background-focus;
-  box-shadow: $input-shadow;
-}
-
 #all-lists-button-frame {
   display: flex;
   flex-direction:row;

@@ -7,6 +7,7 @@
 - Add context menu items for copying/pasting on selections
 - Implement language settings (and optionally others already)
 - Focus most important element in each overlay upon opening (e.g. buttons)
+- Capture focus in overlays (especially dialogs!) and panels
 - Have confirmClose-methods on overlays (e.g. srs-schemes-overlay)
 
 ### As soon as available
@@ -41,7 +42,6 @@ By category
   - Or rather split menu entries into groups to seperate by? (e.g. copy/paste)
 - Info window when (new) language pack is available for a language
   - Allow user to start downloads and link to settings for progress bar
-- Capture focus in overlays (especially dialogs!) and panels
 - Create a custom menu bar
 - Expose shortcut for reloading program?
 - Implement suggestion windows for other panels
@@ -76,6 +76,7 @@ once? --> Faster loading, centralized resource loading
 - Solve design dilemma with tabbed frame
   - Allow full styling of all frames while keeping it semantic
 - Simply register event listeners in constructor after all?
+- Use JS to position popup-panes and don't make it child of triggering button
 ##### Adaptions
 - Use `position: sticky` for kanji info panel in kanji section?
 - use split function from sqlite instead of JS version?
@@ -139,8 +140,11 @@ a ".", keep all meanings for each kanji
 ### Add Vocab Panel
 - Allow vocab-add-separators to be escaped for single translations
 
-### Edit Vocab Panel
-- Remove lists from select element where the word is already in?
+### Vocab panels
+- Add search function for vocabulary lists to add
+
+### Edit vocab panel
+- Small info in vocab list selector if there are no more lists to be selected
 
 ### Vocab section
 - Implement tests on vocabulary lists

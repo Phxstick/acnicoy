@@ -281,6 +281,8 @@ class VocabSection extends Section {
                 if (dataManager.vocabLists.renameList(oldName, newName)) {
                     main.updateStatus(
                         `Renamed list '${oldName}' to '${newName}'.`);
+                    events.emit("vocab-list-deleted", oldName);
+                    events.emit("vocab-list-created", newName);
                     this.insertListNameAtCorrectPosition(node);
                 } else {
                     main.updateStatus(

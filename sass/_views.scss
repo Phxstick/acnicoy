@@ -9,7 +9,9 @@
   overflow: auto;
 
   > * {
-    padding: 2px;
+    padding: 3px;
+    border-radius: 5px;
+
     &:hover {
       background-color: $view-hover-background;
       color: $view-hover-color;
@@ -21,6 +23,12 @@
         background: $view-select-background;
         color: $view-select-color;
       }
+    }
+    &[contenteditable]:focus {
+      outline: none;
+      color: $view-edit-color;
+      background-color: $input-background-focus; // $view-edit-background;
+      box-shadow: $input-shadow;
     }
   }
 }
@@ -35,9 +43,27 @@
 }
 
 .light-item-view-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   padding: 3px;
-  font-size: 140%;
-  font-family: $light-font;
+
+  > .header-text{
+    color: $color-light;
+    font-family: $light-font;
+    font-size: 140%;
+  }
+  > hr {
+    flex: 1;
+  }
+  > button {
+    @extend button.lightest;
+    @extend button.no-shadow;
+    margin: -10px;
+  }
+  > *:not(:last-child) {
+    margin-right: 10px;
+  }
 }
 
 .light-item-view {

@@ -37,16 +37,6 @@
 
 #meanings-header, #on-yomi-header, #kun-yomi-header {
   @extend .light-item-view-header;
-  .add-button {
-    @extend button.lightest;
-    @extend button.no-shadow;
-    font-size: 90%;
-    display: inline-block;
-    padding: 0;
-    margin-left: 10px;
-  }
-  display: flex;
-  flex-direction: row;
 }
 
 #meanings, #on-yomi, #kun-yomi {
@@ -58,7 +48,6 @@
 #srs-level-meanings, #srs-level-on-yomi, #srs-level-kun-yomi {
   width: 30px;
   height: 30px;
-  margin-right: 10px;
   font-size: 1rem;
 }
 
@@ -70,7 +59,7 @@
 
   #all-srs-levels {
     margin-left: 15px;
-    width: 35px;
-    height: 35px;
+    width: 30px;
+    height: 30px;
   }
 }

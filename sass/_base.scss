@@ -21,8 +21,6 @@
   &::-webkit-scrollbar {
     width: 10px;
     height: 10px;
-    padding: 5px;
-    margin: 5px;
   };
   &::-webkit-scrollbar-track {
     background-color: $scrollbar-track-background;
@@ -35,7 +33,7 @@
     &:active {
       background-color: $scrollbar-thumb-background-active;
     }
-  };
+  }
 }
 
 body {
