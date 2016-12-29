@@ -3,7 +3,10 @@
 class KanjiSection extends Section {
     constructor () {
         super("kanji");
-        this.lastSearchResult = [];
+        this.lastQueriedKanji = [];
+        this.kanjiToSearchResultEntry = new Map();
+        this.nextQueryIndex = 0;
+        this.lastQueryString = "";
         this.selectedKanji = null;
         // Add event listeners
         this.$("show-overview-button").addEventListener("click", () => {
@@ -34,12 +37,22 @@ class KanjiSection extends Section {
             dataManager.content.getKanjiInfo(kanji).then((info) => {
                 this.updateAddedPerGradeCounter(info.grade);
             });
+            if (this.kanjiToSearchResultEntry.has(kanji)) {
+                const resultEntry = this.kanjiToSearchResultEntry.get(kanji);
+                resultEntry.$("added-label").show();
+                resultEntry.$("add-button").hide();
+            }
         });
         events.on("kanji-removed", (kanji) => {
             this.$(kanji).classList.remove("added");
             dataManager.content.getKanjiInfo(kanji).then((info) => {
                 this.updateAddedPerGradeCounter(info.grade);
             });
+            if (this.kanjiToSearchResultEntry.has(kanji)) {
+                const resultEntry = this.kanjiToSearchResultEntry.get(kanji);
+                resultEntry.$("added-label").hide();
+                resultEntry.$("add-button").show();
+            }
         });
     }
 
@@ -144,35 +157,58 @@ class KanjiSection extends Section {
     }
 
     displayMoreSearchResults(amount) {
-        const fragment = document.createDocumentFragment();
-        const promises = [];
-        const ResultEntry = customElements.get("kanji-search-result-entry");
-        let promise;
-        for (const kanji of this.lastSearchResult) {
-            // Fill info frame with data
-            promise = dataManager.content.getKanjiInfo(kanji).then((info) =>  {
-                fragment.appendChild(new ResultEntry(kanji, info));
-            });
-            promises.push(promise);
+        const limit = Math.min(this.nextQueryIndex + amount,
+                               this.lastQueriedKanji.length);
+        const kanjiInfoPromises = [];
+        for (let i = this.nextQueryIndex; i < limit; ++i) {
+            const kanji = this.lastQueriedKanji[i];
+            kanjiInfoPromises.push(dataManager.content.getKanjiInfo(kanji));
         }
-        return Promise.all(promises).then(
-            () => this.$("search-results").appendChild(fragment));
+        const ResultEntry = customElements.get("kanji-search-result-entry");
+        const fragment = document.createDocumentFragment();
+        return Promise.all(kanjiInfoPromises).then((kanjiInfos) => {
+            for (const info of kanjiInfos) {
+                const kanji = info.kanji;
+                const searchResultEntry = new ResultEntry(kanji, info);
+                this.kanjiToSearchResultEntry.set(kanji, searchResultEntry);
+                fragment.appendChild(searchResultEntry);
+            }
+            this.$("search-results").appendChild(fragment);
+        });
     }
 
     searchByKanji() {
         const queryString = this.$("search-entry").value.trim();
-        const knownKanji = [];
-        const promises = [];
-        // Check which characters are known kanji (= in the database)
-        for (const character of queryString) {
-            const promise = dataManager.content.isKnownKanji(character)
-            .then((isKnown) => isKnown ? knownKanji.push(character) : 0);
-            promises.push(promise);
+        // If query is same as the last, just display search-section again
+        if (this.lastQueryString === queryString) {
+            this.$("overview-pane").hide();
+            this.$("search-pane").show();
+            return;
         }
-        // Display kanji in order given in the input field
-        Promise.all(promises).then(() => {
-            this.lastSearchResult = knownKanji;
+        this.lastQueryString = queryString;
+        // Check which characters are known kanji (i.e. in the database)
+        const knownKanjiPromises = [];
+        for (const character of queryString) {
+            knownKanjiPromises.push(
+                dataManager.content.isKnownKanji(character));
+        }
+        // Display kanji in given order into the input field
+        return Promise.all(knownKanjiPromises).then((kanjiKnown) => {
+            const querySet = new Set();
+            const queriedKanji = [];
+            for (let i = 0; i < queryString.length; ++i) {
+                const character = queryString[i];
+                const isKnownKanji = kanjiKnown[i];
+                if (isKnownKanji && !querySet.has(character)) {
+                    querySet.add(character);
+                    queriedKanji.push(character);
+                }
+            }
+            // TODO: Display message if no search results found
+            this.lastQueriedKanji = queriedKanji;
+            this.nextQueryIndex = 0;
             this.$("search-results").empty();
+            this.kanjiToSearchResultEntry.clear();
             this.displayMoreSearchResults(10);
             this.$("overview-pane").hide();
             this.$("search-pane").show();

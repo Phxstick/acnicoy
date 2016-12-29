@@ -97,6 +97,7 @@ module.exports = function (paths, modules) {
             row.meanings = row.meanings ? row.meanings.split(",") : [];
             row.onYomi = row.onYomi ? row.onYomi.split(",") : [];
             row.kunYomi = row.kunYomi ? row.kunYomi.split(",") : [];
+            row.kanji = kanji;
             return row;
         });
     };

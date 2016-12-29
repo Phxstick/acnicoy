@@ -1,13 +1,11 @@
 <div id="frame">
   <div id="left-frame">
-    <div id="kanji" class="kanji-info-link {{#if rare}}rare{{/if}}">
-      {{kanji}}
-    </div>
-    {{#if added}}
-      <button id="added-label">Added</button>
-    {{else}}
-      <button id="add-button">Add</button>
-    {{/if}}
+    <div id="kanji"
+         class="kanji-info-link {{#if rare}}rare{{/if}}">{{kanji}}</div>
+    <button id="added-label"
+     {{#unless added}}style="display:none"{{/unless}}>Added</button>
+    <button id="add-button"
+     {{#if added}}style="display:none"{{/if}}>Add</button>
     <!--div id="strokes-link">Strokes</div>
     <div id="examples-link">Examples</div-->
   </div>

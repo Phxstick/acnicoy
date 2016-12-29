@@ -50,6 +50,11 @@ By category
   - Also store downloaded content and language packs somewhere else to allow
     putting all user data (including backups) into Dropbox
 - Make semicolon standard separator to fix some bugs with language data
+- Adapt testmode for Japanese names (allow adding without tsl and only readings)
+- Adjust scrollbars to corresponding background color so that they're always
+  visible well. Also consider using thin, rounded scrollbars with margin
+- Improve policy for incorrectly answered SRS items
+  - Don't always move down two levels, but one with adjusted review time instead
 
 ### Code
 ##### Naming
@@ -77,6 +82,7 @@ once? --> Faster loading, centralized resource loading
   - Allow full styling of all frames while keeping it semantic
 - Simply register event listeners in constructor after all?
 - Use JS to position popup-panes and don't make it child of triggering button
+- Hide all initially hidden things with javascript instead of CSS? Works?
 ##### Adaptions
 - Use `position: sticky` for kanji info panel in kanji section?
 - use split function from sqlite instead of JS version?
@@ -114,7 +120,7 @@ Or otherwise indicate which section/panel is currently opened?
   - SRS item bar diagram (customizable, shows when new items become available)
     - Maybe 1m/2w as standard interval
   - SRS info bar
-    - Allow selecting certain levels to review
+    - Allow selecting certain levels to review when opening test-section
   - Changelog widget (Save changelogs in local storage somewhere)
 
 ### Test section
@@ -122,9 +128,17 @@ Or otherwise indicate which section/panel is currently opened?
 - Also construct extended solutions in `_createTest` already ?
 - Properly handle overflow if correct-answer-frame gets too large
   - Try to fade out items at bottom if list is too large,
-  remove fading when bottom reached
-- Show where the entry goes
-- Animate everything (and have setting to toggle that)
+    remove fading when bottom reached
+- Show where the entry goes (And allow directly choosing other level aswell)
+- Show score gained during test
+- Show test progress
+- Animate:
+  - Test item container (fade in sliding to right, fade out sliding to right)
+  - solution-items (fade in each one sliding to bottom after previous one)
+  - Animation when score gets updated (green/red text with +/- sliding up)?
+- Display more detailed statistics at end of test
+  - Either in an overlay or by animating test window, fading out top section
+  - Display items answered incorrectly (along with answers on click/hover)
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)
@@ -136,15 +150,24 @@ to make sure all parts are properly highlighted
 - Have separate table for searching kanji, extend readings by ones without
 a ".", keep all meanings for each kanji
 - Allow user to maximize panel (then display all info in one frame)
+- Search history with forwards/backwards buttons?
 
-### Add Vocab Panel
+### Panels
 - Allow vocab-add-separators to be escaped for single translations
-
-### Vocab panels
-- Add search function for vocabulary lists to add
-
-### Edit vocab panel
-- Small info in vocab list selector if there are no more lists to be selected
+- Add search function for existing vocabulary lists to add in both panels
+- Make add-vocab-selector an entry with suggestions? Or display on click?
+  - Allows creating new vocab lists directly in the panel
+  - Allows searching for existing vocab lists quickly
+  - Display items for each added list to allow adding multiple ones
+  - Highlight items for lists that are not yet created
+- Consider suggesting vocabulary lists when adding/editing words as well
+  - Requires a dataset of predefined vocabulary lists
+- Implement changing order of translations by dragging
+- Consider displaying add-button only when hovering over a section
+  - Replace add-button with new editable item on click
+  - Allow immediately adding several items in a row
+- Consider using lists instead of textareas for add-panels too
+  - Maybe even replace add-panels with edit-panels
 
 ### Vocab section
 - Implement tests on vocabulary lists
@@ -154,16 +177,17 @@ a ".", keep all meanings for each kanji
 - Terminology: *Descriptions*/*Labels*??
 
 ### Dictionary
-- Display link to dictionary section help
-- Have setting which makes part-of-speech display in Japanese
-- Implement customized search settings (open when settings button clicked)
-- Implement Better sort algorithm including word-length
+- Display link to dictionary section help in info-frame
+- Search settings:
+  - [Checkbox] Display part-of-speech in Japanese
+  - [Checkbox] Only show a single combined search entry (like Jisho)
+- Implement better sort algorithm including word-length
+- Keep search history (viewable using a button in control bar?)
+- Focus on search entry when using Ctrl+f shortcut
+  - Switch between search entries when repeatedly pressing shortcut
 
 ### Kanji section
-- Implement customizing overview
-- Filter duplicates in kanji search
-- Display search info when searching with empty bar (or list all added kanji?)
-Implement following settings:
+#### Overview
 - Overview customization:
   - Display kanji by:
     * [Radiobutton] grade [default]
@@ -174,11 +198,20 @@ Implement following settings:
   - [Checkbox] Display Jinmeiyou kanji [default OFF]
   - [Checkbox] Display hyougai kanji [default OFF]
   - [Checkbox] Display added kanji [default ON]
+#### Search
+- Display search info when searching with empty bar (or list all added kanji?)
+- If query stayed the same, just open search results without searching again
+- Filter duplicates
 - Search customization:
   - Search by:
     * [Radiobutton] kanji [default]
     * [Radiobutton] meanings
     * [Radiobutton] yomi (Also change to kana-input)
+  - [Checkbox] Show only meanings for each entry (and allow expanding)
+- Display "Info"/"Strokes"/"Examples" buttons only on hover (Where? On right?)
+  - "Examples" button linking to dictionary section in each search result?
+    Or rather expand search result entry?
+  - Strokes being displayed in a single scrollable row
 
 ### Stats/Achievements
 - Use single-bar diagram for kanji progress to display relative to total!
@@ -316,6 +349,11 @@ Future
 - Split kanji meanings into groups too?
   - Adjust kanji info panel and suggestion windows for kanji panels
 - Migrate to Typescript (And offer interfaces for language extensions)?
+- How to handle overtime due of SRS items? E.g. if an item has been scheduled
+  for after a day, but has been answered correctly after 1 month - should the
+  item be moved to 2 days, or directly to 2 months?
+  -> Disambiguate between *frequent practice* and *long memorization time*
+  -> Make test-settings for handling these according to preferences
 
 ### Content section
 - Contains a database of custom info cards

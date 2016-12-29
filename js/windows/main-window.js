@@ -331,6 +331,7 @@ class MainWindow extends Window {
     }
 
     makeKanjiInfoLink(element, character) {
+        // TODO: Don't check if kanji is in database here
         return dataManager.content.isKnownKanji(character).then((isKanji) => {
             if (isKanji) {
                 element.classList.add("kanji-info-link");

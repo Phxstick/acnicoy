@@ -13,14 +13,22 @@ class KanjiSearchResultEntry extends Widget {
         // info.onYomi = info.onYomi.join("、 ");
         // info.kunYomi = info.kunYomi.join("、 ");
         this.root.innerHTML += templates.get("kanji-search-result-entry")(info);
-        // Open kanji info panel upon clicking the kanji
-        this.root.getElementById("kanji").addEventListener("click", () => {
+        main.makeKanjiInfoLink(this.$("kanji"), kanji);
+        this.$("kanji").addEventListener("click", () => {
             main.kanjiInfoPanel.load(kanji);
             main.kanjiInfoPanel.open();
         });
+        this.$("added-label").addEventListener("click", () => {
+            main.panels["edit-kanji"].load(kanji);
+            main.openPanel("edit-kanji");
+        });
+        this.$("add-button").addEventListener("click", () => {
+            main.panels["add-kanji"].load(kanji);
+            main.openPanel("add-kanji");
+        });
         // Fill details bar with misc info spans
         // TODO: Create detail spans with handlebars aswell?
-        const detailsBar = this.root.getElementById("details-bar");
+        const detailsBar = this.$("details-bar");
         const detailSpans =
             main.kanjiInfoPanel.getKanjiDetailSpans(kanji, info);
         detailSpans.forEach((span) => detailsBar.appendChild(span));
