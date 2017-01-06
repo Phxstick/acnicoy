@@ -2,7 +2,7 @@
     {
         "name": "Standard",
         "intervals": [
-            "8 hours",
+            "10 hours",
             "1 day",
             "2 days",
             "4 days",
@@ -16,7 +16,8 @@
     {
         "name": "Busy",
         "intervals": [
-            "20 hours",
+            "10 hours",
+            "1 day",
             "3 days",
             "1 week",
             "2 weeks",
@@ -24,5 +25,32 @@
             "2 months",
             "4 months"],
         "description": "Smaller version of the standard scheme with larger intervals at the beginning to increase time efficiency. Final interval lengths are the same to ensure long-time-memorization."
+    },
+    {
+        "name": "Very busy",
+        "intervals": [
+            "1 day",
+            "3 days",
+            "1 week",
+            "2 weeks",
+            "1 month",
+            "2 months",
+            "4 months"],
+        "description": "Smaller version of the busy scheme with even larger intervals at the beginning to increase time efficiency. Final interval lengths are the same to ensure long-time-memorization."
+    },
+    {
+        "name": "Standard Extended",
+        "intervals": [
+            "10 hours",
+            "1 day",
+            "2 days",
+            "4 days",
+            "8 days",
+            "16 days",
+            "1 month",
+            "2 months",
+            "4 months",
+            "8 months"],
+        "description": "Standard scheme with an added 8 months interval. Useful for a rather small vocabulary with many rare/specialized terms."
     }
 ]

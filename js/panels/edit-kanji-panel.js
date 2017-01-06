@@ -127,7 +127,7 @@ class EditKanjiPanel extends Panel {
     }
 
     registerCentralEventListeners() {
-        events.onAll(["language-changed", "srs-scheme-changed"], () => {
+        events.onAll(["language-changed", "current-srs-scheme-edited"], () => {
             const popups = [
                 this.$("all-srs-levels"), this.$("srs-level-meanings"),
                 this.$("srs-level-kun-yomi"), this.$("srs-level-on-yomi")
@@ -135,7 +135,8 @@ class EditKanjiPanel extends Panel {
             for (const popup of popups) {
                 for (let i = 1; i < popup.children.length + 1; ++i) {
                     const option = popup.children[i - 1];
-                    option.dataset.tooltip = dataManager.srs.intervalTexts[i];
+                    option.dataset.tooltip =
+                        dataManager.srs.currentScheme.intervalTexts[i];
                 }
             }
         });
@@ -144,14 +145,14 @@ class EditKanjiPanel extends Panel {
     adjustToLanguage(language, secondary) {
         if (language !== "Japanese") return;
         // Fill SRS levels popup stacks
-        const numLevels = dataManager.srs.numLevels;
+        const numLevels = dataManager.srs.currentScheme.numLevels;
         const popups = [
             this.$("all-srs-levels"), this.$("srs-level-meanings"),
             this.$("srs-level-on-yomi"), this.$("srs-level-kun-yomi")
         ];
         for (const levelPopup of popups) {
             levelPopup.empty();
-            for (let i = 1; i < numLevels; ++i) levelPopup.addOption(i);
+            for (let i = 1; i <= numLevels; ++i) levelPopup.addOption(i);
         }
     }
 

@@ -210,11 +210,18 @@ function parseEntries(entryString, separator) {
  *     of parts of the form: "number unit".
  * @returns {Object} Time span object of the form
  *     { hours, days, weeks, months, years }.
- * @throws Will throw an error if argument is not correctly formatted.
+ * @throws Error if argument is not correctly formatted.
  */
 function timeSpanStringToObject(string) {
     const parts = string.split(",").map((s) => s.trim());
     const result = { hours: 0, days: 0, weeks: 0, months: 0, years: 0 };
+    if (string.length === 0) {
+        return result;
+    }
+    if (string.toLowerCase() === "infinity") {
+        result.years = 8000000;  // Number of seconds fits into 6 bytes
+        return result;
+    }
     const usedUnits = new Set();
     for (const part of parts) {
         const match = part.match(/^(\d+)\s*(\w+)$/);
@@ -259,7 +266,7 @@ function timeSpanStringToObject(string) {
  * @param {String} String defining a time span. Is a comma separated sequence
  *     of parts of the form: "number unit".
  * @returns {Integer}
- * @throws Will throw an error if argument is not correctly formatted.
+ * @throws Error if argument is not correctly formatted.
  */
 function timeSpanStringToSeconds(string) {
     const { hours, days, weeks, months, years } =

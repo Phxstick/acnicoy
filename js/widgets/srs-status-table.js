@@ -6,6 +6,12 @@ class SrsStatusTable extends PinwallWidget {
         this.srsTable = this.root.getElementById("srs-table");
     }
 
+    registerCentralEventListeners() {
+        events.onAll(["current-srs-scheme-edited"], () => {
+            this.fillSrsTable();
+        });
+    }
+
     fillSrsTable() {
         dataManager.srs.getAmounts().then((amounts) => {
             const html = templates.get("srs-status-table")({

@@ -21,6 +21,16 @@ module.exports = function (paths, modules) {
         }
     };
 
+    test.modeToColumn = function (mode) {
+        switch (mode) {
+            case test.mode.WORDS: return "word";
+            case test.mode.KANJI_MEANINGS:
+            case test.mode.KANJI_ON_YOMI:
+            case test.mode.KANJI_KUN_YOMI:
+                return "kanji";
+        }
+    };
+
     test.getSolutions = function (item, mode, part) {
         switch (mode) {
             case test.mode.WORDS:

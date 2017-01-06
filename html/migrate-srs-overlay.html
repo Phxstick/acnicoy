@@ -1,0 +1,39 @@
+<div id="partitioned-window">
+  <div id="header-frame">
+    <div id="header">Migrate SRS Items</div>
+    <span id="close-button"><i class="fa fa-close"></i></span>
+  </div>
+  <div id="main-frame">
+    <div id="info-message-frame">
+      <div id="info-message"></div>
+      <button id="help-link" class="link">How does this work?</button>
+    </div>
+    <div id="select-new-scheme-frame">
+      <select id="select-new-scheme"></select>
+    </div>
+    <div id="migrate-srs-frame">
+      <div class="scheme-frame">
+        <div class="scheme-frame-header">OLD SCHEME</div>
+        <div id="previous-scheme"></div>
+      </div>
+      <div id="migrate-srs-area-frame">
+        <div id="migrate-srs-area-header">PLACEHOLDER</div>
+        <svg id="migrate-srs-area">
+          <g id="connection-arrow-triangles"></g>
+          <g id="scheme-connections"></g>
+          <g id="modifier-labels"></g>
+          <g id="previous-scheme-connectors"></g>
+          <g id="new-scheme-connectors"></g>
+        </svg>
+      </div>
+      <div class="scheme-frame">
+        <div class="scheme-frame-header">NEW SCHEME</div>
+        <div id="new-scheme"></div>
+      </div>
+    </div>
+  </div>
+  <div id="button-frame" class="light-button-bar">
+    <button id="migrate-button">Migrate</button>
+    <button id="cancel-button">Cancel</button>
+  </div>
+</div>

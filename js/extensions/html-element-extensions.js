@@ -251,6 +251,13 @@ HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
     this.addEventListener("contextmenu", () => this.popupMenuCallback());
 }
 
+/**
+**  Remove all children elements of this node.
+**/
+SVGElement.prototype.empty = function() {
+    while (this.lastChild) this.removeChild(this.lastChild);
+}
+
 // Don't let buttons take focus when clicked (focus should only show when
 // tabbing through widgets with the keyboard).
 document.addEventListener("mousedown", (event) => {

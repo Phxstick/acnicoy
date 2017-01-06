@@ -27,7 +27,7 @@ module.exports = function (paths, modules) {
                 const newValues = values[attribute];
                 const newLevel = levels[attribute];
                 const newReviewDate = utility.getTime()
-                                      + modules.srs.intervals[newLevel];
+                    + modules.srs.currentScheme.intervals[newLevel];
                 let oldValues;
                 let oldLevel;
                 let oldReviewDate;
@@ -94,7 +94,7 @@ module.exports = function (paths, modules) {
             const newValues = values[attribute];
             const newLevel = levels[attribute];
             let newReviewDate = utility.getTime()
-                                + modules.srs.intervals[newLevel];
+                + modules.srs.currentScheme.intervals[newLevel];
             let oldValues;
             let oldLevel;
             let oldReviewDate;

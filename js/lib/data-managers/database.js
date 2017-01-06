@@ -36,6 +36,13 @@ module.exports = function (paths, modules) {
         });
     };
 
+    // Run statement on the database for given language
+    database.runLanguage = function (language, statement, ...params) {
+        return new Promise((resolve, reject) => {
+            dataMap[language].run(statement, ...params, resolve);
+        });
+    };
+
     // Create a new database for given language with given settings
     database.create = function (language, settings) {
         const db = new sqlite3.Database(paths.languageData(language).database);

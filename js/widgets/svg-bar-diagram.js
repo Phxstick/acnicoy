@@ -15,10 +15,7 @@ class SvgBarDiagram extends Widget {
     draw (values, maxValues=null, descriptions=null) {
         if (maxValues !== null && values.length !== maxValues.length)
             throw Error("Arrays for drawing bars must have same length!");
-        // Remove old elements first
-        while (this.svg.lastChild) {
-            this.svg.removeChild(this.svg.lastChild);
-        }
+        this.svg.empty();
         // If no maximum values are given, use the maximum of the values array
         if (maxValues === null) {
             const maxValue = Math.max(...values);

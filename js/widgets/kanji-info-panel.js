@@ -217,9 +217,7 @@ class KanjiInfoPanel extends Widget {
         this.$("strokes-not-available-info").toggleDisplay(!strokesAvailable);
         if (!strokesAvailable) return;
         const strokes = kanjiStrokes[this.currentKanji];
-        while (this.completeSvg.lastChild !== null) {
-            this.completeSvg.removeChild(this.completeSvg.lastChild);
-        }
+        this.completeSvg.empty();
         // Adjust svg diagram for the whole kanji
         this.completeSvg.setAttribute(
                 "width", `${this.kanji.offsetWidth - 1}px`);

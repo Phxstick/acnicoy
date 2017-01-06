@@ -26,13 +26,14 @@ class AddKanjiPanel extends Panel {
     }
 
     registerCentralEventListeners() {
-        events.onAll(["language-changed", "srs-scheme-changed"], () => {
+        events.onAll(["language-changed", "current-srs-scheme-edited"], () => {
             const popups = [this.allLevelsPopup, this.meaningsLevelPopup,
                             this.kunYomiLevelPopup, this.onYomiLevelPopup];
             for (const popup of popups) {
                 for (let i = 1; i < popup.children.length + 1; ++i) {
                     const option = popup.children[i - 1];
-                    option.dataset.tooltip = dataManager.srs.intervalTexts[i];
+                    option.dataset.tooltip =
+                        dataManager.srs.currentScheme.intervalTexts[i];
                 }
             }
         });
@@ -61,12 +62,12 @@ class AddKanjiPanel extends Panel {
     adjustToLanguage(language, secondary) {
         if (language !== "Japanese") return;
         // Fill SRS level popup stack
-        const numLevels = dataManager.srs.numLevels;
+        const numLevels = dataManager.srs.currentScheme.numLevels;
         const popups = [this.allLevelsPopup, this.meaningsLevelPopup,
                         this.kunYomiLevelPopup, this.onYomiLevelPopup];
         for (const popup of popups) {
             popup.empty();
-            for (let i = 1; i < numLevels; ++i) popup.addOption(i);
+            for (let i = 1; i <= numLevels; ++i) popup.addOption(i);
         }
     }
 
@@ -92,9 +93,12 @@ class AddKanjiPanel extends Panel {
             kun_yomi: parseInt(this.kunYomiLevelPopup.value)
         };
         const values = {
-            meanings: this.$("meanings-entry").value.split(separator),
-            on_yomi: this.$("on-yomi-entry").value.split(separator),
-            kun_yomi: this.$("kun-yomi-entry").value.split(separator)
+            meanings: utility.parseEntries(
+                this.$("meanings-entry").value, separator),
+            on_yomi: utility.parseEntries(
+                this.$("on-yomi-entry").value, separator),
+            kun_yomi: utility.parseEntries(
+                this.$("kun-yomi-entry").value, separator)
         };
         for (const attribute in values) {
             values[attribute].forEach(trim);

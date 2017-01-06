@@ -1,14 +1,10 @@
 ### Up next
-- Implement migrate-srs-overlay
-  - Make sure to backup user data with useful description before migration
-  - Make sure stats initialization functions are called on SRS scheme change
-  - Emit event to allow every section/panel/etc. to adapt
 - Rework home-section
 - Add context menu items for copying/pasting on selections
 - Implement language settings (and optionally others already)
 - Focus most important element in each overlay upon opening (e.g. buttons)
 - Capture focus in overlays (especially dialogs!) and panels
-- Have confirmClose-methods on overlays (e.g. srs-schemes-overlay)
+- Have confirmClose-methods on overlays (e.g. srs-schemes-overlay)?
 
 ### As soon as available
 - Celebrate the day async/await is fully supported in electron (maybe with flag)
@@ -19,7 +15,6 @@
 ### Fixes
 - Make loading of diagrams in stats-section work consistently
 - Things got slower when reworking sass? Maybe because main window is flex now?
-- Seperate meanings in kanji dictionary with ";" instead of "," (and adjust)
 - Fix switching between sections
 - SRS level editing is not fully stable (Maybe remove ability to edit levels?)
   - Make sure levels are ordered after resolving invalid values in SRS schemes
@@ -50,18 +45,29 @@ By category
   - Also store downloaded content and language packs somewhere else to allow
     putting all user data (including backups) into Dropbox
 - Make semicolon standard separator to fix some bugs with language data
-- Adapt testmode for Japanese names (allow adding without tsl and only readings)
+- New testmode for Japanese names (allow adding without tsl and only readings)
 - Adjust scrollbars to corresponding background color so that they're always
   visible well. Also consider using thin, rounded scrollbars with margin
 - Improve policy for incorrectly answered SRS items
   - Don't always move down two levels, but one with adjusted review time instead
+- Make migrating SRS items safer by applying changes to a copy of data and
+  replacing old data only after migration has finished successfully?
+  - Or rather use SQLITE3 transactions/savepoints/rollbacks
+- Find algorithm to create reasonable default SRS scheme migration connections
+- Remove connectors for old scheme levels which have no items associated
+- Calculate *urgency level* for given set of vocabulary (Show in home-section)
+  - Allow testing vocabulary in approximate urgency order
+- Use "srs-schemes-edited" event instead of "current-srs-scheme-edited"?
+- Create shortcut for testing all languages in given order.
+  - Order can then be changed by dragging languages around in settings
+- In migrate-srs-overlay, connections starting from the same level must be
+  connected to a *consecutive* row of levels (otherwise, disallow connection)?
 
 ### Code
 ##### Naming
 - Rename panels into "panes" or "sliding-panes"?
 - Probably rename "window" to "screen"?
 - Rename "overlay" global into "overlays"
-- Name elements on pinwall "tiles/cards" instead of "widgets"?
 - Call "popupMenu" "contextMenu" instead
 - Use folder "widgets" only for base widgets, put everything else directly into
   a folder called "gui-components"
@@ -78,11 +84,16 @@ once? --> Faster loading, centralized resource loading
 - Split widgets into components specific to Acnicoy and base-widgets
   - Make base-widgets completely independent of Acnicoy (e.g. no base import)
 - Make partitioned window stuff into class?
-- Solve design dilemma with tabbed frame
+- Solve design dilemma concerning tabbed frame
   - Allow full styling of all frames while keeping it semantic
 - Simply register event listeners in constructor after all?
 - Use JS to position popup-panes and don't make it child of triggering button
 - Hide all initially hidden things with javascript instead of CSS? Works?
+- Organize each dataManager module into following scheme?
+  1. Control functions (load, save, setLanguage)
+  2. Functions completely independent of languages
+  3. Functions operating on current language
+  4. Functions depending on any other language (using `dataMap`)
 ##### Adaptions
 - Use `position: sticky` for kanji info panel in kanji section?
 - use split function from sqlite instead of JS version?
@@ -92,6 +103,7 @@ once? --> Faster loading, centralized resource loading
 - Extend markdown-js to suit the purpose of the program
   - See Japanese stack exchange for furigana syntax
   - Provide easy way create kanji-links (or just scan through markdown)
+- Identify SRS schemes by ID instead of name!
 
 ### Init window
 - Make init section feel more welcoming and less plain. Background picture?
@@ -149,7 +161,13 @@ to make sure all parts are properly highlighted
 - Show info for kanji that symbolize a country
 - Have separate table for searching kanji, extend readings by ones without
 a ".", keep all meanings for each kanji
-- Allow user to maximize panel (then display all info in one frame)
+- Add new icons below close-button
+  - Allow user to maximize panel (then display all info in one frame)
+  - Allow user to adjust some settings
+    - [Checkbox] Display commonly used nanori
+    - [Checkbox] Show stroke animation instead of pictures
+    - [Checkbox] Show detailed example word entries (as in dictionary)
+    - [Checkbox] Hide outdated/rare yomi (also adjust for search results)
 - Search history with forwards/backwards buttons?
 
 ### Panels
@@ -181,6 +199,7 @@ a ".", keep all meanings for each kanji
 - Search settings:
   - [Checkbox] Display part-of-speech in Japanese
   - [Checkbox] Only show a single combined search entry (like Jisho)
+  - [Checkbox] Search for names instead of words
 - Implement better sort algorithm including word-length
 - Keep search history (viewable using a button in control bar?)
 - Focus on search entry when using Ctrl+f shortcut
@@ -354,6 +373,8 @@ Future
   item be moved to 2 days, or directly to 2 months?
   -> Disambiguate between *frequent practice* and *long memorization time*
   -> Make test-settings for handling these according to preferences
+- Add new database columns for non-outdated/non-rare on-/kun-yomi
+- Allow having different SRS schemes for each test-mode
 
 ### Content section
 - Contains a database of custom info cards
@@ -370,6 +391,7 @@ Resources
 - [Counters](http://hiramatu-hifuka.com/onyak/onyak2/josu-ta.html)
 - Kanji textbook/Internet frequencies?
 - [Honorific language](http://www.levelup99.net/businessmanner/cate3post24.html)
+  - Study uses of Teineigo, Sonkeigo, Kenjougo
 
 #### CSS/DOM
 - [Buttons](http://usabilitypost.com/2012/01/10/pressed-button-state-with-css3)

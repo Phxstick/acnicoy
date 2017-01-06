@@ -13,6 +13,7 @@ module.exports = function (basePath) {
     paths.standardDataPathPrefix = path.resolve(os.homedir(), "Documents");
     let dataPath = null;
     let langPath = null;
+    let backupsPath = null;
     let downloadsPath = null;
     let contentPath = null;
 
@@ -36,6 +37,7 @@ module.exports = function (basePath) {
         paths.data = dataPath = path.resolve(prefix, dataPathBaseName);
         paths.languages = langPath = path.resolve(dataPath, "Languages");
         paths.downloads = downloadsPath = path.resolve(dataPath, "Downloads");
+        paths.backups = backupsPath = path.resolve(dataPath, "Backups");
         paths.globalSettings = path.resolve(dataPath, "settings.json");
         paths.srsSchemes = path.resolve(dataPath, "srs-schemes.json")
         contentPath = path.resolve(dataPath, "Content");
@@ -46,6 +48,7 @@ module.exports = function (basePath) {
             if (error.errno === -2) {
                 fs.mkdirSync(dataPath);
                 fs.mkdirSync(langPath);
+                fs.mkdirSync(backupsPath);
                 fs.mkdirSync(downloadsPath);
                 fs.mkdirSync(contentPath);
             }
@@ -112,6 +115,23 @@ module.exports = function (basePath) {
         pinwall: path.resolve(langPath, language, "pinwall.json"),
         settings: path.resolve(langPath, language, "settings.json")
     });
+
+    // Language data backup
+    paths.newBackup = () => {
+        const id = fs.readdirSync(paths.backups).length;
+        const currentDate = new Date();
+        const day = currentDate.getDate();
+        const month = currentDate.getMonth() + 1;
+        const year = currentDate.getFullYear();
+        const backupDir = path.resolve(backupsPath, [
+            id.toString().padStart(5, "0"),
+            year.toString().padStart(4, "0"),
+            month.toString().padStart(2, "0"),
+            day.toString().padStart(2, "0")
+        ].join("-"));
+        return { directory: backupDir,
+                 infoFile: path.resolve(backupDir, "info.json") };
+    };
 
     // Language content
     const contentRegister = {

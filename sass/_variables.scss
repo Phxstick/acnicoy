@@ -177,6 +177,11 @@ $suggestion-color-hover: black;
 $suggestion-color-selected: $color;
 $suggestion-group-selector-hover-background: rgba(255, 255, 255, 0.35);
 
+// Migrate SRS overlay
+$migrate-srs-arrow-color: $border-color-dark;
+$migrate-srs-connector-color: $border-color-medium;
+$migrate-srs-connector-color-hover: $border-color-dark;
+
 // =============================================================================
 // Other variables
 // =============================================================================

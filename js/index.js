@@ -5,7 +5,8 @@ const globals = {
               "vocab-lists", "pinwall", "content", "vocab", "kanji", "srs",
               "stats", "test", "history"],
     windows: ["init-path", "init-lang", "init-default-lang", "loading", "main"],
-    overlays: ["add-lang", "info-dialog", "confirm-dialog", "srs-schemes"],
+    overlays: ["add-lang", "info-dialog", "confirm-dialog", "srs-schemes",
+               "migrate-srs"],
     sections: ["home", "stats", "vocab", "settings",
                "test", "dictionary", "kanji"],
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
@@ -17,7 +18,7 @@ const globals = {
               "language-popup", "check-box", "example-word-entry",
               "tabbed-frame"],
     extensions: ["converter", "array-extensions", "html-element-extensions",
-                 "event-emitter-extensions"]
+                 "event-emitter-extensions", "string-extensions"]
 };
 
 const startTime = performance.now();

@@ -1,0 +1,109 @@
+@import "overlay";
+
+$window-width: 600px;
+$migrate-area-width: $window-width - 20px;
+$migrate-area-gap-width: 130px;
+$migrate-area-scheme-width: ($migrate-area-width - $migrate-area-gap-width) / 2;
+$migrate-area-level-height: 30px;
+
+:host {
+  width: $window-width;
+}
+
+#partitioned-window > #main-frame {
+  min-height: 450px;
+}
+
+#select-new-scheme {
+  width: 100%;
+}
+
+#migrate-srs-frame {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+
+  #migrate-srs-area-frame {
+    display: flex;
+    flex-direction: column;
+    #migrate-srs-area-header {
+      font-family: $header-font;
+      font-variant: small-caps;
+      padding: 5px;
+      visibility: hidden;
+    }
+  }
+  #migrate-srs-area {
+    flex: 1;
+    width: $migrate-area-gap-width;
+    #new-scheme-connectors > *, #previous-scheme-connectors > * {
+      fill: $migrate-srs-connector-color;
+    }
+    #new-scheme-connectors > *.hovering {
+      fill: $migrate-srs-connector-color-hover;
+    }
+    #previous-scheme-connectors > *:hover {
+      fill: $migrate-srs-connector-color-hover;
+    }
+    .connection {
+      stroke: $migrate-srs-arrow-color;
+      stroke-width: 5;
+      stroke-linecap: butt;
+    }
+    .connection-arrow {
+      fill: $migrate-srs-arrow-color;
+      stroke-width: 0;
+    }
+    .modifier-label {
+      fill: $migrate-srs-arrow-color;
+      stroke-width: 0;
+    }
+    .modifier-symbol {
+      fill: whitesmoke;
+      text-anchor: middle;
+      dominant-baseline: central;
+      font-size: 18px;
+      font-weight: bold;
+      &.small {
+        font-size: 14px;
+        transform: translate(0px, -2px);
+      }
+    }
+  }
+  .scheme-frame {
+    width: $migrate-area-scheme-width;
+    .scheme-frame-header {
+      font-family: $header-font;
+      font-variant: small-caps;
+      text-align: center;
+      padding: 5px;
+    }
+  }
+  #previous-scheme, #new-scheme {
+    > div {
+      @include center-content("vertical");
+      height: $migrate-area-level-height;
+    }
+  }
+  #previous-scheme {
+    > div {
+      @include fading-border($border-color-dark, "to left");
+      border-width: 0px 1px 1px 0px;
+      &:first-child {
+        border-top-width: 1px;
+      }
+      padding-right: 6px;
+      justify-content: flex-end;
+    }
+  }
+  #new-scheme {
+    > div {
+      @include fading-border($border-color-dark, "to right");
+      border-width: 0px 0px 1px 1px;
+      &:first-child {
+        border-top-width: 1px;
+      }
+      padding-left: 6px;
+    }
+  }
+}

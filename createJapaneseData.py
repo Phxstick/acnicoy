@@ -250,8 +250,8 @@ def parse_kanji_entry(line, cursor):
     # Insert entry into database
     cursor.execute("INSERT INTO kanji VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (data["kanji"], data["grade"], data["jlpt"], data["radical_id"],
-         data["strokes"], data["frequency"], ",".join(data["on-yomi"]),
-         ",".join(data["kun-yomi"]), ",".join(data["meanings"]), ""))
+         data["strokes"], data["frequency"], ";".join(data["on-yomi"]),
+         ";".join(data["kun-yomi"]), ";".join(data["meanings"]), ""))
 
 
 def parse_radical_entry(line, cursor):
@@ -473,7 +473,7 @@ def parse_improved_kanji_meanings(filename, cursor):
         newMeanings = json.load(f)
         for kanji in newMeanings:
             cursor.execute("UPDATE kanji SET meanings = ? WHERE entry = ?",
-                    (",".join(newMeanings[kanji]), kanji))
+                    (";".join(newMeanings[kanji]), kanji))
     print("Applying improved kanji meanings... Done.")
 
 

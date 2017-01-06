@@ -5,7 +5,10 @@
         "font": {
             "size": 24,
             "family": "TakaoPGothic"
-        }
+        },
+    },
+    "srs": {
+        "intervalModifier": "4 hours"
     },
     "languages": {
         "default": ""

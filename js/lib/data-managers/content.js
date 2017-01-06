@@ -94,9 +94,9 @@ module.exports = function (paths, modules) {
              FROM kanji k JOIN radicals r ON k.radical_id = r.id
              WHERE k.entry = ?`, kanji)
         .then(([row]) => {
-            row.meanings = row.meanings ? row.meanings.split(",") : [];
-            row.onYomi = row.onYomi ? row.onYomi.split(",") : [];
-            row.kunYomi = row.kunYomi ? row.kunYomi.split(",") : [];
+            row.meanings = row.meanings ? row.meanings.split(";") : [];
+            row.onYomi = row.onYomi ? row.onYomi.split(";") : [];
+            row.kunYomi = row.kunYomi ? row.kunYomi.split(";") : [];
             row.kanji = kanji;
             return row;
         });
@@ -109,7 +109,7 @@ module.exports = function (paths, modules) {
              FROM kanji k
              WHERE k.entry = ?`, kanji)
         .then(([row]) => {
-            return row.meanings ? row.meanings.split(",") : [];
+            return row.meanings ? row.meanings.split(";") : [];
         });
     }
 

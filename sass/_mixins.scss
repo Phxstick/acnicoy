@@ -19,7 +19,7 @@
   } @else if $direction == "horizontal" {
     border-image: linear-gradient(to left, transparent, $color, transparent) 1 1%;
   } @else if $direction == "to left" {
-    border-image: linear-gradient(to left, transparent, $color) 1 1%;
+    border-image: linear-gradient(to left, $color, transparent) 1 1%;
   } @else if $direction == "to right" {
     border-image: linear-gradient(to right, $color, transparent) 1 1%;
   } @else if $direction == "to top" {

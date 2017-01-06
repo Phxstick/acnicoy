@@ -7,7 +7,6 @@ module.exports = function (paths, modules) {
     const dataMap = {};
 
     let data;
-    let levelToScore;
     const scoreCalculation = Object.freeze(require(paths.scoreCalculation));
 
     stats.create = function (language, settings) {
@@ -40,7 +39,7 @@ module.exports = function (paths, modules) {
     };
 
     stats.setLanguage = function (language) {
-        ({ data, levelToScore } = dataMap[language]);
+        data = dataMap[language];
     };
 
     /* =========================================================================
@@ -53,8 +52,7 @@ module.exports = function (paths, modules) {
      * @param {String} language
      */
     stats.calculateScorePerLevel = function (language) {
-        modules.srs.setLanguage(language);
-        const timeIntervals = modules.srs.intervals;
+        const timeIntervals = modules.srs.getIntervalsForLanguage(language);
         const milestones =
             Reflect.ownKeys(scoreCalculation.percentages)
             .map(timeString => parseInt(timeString))
@@ -119,12 +117,12 @@ module.exports = function (paths, modules) {
         const d = new Date();
         const newItems = [];
         let currentDate = [d.getFullYear(), d.getMonth() + 1, d.getDate()];
-        if (data["daily"].length === 0) {
-            data["daily"].push({
+        if (data.data["daily"].length === 0) {
+            data.data["daily"].push({
                 date: currentDate, score: 0, words: 0, kanji: 0, tested: 0 });
             return;
         }
-        const lastDate = data["daily"].last().date;
+        const lastDate = data.data["daily"].last().date;
         while (lastDate[0] != currentDate[0] || lastDate[1] != currentDate[1] ||
                lastDate[2] != currentDate[2]) {
             // TODO: Don't append kanji if not japanese
@@ -141,24 +139,24 @@ module.exports = function (paths, modules) {
             currentDate = [year, month, day];
         }
         newItems.reverse();
-        data["daily"].push(...newItems);
+        data.data["daily"].push(...newItems);
     }
 
 
     stats.incrementTestedCounter = function (mode) {
         registerPassedDays();
-        data["testedPerMode"][mode]++;
-        data["daily"].last()["tested"]++;
+        data.data["testedPerMode"][mode]++;
+        data.data["daily"].last()["tested"]++;
     };
 
     stats.incrementWordsAddedToday = function () {
         registerPassedDays();
-        data["daily"].last()["words"]++;
+        data.data["daily"].last()["words"]++;
     };
 
     stats.incrementKanjiAddedToday = function () {
         registerPassedDays();
-        data["daily"].last()["kanji"]++;
+        data.data["daily"].last()["kanji"]++;
     };
 
     /**
@@ -170,10 +168,11 @@ module.exports = function (paths, modules) {
      */
     stats.updateScore = function (mode, oldLevel, newLevel) {
         registerPassedDays();
-        const difference = (levelToScore[newLevel] - levelToScore[oldLevel])
+        const difference = (data.levelToScore[newLevel] -
+                            data.levelToScore[oldLevel])
                             * scoreCalculation.modeToMultiplier[mode];
-        data["daily"].last()["score"] += difference;
-        data["scorePerMode"][mode] += difference;
+        data.data["daily"].last()["score"] += difference;
+        data.data["scorePerMode"][mode] += difference;
     };
 
     /* =========================================================================
@@ -186,7 +185,7 @@ module.exports = function (paths, modules) {
      */
     stats.getNumberOfItemsTested = function () {
         return modules.test.modes.reduce((total, mode) => {
-            return total + data["testedPerMode"][mode];
+            return total + data.data["testedPerMode"][mode];
         }, 0);
     };
 
@@ -195,7 +194,7 @@ module.exports = function (paths, modules) {
      * @returns {Number}
      */
     stats.getScoreForMode = function (mode) {
-        return data["scorePerMode"][mode];
+        return data.data["scorePerMode"][mode];
     };
 
     /**

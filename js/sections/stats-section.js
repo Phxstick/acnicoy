@@ -23,7 +23,8 @@ class StatsSection extends Section {
 
     registerCentralEventListeners() {
         events.onAll(
-            ["word-added", "word-deleted", "kanji-added", "kanji-removed"],
+            ["word-added", "word-deleted", "kanji-added", "kanji-removed",
+             "current-srs-scheme-edited"],
         () => {
             if (this.isHidden()) return;
             this.updateStats();

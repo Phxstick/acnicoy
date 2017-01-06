@@ -64,15 +64,31 @@ class SrsSchemesOverlay extends Overlay {
             this.$("scheme-name-input").focus();
         });
         this.$("remove-scheme-button").addEventListener("click", () => {
+            // TODO: Rewrite this with async/await
+            const schemeName = this.selectedScheme.name;
             dialogWindow.confirm(
                 `Are you sure you want to delete the SRS scheme` +
-                ` '${this.selectedScheme.name}'?`)
+                ` '${schemeName}'?`)
             .then((confirmed) => {
                 if (!confirmed) return;
-                // TODO: If scheme is used, migrate SRS item
-                this.$("schemes-list").removeChild(this.selectedSchemeItem);
-                dataManager.srs.schemes.remove(this.selectedScheme);
-                this.hideSchemeDetails();
+                const languagesUsingScheme =
+                    dataManager.srs.getLanguagesUsingScheme(schemeName);
+                const removeScheme = () => {
+                    this.$("schemes-list").removeChild(this.selectedSchemeItem);
+                    dataManager.srs.schemes.remove(this.selectedScheme);
+                    dataManager.srs.saveSchemes();
+                    events.emit("srs-scheme-deleted", schemeName);
+                    this.hideSchemeDetails();
+                };
+                // If scheme is in use, let user choose new scheme + migrate
+                if (languagesUsingScheme.length > 0) {
+                    overlay.open("migrate-srs", "delete-scheme", { schemeName })
+                    .then((migrated) => {
+                        if (migrated) removeScheme();
+                    });
+                } else {
+                    removeScheme();
+                }
             });
         });
         // Remove SRS level if cross next to it was clicked
@@ -193,7 +209,6 @@ class SrsSchemesOverlay extends Overlay {
     }
 
     close() {
-        dataManager.srs.saveSchemes();
         this.exitEditMode();
         this.hideSchemeDetails();
     }
@@ -316,44 +331,68 @@ class SrsSchemesOverlay extends Overlay {
                 + " See [TODO] for information on correct formatting.");
             return false;
         }
-        // TODO: If scheme is used, migrate SRS items first
-        const languages = dataManager.languages.find();
+        if (this.$("scheme-levels").children.length === 0) {
+            dialogWindow.info("An SRS scheme requires at least one level.");
+            return false;
+        }
+        let oldName = this.selectedScheme.name;
+        const newName = this.$("scheme-name-input").value;
         // If the scheme does not exist yet, create it
         if (this.selectedSchemeItem === null) {
+            if (!dataManager.srs.createScheme(newName)) {
+                dialogWindow.info(`A scheme with the name '${newName}' ` +
+                                  `already exists.`);
+                return false;
+            }
             this.selectedSchemeItem = document.createElement("div");
             this.selectedSchemeItem.classList.add("selected");
             this.$("schemes-list").appendChild(this.selectedSchemeItem);
-            this.schemeItemToOptions.set(
-                this.selectedSchemeItem, this.selectedScheme);
-            dataManager.srs.schemes.push(this.selectedScheme);
+            oldName = newName;
+            events.emit("srs-scheme-created", newName);
+        } else {
+            // TODO: Rewrite this with async/await
+            // If scheme is being used by languages, migrate SRS items first
+            dataManager.srs.getNonEmptyLanguagesUsingScheme(oldName).then(
+            (languagesUsingScheme) => {
+                // If scheme is in use, let user migrate SRS items
+                if (languagesUsingScheme.length > 0) {
+                    overlay.open("migrate-srs", "edit-scheme",
+                        { schemeName: oldName })
+                    .then((migrated) => {
+                        if (migrated) {
+                            // TODO: Continue
+                        }
+                    });
+                }
+            });
         }
-        // Apply changed name
-        const oldName = this.selectedScheme.name;
-        const newName = this.$("scheme-name-input").value;
+        // Save changed name
         this.$("scheme-name").textContent = newName;
-        this.selectedScheme.name = newName;
         this.selectedSchemeItem.textContent = newName;
-        for (const language of languages) {
-            const languageSettings = dataManager.languageSettings.for(language);
-            if (languageSettings.srs.scheme === oldName) {
-                languageSettings.srs.scheme = newName;
-            }
-        }
-        // Apply changed description
-        const newDesc = this.$("scheme-description-input").value;
-        this.$("scheme-description").textContent = newDesc;
-        this.selectedScheme.description = newDesc;
-        // Apply changed intervals (also transform to standard notation)
-        this.selectedScheme.intervals = [];
+        // Save changed description
+        const newDescription = this.$("scheme-description-input").value;
+        this.$("scheme-description").textContent = newDescription;
+        // Save intervals (also transform to standard notation)
+        const newIntervals = [];
         const levelItems = this.$("scheme-levels").children;
         for (const { children: [,intervalLabel,intervalInput] } of levelItems) {
             const input = intervalInput.value.trim();
             const timeSpanObject = utility.timeSpanStringToObject(input);
-            const interval = utility.timeSpanObjectToString(timeSpanObject);
-            intervalLabel.textContent = interval;
-            this.selectedScheme.intervals.push(interval)
+            const intervalText = utility.timeSpanObjectToString(timeSpanObject);
+            intervalLabel.textContent = intervalText;
+            newIntervals.push(intervalText);
         }
-        events.emit("srs-schemes-edited");
+        // Apply changes to data
+        this.selectedScheme = dataManager.srs.editScheme(
+            oldName, newName, newDescription, newIntervals);
+        this.schemeItemToOptions.set(
+            this.selectedSchemeItem, this.selectedScheme);
+        const languagesUsingScheme =
+            dataManager.srs.getLanguagesUsingScheme(newName);
+        if (languagesUsingScheme.includes(main.language)) {
+            events.emit("current-srs-scheme-edited");
+        }
+        dataManager.srs.saveSchemes();
         return true;
     }
 }

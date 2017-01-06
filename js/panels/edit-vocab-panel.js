@@ -131,10 +131,11 @@ class EditVocabPanel extends Panel {
     }
 
     registerCentralEventListeners() {
-        events.onAll(["language-changed", "srs-scheme-changed"], () => {
+        events.onAll(["language-changed", "current-srs-scheme-edited"], () => {
             for (let i = 1; i < this.$("srs-level").children.length + 1; ++i) {
                 const option = this.$("srs-level").children[i - 1];
-                option.dataset.tooltip = dataManager.srs.intervalTexts[i];
+                option.dataset.tooltip =
+                    dataManager.srs.currentScheme.intervalTexts[i];
             }
         });
         events.on("vocab-list-created", (listName) => {
@@ -149,9 +150,9 @@ class EditVocabPanel extends Panel {
 
     adjustToLanguage(language, secondary) {
         // Fill SRS level popup stack
-        const numLevels = dataManager.srs.numLevels;
+        const numLevels = dataManager.srs.currentScheme.numLevels;
         this.$("srs-level").empty();
-        for (let i = 1; i < numLevels; ++i) this.$("srs-level").addOption(i);
+        for (let i = 1; i <= numLevels; ++i) this.$("srs-level").addOption(i);
         this.$("srs-level").set(this.$("srs-level").firstChild);
         // Fill vocab list selector
         this.$("select-vocab-list").empty();
