@@ -1,6 +1,5 @@
 ### Up next
 - Rework home-section
-- Add context menu items for copying/pasting on selections
 - Implement language settings (and optionally others already)
 - Focus most important element in each overlay upon opening (e.g. buttons)
 - Capture focus in overlays (especially dialogs!) and panels
@@ -62,6 +61,7 @@ By category
   - Order can then be changed by dragging languages around in settings
 - In migrate-srs-overlay, connections starting from the same level must be
   connected to a *consecutive* row of levels (otherwise, disallow connection)?
+- How to get undo/redo possibility for each item seperately?
 
 ### Code
 ##### Naming
@@ -409,7 +409,6 @@ Resources
 #### Misc
 - Use `electron.shell.openExternal(link)` to open link in default browser
 - [Learn gulp?](https://ponyfoo.com/articles/gulp-grunt-whatever)
-- Use C++ in Chromium
 
 > Chrome includes Google’s Native Client. Native Client allows web pages to run
 > native code written in languages like C or C++. The code is executed in a

@@ -4,6 +4,8 @@ class KanjiSection extends Section {
     constructor () {
         super("kanji");
         this.lastQueriedKanji = [];
+        this.searchResultsBatchSize = 10;
+        this.doneLoading = false;
         this.kanjiToSearchResultEntry = new Map();
         this.nextQueryIndex = 0;
         this.lastQueryString = "";
@@ -29,6 +31,13 @@ class KanjiSection extends Section {
             this.addedPerGradeCounters[grade] = document.createElement("span");
             this.addedPerGradeCounters[grade].classList.add("statistic-label");
         }
+        // If the user scrolls almost to bottom of search results, load more
+        this.$("bottom-frame").uponScrollingBelow(300, () => {
+            if (this.doneLoading && this.nextQueryIndex
+                                    < this.lastQueriedKanji.length) {
+                this.displayMoreSearchResults(this.searchResultsBatchSize);
+            }
+        });
     }
 
     registerCentralEventListeners() {
@@ -157,6 +166,7 @@ class KanjiSection extends Section {
     }
 
     displayMoreSearchResults(amount) {
+        this.doneLoading = false;
         const limit = Math.min(this.nextQueryIndex + amount,
                                this.lastQueriedKanji.length);
         const kanjiInfoPromises = [];
@@ -174,6 +184,8 @@ class KanjiSection extends Section {
                 fragment.appendChild(searchResultEntry);
             }
             this.$("search-results").appendChild(fragment);
+            this.nextQueryIndex = limit;
+            this.doneLoading = true;
         });
     }
 
@@ -209,7 +221,7 @@ class KanjiSection extends Section {
             this.nextQueryIndex = 0;
             this.$("search-results").empty();
             this.kanjiToSearchResultEntry.clear();
-            this.displayMoreSearchResults(10);
+            this.displayMoreSearchResults(this.searchResultsBatchSize);
             this.$("overview-pane").hide();
             this.$("search-pane").show();
         });

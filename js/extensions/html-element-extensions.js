@@ -1,17 +1,17 @@
 "use strict";
 
 /**
-**  Return whether this element is displayed.
-**/
+ *  Return whether this element is displayed.
+ */
 HTMLElement.prototype.isHidden = function() {
     return getComputedStyle(this, null).getPropertyValue("display") === "none";
 }
 
 const previousDisplayValue = Symbol("previousDisplayValue");
 /**
-**  Set this element's display value to 'none'. Remember old display value.
-**  If the element is already not displayed, do nothing.
-**/
+ *  Set this element's display value to 'none'. Remember old display value.
+ *  If the element is already not displayed, do nothing.
+ */
 HTMLElement.prototype.hide = function() {
     const display = getComputedStyle(this, null).getPropertyValue("display");
     if (display === "none") return;
@@ -20,10 +20,10 @@ HTMLElement.prototype.hide = function() {
 }
 
 /**
-**  Set this element's display value to given argument. If no argument is given,
-**  use the previous display value if available, or otherwise 'block'.
-**  If the element already has a display value other than 'none', do nothing.
-**/
+ *  Set this element's display value to given argument. If no argument is given,
+ *  use the previous display value if available, or otherwise 'block'.
+ *  If the element already has a display value other than 'none', do nothing.
+ */
 HTMLElement.prototype.show = function(value) {
     if (!this.isHidden()) return;
     if (value !== undefined) {
@@ -36,11 +36,11 @@ HTMLElement.prototype.show = function(value) {
 }
 
 /**
-**  Show this element if given condition is true, otherwise hide it.
-**  @param {Boolean} condition - Indicates whether to show or hide this element.
-**  @param {String} [displayValue] - If this element will be shown, use
-**      this parameter as CSS value for the display property.
-**/
+ *  Show this element if given condition is true, otherwise hide it.
+ *  @param {Boolean} condition - Indicates whether to show or hide this element.
+ *  @param {String} [displayValue] - If this element will be shown, use
+ *      this parameter as CSS value for the display property.
+ */
 HTMLElement.prototype.toggleDisplay =
         function(condition, displayValue) {
     if (condition) {
@@ -51,46 +51,46 @@ HTMLElement.prototype.toggleDisplay =
 }
 
 /**
-**  Remove all children elements of this node.
-**/
+ *  Remove all children elements of this node.
+ */
 HTMLElement.prototype.empty = function() {
     this.innerHTML = "";
 }
 
 /**
-**  Return the children of this element in an array.
-**/
+ *  Return the children of this element in an array.
+ */
 HTMLElement.prototype.childrenArray = function () {
     return Array.prototype.slice.call(this.children);
 }
 
 /**
-**  Insert given node as the first child of this node.
-**/
+ *  Insert given node as the first child of this node.
+ */
 HTMLElement.prototype.prependChild = function(node) {
     this.insertBefore(node, this.firstChild);
 }
 
 
 /**
-**  Insert given node as child at given index.
-**/
+ *  Insert given node as child at given index.
+ */
 HTMLElement.prototype.insertChildAt = function(node, index) {
     this.insertBefore(node, this.children[index]);
 }
 
 
 /**
-**  Remove child node of this node at given index.
-**/
+ *  Remove child node of this node at given index.
+ */
 HTMLElement.prototype.removeChildAt = function(index) {
     this.removeChild(this.children[index]);
 }
 
 
 /**
-**  Scroll to the end of this element in a certain direction.
-**/
+ *  Scroll to the end of this element in a certain direction.
+ */
 HTMLElement.prototype.scrollToBottom = function() {
     this.scrollTop = this.scrollHeight;
 }
@@ -106,9 +106,9 @@ HTMLElement.prototype.scrollToLeft = function() {
 
 
 /**
-**  Upon scrolling further than given distance to the bottom of this element,
-**  execute given callback.
-**/
+ *  Upon scrolling further than given distance to the bottom of this element,
+ *  execute given callback.
+ */
 HTMLElement.prototype.uponScrollingBelow = function (limit, callback) {
     this.addEventListener("scroll", (event) => {
         utility.finishEventQueue().then(() => {
@@ -151,9 +151,9 @@ HTMLElement.prototype.safeDeepClone = function() {
 
 
 /**
-**  Fade out this element while moving it given distance to the right,
-**  starting from the current position.
-**/
+ *  Fade out this element while moving it given distance to the right,
+ *  starting from the current position.
+ */
 HTMLElement.prototype.fadeOut = function(
         { distance=300, duration=500, easing="easeOutSine" }={}) {
     const fadeOutSpan = this.safeDeepClone(); //this.cloneNode(true);
@@ -178,9 +178,9 @@ HTMLElement.prototype.fadeOut = function(
 
 
 /**
-**  Fade in this element while moving it given distance to the right,
-**  arriving at the current position.
-**/
+ *  Fade in this element while moving it given distance to the right,
+ *  arriving at the current position.
+ */
 HTMLElement.prototype.fadeIn = function(
         { distance=300, duration=500, easing="easeOutSine" }={}) {
     const fadeInSpan = this.safeDeepClone();//this.cloneNode(true);
@@ -204,15 +204,15 @@ HTMLElement.prototype.fadeIn = function(
 }
 
 /**
-**  When opening the context-menu for this element, display the given list
-**  of items.
-**  @param {Object} menuItems - Map item names to MenuItem-objects.
-**  @param {Array, function} itemNames - Either an array of item names or a
-**      function returning an array of item names (or promise of an array).
-**      For each of the given names, the menuItems-parameter must return
-**      a MenuItem-object which will be displayed.
-**  @param {Object} [data] - Optional data to pass to the menu items callback.
-**/
+ *  When opening the context-menu for this element, display the given list
+ *  of items.
+ *  @param {Object} menuItems - Map item names to MenuItem-objects.
+ *  @param {Array, function} itemNames - Either an array of item names or a
+ *      function returning an array of item names (or promise of an array).
+ *      For each of the given names, the menuItems-parameter must return
+ *      a MenuItem-object which will be displayed.
+ *  @param {Object} [data] - Optional data to pass to the menu items callback.
+ */
 HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
     if (data === undefined) {
         data = {};
@@ -252,8 +252,8 @@ HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
 }
 
 /**
-**  Remove all children elements of this node.
-**/
+ *  Remove all children elements of this node.
+ */
 SVGElement.prototype.empty = function() {
     while (this.lastChild) this.removeChild(this.lastChild);
 }

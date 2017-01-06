@@ -17,10 +17,40 @@ function registerItems(nameToOptions) {
     return menuItems;
 }
 
-window.addEventListener("contextmenu", (event) => {
-    event.preventDefault();
+const standardRoles = ["undo", "redo", "delete", "cut", "copy", "paste"];
+const standardRoleToMenuItem = {};
+for (const role of standardRoles) {
+    const menuItem = new MenuItem({ role });
+    standardRoleToMenuItem[role] = menuItem;
+    menuItem.visible = false;
+    popupMenu.append(menuItem);
+}
+
+const webContents = remote.getCurrentWebContents();
+const currentWindow = remote.getCurrentWindow();
+webContents.on("context-menu", (event, params) => {
     // Wait until the items to be displayed are determined
     module.exports.itemsLoaded.then(() => {
+        // If there is a selection somewhere, add menu item for copying.
+        // If the element is editable, also display other items such as "paste"
+        const selectionExists = module.exports.selectionExists;
+        const editableElementActive = module.exports.editableElementActive;
+        if (selectionExists) {
+            visibleItems.add(standardRoleToMenuItem["copy"]);
+            if (editableElementActive) {
+                visibleItems.add(standardRoleToMenuItem["cut"]);
+                visibleItems.add(standardRoleToMenuItem["delete"]);
+            }
+        }
+        if (editableElementActive) {
+            if (clipboard.readText().length > 0) {
+                visibleItems.add(standardRoleToMenuItem["paste"]);
+            }
+            // visibleItems.add(standardRoleToMenuItem["undo"]);
+            // visibleItems.add(standardRoleToMenuItem["redo"]);
+            // standardRoleToMenuItem["undo"].enabled = params.editFlags.canUndo;
+            // standardRoleToMenuItem["redo"].enabled = params.editFlags.canRedo;
+        }
         // If the popupmenu has no items, don't display it
         if (visibleItems.size === 0) return;
         // Undisplay previously visible items
@@ -34,7 +64,9 @@ window.addEventListener("contextmenu", (event) => {
             previouslyVisibleItems.add(item);
         }
         visibleItems.clear();
-        popupMenu.popup(remote.getCurrentWindow());
+        module.exports.selectionExists = false;
+        module.exports.editableElementActive = false;
+        popupMenu.popup(currentWindow);
     });
 });
 
@@ -42,3 +74,5 @@ module.exports.itemsLoaded = Promise.resolve();
 module.exports.registerItems = registerItems;
 module.exports.visibleItems = visibleItems;
 module.exports.previouslyVisibleItems = previouslyVisibleItems;
+module.exports.selectionExists = false;
+module.exports.editableElementActive = false;
