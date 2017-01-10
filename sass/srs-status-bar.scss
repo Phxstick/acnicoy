@@ -1,0 +1,79 @@
+@import "base";
+
+:host {
+  width: fill;
+}
+
+#window {
+  color: $view-color;
+  background-color: $view-background-dark;
+}
+
+.row-frame {
+  display: flex;
+  flex-direction: row;
+
+  .header {
+    @include center-content;
+    font-family: $header-font;
+    width: 50px;
+  }
+}
+
+#levels-frame {
+  border-bottom: 1px solid $border-color-medium;
+
+  #levels {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+}
+
+#amounts-total-frame {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid $border-color-light;
+
+  #amounts-total {
+    font-size: 150%;
+  }
+}
+
+#amounts-due-frame {
+  padding-bottom: 8px;
+  margin-top: 8px;
+
+  #amounts-due {
+    font-size: 150%;
+    font-family: $light-font;
+  }
+}
+
+#levels, #amounts-total, #amounts-due {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+
+  > * {
+    flex: 1;
+    text-align: center;
+    font-family: $light-font;
+  }
+}
+
+#levels > * {
+  font-size: 110%;
+}
+
+#amounts-total > * {
+  border-left: 1px solid $border-color-light;
+}
+
+#amounts-due > * {
+  border-left: 1px solid $border-color-light;
+
+  &.highlighted {
+    color: $highlight-background-dark;
+    text-shadow: 0 0 1px $highlight-background;
+  }
+}

@@ -76,6 +76,8 @@ class MainWindow extends Window {
                 });
             }
         }
+        // Update amount of SRS items displayed on test button regularly
+        events.on("update-srs-status", () => this.updateTestButton());
     }
 
     createSections () {
@@ -144,11 +146,9 @@ class MainWindow extends Window {
             this.sections["home"].show();
             this.sections["home"].open();
             this.currentSection = "home";
-            // Regularly update test button with amount of words to be tested
-            this.updateTestButton();
-            setInterval(() => {
-                this.updateTestButton();
-            }, 1000 * 60 * 5);  // Every 5 min
+            // Regularly update displayed SRS info
+            setInterval(() => events.emit("update-srs-status"),
+                1000 * 60 * 5);  // Every 5 minutes
             // Regulary notify user if SRS items are ready to be reviewed
             setInterval(() => {
                 this.showSrsNotification();
@@ -331,7 +331,7 @@ class MainWindow extends Window {
     }
 
     makeKanjiInfoLink(element, character) {
-        // TODO: Don't check if kanji is in database here
+        // TODO: Don't check if kanji is in database here (Do elsewhere)
         return dataManager.content.isKnownKanji(character).then((isKanji) => {
             if (isKanji) {
                 element.classList.add("kanji-info-link");

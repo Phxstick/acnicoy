@@ -7,3 +7,9 @@ EventEmitter.prototype.onAll = function(events, listener) {
         this.on(event, listener);
     }
 }
+
+EventEmitter.prototype.removeAll = function(events, listener) {
+    for (const event of events) {
+        this.removeListener(event, listener);
+    }
+}

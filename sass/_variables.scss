@@ -29,6 +29,7 @@ $color-lightest: grey;
 $select-background: firebrick;
 $select-color: white;
 $highlight-background: crimson;
+$highlight-background-dark: darkred;
 $highlight-color: white;
 $border-color-light: darken($background-color, 20%);
 $border-color-medium: darkgrey;
@@ -199,8 +200,12 @@ $stats-section-text-shadow: 1px 1px 1px dimgray;
 $popup-menu-shadow: 1px 1px 6px #1a1a1a;
 $input-inset-shadow: inset 0 1px 10px -5px black;
 $input-shadow: 0 0 5px $input-border-color;
+$note-focus-shadow: 0 0 3px 2px $highlight-background;
 
 // Sizes
 $side-bar-width: 80px;
 $menu-bar-height: 50px;
 $panel-width: 400px;
+// Pinwall sizes
+$pinwall-base-margin: 10px;
+$pinwall-item-margin-addition: 6px;

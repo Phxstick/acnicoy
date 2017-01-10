@@ -1,5 +1,5 @@
 ### Up next
-- Rework home-section
+- Add srs-review-schedule diagram
 - Implement language settings (and optionally others already)
 - Focus most important element in each overlay upon opening (e.g. buttons)
 - Capture focus in overlays (especially dialogs!) and panels
@@ -104,6 +104,7 @@ once? --> Faster loading, centralized resource loading
   - See Japanese stack exchange for furigana syntax
   - Provide easy way create kanji-links (or just scan through markdown)
 - Identify SRS schemes by ID instead of name!
+- Use advanced CSS width values where possible (`width: fill`);
 
 ### Init window
 - Make init section feel more welcoming and less plain. Background picture?
@@ -121,19 +122,23 @@ once? --> Faster loading, centralized resource loading
 Or otherwise indicate which section/panel is currently opened?
 
 ### Home section
-- Display every widget as block (full width)
 - Possibly create overlay-style sidebar for customizing pinwall
   - Make sidebar invisible and only open upon clicking wrench-icon?
   - Differentiate between normal mode and customize-mode
 - Widgets:
   - Combine notes into single widget?
     - Allow writing notes in markdown format, render when saving the note
-    - Use `contenteditable` attribute for editing
-  - SRS item bar diagram (customizable, shows when new items become available)
+    - Use `column-count`, `column-gap`, `column-fill` for multi-col structure
+  - SRS Review schedule diagram (intervals customizable)
+    - Use bar diagram
+    - Have buttons for switching time units (hours, days, weeks, months)
     - Maybe 1m/2w as standard interval
-  - SRS info bar
-    - Allow selecting certain levels to review when opening test-section
   - Changelog widget (Save changelogs in local storage somewhere)
+  - srs-status-bar
+    - Display info message if vocabulary is empty
+    - Allow showing detailed infos per mode
+    - Replace "level" label with reload- and help-button?
+  - srs-status-diagram (Like status-bar, but as bar-diagram)
 
 ### Test section
 - Save test state when closing an unfinished test. Only confirm on program exit
@@ -148,8 +153,7 @@ Or otherwise indicate which section/panel is currently opened?
   - Test item container (fade in sliding to right, fade out sliding to right)
   - solution-items (fade in each one sliding to bottom after previous one)
   - Animation when score gets updated (green/red text with +/- sliding up)?
-- Display more detailed statistics at end of test
-  - Either in an overlay or by animating test window, fading out top section
+- Display more detailed statistics at end of test (`test-finished-overlay`)
   - Display items answered incorrectly (along with answers on click/hover)
 
 ### Kanji Info Panel
@@ -161,6 +165,7 @@ to make sure all parts are properly highlighted
 - Show info for kanji that symbolize a country
 - Have separate table for searching kanji, extend readings by ones without
 a ".", keep all meanings for each kanji
+- Have link to kanji disambiguation if there are kanji with similar meanings
 - Add new icons below close-button
   - Allow user to maximize panel (then display all info in one frame)
   - Allow user to adjust some settings
@@ -168,7 +173,7 @@ a ".", keep all meanings for each kanji
     - [Checkbox] Show stroke animation instead of pictures
     - [Checkbox] Show detailed example word entries (as in dictionary)
     - [Checkbox] Hide outdated/rare yomi (also adjust for search results)
-- Search history with forwards/backwards buttons?
+  - Forward and backward buttons (to browse kanji info history)
 
 ### Panels
 - Allow vocab-add-separators to be escaped for single translations
@@ -375,11 +380,23 @@ Future
   -> Make test-settings for handling these according to preferences
 - Add new database columns for non-outdated/non-rare on-/kun-yomi
 - Allow having different SRS schemes for each test-mode
+- Link to similar looking kanji in info-panel to disambiguate more easily
 
 ### Content section
+- Create similar kanji/word disambiguation pages of the following form:
+  - [Optional] Title
+  - List of kanji/words under consideration (can be used instead of title)
+  - [Optional] Introduction (e.g. mention the general shared meanings/notions)
+  - List of separate elucidations (info for each kanji/word)
+  - [Optional] Supplementary information (Joint disambiguation, or notes)
+  - [Optional] Sources
 - Contains a database of custom info cards
 - Allow uploading and sharing vocabulary lists
 - Offer small coding environment for creating cards with extended markdown
+
+Credits to add
+--------------------------------------------------------------------------------
+- [](https://subtlepatterns.com/)
 
 Resources
 --------------------------------------------------------------------------------
@@ -392,6 +409,7 @@ Resources
 - Kanji textbook/Internet frequencies?
 - [Honorific language](http://www.levelup99.net/businessmanner/cate3post24.html)
   - Study uses of Teineigo, Sonkeigo, Kenjougo
+- [Country names in Kanji](http://www.jref.com/articles/country-names-in-kanji.224/)
 
 #### CSS/DOM
 - [Buttons](http://usabilitypost.com/2012/01/10/pressed-button-state-with-css3)
@@ -405,6 +423,7 @@ Resources
 - [Focus within](http://caniuse.com/#feat=css-focus-within)
 - [Scrollbar styling](http://caniuse.com/#feat=css-scrollbar)
 - [CSS triangles](http://apps.eky.hk/css-triangle-generator/)
+- [Background images](https://subtlepatterns.com/)
 
 #### Misc
 - Use `electron.shell.openExternal(link)` to open link in default browser

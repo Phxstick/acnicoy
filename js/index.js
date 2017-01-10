@@ -12,7 +12,7 @@ const globals = {
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
     suggestionPanes: ["add-vocab"],
     widgets: ["popup-stack", "switch-button", "switch-bar", "popup-list",
-              "svg-bar-diagram", "kanji-info-panel", "pinwall-widget",
+              "svg-bar-diagram", "kanji-info-panel", "srs-status-bar",
               "kanji-search-result-entry", "dictionary-search-result-entry",
               "pinwall-note", "srs-status-table", "language-table",
               "language-popup", "check-box", "example-word-entry",
@@ -49,7 +49,6 @@ const Panel = require(paths.js.base("panel"));
 const Widget = require(paths.js.base("widget"));
 
 const OverlayWindow = require(paths.js.widget("overlay-window"));
-const PinwallWidget = require(paths.js.widget("pinwall-widget"));
 
 // Load everything else defined in globals object
 for (const name of globals.windows) require(paths.js.window(name));

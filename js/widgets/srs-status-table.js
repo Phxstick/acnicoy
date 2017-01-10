@@ -1,23 +1,29 @@
 "use strict";
 
-class SrsStatusTable extends PinwallWidget {
+class SrsStatusTable extends Widget {
     constructor() {
-        super("srs-status-table", "SRS status table");
-        this.srsTable = this.root.getElementById("srs-table");
+        super("srs-status-table");
     }
 
-    registerCentralEventListeners() {
-        events.onAll(["current-srs-scheme-edited"], () => {
-            this.fillSrsTable();
-        });
+    connectedCallback() {
+        this.updateListener = () => this.fillSrsTable();
+        events.onAll(["current-srs-scheme-edited", "update-srs-status"],
+            this.updateListener);
     }
+
+    disconnectedCallback() {
+        events.removeAll(["current-srs-scheme-edited", "update-srs-status"],
+            this.updateListener);
+    }
+
+    
 
     fillSrsTable() {
         dataManager.srs.getAmounts().then((amounts) => {
             const html = templates.get("srs-status-table")({
                 amounts, modes: dataManager.test.modesForLanguage(main.language)
             });
-            this.srsTable.innerHTML = html;
+            this.$("srs-table").innerHTML = html;
             this.$("reload-srs").addEventListener(
                     "click", () => this.fillSrsTable());
             main.updateTestButton();
