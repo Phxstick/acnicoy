@@ -44,6 +44,8 @@ class MainWindow extends Window {
         this.panels = {};
         this.suggestionPanes = {};
         this.kanjiInfoPanel = this.$("kanji-info-panel");
+        this.fadingOutPreviousSection = false;
+        this.nextSection = "";
         // Top menu button events
         this.$("exit-button").addEventListener("click",
                 () => ipcRenderer.send("quit"));
@@ -179,20 +181,33 @@ class MainWindow extends Window {
     }
 
     openSection(name) {
+        if (this.fadingOutPreviousSection) {
+            this.nextSection = name;
+            return;
+        }
         if (this.currentSection === name) return;
         const currentSection = this.currentSection;
-        this.currentSection = name;
         return Promise.resolve(
                 this.sections[currentSection].confirmClose())
         .then((confirmed) => {
             if (!confirmed) return;
+            this.fadingOutPreviousSection = true;
+            this.nextSection = name;
             this.sections[currentSection].close();
             Velocity(this.sections[currentSection], "fadeOut",
                 { duration: this.sectionFadeDuration })
             .then(() => {
-                this.sections[name].open();
-                Velocity(this.sections[name], "fadeIn",
+                // Make sure section is already displayed when "open" is called
+                this.fadingOutPreviousSection = false;
+                const nextSection = this.nextSection;
+                this.currentSection = nextSection;
+                this.sections[nextSection].style.opacity = "0";
+                this.sections[nextSection].show();
+                Velocity(this.sections[nextSection], "fadeIn",
                     { duration: this.sectionFadeDuration });
+                return utility.finishEventQueue().then(() => {
+                    this.sections[nextSection].open();
+                });
             });
         });
     }
@@ -315,18 +330,25 @@ class MainWindow extends Window {
             this.language = language;
             this.language2 = dataManager.languageSettings.secondaryLanguage;
             this.adjustToLanguage(this.language, this.language2);
+            const promises = [];
             for (const key in this.sections) {
-                this.sections[key].adjustToLanguage(
-                        this.language, this.language2);
+                promises.push(Promise.resolve(
+                    this.sections[key].adjustToLanguage(
+                        this.language, this.language2)));
             }
             for (const key in this.panels) {
-                this.panels[key].adjustToLanguage(
-                        this.language, this.language2);
+                promises.push(Promise.resolve(
+                    this.panels[key].adjustToLanguage(
+                        this.language, this.language2)));
             }
-            if (this.currentSection !== null)
-                this.sections[this.currentSection].open();
             this.$("language-popup").set(language);
-            events.emit("language-changed", language);
+            return Promise.all(promises).then(() => {
+                if (this.currentSection !== null) {
+                    return this.sections[this.currentSection].open();
+                }
+            }).then(() => {
+                events.emit("language-changed", language);
+            });
         });
     }
 

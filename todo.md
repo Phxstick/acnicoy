@@ -12,19 +12,13 @@
 - Use thin symbols for fa-times, fa-plus etc. where fitting
 
 ### Fixes
-- Make loading of diagrams in stats-section work consistently
-- Things got slower when reworking sass? Maybe because main window is flex now?
-- Fix switching between sections
 - SRS level editing is not fully stable (Maybe remove ability to edit levels?)
   - Make sure levels are ordered after resolving invalid values in SRS schemes
   - Make sure empty levels get removed/highlighted without requiring user input
-- Remove flickering when quickly dragging vocab item over list contents column
 - CSS Tooltip Issues (Need to make a widget I guess):
   - z-index is incorrect (Applied workaround)
   - can leave view
   - Memory hog when using on many elements
-- Make language switching seamless
-  - Hide flickering in sections like home/vocabulary
 
 By category
 --------------------------------------------------------------------------------
@@ -36,7 +30,9 @@ By category
   - Or rather split menu entries into groups to seperate by? (e.g. copy/paste)
 - Info window when (new) language pack is available for a language
   - Allow user to start downloads and link to settings for progress bar
-- Create a custom menu bar
+- Create a custom menu bar?
+- Remove flickering when quickly dragging vocab item over list contents column
+  - Not a bug in Acnicoy - Events are just fired incorrectly
 - Expose shortcut for reloading program?
 - Implement suggestion windows for other panels
   - Remove `globals.suggestionPanes` and use `globals.panels` instead
@@ -105,6 +101,10 @@ once? --> Faster loading, centralized resource loading
   - Provide easy way create kanji-links (or just scan through markdown)
 - Identify SRS schemes by ID instead of name!
 - Use advanced CSS width values where possible (`width: fill`);
+
+### Performance
+- Things got slower when reworking sass? Maybe because main window is flex now?
+  Replace with `calc(100% - x)` or `width: fill`?
 
 ### Init window
 - Make init section feel more welcoming and less plain. Background picture?
@@ -380,7 +380,8 @@ Future
   -> Make test-settings for handling these according to preferences
 - Add new database columns for non-outdated/non-rare on-/kun-yomi
 - Allow having different SRS schemes for each test-mode
-- Link to similar looking kanji in info-panel to disambiguate more easily
+- Link to similar looking kanji in info-panel to disambiguate more easily,
+  also link to additional information (e.g. history, meanings) if available.
 
 ### Content section
 - Create similar kanji/word disambiguation pages of the following form:

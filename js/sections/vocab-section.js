@@ -108,13 +108,13 @@ class VocabSection extends Section {
             });
             node.addEventListener("dragenter", (event) => {
                 if (this.selectedList === null) return;
-                event.preventDefault();
                 if (node.dragCounter === 0) {
                     node.classList.add("dragover");
                 }
                 node.dragCounter++;
             });
             node.addEventListener("dragleave", (event) => {
+                if (this.selectedList === null) return;
                 node.dragCounter--;
                 if (node.dragCounter === 0) {
                     node.classList.remove("dragover");

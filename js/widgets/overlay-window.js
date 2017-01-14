@@ -67,6 +67,7 @@ class OverlayWindow extends Widget {
         if (this.overlays.length === 0) return;
         const overlay = this.overlays.pop();
         const filter = this.filters.pop();
+        overlay.style.pointerEvents = "none";
         Promise.resolve().then(() => {
             // Undisplay the filter and overlay according to its display mode
             const { mode, speed, distance } = overlay.displayOptions;
@@ -93,10 +94,10 @@ class OverlayWindow extends Widget {
             }
         }).then(() => {
             overlay.close();
+            overlay.style.pointerEvents = "auto";
             this.wrapper.removeChild(overlay);
             this.wrapper.removeChild(filter);
-            if (this.overlays.length === 0)
-                this.hide();
+            if (this.overlays.length === 0) this.hide();
         });
     }
 }

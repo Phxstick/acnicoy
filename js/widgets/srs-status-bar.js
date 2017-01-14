@@ -17,7 +17,7 @@ class SrsStatusBar extends Widget {
     }
 
     update() {
-        dataManager.srs.getAmounts().then((amounts) => {
+        return dataManager.srs.getAmounts().then((amounts) => {
             this.$("levels").empty();
             this.$("amounts-total").empty();
             this.$("amounts-due").empty();
@@ -50,11 +50,11 @@ class SrsStatusBar extends Widget {
     }
     
     open() {
-        this.update();
+        return this.update();
     }
 
     adjustToLanguage(language, secondary) {
-        this.update();
+        return this.update();
     }
 }
 

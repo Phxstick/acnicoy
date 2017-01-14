@@ -3,7 +3,8 @@
 class PopupStack extends Widget {
 
     static get observedAttributes() {
-        return ["disabled", "orientation", "overlap", "animate"];
+        return ["disabled", "orientation", "overlap", "animate",
+                "slide-duration"];
     }
 
     constructor() {
@@ -13,13 +14,22 @@ class PopupStack extends Widget {
             "animate": true,
             "disabled": false,
             "overlap": 0,
-            "orientation": "horizontal"
+            "orientation": "horizontal",
+            "slideDuration": 300,
+            "easing": "ease-out"
         }
         this.isOpen = false;
+        this.closing = false;
         this.topItem = null;
-        window.addEventListener("click", () => this.close());
-        this.addEventListener("click", (event) => {
+        window.addEventListener("click", (event) => {
             if (this._attributes["disabled"]) return;
+            if (this.closing) return;
+            this.close();
+        });
+        this.addEventListener("click", (event) => {
+            if (event.target.parentNode !== this) return;
+            if (this._attributes["disabled"]) return;
+            if (this.closing) return;
             if (this.isOpen) {
                 this.set(event.target);
                 this.close();
@@ -60,6 +70,7 @@ class PopupStack extends Widget {
 
     open() {
         if (this.isOpen || this.children.length === 0) return;
+        this.isOpen = true;
         // Set names of the properties to be changed depending on orientation
         let propertyNames;
         if (this._attributes["orientation"] === "horizontal") {
@@ -78,8 +89,9 @@ class PopupStack extends Widget {
             const child = this.children[i];
             child.style.zIndex = i;
             if (this._attributes["animate"]) {
-                Velocity(child, {
-                    [propertyNames.offset] : `${current}px`
+                Velocity(child, { [propertyNames.offset] : `${current}px` }, {
+                    duration: this._attributes["slideDuration"],
+                    easing: this._attributes["easing"]
                 });
             } else {
                 child.style[propertyNames.offset] = `${current}px`;
@@ -87,12 +99,23 @@ class PopupStack extends Widget {
             current += itemSize - this._attributes["overlap"];
         }
         this.topItem.style.zIndex = this.children.length;
-        Velocity(this.$("shadow"), { [propertyNames.dimension] : current });
-        this.isOpen = true;
+        if (this._attributes["animate"]) {
+            return Velocity(this.$("shadow"), { 
+                [propertyNames.dimension] : current
+            }, {
+                duration: this._attributes["slideDuration"],
+                easing: this._attributes["easing"]
+            });
+        } else {
+            this.$("shadow").style[propertyNames.dimension] = `${current}px`;
+        }
     }
 
     close() {
         if (!this.isOpen) return;
+        this.style.pointerEvents = "none";
+        this.closing = true;
+        this.isOpen = false;
         // Set names of the properties to be changed depending on orientation
         let propertyNames;
         if (this._attributes["orientation"] === "horizontal") {
@@ -106,17 +129,30 @@ class PopupStack extends Widget {
         }
         // Close the popup-stack by animating/setting these property names
         if (this._attributes["animate"]) {
-            Velocity(this.children, { [propertyNames.offset] : "0" });
+            Velocity(this.children, { [propertyNames.offset] : "0" },
+                { duration: this._attributes["slideDuration"],
+                  easing: this._attributes["easing"] });
         } else {
             for (const child of this.children) {
                 child.style[propertyNames.offset] = "0";
             }
         }
-        Velocity(this.$("shadow"), {
-            [propertyNames.dimension]:
-                this.$("frame")[propertyNames.size] + "px"
+        const closedSize = this.$("frame")[propertyNames.size];
+        let promise = Promise.resolve();
+        if (this._attributes["animate"]) {
+            promise = Velocity(this.$("shadow"), {
+                [propertyNames.dimension]: `${closedSize}px`
+            }, {
+                duration: this._attributes["slideDuration"],
+                easing: this._attributes["easing"]
+            });
+        } else {
+            this.$("shadow").style[propertyNames.dimension] = `${closedSize}px`;
+        }
+        return promise.then(() => {
+            this.style.pointerEvents = "auto";
+            this.closing = false;
         });
-        this.isOpen = false;
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -142,6 +178,8 @@ class PopupStack extends Widget {
             }
         } else if (name === "animate") {
             this._attributes["animate"] = (newValue !== null);
+        } else if (name === "slide-duration") {
+            this._attributes["slideDuration"] = newValue;
         }
     }
 
@@ -159,7 +197,7 @@ class PopupStack extends Widget {
     }
 
     get orientation() {
-        this.getAttribute("orientation");
+        return this.getAttribute("orientation");
     }
 
     set overlap(value) {
@@ -167,7 +205,7 @@ class PopupStack extends Widget {
     }
 
     get overlap() {
-        this.getAttribute("overlap");
+        return this.getAttribute("overlap");
     }
 
     set animate(value) {
@@ -177,6 +215,14 @@ class PopupStack extends Widget {
 
     get animate() {
         return this.hasAttribute("animate");
+    }
+
+    set slideDuration(value) {
+        this.setAttribute("slide-duration", value);
+    }
+
+    get slideDuration() {
+        return this.getAttribute("slide-duration");
     }
 }
 

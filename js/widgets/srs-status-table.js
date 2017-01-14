@@ -19,23 +19,22 @@ class SrsStatusTable extends Widget {
     
 
     fillSrsTable() {
-        dataManager.srs.getAmounts().then((amounts) => {
+        return dataManager.srs.getAmounts().then((amounts) => {
             const html = templates.get("srs-status-table")({
-                amounts, modes: dataManager.test.modesForLanguage(main.language)
+                amounts, modes: dataManager.test.modes
             });
             this.$("srs-table").innerHTML = html;
             this.$("reload-srs").addEventListener(
-                    "click", () => this.fillSrsTable());
-            main.updateTestButton();
+                "click", () => events.emit("update-srs-status"));
         });
     }
 
     open() {
-        this.fillSrsTable();
+        return this.fillSrsTable();
     }
 
     adjustToLanguage(language, secondary) {
-        this.fillSrsTable();
+        return this.fillSrsTable();
     }
 }
 

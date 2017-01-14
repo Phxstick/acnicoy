@@ -16,7 +16,7 @@ class HomeSection extends Section {
     }
 
     adjustToLanguage(language, secondary) {
-        this.$("pinwall").innerHTML = "";
+        const promises = [];
         const fragment = document.createDocumentFragment();
         for (const widget of dataManager.pinwall.getWidgets()) {
             const Type = customElements.get(widget.type);
@@ -25,10 +25,17 @@ class HomeSection extends Section {
                 // TODO: Set size
                 object.setText(widget.text);
             }
-            object.adjustToLanguage(language, secondary);
+            promises.push(Promise.resolve(
+                object.adjustToLanguage(language, secondary)));
             fragment.appendChild(object);
         }
-        this.$("pinwall").appendChild(fragment);
+        return Promise.all(promises).then(() => utility.finishEventQueue())
+        .then(() => {
+            this.$("pinwall").innerHTML = "";
+            return utility.finishEventQueue().then(() => {
+                this.$("pinwall").appendChild(fragment);
+            });
+        });
     }
 
     addPinwallWidget(type) {
