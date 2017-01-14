@@ -319,7 +319,7 @@ class SrsSchemesOverlay extends Overlay {
     */
     saveChanges() {
         if (!this.editModeActive) {
-            throw Error("Changes can only be saved in edit mode.");
+            throw new Error("Changes can only be saved in edit mode.");
         }
         if (this.$("scheme-name-input").value.trim().length === 0) {
             dialogWindow.info("Scheme name cannot be empty.");

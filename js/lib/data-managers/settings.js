@@ -27,7 +27,7 @@ module.exports = function (paths, modules) {
         },
         set: (target, key, value) => {
             if (data !== undefined && Reflect.has(data, key)) data[key] = value;
-            else throw Error("You cannot create new settings!")
+            else throw new Error("You cannot create new settings!")
         }
     })
 };

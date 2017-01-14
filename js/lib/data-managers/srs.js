@@ -55,7 +55,7 @@ module.exports = function (paths, modules) {
             }
         }
         if (!schemeInfo) {
-            throw Error(
+            throw new Error(
                 `SRS scheme with name '${schemeName}' could not be found.`);
         }
         // Edit scheme
@@ -81,7 +81,8 @@ module.exports = function (paths, modules) {
         for (const { name, intervals } of srs.schemes) {
             if (name === schemeName) return ["", ...intervals, "Infinity"];
         }
-        throw Error(`SRS scheme with name '${schemeName}' could not be found.`);
+        throw new Error(
+            `SRS scheme with name '${schemeName}' could not be found.`);
     };
 
     /**

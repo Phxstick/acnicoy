@@ -4,17 +4,13 @@ class StatsSection extends Section {
     constructor() {
         super("stats");
         // Store important elements
-        this.kanjiDiagrams = this.root.getElementById("kanji-diagrams");
-        this.kanjiAddedFrame = this.root.getElementById("kanji-added-frame");
-        this.jouyouKanjiDiagram = this.root.getElementById("jouyou-kanji");
-        this.jlptKanjiDiagram = this.root.getElementById("jlpt-kanji");
-        // Configure diagram display parameters
-        this.jouyouKanjiDiagram.barWidth = 35;
+        this.jouyouKanjiDiagram = this.$("jouyou-kanji");
+        this.jlptKanjiDiagram = this.$("jlpt-kanji");
+        // Configure diagram display  parameters
         this.jouyouKanjiDiagram.bottomLineWidth = 1;
         this.jouyouKanjiDiagram.topLineWidth = 1;
         this.jouyouKanjiDiagram.margin =
             { top: 0, bottom: 30, left: 20, right: 20 };
-        this.jlptKanjiDiagram.barWidth = 35;
         this.jlptKanjiDiagram.bottomLineWidth = 1;
         this.jlptKanjiDiagram.topLineWidth = 1;
         this.jlptKanjiDiagram.margin =
@@ -38,8 +34,8 @@ class StatsSection extends Section {
     adjustToLanguage(language, secondary) {
         this.jouyouKanjiDiagram.hide();
         if (language === "Japanese") {
-            this.kanjiAddedFrame.show();
-            this.kanjiDiagrams.show();
+            this.$("kanji-added-frame").show();
+            this.$("kanji-diagrams").show();
             if (dataManager.content.isAvailable[language]) {
                 this.jouyouKanjiDiagram.show();
                 this.jlptKanjiDiagram.show();
@@ -48,8 +44,8 @@ class StatsSection extends Section {
                 this.jlptKanjiDiagram.hide();
             }
         } else {
-            this.kanjiAddedFrame.hide();
-            this.kanjiDiagrams.hide();
+            this.$("kanji-added-frame").hide();
+            this.$("kanji-diagrams").hide();
         }
     }
 

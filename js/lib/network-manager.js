@@ -252,7 +252,7 @@ function startDownload(filename) {
 **/
 function stopDownload(filename) {
     if (!downloads.has(filename)) {
-        throw Error(`Error: Could not find download for file "${filename}".`);
+        throw new Error(`Could not find download for file "${filename}".`);
     }
     downloads.get(filename).destroy();
     // TODO: Save remaining data in buffer here somehow

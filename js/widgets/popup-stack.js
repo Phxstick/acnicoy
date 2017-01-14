@@ -167,14 +167,14 @@ class PopupStack extends Widget {
             if (newValue === "horizontal" || newValue === "vertical") {
                 this._attributes["orientation"] = newValue;
             } else {
-                throw Error("popup-stack orientation must be either " +
-                            "'horizontal' or 'vertical'.");
+                throw new Error("popup-stack orientation must be either " +
+                                "'horizontal' or 'vertical'.");
             }
         } else if (name === "overlap") {
-            if (!isNan(newValue)) {
+            if (!isNaN(newValue)) {
                 this._attributes["overlap"] = parseInt(newValue);
             } else {
-                throw Error("popup-stack overlap must be an integer.");
+                throw new Error("popup-stack overlap must be an integer.");
             }
         } else if (name === "animate") {
             this._attributes["animate"] = (newValue !== null);

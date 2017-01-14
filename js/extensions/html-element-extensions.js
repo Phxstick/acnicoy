@@ -246,7 +246,7 @@ HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
             }
         };
     } else {
-        throw Error("Parameter 'itemNames' must be an array or function!");
+        throw new Error("Parameter 'itemNames' must be an array or function!");
     }
     this.addEventListener("contextmenu", () => this.popupMenuCallback());
 }

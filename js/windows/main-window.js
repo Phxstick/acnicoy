@@ -39,7 +39,7 @@ class MainWindow extends Window {
     constructor () {
         super("main");
         this.panelSlideDuration = 350;
-        this.sectionFadeDuration = 250;
+        this.sectionFadeDuration = 200;
         this.sections = {};
         this.panels = {};
         this.suggestionPanes = {};
