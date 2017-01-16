@@ -1,5 +1,4 @@
 ### Up next
-- Add srs-review-schedule diagram
 - Implement language settings (and optionally others already)
 - Focus most important element in each overlay upon opening (e.g. buttons)
 - Capture focus in overlays (especially dialogs!) and panels
@@ -28,8 +27,6 @@ By category
   - Also make into custom widget?
 - Use popupMenu separators when context changes? (see e.g. dictionary entry)
   - Or rather split menu entries into groups to seperate by? (e.g. copy/paste)
-- Info window when (new) language pack is available for a language
-  - Allow user to start downloads and link to settings for progress bar
 - Create a custom menu bar?
 - Remove flickering when quickly dragging vocab item over list contents column
   - Not a bug in Acnicoy - Events are just fired incorrectly
@@ -45,24 +42,15 @@ By category
   visible well. Also consider using thin, rounded scrollbars with margin
 - Improve policy for incorrectly answered SRS items
   - Don't always move down two levels, but one with adjusted review time instead
-- Make migrating SRS items safer by applying changes to a copy of data and
-  replacing old data only after migration has finished successfully?
-  - Or rather use SQLITE3 transactions/savepoints/rollbacks
-- Find algorithm to create reasonable default SRS scheme migration connections
-- Remove connectors for old scheme levels which have no items associated
 - Calculate *urgency level* for given set of vocabulary (Show in home-section)
   - Allow testing vocabulary in approximate urgency order
 - Use "srs-schemes-edited" event instead of "current-srs-scheme-edited"?
-- Create shortcut for testing all languages in given order.
-  - Order can then be changed by dragging languages around in settings
-- In migrate-srs-overlay, connections starting from the same level must be
-  connected to a *consecutive* row of levels (otherwise, disallow connection)?
 - How to get undo/redo possibility for each item seperately?
 
 ### Code
 ##### Naming
 - Rename panels into "panes" or "sliding-panes"?
-- Probably rename "window" to "screen"?
+- Probably rename "window" to "screen"
 - Rename "overlay" global into "overlays"
 - Call "popupMenu" "contextMenu" instead
 - Use folder "widgets" only for base widgets, put everything else directly into
@@ -70,6 +58,7 @@ By category
   - Adjust pathManager and index.js
 - Remove inconsistencies in code, e.g. unify glossary ("word" <-> "entry")
   - Especially in dataManager
+
 ##### Refactoring
 - Have htmlManager and cssManager which make sure all assets are only loaded
 once? --> Faster loading, centralized resource loading
@@ -90,6 +79,7 @@ once? --> Faster loading, centralized resource loading
   2. Functions completely independent of languages
   3. Functions operating on current language
   4. Functions depending on any other language (using `dataMap`)
+
 ##### Adaptions
 - Use `position: sticky` for kanji info panel in kanji section?
 - use split function from sqlite instead of JS version?
@@ -107,19 +97,24 @@ once? --> Faster loading, centralized resource loading
   Replace with `calc(100% - x)` or `width: fill`?
 
 ### Init window
-- Make init section feel more welcoming and less plain. Background picture?
+- Make init section feel more welcoming and less plain
   - Consider including a welcome message
   - Consider putting program name above panes
-  - Maybe something like dark linen as background?
+  - Consider using a subtle pattern as background picture
 
 ### Main window
-- Close-Panel shortcut (Default: ESC)
 - Remember where focus was when opening panel, restore after closing panel again
 - Create quick start overlay with quick info on structure of the program
   - Give option to "not display this window again on program start"
   - Display on program start if not disabled
+- Info window when (new) language pack is available for a language
+  - Allow user to start downloads and link to settings for progress bar
 - Highlight menu button whose corresponding section/panel is opened?
-Or otherwise indicate which section/panel is currently opened?
+  Or otherwise indicate which section/panel is currently opened?
+- Shortcut, probably Ctrl+R, to reload stuff, e.g. update SRS stuff?
+- Close-Panel shortcut (Default: ESC)
+- Create shortcut for testing all languages in given order.
+  - Order can then be changed by dragging languages around in settings
 
 ### Home section
 - Possibly create overlay-style sidebar for customizing pinwall
@@ -129,16 +124,12 @@ Or otherwise indicate which section/panel is currently opened?
   - Combine notes into single widget?
     - Allow writing notes in markdown format, render when saving the note
     - Use `column-count`, `column-gap`, `column-fill` for multi-col structure
-  - SRS Review schedule diagram (intervals customizable)
-    - Use bar diagram
-    - Have buttons for switching time units (hours, days, weeks, months)
-    - Maybe 1m/2w as standard interval
   - Changelog widget (Save changelogs in local storage somewhere)
   - srs-status-bar
     - Display info message if vocabulary is empty
     - Allow showing detailed infos per mode
     - Replace "level" label with reload- and help-button?
-  - srs-status-diagram (Like status-bar, but as bar-diagram)
+  - srs-status-diagram (Like status-bar, but as bar-diagram)?
 
 ### Test section
 - Save test state when closing an unfinished test. Only confirm on program exit
@@ -196,9 +187,6 @@ a ".", keep all meanings for each kanji
 - Implement tests on vocabulary lists
 - Implement searching in vocab lists and list contents
 
-### Svg Bar Diagram
-- Terminology: *Descriptions*/*Labels*??
-
 ### Dictionary
 - Display link to dictionary section help in info-frame
 - Search settings:
@@ -236,6 +224,15 @@ a ".", keep all meanings for each kanji
   - "Examples" button linking to dictionary section in each search result?
     Or rather expand search result entry?
   - Strokes being displayed in a single scrollable row
+
+### Migrate-srs-overlay
+- Make migrating SRS items safer by applying changes to a copy of data and
+  replacing old data only after migration has finished successfully?
+  - Or rather use SQLITE3 transactions/savepoints/rollbacks
+- Find algorithm to create reasonable default SRS scheme migration connections
+- Remove connectors for old scheme levels which have no items associated
+- Make sure that connections starting from the same level are always connected
+  to a *consecutive* row of levels (otherwise, disallow connection)?
 
 ### Stats/Achievements
 - Use single-bar diagram for kanji progress to display relative to total!

@@ -285,6 +285,26 @@ module.exports = function (paths, modules) {
         });
     };
 
+    srs.getSchedule = function (step, numSteps) {
+        const promises = [];
+        const currentTime = utility.getTime();
+        for (let i = 1; i <= numSteps; ++i) {
+            const intervalEnd = currentTime + i * step;
+            const intervalStart = intervalEnd - step;
+            const modePromises = [];
+            for (const mode of modules.test.modes) {
+                const table = modules.test.modeToTable(mode);
+                modePromises.push(modules.database.query(
+                    `SELECT COUNT(review_date) AS amount FROM ${table}
+                     WHERE review_date BETWEEN ? AND ?`,
+                    intervalStart, intervalEnd).then(([{amount}]) => amount));
+            }
+            promises.push(
+                Promise.all(modePromises).then((amounts) => amounts.sum()));
+        }
+        return Promise.all(promises);
+    };
+
     /* =========================================================================
         Updating SRS info
     ========================================================================= */

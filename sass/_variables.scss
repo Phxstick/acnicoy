@@ -90,7 +90,7 @@ $button-shadow-color-active: darken($button-background-active, 10%);
 
 // Light button
 $button-light-color: dimgray;
-$button-light-color-hover: black;
+$button-light-color-hover: $color;
 $button-light-icon-color: #999;
 $button-light-icon-color-lightest: #bbb;
 $button-light-icon-color-hover: dimgray;

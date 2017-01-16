@@ -146,7 +146,9 @@ class MainWindow extends Window {
         this.setLanguage(defaultLanguage).then(() => {
             // Only display home section
             this.sections["home"].show();
-            this.sections["home"].open();
+            utility.finishEventQueue().then(() => {
+                this.sections["home"].open();
+            });
             this.currentSection = "home";
             // Regularly update displayed SRS info
             setInterval(() => events.emit("update-srs-status"),

@@ -2,7 +2,7 @@
 
 class SvgBarDiagram extends Widget {
 
-    constructor () {
+    constructor() {
         super("svg-bar-diagram");
         this.svg = utility.createSvgNode("svg", {
             preserveAspectRatio: "xMinYMin slice"
@@ -10,6 +10,7 @@ class SvgBarDiagram extends Widget {
         this.root.appendChild(this.svg);
         // Parameters for drawing (all in pixels)
         this.margin = { top: 0, right: 0, bottom: 0, left: 0 };
+        this.valueLabelMarginBottom = 5;
         this.textMarginTop = null;
         this.topLineWidth = 0;
         this.bottomLineWidth = 1;
@@ -49,13 +50,20 @@ class SvgBarDiagram extends Widget {
         });
     }
 
-    draw (values, maxValues=null, descriptions=null) {
+    draw(values, maxValues=null, descriptions=null, showValueLabels=false) {
         const numValues = values.length;
+        // If maxValues is just an integer, use that as maximum for all values
+        // If no maximum values are given, use the maximum of the values array
+        if (typeof maxValues === "number") {
+            const maxValue = maxValues;
+            maxValues = [];
+            for (let i = 0; i < numValues; ++i) maxValues.push(maxValue);
+        }
         if (maxValues !== null && numValues !== maxValues.length)
             throw new Error("Arrays for drawing bars must have same length!");
         this.svg.empty();
-        // If no maximum values are given, use the maximum of the values array
         if (maxValues === null) {
+            maxValues = [];
             const maxValue = Math.max(...values);
             for (let i = 0; i < numValues; ++i) maxValues.push(maxValue);
         }
@@ -72,6 +80,7 @@ class SvgBarDiagram extends Widget {
                 this.svg.getBoundingClientRect();
         this.svg.setAttribute("width", viewWidth.toString());
         this.svg.setAttribute("height", viewHeight.toString());
+        this.svg.setAttribute("viewBox", `0 0 ${viewWidth} ${viewHeight}`);
         const totalHeight = viewHeight;
         let totalWidth;
         if (this.barSpacing !== null && this.barWidth !== null) {
@@ -139,6 +148,15 @@ class SvgBarDiagram extends Widget {
                       height: height * percentages[i] });
             rect.classList.add("bar");
             this.svg.appendChild(rect);
+            // Also display value labels, if flag is set
+            if (showValueLabels && values[i] > 0) {
+                const valueLabel = utility.createSvgNode("text",
+                    { x: pos.x + barWidth / 2,
+                      y: pos.y - this.valueLabelMarginBottom });
+                valueLabel.classList.add("value-label");
+                valueLabel.textContent = values[i].toString();
+                this.svg.appendChild(valueLabel);
+            }
             pos.x += barWidth + barSpacing;
         }
         // Draw the descriptions if given
@@ -154,12 +172,12 @@ class SvgBarDiagram extends Widget {
                 pos.y += this.margin.bottom / 2;
                 alignment = "middle";
             }
-            // Draw descriptions
+            // Draw description labels
             for (let i = 0; i < numValues; ++i) {
                 const text = utility.createSvgNode("text",
                     { x: pos.x, y: pos.y, "alignment-baseline": alignment });
                 text.textContent = descriptions[i];
-                text.classList.add("label");
+                text.classList.add("description-label");
                 this.svg.appendChild(text);
                 pos.x += barWidth + barSpacing;
             }

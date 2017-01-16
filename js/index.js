@@ -16,7 +16,7 @@ const globals = {
               "kanji-search-result-entry", "dictionary-search-result-entry",
               "pinwall-note", "srs-status-table", "language-table",
               "language-popup", "check-box", "example-word-entry",
-              "tabbed-frame"],
+              "tabbed-frame", "srs-review-schedule"],
     extensions: ["converter", "array-extensions", "html-element-extensions",
                  "event-emitter-extensions", "string-extensions"]
 };
@@ -165,20 +165,21 @@ console.log("Loaded all required modules after %f ms", totalTime);
             console.log("Loaded all language data after %f ms", total);
         });
     }).then(() => {
-        // Create sections and panels in main-window
-        windows["loading"].setStatus("Creating sections...");
+        // Create sections, panels and suggestion panes in main-window
+        windows["loading"].setStatus("Creating interface...");
         return Promise.all([
             main.createSections(),
             main.createPanels(),
             main.createSuggestionPanes()
         ]);
     }).then(() => {
+        // Display main window but don't hide loading window yet
+        openWindow("main", false);
         // Set language and initialize stuff in main-window
         main.initialize(languages, defaultLanguage);
         windows["loading"].setStatus("Processing language content...");
         return main.processLanguageContent(languages);
     }).then(() => {
-        openWindow("main", false);
         // Load any character in kanji info panel to render stuff there
         // (Prevents buggy animation when first opening the panel)
         if (dataManager.content.isAvailable["Japanese"]) {

@@ -43,3 +43,12 @@ popup-stack {
     }
   }
 }
+
+svg-bar-diagram {
+  --bar-border-width: 0;
+  --bar-background: $diagram-graphics-color;
+  --bar-background-hover: $diagram-graphics-color-hover;
+  --top-line-color: $border-color-dark;
+  --bottom-line-color: $border-color-dark;
+  --label-color: $diagram-label-color;
+}
