@@ -18,6 +18,8 @@
   - z-index is incorrect (Applied workaround)
   - can leave view
   - Memory hog when using on many elements
+- Height of diagrams in stats section is slightly too large for some reason
+- Correctly resize svg-bar-diagram when resizing window (set width + height)
 
 By category
 --------------------------------------------------------------------------------
@@ -79,6 +81,7 @@ once? --> Faster loading, centralized resource loading
   2. Functions completely independent of languages
   3. Functions operating on current language
   4. Functions depending on any other language (using `dataMap`)
+- svg-bar-diagram: Pass in length-parameters as options to draw-function
 
 ##### Adaptions
 - Use `position: sticky` for kanji info panel in kanji section?
@@ -130,6 +133,11 @@ once? --> Faster loading, centralized resource loading
     - Allow showing detailed infos per mode
     - Replace "level" label with reload- and help-button?
   - srs-status-diagram (Like status-bar, but as bar-diagram)?
+
+### Svg Bar Diagram
+- Use a shadow at both sides to show when scrolling is possible
+- Show percentage in top margin (if maxValues are given)
+- Display tooltips (showing e.g. "current/total") on hover when flag is set
 
 ### Test section
 - Save test state when closing an unfinished test. Only confirm on program exit
@@ -379,6 +387,7 @@ Future
 - Allow having different SRS schemes for each test-mode
 - Link to similar looking kanji in info-panel to disambiguate more easily,
   also link to additional information (e.g. history, meanings) if available.
+- Make a better dragging image in vocabulary section
 
 ### Content section
 - Create similar kanji/word disambiguation pages of the following form:

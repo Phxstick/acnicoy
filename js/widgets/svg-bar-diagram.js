@@ -11,6 +11,10 @@ class SvgBarDiagram extends Widget {
         // Parameters for drawing (all in pixels)
         this.margin = { top: 0, right: 0, bottom: 0, left: 0 };
         this.valueLabelMarginBottom = 5;
+        this.smallSepTopHeight = 0;
+        this.smallSepBottomHeight = 6;
+        this.sepDescMarginTop = 0;
+        this.descMarginBottom = 5;
         this.textMarginTop = null;
         this.topLineWidth = 0;
         this.bottomLineWidth = 1;
@@ -19,10 +23,12 @@ class SvgBarDiagram extends Widget {
         this.barRatio = 2;  // barWidth = barRatio * barSpacing
         // Allow dragging viewBox if diagram is larger than the viewPort
         this.dragging = false;
-        this.dragAnchorX = null;
+        this.dragStartX = null;
         this.viewOffsetX = 0;
         this.dragOffset = 0;
         this.svg.addEventListener("mousedown", (event) => {
+            const { width: viewWidth } = this.svg.getBoundingClientRect();
+            if (this.totalWidth <= viewWidth) return;
             this.dragging = true;
             this.dragStartX = event.clientX;
         });
@@ -50,7 +56,8 @@ class SvgBarDiagram extends Widget {
         });
     }
 
-    draw(values, maxValues=null, descriptions=null, showValueLabels=false) {
+    draw(values, { maxValues=null, descriptions=null, separators=null,
+                   showValueLabels=false, showSmallSeparators=false }) {
         const numValues = values.length;
         // If maxValues is just an integer, use that as maximum for all values
         // If no maximum values are given, use the maximum of the values array
@@ -67,6 +74,11 @@ class SvgBarDiagram extends Widget {
             const maxValue = Math.max(...values);
             for (let i = 0; i < numValues; ++i) maxValues.push(maxValue);
         }
+        // Check if descriptions have correct format
+        if (descriptions !== null && descriptions.length !== numValues &&
+                descriptions.length !== numValues + 1)
+            throw new Error("descriptions must be either null or an Array " +
+                "of strings of length values.length or values.lenth + 1.");
         // Calculate the percentages
         const percentages = [];
         for (let i = 0; i < numValues; ++i) {
@@ -81,6 +93,7 @@ class SvgBarDiagram extends Widget {
         this.svg.setAttribute("width", viewWidth.toString());
         this.svg.setAttribute("height", viewHeight.toString());
         this.svg.setAttribute("viewBox", `0 0 ${viewWidth} ${viewHeight}`);
+        this.viewOffsetX = 0;
         const totalHeight = viewHeight;
         let totalWidth;
         if (this.barSpacing !== null && this.barWidth !== null) {
@@ -159,31 +172,105 @@ class SvgBarDiagram extends Widget {
             }
             pos.x += barWidth + barSpacing;
         }
-        // Draw the descriptions if given
+        // Draw the descriptions if given. If numValues descriptions are given,
+        // draw them right below the bars. If there are numValues + 1, then
+        // draw them below the gaps between the bars.
+        let firstDescriptionLabel;
         if (descriptions !== null) {
-            const pos = { x: this.margin.left + barWidth / 2,
-                          y: totalHeight - this.margin.bottom };
+            const linePos = { x: this.margin.left - barSpacing / 2,
+                              y: totalHeight - this.margin.bottom };
+            const pos = { x: this.margin.left,
+                          y: totalHeight - this.margin.bottom};
+            if (descriptions.length === numValues) {
+                pos.x += barWidth / 2;
+            }
+            if (descriptions.length === numValues + 1) {
+                pos.x -= barSpacing / 2;
+            }
             let alignment;
             // If this.textMarginTop is null, align vertically in the middle
             if (this.textMarginTop !== null) {
                 pos.y += this.textMarginTop;
-                alignment = "hanging";
+                alignment = "before-edge";
             } else {
                 pos.y += this.margin.bottom / 2;
-                alignment = "middle";
+                alignment = "central";
             }
             // Draw description labels
-            for (let i = 0; i < numValues; ++i) {
-                const text = utility.createSvgNode("text",
-                    { x: pos.x, y: pos.y, "alignment-baseline": alignment });
-                text.textContent = descriptions[i];
-                text.classList.add("description-label");
-                this.svg.appendChild(text);
-                pos.x += barWidth + barSpacing;
+            for (let i = 0; i < descriptions.length; ++i) {
+                if (descriptions[i].length === 0) continue;
+                const x = pos.x + i * (barWidth + barSpacing);
+                const label = utility.createSvgNode("text",
+                    { x, y: pos.y, "alignment-baseline": alignment});
+                label.textContent = descriptions[i];
+                label.classList.add("description-label");
+                this.svg.appendChild(label);
+                if (firstDescriptionLabel === undefined) {
+                    firstDescriptionLabel = label;
+                }
+            }
+            // Draw small seperators (if flag is set)
+            if (showSmallSeparators) {
+                for (let i = 0; i < numValues + 1; ++i) {
+                    const smallSepLine = utility.createSvgNode("line", 
+                        { x1: linePos.x, x2: linePos.x,
+                          y1: linePos.y - this.smallSepTopHeight,
+                          y2: linePos.y + this.smallSepBottomHeight });
+                    smallSepLine.classList.add("small-separator");
+                    this.svg.appendChild(smallSepLine);
+                    linePos.x += barWidth + barSpacing;
+                }
             }
         }
-        // TODO: Show percentage in top margin?
-        // TODO: Display tooltips for hovering (showing "current/total")
+        // Draw large separators (if given)
+        if (separators !== null) {
+            const startPosX = this.margin.left - barSpacing / 2;
+            const y = totalHeight - this.margin.bottom;
+            for (const index in separators) {
+                const text = separators[index];
+                const offset = parseInt(index) * (barWidth + barSpacing);
+                // Draw description text (if not empty)
+                let textHeight;
+                if (text.length > 0) {
+                    const label = utility.createSvgNode("text",
+                        { x: startPosX + offset,
+                          y: totalHeight - this.descMarginBottom,
+                          "alignment-baseline": "baseline" });
+                    label.classList.add("separator-label");
+                    label.textContent = text;
+                    this.svg.appendChild(label);
+                    textHeight = label.getBBox().height;
+                }
+                // Extend line as far as possible if there's nothing below
+                let yExtension = 0;
+                if (showSmallSeparators) {
+                    yExtension += this.smallSepBottomHeight;
+                }
+                if (descriptions === null ||
+                        descriptions.length !== numValues + 1 ||
+                        descriptions[index].length === 0) {
+                    if (firstDescriptionLabel !== undefined) {
+                        const { height: labelHeight } =
+                            firstDescriptionLabel.getBBox();
+                        yExtension += labelHeight + this.textMarginTop;
+                    }
+                    if (text.length > 0) {
+                        yExtension = this.margin.bottom - textHeight
+                                     - this.descMarginBottom
+                                     - this.sepDescMarginTop;
+                    } else if (text.length === 0) {
+                        yExtension = this.margin.bottom
+                                     - this.descMarginBottom;
+                    }
+                }
+                // Draw line
+                const sepLine = utility.createSvgNode("line", 
+                    { x1: startPosX + offset, x2: startPosX + offset,
+                      y1: 0, y2: y + yExtension });
+                sepLine.classList.add("large-separator");
+                this.svg.appendChild(sepLine);
+            }
+        }
     }
 }
 

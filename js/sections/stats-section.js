@@ -85,7 +85,7 @@ class StatsSection extends Section {
                     utility.finishEventQueue()
                     .then(() => {
                         this.jouyouKanjiDiagram.draw(
-                            values, maxValues, descriptions);
+                            values, { maxValues, descriptions }); 
                     });
                 });
                 // Display percentages of kanji per jlpt level in bar diagram
@@ -104,7 +104,7 @@ class StatsSection extends Section {
                     utility.finishEventQueue()
                     .then(() => {
                         this.jlptKanjiDiagram.draw(
-                            values, maxValues, descriptions)
+                            values, { maxValues, descriptions });
                     });
                 });
             }

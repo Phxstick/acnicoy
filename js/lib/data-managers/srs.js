@@ -285,22 +285,50 @@ module.exports = function (paths, modules) {
         });
     };
 
-    srs.getSchedule = function (step, numSteps) {
+    srs.getSchedule = function (unit, amount) {
         const promises = [];
-        const currentTime = utility.getTime();
-        for (let i = 1; i <= numSteps; ++i) {
-            const intervalEnd = currentTime + i * step;
-            const intervalStart = intervalEnd - step;
+        const currentDate = new Date();
+        let intervalStartDate = new Date(currentDate);
+        let intervalEndDate = new Date(currentDate);
+        // Set first interval end to start of next hour/day/month
+        if (unit === "hours") {
+            intervalEndDate.setHours(currentDate.getHours() + 1, 0, 0, 0);
+        } else if (unit === "days") {
+            intervalEndDate.setHours(0, 0, 0, 0);
+            intervalEndDate.setDate(currentDate.getDate() + 1);
+        } else if (unit === "months") {
+            intervalEndDate.setHours(0, 0, 0, 0);
+            intervalEndDate.setDate(1);
+            intervalEndDate.setMonth(currentDate.getMonth() + 1);
+        }
+        // intervalEndDate.setTime(intervalEndDate.getTime() - 1);
+        for (let i = 0; i < amount; ++i) {
+            const intervalStart = parseInt(intervalStartDate.getTime() / 1000);
+            const intervalEnd = parseInt(intervalEndDate.getTime() / 1000);
+            // Create object for current interval, containing the amount of
+            // SRS items in this interval and the date at the end of interval
             const modePromises = [];
             for (const mode of modules.test.modes) {
                 const table = modules.test.modeToTable(mode);
                 modePromises.push(modules.database.query(
                     `SELECT COUNT(review_date) AS amount FROM ${table}
                      WHERE review_date BETWEEN ? AND ?`,
-                    intervalStart, intervalEnd).then(([{amount}]) => amount));
+                    intervalStart, intervalEnd-1).then(([{amount}]) => amount));
             }
-            promises.push(
-                Promise.all(modePromises).then((amounts) => amounts.sum()));
+            const endDate = new Date(intervalEndDate);
+            promises.push(Promise.all(modePromises).then((amounts) => ({
+                amount: amounts.sum(), date: endDate
+            })));
+            // Shift interval
+            intervalStartDate = new Date(intervalEndDate.getTime());
+            intervalEndDate = new Date(intervalStartDate);
+            if (unit === "hours") {
+                intervalEndDate.setHours(intervalStartDate.getHours() + 1);
+            } else if (unit === "days") {
+                intervalEndDate.setDate(intervalStartDate.getDate() + 1);
+            } else if (unit === "months") {
+                intervalEndDate.setMonth(intervalStartDate.getMonth() + 1);
+            }
         }
         return Promise.all(promises);
     };

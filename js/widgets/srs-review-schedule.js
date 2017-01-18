@@ -3,9 +3,10 @@
 class SrsReviewSchedule extends Widget {
     constructor() {
         super("srs-review-schedule");
-        this.$("diagram").margin = { top: 30, left: 20, right: 20, bottom: 30 };
+        this.$("diagram").margin = { top: 30, left: 25, right: 25, bottom: 40 };
         this.$("diagram").barWidth = 20;
         this.$("diagram").barSpacing = 10;
+        this.$("diagram").textMarginTop = 6;
         this.selectedIntervalButton = this.$("hours-button");
         this.$("hours-button").classList.add("selected");
         const buttonIds = ["hours-button", "days-button", "months-button"];
@@ -23,10 +24,7 @@ class SrsReviewSchedule extends Widget {
     }
 
     connectedCallback() {
-        this.updateListener = () => {
-            // Only update if widget is visble
-            if (this.$("diagram").offsetWidth !== null) this.update();
-        };
+        this.updateListener = () => this.update();
         events.onAll(["current-srs-scheme-edited", "update-srs-status"],
             this.updateListener);
     }
@@ -37,35 +35,62 @@ class SrsReviewSchedule extends Widget {
     }
 
     update() {
-        const stepName = this.selectedIntervalButton.textContent.toLowerCase();
-        let step;
+        if (this.$("diagram").isHidden()) return;
+        const unit = this.selectedIntervalButton.textContent.toLowerCase();
         let numSteps;
-        let descriptionStep;
-        if (stepName === "hours") {
-            step = 60 * 60;
-            numSteps = 48;
-            descriptionStep = 6;
-        } else if (stepName === "days") {
-            step = 60 * 60 * 24;
-            numSteps = 61;
-            descriptionStep = 7;
-        } else if (stepName === "months") {
-            step = 60 * 60 * 24 * 30;
-            numSteps = 24;
-            descriptionStep = 6;
-        }
-        const descriptions = [];
-        for (let i = 0; i < numSteps; ++i) {
-            if (i === 0) {
-                descriptions.push(`1 ${stepName.slice(0, -1)}`);
-            } else if ((i + 1) % descriptionStep === 0) {
-                descriptions.push(`${i + 1} ${stepName}`);
-            } else {
-                descriptions.push("");
+        if (unit === "hours") numSteps = 48;
+        else if (unit === "days") numSteps = 61;
+        else if (unit === "months") numSteps = 20;
+        dataManager.srs.getSchedule(unit, numSteps).then((schedule) => {
+            const amounts = []
+            const descriptions = [];
+            const separators = {};
+            if (unit === "hours") {
+                const startHour = (schedule[0].date.getHours() + 23) % 24;
+                if (startHour % 3 === 0) descriptions.push(`${startHour}:00`);
+                else descriptions.push("");
             }
-        }
-        dataManager.srs.getSchedule(step, numSteps).then((schedule) => {
-            this.$("diagram").draw(schedule, null, descriptions, true);
+            for (const [index, { amount, date }] of schedule.entries()) {
+                amounts.push(amount);
+                if (unit === "hours") {
+                    const hour = date.getHours();
+                    if (hour % 3 === 0) {
+                        descriptions.push(`${hour}:00`);
+                    } else {
+                        descriptions.push("");
+                    }
+                    if (date.getHours() === 1) {
+                        separators[index] = date.toLocaleString("en-us",
+                            { month: "short", day: "2-digit" });
+                    }
+                } else if (unit === "days") {
+                    if (date.getDay() === 2) {
+                        date.setDate(date.getDate() - 1);
+                        descriptions.push(
+                           `${utility.getOrdinalNumberString(date.getDate())}`);
+                    } else {
+                        descriptions.push("");
+                    }
+                    if (date.getDate() === 2) {
+                        separators[index] = date.toLocaleString("en-us",
+                            { month: "long" });
+                    }
+                } else if (unit === "months") {
+                    date.setMonth(date.getMonth() - 1, 1); // Previous month
+                    if (date.getMonth() % 3 === 0) {
+                        descriptions.push(
+                            date.toLocaleString("en-us", { month: "short" }));
+                    } else {
+                        descriptions.push("");
+                    }
+                    if (date.getMonth() === 0) {
+                        separators[index] = date.toLocaleString("en-us",
+                            { year: "numeric" });
+                    }
+                }
+            }
+            this.$("diagram").draw(amounts, { descriptions, separators,
+                showValueLabels: true, showSmallSeparators: true });
         });
     }
 

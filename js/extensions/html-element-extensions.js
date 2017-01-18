@@ -1,10 +1,10 @@
 "use strict";
 
 /**
- *  Return whether this element is displayed.
+ *  Return whether this element is hidden.
  */
 HTMLElement.prototype.isHidden = function() {
-    return getComputedStyle(this, null).getPropertyValue("display") === "none";
+    return this.offsetParent === null;
 }
 
 const previousDisplayValue = Symbol("previousDisplayValue");
@@ -25,7 +25,8 @@ HTMLElement.prototype.hide = function() {
  *  If the element already has a display value other than 'none', do nothing.
  */
 HTMLElement.prototype.show = function(value) {
-    if (!this.isHidden()) return;
+    if (getComputedStyle(this, null).getPropertyValue("display") !== "none")
+        return;
     if (value !== undefined) {
         this.style.display = value;
     } else if (this[previousDisplayValue] !== undefined) {

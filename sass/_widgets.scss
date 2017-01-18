@@ -46,9 +46,16 @@ popup-stack {
 
 svg-bar-diagram {
   --bar-border-width: 0;
+  --small-separator-width: 1;
+  --large-separator-width: 2;
   --bar-background: $diagram-graphics-color;
   --bar-background-hover: $diagram-graphics-color-hover;
   --top-line-color: $border-color-dark;
   --bottom-line-color: $border-color-dark;
+  --small-separator-color: $border-color-medium;
+  --large-separator-color: $border-color-medium;
   --label-color: $diagram-label-color;
+  --value-font: $font;
+  --description-font: $font;
+  --separator-font: $header-font;
 }

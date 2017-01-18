@@ -4,23 +4,32 @@ svg {
   height: 100%;
 
   rect.bar {
-    stroke: var(--bar-border-color, dimgray);
-    stroke-width: var(--bar-border-width, 1);
-    fill: var(--bar-background, limegreen);
+    stroke: var(--bar-border-color, transparent);
+    stroke-width: var(--bar-border-width, 0);
+    fill: var(--bar-background, gray);
     &:hover {
-      fill: var(--bar-background-hover, green);
+      fill: var(--bar-background-hover, dimgray);
     }
   }
 
   text.description-label {
     text-anchor: middle;
     font-size: var(--label-size, 80%);
+    font-family: var(--description-font, sans-serif);
+    fill: var(--label-color, dimgray);
+  }
+
+  text.separator-label {
+    text-anchor: middle;
+    font-size: var(--label-size, 100%);
+    font-family: var(--separator-font, sans-serif);
     fill: var(--label-color, dimgray);
   }
 
   text.value-label {
     text-anchor: middle;
     font-size: var(--label-size, 80%);
+    font-family: var(--value-font, sans-serif);
     fill: var(--label-color, dimgray);
   }
 
@@ -30,5 +39,15 @@ svg {
 
   line#bottom-line {
     stroke: var(--bottom-line-color, dimgray);
+  }
+  
+  line.small-separator {
+    stroke: var(--small-separator-color, gray);
+    stroke-width: var(--small-separator-width, 1);
+  }
+
+  line.large-separator {
+    stroke: var(--large-separator-color, gray);
+    stroke-width: var(--large-separator-width, 2);
   }
 }
