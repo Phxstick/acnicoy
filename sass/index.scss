@@ -28,6 +28,7 @@ body {
   box-sizing: border-box;
   z-index: var(--dragged-item-layer);
   pointer-events: none;
+
   > *:not(#control-buttons, p) {
     margin: 0;
   }

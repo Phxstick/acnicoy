@@ -12,7 +12,6 @@
 
 * {
   font-family: $font;
-  cursor: $normal-cursor;
   user-select: none;
   &::selection {
     color: $select-color;
@@ -34,6 +33,10 @@
       background-color: $scrollbar-thumb-background-active;
     }
   }
+}
+
+body, :host {
+  cursor: $default-cursor;
 }
 
 body {
@@ -109,6 +112,7 @@ body {
     text-shadow: 0 0 2px $link-shadow-color-hover;
     color: $link-color-hover;
   }
+  cursor: $pointer-cursor;
 }
 
 a {
@@ -160,6 +164,14 @@ hr {
   &.hidden {
     visibility: hidden;
   }
+}
+
+.draggable {
+  cursor: $grab-cursor;
+}
+
+.dragging {
+  cursor: $dragging-cursor;
 }
 
 // =============================================================================

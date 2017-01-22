@@ -9,6 +9,7 @@
   right: 0;
   background-color: $loading-window-background;
   z-index: var(--loading-window-layer);
+  cursor: $wait-cursor;
 
   #inner-frame {
     @include center-content;

@@ -31,6 +31,7 @@ class SvgBarDiagram extends Widget {
             if (this.totalWidth <= viewWidth) return;
             this.dragging = true;
             this.dragStartX = event.clientX;
+            this.svg.classList.add("dragging");
         });
         window.addEventListener("mousemove", (event) => {
             if (!this.dragging) return;
@@ -53,6 +54,7 @@ class SvgBarDiagram extends Widget {
             if (!this.dragging) return;
             this.dragging = false;
             this.viewOffsetX += this.dragOffset;
+            this.svg.classList.remove("dragging");
         });
     }
 
@@ -107,6 +109,7 @@ class SvgBarDiagram extends Widget {
             totalWidth = viewWidth;
         }
         this.totalWidth = totalWidth;
+        this.svg.classList.toggle("draggable", totalWidth > viewWidth);
         // Size of the bar area only
         const width = totalWidth - this.margin.left - this.margin.right;
         const height = totalHeight - this.margin.bottom - this.margin.top

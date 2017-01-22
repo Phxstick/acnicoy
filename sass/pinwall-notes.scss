@@ -13,12 +13,16 @@
     white-space: pre-wrap;
     user-select: text;
     border-bottom: 1px solid $border-color-medium;
+    cursor: auto;
+
     &:focus {
       z-index: 2;
       outline: none;
-      box-shadow: $note-focus-shadow;
+      box-shadow: $input-highlight-shadow;
       background-color: $input-background-focus;
+      border-bottom-color: $input-background-focus;
       color: $input-color-focus;
+
       #control-buttons {
         display: none;
       }
@@ -69,5 +73,9 @@
     padding: 0px;
     padding: 5px;
     font-size: 140%;
+  }
+
+  #move-button {
+    cursor: $grab-cursor;
   }
 }

@@ -38,6 +38,7 @@
       text-align: center;
       color: $button-color;
       padding: 8px;
+      cursor: $pointer-cursor;
 
       &:nth-child(2) {
         border-left: 1px solid $button-border-color;

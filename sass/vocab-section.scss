@@ -76,6 +76,15 @@ body {
   }
 }
 
+#all-lists > * {
+  cursor: $pointer-cursor;
+  &[contenteditable]:focus {
+    position: relative;
+    cursor: auto;
+    z-index: 1;
+  }
+}
+
 #all-lists-button-frame {
   display: flex;
   flex-direction:row;

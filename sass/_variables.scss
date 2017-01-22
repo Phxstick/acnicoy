@@ -2,8 +2,11 @@
 // Cursors
 // =============================================================================
 
-$normal-cursor: auto;
+$default-cursor: default;
 $pointer-cursor: pointer;
+$wait-cursor: wait;
+$grab-cursor: grab;
+$dragging-cursor: grabbing;
 
 // =============================================================================
 // Fonts
@@ -204,7 +207,7 @@ $stats-section-text-shadow: 1px 1px 1px dimgray;
 $popup-menu-shadow: 1px 1px 6px #1a1a1a;
 $input-inset-shadow: inset 0 1px 10px -5px black;
 $input-shadow: 0 0 5px $input-border-color;
-$note-focus-shadow: 0 0 3px 2px $highlight-background;
+$input-highlight-shadow: 0 0 3px 2px $highlight-background;
 
 // Sizes
 $side-bar-width: 80px;

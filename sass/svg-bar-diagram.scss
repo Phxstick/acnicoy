@@ -54,4 +54,12 @@ svg {
     stroke: var(--large-separator-color, gray);
     stroke-width: var(--large-separator-width, 2);
   }
+
+  &.draggable {
+    cursor: grab;
+  }
+
+  &.dragging {
+    cursor: grabbing;
+  }
 }

@@ -36,6 +36,7 @@ $group-number-width: 25px;
     font-size: 150%;
     font-family: $light-font;
     margin-bottom: 4px;
+    cursor: $pointer-cursor;
     // margin-left: -10px;
     // padding-left: 10px;
     // &:hover {
@@ -46,6 +47,7 @@ $group-number-width: 25px;
   .suggestion {
     font-size: 110%;
     display: inline-block;
+    cursor: $pointer-cursor;
     color: $suggestion-color;
     padding: 5px;
     background-color: $suggestion-background;
@@ -79,6 +81,7 @@ $group-number-width: 25px;
       left: -7px;
       border-top-left-radius: 6px;
       border-bottom-left-radius: 6px;
+      cursor: $pointer-cursor;
       &:hover {
         $c: $suggestion-group-selector-hover-background;
         background: linear-gradient(to right, $c, transparent);
