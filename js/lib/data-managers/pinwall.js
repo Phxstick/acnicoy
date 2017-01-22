@@ -9,7 +9,12 @@ module.exports = function(paths, modules) {
     let widgets;
 
     pinwall.create = function (language, settings) {
-        const initialPinwall = [ { type: "srs-status-bar" } ];
+        const initialPinwall = [
+            { type: "srs-status-bar" },
+            { type: "srs-review-schedule" },
+            { type: "pinwall-notes",
+              notes: [] }
+        ];
         const path = paths.languageData(language).pinwall;
         fs.writeFileSync(path, JSON.stringify(initialPinwall, null, 4));
     };

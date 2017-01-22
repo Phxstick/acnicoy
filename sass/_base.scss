@@ -111,6 +111,15 @@ body {
   }
 }
 
+a {
+  text-decoration: none;
+  color: $http-link-color;
+  &:hover {
+    text-decoration: underline;
+    color: $http-link-color-hover;
+  }
+}
+
 .info {
   color: $info-color;
 }

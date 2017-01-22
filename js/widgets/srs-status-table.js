@@ -1,12 +1,12 @@
 "use strict";
 
-class SrsStatusTable extends Widget {
+class SrsStatusTable extends PinwallWidget {
     constructor() {
         super("srs-status-table");
     }
 
     connectedCallback() {
-        this.updateListener = () => this.fillSrsTable();
+        this.updateListener = () => this.update();
         events.onAll(["current-srs-scheme-edited", "update-srs-status"],
             this.updateListener);
     }
@@ -16,9 +16,7 @@ class SrsStatusTable extends Widget {
             this.updateListener);
     }
 
-    
-
-    fillSrsTable() {
+    update() {
         return dataManager.srs.getAmounts().then((amounts) => {
             const html = templates.get("srs-status-table")({
                 amounts, modes: dataManager.test.modes
@@ -30,11 +28,7 @@ class SrsStatusTable extends Widget {
     }
 
     open() {
-        return this.fillSrsTable();
-    }
-
-    adjustToLanguage(language, secondary) {
-        return this.fillSrsTable();
+        return this.update();
     }
 }
 

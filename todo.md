@@ -20,6 +20,7 @@
   - Memory hog when using on many elements
 - Height of diagrams in stats section is slightly too large for some reason
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
+- Order of context menu items is not preserved
 
 By category
 --------------------------------------------------------------------------------
@@ -121,12 +122,8 @@ once? --> Faster loading, centralized resource loading
 
 ### Home section
 - Possibly create overlay-style sidebar for customizing pinwall
-  - Make sidebar invisible and only open upon clicking wrench-icon?
-  - Differentiate between normal mode and customize-mode
+  - Enter customize mode only when clicking customization-button in settings
 - Widgets:
-  - Combine notes into single widget?
-    - Allow writing notes in markdown format, render when saving the note
-    - Use `column-count`, `column-gap`, `column-fill` for multi-col structure
   - Changelog widget (Save changelogs in local storage somewhere)
   - srs-status-bar
     - Display info message if vocabulary is empty

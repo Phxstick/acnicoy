@@ -1,6 +1,6 @@
 "use strict";
 
-class SrsReviewSchedule extends Widget {
+class SrsReviewSchedule extends PinwallWidget {
     constructor() {
         super("srs-review-schedule");
         this.$("diagram").margin = { top: 30, left: 25, right: 25, bottom: 40 };
@@ -96,9 +96,6 @@ class SrsReviewSchedule extends Widget {
 
     open() {
         this.update();
-    }
-
-    adjustToLanguage(language, secondary) {
     }
 }
 

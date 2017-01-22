@@ -1,5 +1,7 @@
 "use strict";
 
+const { shell } = require("electron");
+
 class Component extends HTMLElement {
     constructor(name, wrapHtml=false) {
         super();
@@ -30,6 +32,15 @@ class Component extends HTMLElement {
                 popupMenu.editableElementActive = true;
             }
         });
+        // Open all http links associated with <a> tags in the default browser
+        this.root.addEventListener("click", (event) => {
+            if (event.target.tagName === "A") {
+                if (event.target.href.startsWith("http")) {
+                    shell.openExternal(event.target.href);
+                }
+                event.preventDefault();
+            }
+        }, true);
     }
 
     /**

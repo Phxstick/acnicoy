@@ -1,0 +1,73 @@
+@import "base";
+
+:host {
+  width: fill;
+  background-color: $view-background-dark;
+}
+
+#notes {
+  > * {
+    position: relative;
+    color: $view-color;
+    padding: 6px;
+    white-space: pre-wrap;
+    user-select: text;
+    border-bottom: 1px solid $border-color-medium;
+    &:focus {
+      z-index: 2;
+      outline: none;
+      box-shadow: $note-focus-shadow;
+      background-color: $input-background-focus;
+      color: $input-color-focus;
+      #control-buttons {
+        display: none;
+      }
+    }
+    *:not(#control-buttons) {
+      user-select: text;
+      margin: 0;
+    }
+    ol, ul {
+      padding-left: 25px;
+    }
+  }
+}
+
+.highlight-top {
+  box-shadow: 0 -2px 0 $highlight-background;
+}
+
+#add-button {
+  color: $color-light;
+  display: block;
+  width: 100%;
+  text-align: left;
+  position: relative;
+  z-index: 1;
+
+  i {
+    margin-right: 10px;
+  }
+}
+
+#control-buttons {
+  background-color: $view-background-dark;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border-left: 20px solid transparent;
+  border-image: linear-gradient(to left, $view-background-dark, transparent);
+  border-image-slice: 0 0 0 100%;
+  background-clip: padding-box;
+
+  > * {
+    @extend button.light, button.no-shadow;
+    padding: 0px;
+    padding: 5px;
+    font-size: 140%;
+  }
+}

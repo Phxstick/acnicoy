@@ -2,8 +2,8 @@
 // Cursors
 // =============================================================================
 
-$normal-cursor: $test-cursor, auto;
-$pointer-cursor: $test-cursor, pointer;
+$normal-cursor: auto;
+$pointer-cursor: pointer;
 
 // =============================================================================
 // Fonts
@@ -35,10 +35,14 @@ $border-color-light: darken($background-color, 20%);
 $border-color-medium: darkgrey;
 $border-color-dark: grey;
 
-// Links (to open another section/panel/overlay, not an http address)
+// Local links (to open another section/panel/overlay)
 $link-color: darkred;
 $link-color-hover: darkred;
 $link-shadow-color-hover: lightsalmon;
+
+// HTTP links
+$http-link-color: #b03636;
+$http-link-color-hover: $http-link-color;
 
 // Element with a tooltip
 $info-color: $link-color;
@@ -206,6 +210,3 @@ $note-focus-shadow: 0 0 3px 2px $highlight-background;
 $side-bar-width: 80px;
 $menu-bar-height: 50px;
 $panel-width: 400px;
-// Pinwall sizes
-$pinwall-base-margin: 10px;
-$pinwall-item-margin-addition: 6px;

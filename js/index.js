@@ -14,7 +14,7 @@ const globals = {
     widgets: ["popup-stack", "switch-button", "switch-bar", "popup-list",
               "svg-bar-diagram", "kanji-info-panel", "srs-status-bar",
               "kanji-search-result-entry", "dictionary-search-result-entry",
-              "pinwall-note", "srs-status-table", "language-table",
+              "pinwall-notes", "srs-status-table", "language-table",
               "language-popup", "check-box", "example-word-entry",
               "tabbed-frame", "srs-review-schedule"],
     extensions: ["converter", "array-extensions", "html-element-extensions",
@@ -47,6 +47,7 @@ const Overlay = require(paths.js.base("overlay"));
 const Section = require(paths.js.base("section"));
 const Panel = require(paths.js.base("panel"));
 const Widget = require(paths.js.base("widget"));
+const PinwallWidget = require(paths.js.base("pinwall-widget"));
 
 const OverlayWindow = require(paths.js.widget("overlay-window"));
 

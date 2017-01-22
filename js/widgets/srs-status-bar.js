@@ -1,6 +1,6 @@
 "use strict";
 
-class SrsStatusBar extends Widget {
+class SrsStatusBar extends PinwallWidget {
     constructor() {
         super("srs-status-bar");
     }
@@ -50,10 +50,6 @@ class SrsStatusBar extends Widget {
     }
     
     open() {
-        return this.update();
-    }
-
-    adjustToLanguage(language, secondary) {
         return this.update();
     }
 }
