@@ -2,7 +2,6 @@
 - Implement language settings (and optionally others already)
 - Focus most important element in each overlay upon opening (e.g. buttons)
 - Capture focus in overlays (especially dialogs!) and panels
-- Have confirmClose-methods on overlays (e.g. srs-schemes-overlay)?
 
 ### As soon as available
 - Celebrate the day async/await is fully supported in electron (maybe with flag)
@@ -25,9 +24,6 @@
 By category
 --------------------------------------------------------------------------------
 ### General
-- Create a proper pointer cursor. Create better normal cursor as well
-- Make kana input type other kana type when pressing shift.
-  - Also make into custom widget?
 - Use popupMenu separators when context changes? (see e.g. dictionary entry)
   - Or rather split menu entries into groups to seperate by? (e.g. copy/paste)
 - Create a custom menu bar?
@@ -157,8 +153,9 @@ once? --> Faster loading, centralized resource loading
 - Use mapping to quickly load kanji examples (Store in file)
 - Possibly make mapping from kanji parts to actual parts in SVG drawing
 to make sure all parts are properly highlighted
-- Show info for kanji that are part of the Chinese zodiac
-- Show info for kanji that symbolize a country
+- Show info for kanji which are part of the Chinese zodiac
+- Show info for kanji which symbolize a country
+- Show info for kanjj which can be used as a metric
 - Have separate table for searching kanji, extend readings by ones without
 a ".", keep all meanings for each kanji
 - Have link to kanji disambiguation if there are kanji with similar meanings
@@ -385,6 +382,7 @@ Future
 - Link to similar looking kanji in info-panel to disambiguate more easily,
   also link to additional information (e.g. history, meanings) if available.
 - Make a better dragging image in vocabulary section
+- Create custom set of cursors
 
 ### Content section
 - Create similar kanji/word disambiguation pages of the following form:
@@ -392,6 +390,7 @@ Future
   - List of kanji/words under consideration (can be used instead of title)
   - [Optional] Introduction (e.g. mention the general shared meanings/notions)
   - List of separate elucidations (info for each kanji/word)
+    - [Optional, for kanji] Some example words to see the differences clearly
   - [Optional] Supplementary information (Joint disambiguation, or notes)
   - [Optional] Sources
 - Contains a database of custom info cards
@@ -419,7 +418,6 @@ Resources
 - [Buttons](http://usabilitypost.com/2012/01/10/pressed-button-state-with-css3)
 - [Shadow DOM](https://webkit.org/blog/4096/introducing-shadow-dom-api)
 - [CSS Grid](https://css-tricks.com/snippets/css/complete-guide-grid)
-(Basically very powerful 2D-flexboxes)
 - [Selection API](http://caniuse.com/#feat=selection-api)
 (`window.getSelection()`, `selectionstart`, `selectionchanged`)
 - [Convenient DOM Manipulation](http://caniuse.com/#feat=dom-manip-convenience)
@@ -428,11 +426,3 @@ Resources
 - [Scrollbar styling](http://caniuse.com/#feat=css-scrollbar)
 - [CSS triangles](http://apps.eky.hk/css-triangle-generator/)
 - [Background images](https://subtlepatterns.com/)
-
-#### Misc
-- Use `electron.shell.openExternal(link)` to open link in default browser
-- [Learn gulp?](https://ponyfoo.com/articles/gulp-grunt-whatever)
-
-> Chrome includes Google’s Native Client. Native Client allows web pages to run
-> native code written in languages like C or C++. The code is executed in a
-> sandbox for security, and it runs at almost-native speeds

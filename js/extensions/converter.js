@@ -178,6 +178,10 @@ String.prototype.toKana = function(type, ignoreN) {
         else if (singleRomaji.has(string[i])) {
             converted.push(dict1[string[i]]);
         }
+        // Replace minus or underscore with "ー" when writing katakana
+        else if (type === "kata" && (string[i] === "-" || string[i] === "_")) {
+            converted.push("ー");
+        }
         // Anything else simply gets appended
         else {
             converted.push(string[i]);
@@ -189,15 +193,16 @@ String.prototype.toKana = function(type, ignoreN) {
 
 function kanaInput(input, type, event) {
     const pos = input.selectionStart;
-    let text = input.value;
+    let text = input.value.toLowerCase();
+    const key = event.key.toLowerCase();
     let replaced = false;
-    if (event.key === "n" && pos > 0 && text[pos - 1] === "n") {
+    if (key === "n" && pos > 0 && text[pos - 1] === "n") {
         text = text.slice(0, pos - 1) +
                (type === "hira" ? "ん" : "ン") +
                text.slice(pos);
         replaced = true;
-    } else if (romajiChars.has(event.key)) {
-        text = text.slice(0, pos) + event.key + text.slice(pos);
+    } else if (romajiChars.has(key) || key === "-" || key === "_") {
+        text = text.slice(0, pos) + key + text.slice(pos);
     } else {
         return;
     }
@@ -211,7 +216,10 @@ HTMLInputElement.prototype.enableKanaInput =
 HTMLTextAreaElement.prototype.enableKanaInput = function(type) {
     if (this.currentInputMethod !== undefined)
         this.disableKanaInput();
-    this.currentInputMethod = (event) => kanaInput(this, type, event);
+    const otherType = type === "hira" ? "kata" : "hira";
+    this.currentInputMethod = (event) => {
+        kanaInput(this, event.shiftKey ? otherType : type, event);
+    };
     this.addEventListener("keypress", this.currentInputMethod);
 }
 

@@ -29,7 +29,7 @@ body {
   z-index: var(--dragged-item-layer);
   pointer-events: none;
 
-  > *:not(#control-buttons, p) {
+  *:not(#control-buttons) {
     margin: 0;
   }
   ol, ul {
