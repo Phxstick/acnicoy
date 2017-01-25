@@ -60,6 +60,11 @@ class OverlayWindow extends Widget {
             overlay.show();
             break;
         }
+        overlay.style.opacity = "0";
+        overlay.show();
+        utility.finishEventQueue().then(() => {
+            overlay.elementFocussedByDefault.focus();
+        });
         return promise;
     }
     

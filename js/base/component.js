@@ -3,9 +3,9 @@
 const { shell } = require("electron");
 
 class Component extends HTMLElement {
-    constructor(name, wrapHtml=false) {
+    constructor(name, wrapHtml=false, delegatesFocus=false) {
         super();
-        this.root = this.attachShadow({ mode: "open" });
+        this.root = this.attachShadow({ mode: "open", delegatesFocus });
         const style = document.createElement("style");
         style.textContent = `@import url(${paths.fontAwesome});`;
         if (utility.existsFile(paths.css(name))) {

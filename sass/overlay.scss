@@ -6,3 +6,11 @@
   width: 500px;
   background-color: $background-color;
 }
+
+:host(:focus) {
+  outline: none;
+}
+
+#sentinel:focus {
+  outline: none;
+}

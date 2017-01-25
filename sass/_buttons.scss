@@ -23,7 +23,7 @@ button.styled {
   border: 1px solid $button-border-color;
 
   &:focus {
-    box-shadow: 0 0 5px 3px $button-shadow-color-focus;
+    box-shadow: $button-focus-shadow;
   }
   &:hover {
     color: $button-color-hover;
@@ -61,7 +61,7 @@ button.light {
     }
   }
   &:focus {
-    box-shadow: 0 0 3px $button-shadow-color-focus;
+    box-shadow: $button-focus-shadow;
   }
   &:active {
     box-shadow: inset 0px 2px 13px -2px $button-light-shadow-color-active;

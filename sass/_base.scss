@@ -72,7 +72,6 @@ body {
     #close-button {
       display: flex;
       flex-direction: row;
-
       > i {
         margin-right: 5px;
         color: $close-button-color;
@@ -81,6 +80,9 @@ body {
         &:hover {
           opacity: 1;
         }
+      }
+      &:focus {
+        box-shadow: $button-focus-shadow;
       }
     }
   }

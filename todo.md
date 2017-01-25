@@ -1,7 +1,5 @@
 ### Up next
 - Implement language settings (and optionally others already)
-- Focus most important element in each overlay upon opening (e.g. buttons)
-- Capture focus in overlays (especially dialogs!) and panels
 
 ### As soon as available
 - Celebrate the day async/await is fully supported in electron (maybe with flag)
