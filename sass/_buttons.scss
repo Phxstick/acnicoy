@@ -12,6 +12,7 @@ button {
   &:focus {
     outline: none !important;
     z-index: 1000;
+    box-shadow: $button-focus-shadow;
   }
 }
 
@@ -22,9 +23,6 @@ button.styled {
   font-size: 120%;
   border: 1px solid $button-border-color;
 
-  &:focus {
-    box-shadow: $button-focus-shadow;
-  }
   &:hover {
     color: $button-color-hover;
     background-color: $button-background-hover;
@@ -51,6 +49,7 @@ button.light {
   font-family: $header-font;
 
   > i {
+    pointer-events: none;
     color: $button-light-icon-color;
   }
   &:hover {
@@ -65,6 +64,17 @@ button.light {
   }
   &:active {
     box-shadow: inset 0px 2px 13px -2px $button-light-shadow-color-active;
+  }
+}
+
+button.red-icon {
+  i {
+    pointer-events: none;
+    color: $close-button-color;
+    opacity: 0.4;
+  }
+  &:hover > i {
+    opacity: 1;
   }
 }
 

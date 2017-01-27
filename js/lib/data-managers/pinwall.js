@@ -23,6 +23,10 @@ module.exports = function(paths, modules) {
         dataMap[language] = require(paths.languageData(language).pinwall);
     };
 
+    pinwall.unload = function (language) {
+        delete dataMap[language];
+    };
+
     pinwall.setLanguage = function (language) {
         widgets = dataMap[language];
     };

@@ -37,6 +37,10 @@ class LanguagePopup extends Widget {
         amountLabel.classList.toggle("highlight", amount > 0);
     }
 
+    clear() {
+        this.$("popup-window").innerHTML = "";
+    }
+
     set(language) {
         this.$("label").textContent = language;
     }
@@ -51,7 +55,6 @@ class LanguagePopup extends Widget {
     }
 
     open() {
-        if (this.$("popup-window").children.length === 0) return;
         this.isOpen = true;
         this.$("popup-window").show();
         this.classList.add("open");

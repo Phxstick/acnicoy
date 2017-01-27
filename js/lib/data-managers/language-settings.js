@@ -24,6 +24,10 @@ module.exports = function (paths, modules) {
         dataMap[language] = require(paths.languageData(language).settings);
     };
 
+    settings.unload = function (language) {
+        delete dataMap[language];
+    };
+
     settings.save = function () {
         for (const language in dataMap) {
             const path = paths.languageData(language).settings;

@@ -389,7 +389,7 @@ class SrsSchemesOverlay extends Overlay {
             this.selectedSchemeItem, this.selectedScheme);
         const languagesUsingScheme =
             dataManager.srs.getLanguagesUsingScheme(newName);
-        if (languagesUsingScheme.includes(main.language)) {
+        if (languagesUsingScheme.includes(dataManager.currentLanguage)) {
             events.emit("current-srs-scheme-edited");
         }
         dataManager.srs.saveSchemes();

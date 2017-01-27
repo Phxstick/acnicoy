@@ -14,6 +14,10 @@ $migrate-area-level-height: 30px;
   min-height: 450px;
 }
 
+#help-link {
+  display: inline;
+}
+
 #select-new-scheme {
   width: 100%;
 }
@@ -38,6 +42,9 @@ $migrate-area-level-height: 30px;
     width: $migrate-area-gap-width;
     #new-scheme-connectors > *, #previous-scheme-connectors > * {
       fill: $migrate-srs-connector-color;
+    }
+    #previous-scheme-connectors > * {
+      cursor: $pointer-cursor;
     }
     #new-scheme-connectors > *.hovering {
       fill: $migrate-srs-connector-color-hover;

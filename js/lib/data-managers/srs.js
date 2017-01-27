@@ -1,5 +1,6 @@
 "use strict";
 
+
 const fs = require("fs");
 
 module.exports = function (paths, modules) {
@@ -10,6 +11,10 @@ module.exports = function (paths, modules) {
         dataMap[language] = {};
         srs.loadSchemeInfo(language);
     }
+
+    srs.unload = function (language) {
+        delete dataMap[language];
+    };
 
     srs.setLanguage = function (language) {
         srs.currentScheme = dataMap[language];
@@ -104,9 +109,8 @@ module.exports = function (paths, modules) {
      * @returns {Array[String]}
      */
     srs.getLanguagesUsingScheme = function (schemeName) {
-        const languages = modules.languages.find();
         const languagesUsingScheme = [];
-        for (const language of languages) {
+        for (const language of modules.languages.all) {
             const langSettings = modules.languageSettings.for(language);
             if (langSettings.srs.scheme === schemeName) {
                 languagesUsingScheme.push(language);

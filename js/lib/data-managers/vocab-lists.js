@@ -30,6 +30,10 @@ module.exports = function (paths, modules) {
         }
     };
 
+    vocabLists.unload = function (language) {
+        delete dataMap[language];
+    };
+
     vocabLists.setLanguage = function (language) {
         data = dataMap[language].data;
         wordToLists = dataMap[language].wordToLists;

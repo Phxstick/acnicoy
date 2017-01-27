@@ -31,6 +31,10 @@ module.exports = function (paths, modules) {
         return stats.recalculateTotalScores(language);
     };
 
+    stats.unload = function (language) {
+        delete dataMap[language];
+    };
+
     stats.save = function () {
         for (const language in dataMap) {
             const path = paths.languageData(language).stats;

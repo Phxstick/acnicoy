@@ -25,7 +25,8 @@ HTMLElement.prototype.hide = function() {
  *  If the element already has a display value other than 'none', do nothing.
  */
 HTMLElement.prototype.show = function(value) {
-    if (getComputedStyle(this, null).getPropertyValue("display") !== "none")
+    if (getComputedStyle(this, null).getPropertyValue("display") !== "none" &&
+            getComputedStyle(this, null).getPropertyValue("display") !== "")
         return;
     if (value !== undefined) {
         this.style.display = value;

@@ -33,7 +33,7 @@ class AddVocabSuggestionPane extends Widget {
             }
         });
     }
-    
+
     load(id, chosenWordVariant) {
         dataManager.content.getDictionaryEntryInfo(id).then((info) => {
             this.wordVariantToReadings.clear();
@@ -170,7 +170,8 @@ class AddVocabSuggestionPane extends Widget {
                     const rNode = this.createSuggestionNode(reading, "reading");
                     this.$("readings").appendChild(rNode);
                 }
-                this.$("readings-row").show();
+                this.$("readings-row").toggleDisplay(
+                    dataManager.languageSettings.readings);
                 this.selectSuggestionNode(
                     this.$("readings").children[0], "reading");
             // If no readings exist, don't display readings row

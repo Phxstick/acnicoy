@@ -22,6 +22,9 @@ class AddVocabPanel extends Panel {
                     dataManager.srs.currentScheme.intervalTexts[i];
             }
         });
+        events.on("settings-languages-readings", (enabled) => {
+            this.$("readings-entry").toggleDisplay(enabled);
+        });
     }
 
     open() {

@@ -29,7 +29,8 @@ class AddLangOverlay extends Overlay {
                     readings: this.$("readings-flag").checked,
                     srs: {
                         scheme: this.$("srs-scheme").value
-                    }
+                    },
+                    hidden: false
                 }
             });
         });

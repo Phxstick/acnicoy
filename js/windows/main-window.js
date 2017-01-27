@@ -70,8 +70,10 @@ class MainWindow extends Window {
                 () => this.openSection("kanji"));
         // Language popup events
         this.$("language-popup").callback = (lang) => this.setLanguage(lang);
-        this.$("language-popup").onOpen = (languages) => {
-            for (const language of languages) {
+        this.$("language-popup").onOpen = () => {
+            this.$("language-popup").clear();
+            for (const language of dataManager.languages.visible) {
+                this.$("language-popup").add(language);
                 dataManager.srs.getTotalAmountDueForLanguage(language)
                 .then((amount) => {
                     this.$("language-popup").setAmountDue(language, amount);
@@ -137,49 +139,42 @@ class MainWindow extends Window {
         return Promise.all(results);
     }
 
-    initialize(languages, defaultLanguage) {
-        // Fill language popup
-        for (const language of languages) {
-            this.$("language-popup").add(language);
-        }
-        // Set language to default one
-        this.setLanguage(defaultLanguage).then(() => {
-            // Only display home section
-            this.sections["home"].show();
-            utility.finishEventQueue().then(() => {
-                this.sections["home"].open();
-            });
-            this.currentSection = "home";
-            // Regularly update displayed SRS info
-            setInterval(() => events.emit("update-srs-status"),
-                1000 * 60 * 5);  // Every 5 minutes
-            // Regulary notify user if SRS items are ready to be reviewed
-            setInterval(() => {
-                this.showSrsNotification();
-            }, 1000 * 60 * 15);  // Every 15 min
-            // Confirm close command and save data before exiting application
-            ipcRenderer.send("activate-controlled-closing");
-            ipcRenderer.on("closing-window", () => {
-                Promise.resolve(
-                    this.sections[this.currentSection].confirmClose())
-                .then((confirmed) => {
-                    if (!confirmed) return;
-                    this.sections[this.currentSection].close();
-                    dataManager.save();
-                    // networkManager.stopAllDownloads();
-                    ipcRenderer.send("close-now");
-                });
-            });
-            // Register shortcuts
-            shortcuts.register("force-quit",
-                    () => ipcRenderer.send("close-now"));
-            shortcuts.register("quit", () => ipcRenderer.send("quit"));
-            shortcuts.register("add-vocab", () => this.openPanel("add-vocab"));
-            shortcuts.register("add-kanji", () => this.openPanel("add-kanji"));
-            shortcuts.register("dictionary",
-                    () => this.openSection("dictionary"));
-            shortcuts.register("test", () => this.openTestSection());
+    initialize() {
+        // Only display home section
+        this.sections["home"].show();
+        utility.finishEventQueue().then(() => {
+            this.sections["home"].open();
         });
+        this.currentSection = "home";
+        // Regularly update displayed SRS info
+        setInterval(() => events.emit("update-srs-status"),
+            1000 * 60 * 5);  // Every 5 minutes
+        // Regulary notify user if SRS items are ready to be reviewed
+        setInterval(() => {
+            this.showSrsNotification();
+        }, 1000 * 60 * 15);  // Every 15 min
+        // Confirm close command and save data before exiting application
+        ipcRenderer.send("activate-controlled-closing");
+        ipcRenderer.on("closing-window", () => {
+            Promise.resolve(
+                this.sections[this.currentSection].confirmClose())
+            .then((confirmed) => {
+                if (!confirmed) return;
+                this.sections[this.currentSection].close();
+                dataManager.save();
+                // networkManager.stopAllDownloads();
+                ipcRenderer.send("close-now");
+            });
+        });
+        // Register shortcuts
+        shortcuts.register("force-quit",
+                () => ipcRenderer.send("close-now"));
+        shortcuts.register("quit", () => ipcRenderer.send("quit"));
+        shortcuts.register("add-vocab", () => this.openPanel("add-vocab"));
+        shortcuts.register("add-kanji", () => this.openPanel("add-kanji"));
+        shortcuts.register("dictionary",
+                () => this.openSection("dictionary"));
+        shortcuts.register("test", () => this.openTestSection());
     }
 
     openSection(name) {
@@ -275,7 +270,7 @@ class MainWindow extends Window {
     }
 
     showSrsNotification() {
-        const languages = dataManager.languages.find();
+        const languages = dataManager.languages.visible;
         const promises = [];
         for (const language of languages) {
             promises.push(
@@ -320,28 +315,30 @@ class MainWindow extends Window {
     }
 
     setLanguage(language) {
-        if (this.language !== undefined && this.language === language) return;
+        if (dataManager.currentLanguage === language)
+            return Promise.resolve(false);
         return Promise.resolve(this.currentSection === null ? 
                 true : this.sections[this.currentSection].confirmClose())
         .then((confirmed) => {
-            if (!confirmed) return;
+            if (!confirmed) return false;
             if (this.currentSection !== null) {
                 this.sections[this.currentSection].close();
             }
             dataManager.setLanguage(language);
-            this.language = language;
-            this.language2 = dataManager.languageSettings.secondaryLanguage;
-            this.adjustToLanguage(this.language, this.language2);
+            this.adjustToLanguage(dataManager.currentLanguage,
+                                  dataManager.currentSecondaryLanguage);
             const promises = [];
             for (const key in this.sections) {
                 promises.push(Promise.resolve(
                     this.sections[key].adjustToLanguage(
-                        this.language, this.language2)));
+                        dataManager.currentLanguage,
+                        dataManager.currentSecondaryLanguage)));
             }
             for (const key in this.panels) {
                 promises.push(Promise.resolve(
                     this.panels[key].adjustToLanguage(
-                        this.language, this.language2)));
+                        dataManager.currentLanguage,
+                        dataManager.currentSecondaryLanguage)));
             }
             this.$("language-popup").set(language);
             return Promise.all(promises).then(() => {
@@ -350,6 +347,7 @@ class MainWindow extends Window {
                 }
             }).then(() => {
                 events.emit("language-changed", language);
+                return true;
             });
         });
     }

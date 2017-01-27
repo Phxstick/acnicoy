@@ -130,6 +130,7 @@ class KanjiInfoPanel extends Widget {
     }
 
     load (kanji) {
+        const content = dataManager.content.dataMap["Japanese"];
         this.examplesLoaded = false;
         this.strokesLoaded = false;
         this.currentKanji = kanji;
@@ -153,13 +154,13 @@ class KanjiInfoPanel extends Widget {
                 this.detailsFrame.appendChild(span);
             }
             // If counter kanji: display list of objects counted in description
-            const counterKanji = dataManager.content.data.counterKanji;
+            const counterKanji = content.counterKanji;
             if (kanji in counterKanji) {
                 this.counterLabel.textContent = counterKanji[kanji].join(", ");
             }
             this.counterFrame.toggleDisplay(kanji in counterKanji);
             // Info kanji is number, display represented number in description
-            const numericKanji = dataManager.content.data.numericKanji;
+            const numericKanji = content.numericKanji;
             if (kanji in numericKanji.kanjiToNumber) {
                 this.numberLabel.textContent = utility.getStringForNumber(
                     numericKanji.kanjiToNumber[kanji].number);
@@ -290,6 +291,7 @@ class KanjiInfoPanel extends Widget {
     }
     
     getKanjiDetailSpans(kanji, info) {
+        const content = dataManager.content.dataMap["Japanese"];
         const spans = [];
         // Display grade info
         const gradeSpan = document.createElement("span");
@@ -318,15 +320,13 @@ class KanjiInfoPanel extends Widget {
         }
         // TODO: Add info if kanji is kokuji
         // Add info if kanji is a counter
-        const counterKanji = dataManager.content.data.counterKanji;
-        if (kanji in counterKanji) {
+        if (kanji in content.counterKanji) {
             const counterSpan = document.createElement("span");
             counterSpan.textContent = "Counter";
             spans.push(counterSpan);
         }
         // Add info if kanji is a numeral
-        const numericKanji = dataManager.content.data.numericKanji;
-        if (kanji in numericKanji.kanjiToNumber) {
+        if (kanji in content.numericKanji.kanjiToNumber) {
             // Display small info label in details bar
             const numberSpan = document.createElement("span");
             numberSpan.textContent = "Numeral";

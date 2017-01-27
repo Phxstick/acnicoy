@@ -146,6 +146,9 @@ class EditVocabPanel extends Panel {
             this.listNameToOption.get(listName).remove();
             this.listNameToOption.delete(listName);
         });
+        events.on("settings-languages-readings", (enabled) => {
+            this.$("readings-frame").toggleDisplay(enabled);
+        });
     }
 
     adjustToLanguage(language, secondary) {

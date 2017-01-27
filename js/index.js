@@ -9,6 +9,7 @@ const globals = {
                "migrate-srs"],
     sections: ["home", "stats", "vocab", "settings",
                "test", "dictionary", "kanji"],
+    settingsSubsections: ["languages"],
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
     suggestionPanes: ["add-vocab"],
     widgets: ["popup-stack", "switch-button", "switch-bar", "popup-list",
@@ -48,6 +49,7 @@ const Section = require(paths.js.base("section"));
 const Panel = require(paths.js.base("panel"));
 const Widget = require(paths.js.base("widget"));
 const PinwallWidget = require(paths.js.base("pinwall-widget"));
+const SettingsSubsection = require(paths.js.base("settings-subsection"));
 
 const OverlayWindow = require(paths.js.widget("overlay-window"));
 
@@ -55,6 +57,8 @@ const OverlayWindow = require(paths.js.widget("overlay-window"));
 for (const name of globals.windows) require(paths.js.window(name));
 for (const name of globals.overlays) require(paths.js.overlay(name));
 for (const name of globals.sections) require(paths.js.section(name));
+for (const name of globals.settingsSubsections)
+    require(paths.js.settingsSubsection(name));
 for (const name of globals.panels) require(paths.js.panel(name));
 for (const name of globals.suggestionPanes)
     require(paths.js.suggestionPane(name));
@@ -177,9 +181,11 @@ console.log("Loaded all required modules after %f ms", totalTime);
         // Display main window but don't hide loading window yet
         openWindow("main", false);
         // Set language and initialize stuff in main-window
-        main.initialize(languages, defaultLanguage);
-        windows["loading"].setStatus("Processing language content...");
-        return main.processLanguageContent(languages);
+        return main.setLanguage(defaultLanguage).then(() => {
+            main.initialize();
+            windows["loading"].setStatus("Processing language content...");
+            return main.processLanguageContent(languages);
+        });
     }).then(() => {
         // Load any character in kanji info panel to render stuff there
         // (Prevents buggy animation when first opening the panel)

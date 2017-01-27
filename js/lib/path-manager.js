@@ -72,6 +72,8 @@ module.exports = function (basePath) {
     const windowsPath = path.resolve(jsPath, "windows");
     const overlaysPath = path.resolve(jsPath, "overlays");
     const sectionsPath = path.resolve(jsPath, "sections");
+    const settingsSubsectionsPath = path.resolve(
+        sectionsPath, "settings-subsections");
     const panelsPath = path.resolve(jsPath, "panels");
     const suggestionPanesPath = path.resolve(jsPath, "suggestion-panes");
     const widgetsPath = path.resolve(jsPath, "widgets");
@@ -83,6 +85,8 @@ module.exports = function (basePath) {
         "window": (name) => path.resolve(windowsPath, name + "-window.js"),
         "overlay": (name) => path.resolve(overlaysPath, name + "-overlay.js"),
         "section": (name) => path.resolve(sectionsPath, name + "-section.js"),
+        "settingsSubsection": (name) => path.resolve(
+            settingsSubsectionsPath, name + "-settings-subsection"),
         "panel": (name) => path.resolve(panelsPath, name + "-panel.js"),
         "suggestionPane": (name) => path.resolve(
             suggestionPanesPath, name + "-suggestion-pane.js"),

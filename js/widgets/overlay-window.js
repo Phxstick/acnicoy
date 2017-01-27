@@ -32,9 +32,9 @@ class OverlayWindow extends Widget {
         this.filters.push(filter);
         // Create a promise which the opened overlay can resolve at any time
         const promise = new Promise((resolve) => {
-            overlay.resolve = (args) => {
+            overlay.resolve = (results) => {
                 this.close();
-                resolve(args);
+                resolve(results);
             };
         });
         overlay.open(...args);
@@ -61,8 +61,8 @@ class OverlayWindow extends Widget {
             break;
         }
         overlay.style.opacity = "0";
-        overlay.show();
         utility.finishEventQueue().then(() => {
+            overlay.show();
             overlay.elementFocussedByDefault.focus();
         });
         return promise;

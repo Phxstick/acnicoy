@@ -31,8 +31,14 @@ class TabbedFrame extends Widget {
                 panelNode.hide();
             }
         }
+        // TODO Make sure adding new tabs dynamically works
+        // this.$("tabs-slot").addEventListener("slotchange", (event) => {
+        //     console.log("Tabs slot changed. Event object: ", event);
+        // });
+        // this.$("panels-slot").addEventListener("slotchange", (event) => {
+        //     console.log("Panels slot changed. Event object: ", event);
+        // });
     }
-    // TODO: Use slotchange-event to make sure that new tabs work
 }
 
 customElements.define("tabbed-frame", TabbedFrame);

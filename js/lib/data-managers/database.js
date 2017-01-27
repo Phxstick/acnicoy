@@ -12,6 +12,10 @@ module.exports = function (paths, modules) {
         dataMap[language] = new sqlite3.Database(path);
     };
 
+    database.unload = function (language) {
+        delete dataMap[language];
+    };
+
     database.setLanguage = function (language) {
         data = dataMap[language];
     };

@@ -60,7 +60,7 @@ class StatsSection extends Section {
         promises.push(dataManager.vocab.size().then((amount) => {
             this.$("words-added").textContent = amount;
         }));
-        if (main.language === "Japanese") {
+        if (dataManager.currentLanguage === "Japanese") {
             // Display number of kanji added
             promises.push(dataManager.kanji.getAmountAdded().then((amount) => {
                 this.$("kanji-added").textContent = amount;

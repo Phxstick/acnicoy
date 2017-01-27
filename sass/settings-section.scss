@@ -81,6 +81,18 @@
 }
 
 
-#tabs > div[slot="panels"] {
-  padding: 10px;
+#tabs > *[slot="panels"] {
+  position: relative;
+  height: 100%;
+}
+
+.settings-subsection {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding-left: 10px;
+  padding-right: 10px;
 }

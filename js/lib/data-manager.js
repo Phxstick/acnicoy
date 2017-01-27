@@ -52,6 +52,9 @@ module.exports = function (paths) {
      */
     modules.setLanguage = function (language) {
         modules.languageSettings.setLanguage(language);
+        modules.currentLanguage = language;
+        modules.currentSecondaryLanguage =
+            modules.languageSettings.secondaryLanguage;
         for (const name in modules) {
             if (modules[name].hasOwnProperty("setLanguage")) {
                 modules[name].setLanguage(language);

@@ -167,7 +167,8 @@ class TestSection extends Section {
         } else {
             let text;
             if (mode === dataManager.test.mode.WORDS)
-                text = `Translate from ${main.language} into ${main.language2}`;
+                text = `Translate from ${dataManager.currentLanguage} into ` +
+                       `${dataManager.currentSecondaryLanguage}.`;
             else if (mode === dataManager.test.mode.KANJI_MEANINGS)
                 text = `What could the following kanji mean?`;
             else if (mode === dataManager.test.mode.KANJI_ON_YOMI)
@@ -275,7 +276,7 @@ class TestSection extends Section {
             const solutions = new Set(result);
             const originalSolutions = new Set(result);
             // If the language is English, make solutions without "to" count
-            if (main.language2 === "English") {
+            if (dataManager.currentSecondaryLanguage === "English") {
                 for (const solution of originalSolutions) {
                     if (solution.startsWith("to "))
                         solutions.add(solution.slice(3));
@@ -324,7 +325,7 @@ class TestSection extends Section {
         });
         // Assemble kanji part of the testitem list if the language is Japanese
         let kanjiParts = [];
-        if (main.language === "Japanese") {
+        if (dataManager.currentLanguage === "Japanese") {
             for (const mode of [dataManager.test.mode.KANJI_MEANINGS,
                                 dataManager.test.mode.KANJI_ON_YOMI,
                                 dataManager.test.mode.KANJI_KUN_YOMI]) {

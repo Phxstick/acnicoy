@@ -1,11 +1,14 @@
 @import "base";
 
+:host {
+  display: block;
+}
+
 #table {
-  display: none;
   border-collapse: collapse;
-  border: 1px solid $border-color-dark;
+  border-top: 1px solid $border-color-dark;
   padding: 10px;
-  height: 150px;
+  width: 100%;
 }
 
 thead tr {
@@ -22,23 +25,45 @@ thead tr {
 
 tbody tr {
   padding: 4px;
+  height: 40px;
 
   td {
     padding: 4px;
     color: $view-color;
+    text-overflow: ellipsis;
     text-align: center;
+    > * { margin: auto; }
   }
 
   &:hover {
-    background-color: $view-hover-background;
-
-    td {
-      color: $view-hover-color;
-    }
-
-    .remove-button {
+    .remove-button, .hide-button {
       visibility: visible;
     }
+  }
+
+  &.hidden {
+    > td:not(.hide-button-cell) {
+      opacity: 0.5;
+    }
+    .hide-button{
+      visibility: visible;
+      opacity: 1;
+      > i::before { content:"\f070" }
+    }
+  }
+  &:not(:hover):not(.hidden) .hide-button {
+    visibility: hidden;
+    opacity: 0.4;
+  }
+  .remove-button, .hide-button {
+    padding: 5px;
+  }
+  .hide-button {
+    font-size: 140%;
+  }
+  .remove-button {
+    visibility: hidden;
+    font-size: 160%;
   }
 }
 
@@ -47,18 +72,5 @@ tbody tr {
   i {
     margin-right: 10px;
     font-size: 140%;
-  }
-}
-
-.remove-button {
-  visibility: hidden;
-
-  i {
-    color: lightcoral;
-    opacity: 0.6;
-    font-size: 150%;
-    &:hover {
-      opacity: 1;
-    }
   }
 }

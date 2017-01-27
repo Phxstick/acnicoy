@@ -12,8 +12,8 @@
   > * {
     display: block;
     box-shadow: $wide-shadow;
-    &:not(last-child) {
-      margin-bottom: 14px;
+    &:not(:last-child) {
+      margin-bottom: 12px;
     }
   }
 }

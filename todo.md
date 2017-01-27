@@ -1,11 +1,27 @@
 ### Up next
-- Implement language settings (and optionally others already)
+- FIX: show() and hide() methods (see stats-section for errors)
+- FIX: Readings in edit-panel always have kana input enabled
+  when toggling readings in settings!
+- FIX: When adding a word to an empty list which is opened in vocab panel,
+  the list is not getting updated!
+- FIX: When moving directly out of "add-note"-button, position of the next
+  item as well as visual marker are not updated!
+- Fix: Focusing inputs in srs-schemes-overlay does not work anymore!
+- Make kana input not only react to shift, but also caps-lock and caps letters
+- Implement test-settings and extend test-section accordingly
+- Implement most of the general settings
+- Create a content management system for downloading and updating content
+  - Info window when (new) language pack is available for a language
+    - Allow user to start downloads and link to settings for progress bar
+  - Implement content downloading (Use stylable HTML5 progress bar for this)
+- Finish removing languages and refactor init-chain and windows for that
 
 ### As soon as available
 - Celebrate the day async/await is fully supported in electron (maybe with flag)
   - Immediately rewrite index.js chain, main window, datamanager methods
 - Remove custom-elements-flag in main.js (as soon as electron has chrome v54)
 - Use thin symbols for fa-times, fa-plus etc. where fitting
+- Implement dynamic adding of tabs in tabbed-frame using slotchange-event
 
 ### Fixes
 - SRS level editing is not fully stable (Maybe remove ability to edit levels?)
@@ -34,7 +50,6 @@ By category
   - Also store downloaded content and language packs somewhere else to allow
     putting all user data (including backups) into Dropbox
 - Make semicolon standard separator to fix some bugs with language data
-- New testmode for Japanese names (allow adding without tsl and only readings)
 - Adjust scrollbars to corresponding background color so that they're always
   visible well. Also consider using thin, rounded scrollbars with margin
 - Improve policy for incorrectly answered SRS items
@@ -59,7 +74,6 @@ By category
 ##### Refactoring
 - Have htmlManager and cssManager which make sure all assets are only loaded
 once? --> Faster loading, centralized resource loading
-- Remove `main.language`/`main.language2` ??
 - Make automatically-loading-upon-scrolling-divs into widgets?
 - Make data-manager-modules into subclasses and gather similar code
   - Especially if static variables become implemented (or Typescript is used)!
@@ -105,25 +119,19 @@ once? --> Faster loading, centralized resource loading
 - Create quick start overlay with quick info on structure of the program
   - Give option to "not display this window again on program start"
   - Display on program start if not disabled
-- Info window when (new) language pack is available for a language
-  - Allow user to start downloads and link to settings for progress bar
 - Highlight menu button whose corresponding section/panel is opened?
   Or otherwise indicate which section/panel is currently opened?
 - Shortcut, probably Ctrl+R, to reload stuff, e.g. update SRS stuff?
-- Close-Panel shortcut (Default: ESC)
 - Create shortcut for testing all languages in given order.
   - Order can then be changed by dragging languages around in settings
+- Close-Panel shortcut (Default: ESC)
 
 ### Home section
-- Possibly create overlay-style sidebar for customizing pinwall
-  - Enter customize mode only when clicking customization-button in settings
-- Widgets:
-  - Changelog widget (Save changelogs in local storage somewhere)
-  - srs-status-bar
-    - Display info message if vocabulary is empty
-    - Allow showing detailed infos per mode
-    - Replace "level" label with reload- and help-button?
-  - srs-status-diagram (Like status-bar, but as bar-diagram)?
+- Extend srs-status-bar
+  - Display info message if vocabulary is empty
+  - Allow showing detailed infos per mode
+  - Replace "level" label with reload- and help-button?
+  - Add a displayable bar-diagram to visualize SRS status
 
 ### Svg Bar Diagram
 - Use a shadow at both sides to show when scrolling is possible
@@ -283,17 +291,6 @@ List of settings
 - [Button] Check for program updates (Check automatically every ~1 hour)
   - [Button] Update program (Do so safely)
 
-#### Language settings
-- [Language widget] Table of languages
-  - Language
-  - Secondary language
-  - [Checkbox] Readings
-  - [Button-Label] SRS scheme
-  - Content downloading (Use stylable HTML5 progress bar for this)
-  - Standard language (Use checkboxes coordinated with js)
-  - Language hiding (hide to remove from language list, but keep data)
-    - Keep list of visible languages in language-manager. Use where appropriate.
-
 #### Test settings
 - [Checkbox] Display test progress
 - [Checkbox] Display score gained (with xp-like animations when upated)
@@ -313,8 +310,9 @@ List of settings
 - [Checkbox] Compress side bar into icons
 - [Popup-List] Cursor selection (Some have to be unlocked)
   - Drill cursor for large achievement (e.g. 1000 kanji)
+  - Tamamo's fluffy tail cursor for larger achievement (e.g. 600 kanji)
   - Yona's hairpin cursor for medium achievement (e.g. 300 kanji)
-  - Meliodas' dragon handle for small achievement (e.g. 200 kanji)
+  - Meliodas' dragon handle for small achievement (e.g. 150 kanji)
 - [Popup-List] Color schemes
   - Have "designs" subfolder in sass directory with named sass partials
   - Definitely implement dark version for current default scheme
@@ -381,6 +379,8 @@ Future
   also link to additional information (e.g. history, meanings) if available.
 - Make a better dragging image in vocabulary section
 - Create custom set of cursors
+- Allow user to customize pinwall (button in settings + overlay side-bar)?
+- Implement changelog-widget (for changelogs saved in local storage somewhere)?
 
 ### Content section
 - Create similar kanji/word disambiguation pages of the following form:
@@ -397,7 +397,7 @@ Future
 
 Credits to add
 --------------------------------------------------------------------------------
-- [](https://subtlepatterns.com/)
+- <https://subtlepatterns.com/>
 
 Resources
 --------------------------------------------------------------------------------

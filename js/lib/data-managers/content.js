@@ -67,6 +67,13 @@ module.exports = function (paths, modules) {
         return promise;
     };
 
+    content.unload = function (language) {
+        if (dataMap.hasOwnProperty(language)) {
+            delete dataMap[language];
+            delete isAvailable[language];
+        }
+    };
+
     content.setLanguage = function (language) {
         content.data = dataMap[language];
     };

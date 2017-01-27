@@ -238,7 +238,7 @@ class MigrateSrsOverlay extends Overlay {
             this.$("select-new-scheme-frame").hide();
         } else if (mode === "switch-scheme") {
             this.languagesAffected = [info.language];
-            this.$("info-message").textContent = "You can choose a new scheme"
+            this.$("info-message").textContent = "You can choose a new scheme "
                 + "for this language and specify how to migrate SRS items to "
                 + "the selected scheme.";
             this.$("select-new-scheme-frame").show();
@@ -414,7 +414,7 @@ class MigrateSrsOverlay extends Overlay {
                             return dataManager.srs.switchScheme(
                                 language, this.backupInfo.newSchemeName)
                             .then(() => {
-                                if (language === main.language) {
+                                if (language === dataManager.currentLanguage) {
                                     events.emit("current-srs-scheme-edited");
                                 }
                             });
