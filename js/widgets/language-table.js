@@ -12,6 +12,7 @@ class LanguageTable extends Widget {
         this.languageConfigs = [];
         this.rowToConfig = new WeakMap();
         this.interactiveMode = false;
+        this.settingsSubsection = null;
         this.$("add-language-button").addEventListener("click", () => {
             overlay.open("add-lang").then((config) => {
                 if (config === null) return;
@@ -43,10 +44,7 @@ class LanguageTable extends Widget {
             if (this.interactiveMode) {
                 dataManager.languageSettings.for(config.language).readings =
                     event.target.checked;
-                if (config.language === dataManager.currentLanguage) {
-                    events.emit("settings-languages-readings",
-                        event.target.checked);
-                }
+                this.settingsSubsection.broadcastLanguageSetting("readings");
             }
             config.settings.readings = event.target.checked;
         });
@@ -94,6 +92,7 @@ class LanguageTable extends Widget {
                             .for(config.language).hidden;
             dataManager.languageSettings.for(config.language).hidden = hidden;
             row.classList.toggle("hidden", hidden);
+            this.settingsSubsection.broadcastLanguageSetting("visibility");
         });
         // Remove language if a remove-icon is clicked
         this.$("table-body").addEventListener("click", (event) => {

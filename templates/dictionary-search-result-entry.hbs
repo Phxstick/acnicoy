@@ -35,7 +35,9 @@
         {{#each fieldsOfApplication}}<span>{{this}}</span>{{/each}}
         {{#each dialect}}<span>{{this}}</span>{{/each}}
         {{#each miscInfo}}<span>{{this}}</span>{{/each}}
-        {{#each restrictedTo}}<span>Only applies to {{this}}</span>{{/each}}
+        {{#if restrictedTo.length}}
+          <span>Only applies to {{join restrictedTo " and "}}</span>
+        {{/if}}
       </div>
     {{/each}}
 

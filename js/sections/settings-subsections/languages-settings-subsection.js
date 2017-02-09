@@ -3,6 +3,8 @@
 class LanguagesSettingsSubsection extends SettingsSubsection {
     constructor() {
         super("languages");
+        this.languageSettingsList = ["readings", "visibility"];
+        this.$("languages-table").settingsSubsection = this;
         for (const language of dataManager.languages.all) {
             const languageSettings = dataManager.languageSettings.for(language);
             this.$("languages-table").addTableRow({

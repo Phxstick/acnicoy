@@ -134,6 +134,17 @@ class VocabSection extends Section {
     }
 
     registerCentralEventListeners() {
+        events.on("removed-from-list", (word, list) => {
+            if (this.selectedList === list) {
+                utility.removeEntryFromSortedList(this.$("list-contents"), word);
+            }
+        });
+        events.on("added-to-list", (word, list) => {
+            if (this.selectedList === list) {
+                utility.insertNodeIntoSortedList(
+                    this.$("list-contents"), this.createListContentsItem(word));
+            }
+        });
         // If a vocab item has been deleted, delete it from all lists
         events.on("word-deleted", (word) => {
             utility.removeEntryFromSortedList(this.$("all-words"), word);
@@ -417,11 +428,6 @@ class VocabSection extends Section {
 
     addToList (word, listName) {
         if (dataManager.vocabLists.addWordToList(word, listName)) {
-            if (this.selectedList === listName) {
-                const item = this.createListContentsItem(word);
-                utility.insertNodeIntoSortedList(
-                    this.$("list-contents"), item);
-            }
             this.draggedItem.classList.add("already-in-list");
             events.emit("added-to-list", word, listName);
         }
@@ -430,7 +436,6 @@ class VocabSection extends Section {
     removeFromList(node) {
         const word = node.textContent;
         dataManager.vocabLists.removeWordFromList(word, this.selectedList);
-        this.$("list-contents").removeChild(node);
         events.emit("removed-from-list", word, this.selectedList);
     }
 

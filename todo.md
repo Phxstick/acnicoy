@@ -1,11 +1,5 @@
 ### Up next
-- FIX: show() and hide() methods (see stats-section for errors)
-- FIX: Readings in edit-panel always have kana input enabled
-  when toggling readings in settings!
-- FIX: When adding a word to an empty list which is opened in vocab panel,
-  the list is not getting updated!
-- FIX: When moving directly out of "add-note"-button, position of the next
-  item as well as visual marker are not updated!
+- Move stuff in settings section into a settings manager?
 - Fix: Focusing inputs in srs-schemes-overlay does not work anymore!
 - Make kana input not only react to shift, but also caps-lock and caps letters
 - Implement test-settings and extend test-section accordingly
@@ -58,6 +52,7 @@ By category
   - Allow testing vocabulary in approximate urgency order
 - Use "srs-schemes-edited" event instead of "current-srs-scheme-edited"?
 - How to get undo/redo possibility for each item seperately?
+- Also make files for improved on/kun-yomi (or rather put in same file?)
 
 ### Code
 ##### Naming
@@ -161,9 +156,10 @@ once? --> Faster loading, centralized resource loading
 to make sure all parts are properly highlighted
 - Show info for kanji which are part of the Chinese zodiac
 - Show info for kanji which symbolize a country
-- Show info for kanjj which can be used as a metric
+- Show info for kanjj which can be used as a measure/metric
 - Have separate table for searching kanji, extend readings by ones without
-a ".", keep all meanings for each kanji
+  a ".", keep all meanings for each kanji
+- Link to an info page for each kanji detail (like country/measure/number)
 - Have link to kanji disambiguation if there are kanji with similar meanings
 - Add new icons below close-button
   - Allow user to maximize panel (then display all info in one frame)

@@ -81,7 +81,6 @@ class EditVocabPanel extends Panel {
             this.$("select-vocab-list-wrapper").hide();
         });
         // Allow editing the loaded word
-        this.$("word").enableKanaInput("hira", this.root);
         this.$("word").addEventListener("focusin", () => {
             this.wordBeforeEditing = this.$("word").textContent;
         });
@@ -146,8 +145,9 @@ class EditVocabPanel extends Panel {
             this.listNameToOption.get(listName).remove();
             this.listNameToOption.delete(listName);
         });
-        events.on("settings-languages-readings", (enabled) => {
-            this.$("readings-frame").toggleDisplay(enabled);
+        events.on("settings-languages-readings", () => {
+            this.$("readings-frame").toggleDisplay(
+                dataManager.languageSettings["readings"]);
         });
     }
 
@@ -166,9 +166,12 @@ class EditVocabPanel extends Panel {
             this.$("select-vocab-list").appendChild(
                     this.createVocabListOption(listName));
         }
-        // Only display list of readings if they're enabled for this language
-        this.$("readings-frame").toggleDisplay(
-            dataManager.languageSettings["readings"]);
+        // If language is Japanese, allow editing the word with kana
+        if (language === "Japanese") {
+            this.$("word").enableKanaInput("hira", this.root);
+        } else {
+            this.$("word").disableKanaInput();
+        }
     }
 
     load(word) {
@@ -184,8 +187,8 @@ class EditVocabPanel extends Panel {
         }
         this.$("vocab-lists").empty();
         const addedLists = dataManager.vocabLists.getListsForWord(word);
-        for (const list of addedLists) {
-            this.createListItem(list, "list");
+        for (const listName of addedLists) {
+            this.createListItem(listName, "list");
         }
         // Load translations, readings and SRS level for this word
         return dataManager.vocab.getInfo(word)
@@ -208,9 +211,10 @@ class EditVocabPanel extends Panel {
         // Allow editing translations and readings on click
         if (type !== "list") {
             node.contentEditable = "true";
-            // If it's a reading, enable hiragana input
+            // If it's a Japanese reading, enable hiragana input
             node.addEventListener("focusin", () => {
-                if (node.parentNode === this.$("readings")) {
+                if (dataManager.currentLanguage === "Japanese" &&
+                        node.parentNode === this.$("readings")) {
                     node.enableKanaInput("hira", this.root);
                 }
             });
@@ -311,9 +315,11 @@ class EditVocabPanel extends Panel {
             const oldLists = dataManager.vocabLists.getListsForWord(word);
             for (const list of oldLists) {
                 dataManager.vocabLists.removeWordFromList(word, list);
+                events.emit("removed-from-list", word, list);
             }
             for (const list of lists) {
                 dataManager.vocabLists.addWordToList(word, list);
+                events.emit("added-to-list", word, list);
             }
             if (newStatus === "removed") {
                 events.emit("word-deleted", originalWord);

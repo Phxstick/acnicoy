@@ -437,6 +437,28 @@ function calculateHeaderCellWidths(tableBody, tableHead) {
     }
 }
 
+/**
+ * If given input is unfocused, select all the content upon click, otherwise
+ * use the standard event handler (cursor is moved to clicked position).
+ * @param {HTMLInputElement} inputNode
+ */
+function enableQuickSelect(inputNode) {
+    // Find the root element of the subtree this element is part of
+    let node = inputNode;
+    while (node.parentNode && !node.shadowRoot) {
+        node = node.parentNode;
+    }
+    const root = node;
+    inputNode.addEventListener("mousedown", (event) => {
+        // If input didn't have focus, select all text in it
+        if (root.activeElement !== inputNode) {
+            inputNode.focus();
+            inputNode.setSelectionRange(0, inputNode.value.length);
+            event.preventDefault();
+        }
+    });
+}
+
 
 // Non DOM-related functions
 module.exports.getTime = getTime;
@@ -463,3 +485,4 @@ module.exports.findIndex = findIndex;
 module.exports.insertNodeIntoSortedList = insertNodeIntoSortedList;
 module.exports.removeEntryFromSortedList = removeEntryFromSortedList;
 module.exports.calculateHeaderCellWidths = calculateHeaderCellWidths;
+module.exports.enableQuickSelect = enableQuickSelect;

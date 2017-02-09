@@ -10,6 +10,8 @@ class DictionarySection extends Section {
         // Initially hide some elements
         this.$("results").hide();
         this.$("no-search-results-info").hide();
+        utility.enableQuickSelect(this.$("words-filter"));
+        utility.enableQuickSelect(this.$("meanings-filter"));
         // Bind callbacks
         this.$("words-filter").addEventListener("keypress", (event) => {
             if (event.key !== "Enter") return;

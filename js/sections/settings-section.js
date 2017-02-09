@@ -18,8 +18,20 @@ class SettingsSection extends Section {
     }
 
     adjustToLanguage(language, secondary) {
-        for (const section of this.subsections) {
-            section.adjustToLanguage(language, secondary);
+        for (const subsection of this.subsections) {
+            subsection.adjustToLanguage(language, secondary);
+        }
+    }
+
+    broadcastGlobalSettings() {
+        for (const subsection of this.subsections) {
+            subsection.broadcastGlobalSettings();
+        }
+    }
+
+    broadcastLanguageSettings(language) {
+        for (const subsection of this.subsections) {
+            subsection.broadcastLanguageSettings(language);
         }
     }
 }

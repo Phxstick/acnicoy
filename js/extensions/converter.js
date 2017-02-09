@@ -193,6 +193,13 @@ String.prototype.toKana = function(type, ignoreN) {
 
 function kanaInput(input, type, event) {
     const pos = input.selectionStart;
+    const end = input.selectionEnd;
+    // If there's a selection, delete selected text first
+    if (pos !== end) {
+        const text = input.value;
+        input.value = text.slice(0, pos) + text.slice(end, text.length);
+    }
+    // Do conversion for the remaining text
     let text = input.value.toLowerCase();
     const key = event.key.toLowerCase();
     let replaced = false;

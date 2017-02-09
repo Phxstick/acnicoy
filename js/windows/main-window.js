@@ -140,6 +140,8 @@ class MainWindow extends Window {
     }
 
     initialize() {
+        // Adjust to global settings
+        this.sections["settings"].broadcastGlobalSettings();
         // Only display home section
         this.sections["home"].show();
         utility.finishEventQueue().then(() => {
@@ -297,10 +299,9 @@ class MainWindow extends Window {
     adjustToLanguage(language, secondary) {
         if (language === "Japanese") {
             this.$("add-kanji-button").show();
-            if (dataManager.content.isAvailable["Japanese"]) {
-                this.$("find-kanji-button").show();
-                this.$("dictionary-button").show();
-            }
+            const contentAvailable = dataManager.content.isAvailable["Japanese"];
+            this.$("find-kanji-button").toggleDisplay(contentAvailable);
+            this.$("dictionary-button").toggleDisplay(contentAvailable);
         } else {
             this.$("add-kanji-button").hide();
             this.$("dictionary-button").hide();
@@ -346,6 +347,8 @@ class MainWindow extends Window {
                     return this.sections[this.currentSection].open();
                 }
             }).then(() => {
+                // Adjust to language specific settings
+                this.sections["settings"].broadcastLanguageSettings(language);
                 events.emit("language-changed", language);
                 return true;
             });

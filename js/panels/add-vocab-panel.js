@@ -22,8 +22,22 @@ class AddVocabPanel extends Panel {
                     dataManager.srs.currentScheme.intervalTexts[i];
             }
         });
-        events.on("settings-languages-readings", (enabled) => {
-            this.$("readings-entry").toggleDisplay(enabled);
+        events.on("settings-languages-readings", () => {
+            this.$("readings-entry").toggleDisplay(
+                dataManager.languageSettings["readings"]);
+        });
+        events.on("vocab-list-created", (listName) => {
+            const option = document.createElement("option");
+            option.value = listName;
+            option.textContent = listName;
+            utility.insertNodeIntoSortedList(this.$("vocab-list"), option);
+        });
+        events.on("vocab-list-deleted", (listName) => {
+            for (const option of this.$("vocab-list").children) {
+                if (option.textContent === listName) {
+                    option.remove();
+                }
+            }
         });
     }
 
@@ -61,9 +75,6 @@ class AddVocabPanel extends Panel {
         this.$("word-entry").placeholder = `Enter ${language} word here`;
         this.$("translations-entry").placeholder =
             `Enter ${secondary} translations here`;
-        // Show or hide textarea for readings
-        this.$("readings-entry").toggleDisplay(
-            dataManager.languageSettings["readings"]);
         // Adjust to Japanese language
         if (language === "Japanese") {
             this.$("word-entry").enableKanaInput("hira");

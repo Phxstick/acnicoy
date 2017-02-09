@@ -35,10 +35,14 @@ class PinwallNotes extends PinwallWidget {
             this.editNote(note);
         });
         this.$("add-button").addEventListener("mouseenter", () => {
+            if (!this.draggingNote) return;
             this.addButtonHovered = true;
+            this.$("add-button").classList.add("highlight-top");
         });
         this.$("add-button").addEventListener("mouseleave", () => {
+            if (!this.draggingNote) return;
             this.addButtonHovered = false;
+            this.$("add-button").classList.remove("highlight-top");
         });
         // Leave edit mode when focusing out of note or pressing escape
         this.$("notes").addEventListener("focusout", (event) => {
@@ -48,7 +52,7 @@ class PinwallNotes extends PinwallWidget {
         window.addEventListener("keydown", (event) => {
             if (event.key !== "Escape") return;
             if (this.noteBeingEdited === null) return;
-            this.saveNote(this.noteBeingEdited);
+            this.noteBeingEdited.blur();
         });
         // Enter edit mode when double clicking note
         this.$("notes").addEventListener("dblclick", (event) => {
@@ -88,12 +92,7 @@ class PinwallNotes extends PinwallWidget {
             this.draggedNote.style.left = `${event.pageX - this.dragAnchorX}px`;
             this.draggedNote.style.top = `${event.pageY - this.dragAnchorY}px`;
             // Display new position for dragged item when dragging over notes
-            if (this.currentlyHoveredNote === null) {
-                if (this.addButtonHovered) {
-                    this.$("add-button").classList.add("highlight-top");
-                }
-                return;
-            }
+            if (this.currentlyHoveredNote === null) return;
             const rect = this.currentlyHoveredNote.getBoundingClientRect();
             const localY = event.pageY - rect.top;
             this.bottomHovered = localY > rect.height / 2;
@@ -120,6 +119,7 @@ class PinwallNotes extends PinwallWidget {
                 if (this.addButtonHovered) {
                     this.$("add-button").classList.remove("highlight-top");
                     this.$("notes").appendChild(this.draggedNote);
+                    this.addButtonHovered = false;
                 } else {
                     this.$("notes").insertBefore(
                         this.draggedNote, this.previousNextSibling);
