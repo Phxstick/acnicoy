@@ -1,3 +1,6 @@
+- Create function which linkifies kanji
+  - Use for unit-of-length-label and example words in kanji info panel
+
 ### Up next
 - Move stuff in settings section into a settings manager?
 - Fix: Focusing inputs in srs-schemes-overlay does not work anymore!
@@ -153,22 +156,21 @@ once? --> Faster loading, centralized resource loading
 - Allow seeing stroke animation instead of pictures (and customize speed)
 - Use mapping to quickly load kanji examples (Store in file)
 - Possibly make mapping from kanji parts to actual parts in SVG drawing
-to make sure all parts are properly highlighted
+  to make sure all parts are properly highlighted
 - Show info for kanji which are part of the Chinese zodiac
 - Show info for kanji which symbolize a country
-- Show info for kanjj which can be used as a measure/metric
 - Have separate table for searching kanji, extend readings by ones without
   a ".", keep all meanings for each kanji
-- Link to an info page for each kanji detail (like country/measure/number)
 - Have link to kanji disambiguation if there are kanji with similar meanings
 - Add new icons below close-button
-  - Allow user to maximize panel (then display all info in one frame)
-  - Allow user to adjust some settings
+  - Maximize panel (then display all info in one frame)
+  - Settings
     - [Checkbox] Display commonly used nanori
     - [Checkbox] Show stroke animation instead of pictures
     - [Checkbox] Show detailed example word entries (as in dictionary)
     - [Checkbox] Hide outdated/rare yomi (also adjust for search results)
   - Forward and backward buttons (to browse kanji info history)
+  - Open kanji info history
 
 ### Panels
 - Allow vocab-add-separators to be escaped for single translations
@@ -390,10 +392,12 @@ Future
 - Contains a database of custom info cards
 - Allow uploading and sharing vocabulary lists
 - Offer small coding environment for creating cards with extended markdown
+- Link to here for each kanji detail in info panel (like country/measure/number)
 
 Credits to add
 --------------------------------------------------------------------------------
 - <https://subtlepatterns.com/>
+- [List of kokuji](http://www.sljfaq.org/afaq/kokuji-list.html)
 
 Resources
 --------------------------------------------------------------------------------

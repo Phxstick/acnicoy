@@ -145,7 +145,8 @@ module.exports = function (basePath) {
                 kanjiStrokes: "kanji-strokes.json",
                 numbers: "numeric-kanji.json",
                 counters: "counter-kanji.json",
-                dictCodeToText: "dict-code-to-text.json"
+                dictCodeToText: "dict-code-to-text.json",
+                kokujiList: "kokuji.txt"
             }
         }
     };

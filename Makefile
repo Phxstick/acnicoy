@@ -13,6 +13,7 @@ KANJI_PARTS_PATH = $(RESOURCE_PATH)/kradfile
 KANJI_STROKES_PATH = $(RESOURCE_PATH)/kanjivg-20150615-2.xml
 KANJI_NUMERALS_PATH = $(RESOURCE_PATH)/numeric-kanji.json
 KANJI_COUNTERS_PATH = $(RESOURCE_PATH)/counter-kanji.json
+KANJI_KOKUJI_PATH = $(RESOURCE_PATH)/kokuji.txt
 NEW_JLPT_N3_PATH = $(RESOURCE_PATH)/new-jlpt-n3-kanji.txt
 
 .PHONY: data dictionary_data kanji_data build start install
@@ -50,3 +51,4 @@ kanji_data:
         -o $(OUTPUT_PATH)
 	cp $(KANJI_NUMERALS_PATH) $(OUTPUT_PATH)
 	cp $(KANJI_COUNTERS_PATH) $(OUTPUT_PATH)
+	cp $(KANJI_KOKUJI_PATH) $(OUTPUT_PATH) 

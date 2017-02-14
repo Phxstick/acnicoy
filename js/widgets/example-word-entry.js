@@ -48,6 +48,7 @@ class ExampleWordEntry extends Widget {
         this.dataset.wordId = id;
         this.dataset.word = word;
         this.root.innerHTML += templates.get("example-word-entry")(data);
+        main.convertTextToKanjiInfoLinks(this.$("word"));
         this.popupMenu(menuItems, () => {
             return dataManager.vocab.contains(word)
             .then((isAdded) => isAdded? ["copy-word", "edit-word"] :

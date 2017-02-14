@@ -2,7 +2,7 @@
   <div id="controls-frame">
     <div id="kanji-frame">
       <div id="kanji"></div>
-      <svg id="complete-kanji"></svg>
+      <svg id="complete-kanji-svg"></svg>
     </div>
     <button id="added-label">[ Added ]</button>
     <button id="add-button">Add kanji</button>
@@ -12,15 +12,15 @@
   </div>
   <div id="content-frame">
     <div id="info-frame">
-      <div id="meanings"></div>
+      <div id="meanings-label"></div>
       <div id="details-frame"></div>
-      <div id="on-frame">
+      <div id="on-yomi-frame">
         <span class="details-header">On:</span>
-        <span id="on-readings" class="details-value"></span>
+        <span id="on-yomi-label" class="details-value"></span>
       </div>
-      <div id="kun-frame">
+      <div id="kun-yomi-frame">
         <span class="details-header">Kun:</span>
-        <span id="kun-readings" class="details-value"></span>
+        <span id="kun-yomi-label" class="details-value"></span>
       </div>
       <div id="number-frame">
         <span id="number-header" class="details-header">Numeral for:</span>
@@ -30,6 +30,11 @@
       <div id="counter-frame">
         <span id="counter-header" class="details-header">Counter for:</span>
         <span id="counter-label" class="details-value"></span>
+      </div>
+      <div id="length-unit-frame">
+        <span id="length-unit-header"
+              class="details-header">Unit of length:</span>
+        <span id="length-unit-label" class="details-value"></span>
       </div>
     </div>
     <div id="strokes-frame">

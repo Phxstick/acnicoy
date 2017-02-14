@@ -1,6 +1,7 @@
 "use strict";
 
 const sqlite3 = require("sqlite3");
+const fs = require("fs");
 
 module.exports = function (paths, modules) {
     const content = { data: null };
@@ -60,7 +61,9 @@ module.exports = function (paths, modules) {
                     kanjiStrokes: Object.freeze(require(cPaths.kanjiStrokes)),
                     numericKanji: Object.freeze(require(cPaths.numbers)),
                     counterKanji: Object.freeze(require(cPaths.counters)),
-                    codeToText: Object.freeze(require(cPaths.dictCodeToText))
+                    codeToText: Object.freeze(require(cPaths.dictCodeToText)),
+                    kokujiList: Object.freeze(
+                        new Set(fs.readFileSync(cPaths.kokujiList, "utf8")))
                 });
             });
         }

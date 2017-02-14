@@ -374,6 +374,30 @@ class MainWindow extends Window {
             });
         });
     }
+
+    /**
+     * Given a node with no children other than a text-node, turn every
+     * kanji in the text into a kanji link (each character in a single span).
+     * @param {HTMLElement} element - A node with textcontent.
+     * @returns {Promise}
+     */
+    convertTextToKanjiInfoLinks(element) {
+        const promises = [];
+        const spans = [];
+        for (const character of element.textContent) {
+            const span = document.createElement("span");
+            span.textContent = character;
+            const promise = this.makeKanjiInfoLink(span, character);
+            spans.push(span);
+            promises.push(promise);
+        }
+        return Promise.all(promises).then(() => {
+            element.textContent = "";
+            for (const span of spans) {
+                element.appendChild(span);
+            }
+        });
+    }
 }
 
 customElements.define("main-window", MainWindow);

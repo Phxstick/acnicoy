@@ -13,29 +13,9 @@ class KanjiInfoPanel extends Widget {
     constructor() {
         super("kanji-info-panel", true, true);
         this.isOpen = false;
-        // Store important DOM elements as properties
-        this.frame = this.root.getElementById("window");
-        this.kanji = this.root.getElementById("kanji");
-        this.kanji.popupMenu(menuItems, ["copy-kanji"]);
-        this.completeSvg = this.root.getElementById("complete-kanji");
-        this.addedLabel = this.root.getElementById("added-label");
-        this.addButton = this.root.getElementById("add-button");
-        this.meanings = this.root.getElementById("meanings");
-        this.onReadings = this.root.getElementById("on-readings");
-        this.kunReadings = this.root.getElementById("kun-readings");
-        this.onReadingsFrame = this.root.getElementById("on-frame");
-        this.kunReadingsFrame = this.root.getElementById("kun-frame");
-        this.numberFrame = this.root.getElementById("number-frame");
-        this.numberLabel = this.root.getElementById("number-label");
-        this.numberDetails = this.root.getElementById("number-details");
-        this.counterFrame = this.root.getElementById("counter-frame");
-        this.counterLabel = this.root.getElementById("counter-label");
-        this.detailsFrame = this.root.getElementById("details-frame");
-        this.strokeCount = this.root.getElementById("stroke-count");
-        this.radical = this.root.getElementById("radical");
-        this.radicalName = this.root.getElementById("radical-name");
-        this.kanjiParts = this.root.getElementById("kanji-parts");
-        this.strokeGraphics = this.root.getElementById("stroke-graphics");
+        this.currentKanji = null;
+        this.examplesLoaded = false;
+        this.strokesLoaded = false;
         this.sectionButtons = {
             "info": this.root.getElementById("info-button"),
             "strokes": this.root.getElementById("strokes-button"),
@@ -46,32 +26,31 @@ class KanjiInfoPanel extends Widget {
             "strokes": this.root.getElementById("strokes-frame"),
             "examples": this.root.getElementById("examples-frame")
         };
-        this.exampleWords = this.root.getElementById("example-words");
-        // Create button callbacks
+        // Attach event listeners
+        this.$("kanji").popupMenu(menuItems, ["copy-kanji"]);
         for (const name in this.sectionButtons) {
             this.sectionButtons[name].addEventListener("click", () => {
                 this.openSection(name);
             });
         }
-        // Callbacks
         this.$("close-button").addEventListener("click", () => this.close());
-        this.addButton.addEventListener("click", () => {
+        this.$("add-button").addEventListener("click", () => {
             main.panels["add-kanji"].load(this.currentKanji);
             main.openPanel("add-kanji");
         });
-        this.addedLabel.addEventListener("click", () => {
+        this.$("added-label").addEventListener("click", () => {
             main.panels["edit-kanji"].load(this.currentKanji);
             main.openPanel("edit-kanji");
         });
         this.sectionButtons["examples"].addEventListener("click", () => {
             if (this.examplesLoaded) return;
-            this.exampleWords.empty();
+            this.$("example-words").empty();
             dataManager.content.getExampleWordsForKanji(this.currentKanji)
             .then((rows) => {
                 this.nextRowIndex = 0;
                 this.exampleWordRows = rows;
                 this.displayMoreExampleWords(15)
-                this.exampleWords.scrollToTop();
+                this.$("example-words").scrollToTop();
                 this.examplesLoaded = true;
             });
         });
@@ -82,27 +61,23 @@ class KanjiInfoPanel extends Widget {
         });
         // If user scrolls almost to the table bottom, load more example words
         const displayAmount = 20;
-        this.exampleWords.uponScrollingBelow(50, () => {
+        this.$("example-words").uponScrollingBelow(50, () => {
             if (this.nextRowIndex > 0 && this.examplesLoaded &&
                     this.nextRowIndex < this.exampleWordRows.length)
                 this.displayMoreExampleWords(displayAmount);
         });
-        // State information variables
-        this.currentKanji = null;
-        this.examplesLoaded = false;
-        this.strokesLoaded = false;
     }
 
     registerCentralEventListeners() {
         events.on("kanji-added", (kanji) => {
             if (this.currentKanji !== kanji) return;
-            this.addedLabel.show();
-            this.addButton.hide();
+            this.$("added-label").show();
+            this.$("add-button").hide();
         });
         events.on("kanji-removed", (kanji) => {
             if (this.currentKanji !== kanji) return;
-            this.addedLabel.hide();
-            this.addButton.show();
+            this.$("added-label").hide();
+            this.$("add-button").show();
         });
     }
 
@@ -135,63 +110,80 @@ class KanjiInfoPanel extends Widget {
         this.strokesLoaded = false;
         this.currentKanji = kanji;
         // Fill info fields
-        this.kanji.textContent = kanji;
+        this.$("kanji").textContent = kanji;
         this.openSection("info");
         return dataManager.content.getKanjiInfo(kanji).then((info) => {
             // Display meanings, on-yomi, kun-yomi
-            this.meanings.textContent = info.meanings.join(", ");
+            this.$("meanings-label").textContent = info.meanings.join(", ");
             // TODO: Dont just insert spaces, treat as separate clickable
             // entities with custom spacing
-            this.onReadings.textContent = info.onYomi.join("、 ");
-            this.kunReadings.textContent = info.kunYomi.join("、 ");
+            this.$("on-yomi-label").textContent = info.onYomi.join("、 ");
+            this.$("kun-yomi-label").textContent = info.kunYomi.join("、 ");
             // Hide on/kun-yomi header label if not available
-            this.onReadingsFrame.toggleDisplay(info.onYomi.length > 0);
-            this.kunReadingsFrame.toggleDisplay(info.kunYomi.length > 0);
-            this.detailsFrame.empty();
+            this.$("on-yomi-frame").toggleDisplay(info.onYomi.length > 0);
+            this.$("kun-yomi-frame").toggleDisplay(info.kunYomi.length > 0);
+            this.$("details-frame").empty();
             // Display misc info spans
             const detailSpans = this.getKanjiDetailSpans(kanji, info);
             for (const span of detailSpans) {
-                this.detailsFrame.appendChild(span);
+                this.$("details-frame").appendChild(span);
             }
             // If counter kanji: display list of objects counted in description
-            const counterKanji = content.counterKanji;
-            if (kanji in counterKanji) {
-                this.counterLabel.textContent = counterKanji[kanji].join(", ");
+            const isCounterKanji = kanji in content.counterKanji;
+            if (isCounterKanji) {
+                this.$("counter-label").textContent =
+                    content.counterKanji[kanji].join(", ");
             }
-            this.counterFrame.toggleDisplay(kanji in counterKanji);
+            this.$("counter-frame").toggleDisplay(isCounterKanji);
             // Info kanji is number, display represented number in description
-            const numericKanji = content.numericKanji;
-            if (kanji in numericKanji.kanjiToNumber) {
-                this.numberLabel.textContent = utility.getStringForNumber(
-                    numericKanji.kanjiToNumber[kanji].number);
+            const isNumericKanji = kanji in content.numericKanji.kanjiToNumber;
+            if (isNumericKanji) {
+                this.$("number-label").textContent = utility.getStringForNumber(
+                    content.numericKanji.kanjiToNumber[kanji].number);
                 // If kanji is only used in legal docs and/or obsolete,
                 // display this info after the represented number
-                if (numericKanji.kanjiToNumber[kanji].legal) {
-                    this.numberDetails.textContent = 
+                if (content.numericKanji.kanjiToNumber[kanji].legal) {
+                    this.$("number-details").textContent = 
                         "(For use in legal documents";
-                    if (numericKanji.kanjiToNumber[kanji].obsolete)
-                        this.numberDetails.textContent += ", now obsolete";
-                    this.numberDetails.textContent += ")";
+                    if (content.numericKanji.kanjiToNumber[kanji].obsolete) {
+                        this.$("number-details").textContent +=
+                            ", now obsolete";
+                    }
+                    this.$("number-details").textContent += ")";
                 } else {
-                    this.numberDetails.textContent = "";
+                    this.$("number-details").textContent = "";
                 }
             }
-            this.numberFrame.toggleDisplay(kanji in numericKanji.kanjiToNumber);
+            this.$("number-frame").toggleDisplay(isNumericKanji);
+            // If kanji represents a unit of length
+            const isUnitOfLength = "分寸尺丈".includes(kanji);
+            if (isUnitOfLength) {
+                const label = this.$("length-unit-label");
+                if (kanji === "分") {
+                    label.textContent = "1 分 (ぶ) = ３ mm";
+                } else if (kanji === "寸") {
+                    label.textContent = "1 寸 (すん) = 10 分 = 3.03 cm";
+                } else if (kanji === "尺") {
+                    label.textContent = "1 尺 (しゃく) = 10 寸 = 30.3 cm";
+                } else if (kanji === "丈") {
+                    label.textContent = "1 丈 (じょう) = 10 尺 = 3.03 m";
+                }
+                main.convertTextToKanjiInfoLinks(label);
+            }
+            this.$("length-unit-frame").toggleDisplay(isUnitOfLength);
             // Display 'added' sign or button for adding the kanji
-            this.addedLabel.toggleDisplay(info.added);
-            this.addButton.toggleDisplay(!info.added);
+            this.$("added-label").toggleDisplay(info.added);
+            this.$("add-button").toggleDisplay(!info.added);
             // Display number of strokes, radical and kanji parts
-            // (In strokes section)
-            this.strokeCount.textContent = info.strokes;
-            this.radical.textContent = info.radical;
-            this.radicalName.textContent = info.radicalName;
-                `${info.radical}  (${info.radicalName})`;
+            this.$("stroke-count").textContent = info.strokes;
+            this.$("radical").textContent = info.radical;
+            this.$("radical-name").textContent = info.radicalName;
             // List kanji parts
-            this.kanjiParts.empty();
+            this.$("kanji-parts").empty();
             for (const part of info.parts) {
                 const span = document.createElement("span");
                 span.textContent = part;
-                this.kanjiParts.appendChild(span);
+                this.$("kanji-parts").appendChild(span);
             }
         });
     }
@@ -205,31 +197,31 @@ class KanjiInfoPanel extends Widget {
         for (const dataRow of dataRows) {
             fragment.appendChild(new ExampleWordEntry(dataRow));
         }
-        this.exampleWords.appendChild(fragment);
+        this.$("example-words").appendChild(fragment);
         this.nextRowIndex = limit;
     }
 
     displayStrokeGraphics() {
         const kanjiStrokes = dataManager.content.data.kanjiStrokes;
-        this.strokeGraphics.empty();
+        this.$("stroke-graphics").empty();
         // If no stroke info is available, display a note
         const strokesAvailable = kanjiStrokes.hasOwnProperty(this.currentKanji);
-        this.strokeGraphics.toggleDisplay(strokesAvailable);
+        this.$("stroke-graphics").toggleDisplay(strokesAvailable);
         this.$("strokes-not-available-info").toggleDisplay(!strokesAvailable);
         if (!strokesAvailable) return;
         const strokes = kanjiStrokes[this.currentKanji];
-        this.completeSvg.empty();
+        this.$("complete-kanji-svg").empty();
         // Adjust svg diagram for the whole kanji
-        this.completeSvg.setAttribute(
-                "width", `${this.kanji.offsetWidth - 1}px`);
-        this.completeSvg.setAttribute(
-                "height", `${this.kanji.offsetHeight}px`);
-        this.completeSvg.setAttribute("viewBox", "0 0 109 109");
+        this.$("complete-kanji-svg").setAttribute(
+                "width", `${this.$("kanji").offsetWidth - 1}px`);
+        this.$("complete-kanji-svg").setAttribute(
+                "height", `${this.$("kanji").offsetHeight}px`);
+        this.$("complete-kanji-svg").setAttribute("viewBox", "0 0 109 109");
         // Draw the complete kanji into the complete-kanji-svg
         const partToPath = {};
         for (const { stroke, parts } of strokes) {
             const path = utility.createSvgNode("path", { d: stroke });
-            this.completeSvg.appendChild(path);
+            this.$("complete-kanji-svg").appendChild(path);
             // Also create a mapping from kanji part to path elements
             for (const part of parts) {
                 if (!(part in partToPath)) {
@@ -240,19 +232,19 @@ class KanjiInfoPanel extends Widget {
         }
         // Show kanji diagram with highlighted strokes when hovering
         // over the kanji part corresponding to these strokes
-        for (const item of this.kanjiParts.children) {
+        for (const item of this.$("kanji-parts").children) {
             const part = item.textContent;
             item.addEventListener("mouseover", () => {
-                this.completeSvg.style.visibility = "visible";
-                this.kanji.style.visibility = "hidden";
+                this.$("complete-kanji-svg").style.visibility = "visible";
+                this.$("kanji").style.visibility = "hidden";
                 if (!(part in partToPath)) return;
                 for (const path of partToPath[part]) {
                     path.classList.add("highlighted");
                 }
             });
             item.addEventListener("mouseout", () => {
-                this.completeSvg.style.visibility = "hidden";
-                this.kanji.style.visibility = "visible";
+                this.$("complete-kanji-svg").style.visibility = "hidden";
+                this.$("kanji").style.visibility = "visible";
                 if (!(part in partToPath)) return;
                 for (const path of partToPath[part]) {
                     path.classList.remove("highlighted");
@@ -285,53 +277,43 @@ class KanjiInfoPanel extends Widget {
                 { cx: dotPos[1], cy: dotPos[2], r: "5" });
             brushStart.classList.add("brush-start");
             svg.appendChild(brushStart);
-            this.strokeGraphics.appendChild(svg);
+            this.$("stroke-graphics").appendChild(svg);
         }
-        this.strokeGraphics.scrollToLeft();
+        this.$("stroke-graphics").scrollToLeft();
     }
     
     getKanjiDetailSpans(kanji, info) {
         const content = dataManager.content.dataMap["Japanese"];
         const spans = [];
-        // Display grade info
-        const gradeSpan = document.createElement("span");
-        if (info.grade == 0) {
-            gradeSpan.textContent = `Hyougai kanji`;
-        } else if (info.grade <= 6) {
-            gradeSpan.textContent = `Jouyou kanji, grade ${info.grade}`;
-        } else if (info.grade == 8) {
-            gradeSpan.textContent = `Jouyou kanji, secondary grade`;
-        } else if (info.grade == 9) {
-            gradeSpan.textContent = `Jinmeiyou kanji`;
+        const makeSpan = (text) => {
+            const span = document.createElement("span");
+            span.textContent = text;
+            spans.push(span);
         }
-        spans.push(gradeSpan);
+        // Display grade info
+        if (info.grade == 0) {
+            makeSpan(`Hyougai kanji`);
+        } else if (info.grade <= 6) {
+            makeSpan(`Jouyou kanji, grade ${info.grade}`);
+        } else if (info.grade == 8) {
+            makeSpan(`Jouyou kanji, secondary grade`);
+        } else if (info.grade == 9) {
+            makeSpan(`Jinmeiyou kanji`);
+        }
         // Append JLPT level if it has one
         if (info.jlptLevel !== null) {
-            const jlptSpan = document.createElement("span");
-            jlptSpan.textContent = `JLPT N${info.jlptLevel}`;
-            spans.push(jlptSpan);
+            makeSpan(`JLPT N${info.jlptLevel}`);
         }
         // Display frequency of kanji in newspapers (if in top 2500)
         if (info.frequency !== null) {
-            const freqSpan = document.createElement("span");
             const freq = utility.getOrdinalNumberString(info.frequency);
-            freqSpan.textContent = `${freq} most frequent`;
-            spans.push(freqSpan);
+            makeSpan(`${freq} most frequent`);
         }
-        // TODO: Add info if kanji is kokuji
-        // Add info if kanji is a counter
-        if (kanji in content.counterKanji) {
-            const counterSpan = document.createElement("span");
-            counterSpan.textContent = "Counter";
-            spans.push(counterSpan);
-        }
-        // Add info if kanji is a numeral
-        if (kanji in content.numericKanji.kanjiToNumber) {
-            // Display small info label in details bar
-            const numberSpan = document.createElement("span");
-            numberSpan.textContent = "Numeral";
-            spans.push(numberSpan);
-        }
+        // Add info if kanji is a kokuji, counter, numeral, unit of length
+        if (content.kokujiList.has(kanji)) makeSpan("Kokuji");
+        if (kanji in content.counterKanji) makeSpan("Counter");
+        if (kanji in content.numericKanji.kanjiToNumber) makeSpan("Numeral");
+        if ("分寸尺丈".includes(kanji)) makeSpan("Unit of length");
         return spans;
     }
 }
