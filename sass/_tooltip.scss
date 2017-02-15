@@ -5,7 +5,7 @@
 * --tooltip-delay      (Default: 0s)
 */
 
-// SASS Parameters
+// SASS parameters
 $spacing: 1px;  // Distance between element and tooltip arrow
 $arrow-width: 10px;
 $arrow-height: 5px;
@@ -41,20 +41,20 @@ $offset-arrow: calc(100% + #{$spacing});
   to { top: $offset-arrow; }
 }
 @keyframes slide-tooltip-to-left {
-  from { right: $offset-tooltip-start; }
-  to { right: $offset-tooltip; }
-}
-@keyframes slide-arrow-to-left {
-  from { right: $offset-arrow-start; }
-  to { right: $offset-arrow; }
-}
-@keyframes slide-tooltip-to-right {
   from { left: $offset-tooltip-start; }
   to { left: $offset-tooltip; }
 }
-@keyframes slide-arrow-to-right {
+@keyframes slide-arrow-to-left {
   from { left: $offset-arrow-start; }
   to { left: $offset-arrow; }
+}
+@keyframes slide-tooltip-to-right {
+  from { right: $offset-tooltip-start; }
+  to { right: $offset-tooltip; }
+}
+@keyframes slide-arrow-to-right {
+  from { right: $offset-arrow-start; }
+  to { right: $offset-arrow; }
 }
 
 
@@ -71,7 +71,6 @@ $offset-arrow: calc(100% + #{$spacing});
     content: attr(data-tooltip);
     font-family: $tooltip-font;
     font-size: var(--tooltip-font-size, 1rem);
-    left: -40%;
     background-color: $tooltip-background;
     white-space: nowrap;
     color: $tooltip-color;
@@ -91,7 +90,7 @@ $offset-arrow: calc(100% + #{$spacing});
   }
 
   &:hover:after, &:hover:before {
-    display: block;
+    display: inline-block;
     animation: {
       duration: var(--tooltip-speed, .4s);
       delay: var(--tooltip-delay, 0s);

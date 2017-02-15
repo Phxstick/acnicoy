@@ -16,10 +16,13 @@ class AddVocabPanel extends Panel {
 
     registerCentralEventListeners() {
         events.onAll(["language-changed", "current-srs-scheme-edited"], () => {
-            for (let i = 1; i < this.$("srs-level").children.length + 1; ++i) {
-                const option = this.$("srs-level").children[i - 1];
-                option.dataset.tooltip =
-                    dataManager.srs.currentScheme.intervalTexts[i];
+            // Fill SRS level popup stack
+            const numLevels = dataManager.srs.currentScheme.numLevels;
+            const intervalTexts = dataManager.srs.currentScheme.intervalTexts;
+            this.$("srs-level").empty();
+            for (let level = 1; level <= numLevels; ++level) {
+                const option = this.$("srs-level").addOption(level);
+                option.dataset.tooltip = intervalTexts[level];
             }
         });
         events.on("settings-languages-readings", () => {
@@ -49,17 +52,12 @@ class AddVocabPanel extends Panel {
         this.$("word-entry").value = "";
         this.$("translations-entry").value = "";
         this.$("readings-entry").value = "";
-        this.$("srs-level").set(this.$("srs-level").firstChild);
+        this.$("srs-level").setByIndex(0);
         this.defaultOption.setAttribute("selected", "");
         this.$("vocab-list").value = "";
     }
 
     adjustToLanguage(language, secondary) {
-        // Fill SRS level popup stack
-        this.$("srs-level").empty();
-        const numLevels = dataManager.srs.currentScheme.numLevels;
-        for (let i = 1; i <= numLevels; ++i) this.$("srs-level").addOption(i);
-        this.$("srs-level").set(this.$("srs-level").firstChild);
         // Fill vocab list selector
         this.$("vocab-list").empty();
         this.$("vocab-list").appendChild(this.defaultOption);

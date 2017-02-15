@@ -16,39 +16,29 @@ const menuItems = popupMenu.registerItems({
 class TestSection extends Section {
     constructor() {
         super("test");
-        // Store important DOM elements as class members
-        this.statusLabel = this.root.getElementById("status");
-        this.itemsDiv = this.root.getElementById("items");  // Rename this...
-        this.testItem = this.root.getElementById("test-item");
-        this.ignoreAnswerButton = this.root.getElementById("ignore-answer");
-        this.modifyItemButton = this.root.getElementById("modify-item");
-        this.addAnswerButton = this.root.getElementById("add-answer");
-        this.continueButton = this.root.getElementById("continue-button");
-        this.answerEntry = this.root.getElementById("answer-entry");
-        this.correctAnswers = this.root.getElementById("correct-answers");
         // Set some numbers and constants
         this.delay = 300;
         this.lastPress = 0;
         this.animate = false;
         // Add callbacks
-        this.ignoreAnswerButton.addEventListener("click", () => {
+        this.$("ignore-answer").addEventListener("click", () => {
             this._ignoreAnswer();
         });
-        this.continueButton.addEventListener("click", () => {
+        this.$("continue-button").addEventListener("click", () => {
             const time = new Date().getTime();
             if (time - this.lastPress > this.delay) {
                 this._createQuestion();
                 this.lastPress = time;
             }
         });
-        this.answerEntry.addEventListener("keypress", (event) => {
+        this.$("answer-entry").addEventListener("keypress", (event) => {
             const time = new Date().getTime();
             if (event.key === "Enter" && time - this.lastPress > this.delay) {
                 this._evaluateAnswer();
                 this.lastPress = time;
             }
         });
-        this.modifyItemButton.addEventListener("click", () => {
+        this.$("modify-item").addEventListener("click", () => {
             const item = this.testInfo.item;
             if (item.mode === dataManager.test.mode.KANJI_MEANINGS ||
                     item.mode === dataManager.test.mode.KANJI_ON_YOMI ||
@@ -61,18 +51,30 @@ class TestSection extends Section {
             }
             // TODO: Immediately modify test item afterwards?
         });
-        this.addAnswerButton.addEventListener("click", () => {
+        this.$("add-answer").addEventListener("click", () => {
             // TODO: Implement
             main.updateStatus("Not yet implemented!");
             // this._createQuestion();
         });
         // Create popup-menus
-        this.testItem.popupMenu(menuItems, ["copy-test-item"]);
+        this.$("test-item").popupMenu(menuItems, ["copy-test-item"]);
     }
 
     /* =====================================================================
         Inherited from Section
     ===================================================================== */
+
+    registerCentralEventListeners() {
+        events.onAll(["language-changed", "current-srs-scheme-edited"], () => {
+            const numLevels = dataManager.srs.currentScheme.numLevels;
+            const intervalTexts = dataManager.srs.currentScheme.intervalTexts;
+            for (let level = 1; level <= numLevels; ++level) {
+                const option = this.$("new-level").addOption(level);
+                option.dataset.tooltip = intervalTexts[level];
+                option.dataset.tooltipPos = "left";
+            }
+        });
+    }
     
     open() {
         // ... Adjust widgets to settings
@@ -107,15 +109,16 @@ class TestSection extends Section {
     ===================================================================== */
 
     _evaluateAnswer() {
-        const answer = this.answerEntry.value.trim();
+        const answer = this.$("answer-entry").value.trim();
         const item = this.testInfo.item;
         const entry = item.entry;
         const part = this.testInfo.part;
-        if (item.lastAnswerIncorrect)
+        if (item.lastAnswerIncorrect) {
             item.marked = true;
+        }
         this._getSolutions(entry, item.mode, part)
         .then(([originalSolutions, solutions]) => {
-            let isCorrect = true;
+            let answerCorrect = true;
             if (!solutions.has(answer)) {
                 let match = false;
                 for (const solution of solutions) {
@@ -126,44 +129,63 @@ class TestSection extends Section {
                 }
                 if (!match) {
                     item.parts.push(part);
-                    isCorrect = false;
+                    answerCorrect = false;
                 }
             }
-            item.lastAnswerIncorrect = !isCorrect;
+            item.lastAnswerIncorrect = !answerCorrect;
             // registerShortcut("Ctrl+R",
             //     () => this._ignoreAnswer(this.testInfo.item, this.testInfo.part));
+            // If item is finished, determine new level for this item
+            const itemCorrect = !item.marked && !item.lastAnswerIncorrect;
+            let newLevel;
+            if (item.parts.length === 0) {
+                if (itemCorrect) {
+                    newLevel = item.level + 1;
+                } else {
+                    newLevel = Math.max(1, item.level - 1);
+                }
+            }
             // Display stuff
-            this.answerEntry.value = "";
+            if (item.parts.length === 0) {
+                this.$("levels-frame").show();
+                this.$("old-level").textContent = item.level;
+                this.$("new-level").setByIndex(newLevel - 1);
+                this.$("level-arrow").classList.toggle("correct", itemCorrect);
+                this.$("level-arrow").classList.toggle("incorrect",
+                                                       !itemCorrect);
+            }
+            this.$("answer-entry").value = "";
             this._showAnswers(originalSolutions);
-            this.statusLabel.textContent = isCorrect ?
+            this.$("status").textContent = answerCorrect ?
                 "Correct answer!" : "Wrong answer!";
-            this.statusLabel.classList.toggle("correct", isCorrect);
-            this.statusLabel.classList.toggle("incorrect", !isCorrect);
-            this.ignoreAnswerButton.removeAttribute("disabled");
-            if (!isCorrect) this.addAnswerButton.removeAttribute("disabled");
-            this.modifyItemButton.removeAttribute("disabled");
+            this.$("status").classList.toggle("correct", answerCorrect);
+            this.$("status").classList.toggle("incorrect", !answerCorrect);
+            this.$("ignore-answer").removeAttribute("disabled");
+            if (!answerCorrect)
+                this.$("add-answer").removeAttribute("disabled");
+            this.$("modify-item").removeAttribute("disabled");
             // Exchange button and entry
-            this.continueButton.show();
-            this.answerEntry.hide();
-            this.continueButton.focus();
+            this.$("continue-button").show();
+            this.$("answer-entry").hide();
+            this.$("continue-button").focus();
         });
     }
 
     _prepareMode(mode, part) {
-        this.statusLabel.classList.remove("correct");
-        this.statusLabel.classList.remove("incorrect");
+        this.$("status").classList.remove("correct");
+        this.$("status").classList.remove("incorrect");
         // Choose right input method (for translations or readings)
         if (mode === dataManager.test.mode.KANJI_KUN_YOMI)
-            this.answerEntry.enableKanaInput("hira");
+            this.$("answer-entry").enableKanaInput("hira");
         else if (mode === dataManager.test.mode.KANJI_ON_YOMI)
-            this.answerEntry.enableKanaInput("kata");
+            this.$("answer-entry").enableKanaInput("kata");
         else if (part === "readings")
-            this.answerEntry.enableKanaInput("hira");
+            this.$("answer-entry").enableKanaInput("hira");
         else
-            this.answerEntry.disableKanaInput();
+            this.$("answer-entry").disableKanaInput();
         // Choose the right status label
         if (part === "readings") {
-            this.statusLabel.textContent = "How do you read this word?";
+            this.$("status").textContent = "How do you read this word?";
         } else {
             let text;
             if (mode === dataManager.test.mode.WORDS)
@@ -172,29 +194,28 @@ class TestSection extends Section {
             else if (mode === dataManager.test.mode.KANJI_MEANINGS)
                 text = `What could the following kanji mean?`;
             else if (mode === dataManager.test.mode.KANJI_ON_YOMI)
-                text =  `Name an ON-Yomi of the following kanji.`;
+                text = `Name an ON-Yomi of the following kanji.`;
             else if (mode === dataManager.test.mode.KANJI_KUN_YOMI)
                 text = `Name a KUN-Yomi of the following kanji.`;
-            this.statusLabel.textContent = text;
+            this.$("status").textContent = text;
         }
     }
 
     _createQuestion() {
-        // Apply result to stats if the last item was finished (and exists),
-        // Otherwise insert it back into the test item list
         const item = this.testInfo.item;
         const items = this.testInfo.itemList;
         if (item !== null) {
             if (item.parts.length === 0) {
-                let answeredCorrectly;
                 if (!item.marked && !item.lastAnswerIncorrect) {
-                    answeredCorrectly = true;
                     this.testInfo.numCorrect++;
                 } else {
-                    answeredCorrectly = false;
                     this.testInfo.numIncorrect++;
                 }
-                this._updateData(item, answeredCorrectly);
+                const newLevel = this.$("new-level").value;
+                // Update SRS system and daily stats
+                dataManager.stats.incrementTestedCounter(item.mode);
+                dataManager.stats.updateScore(item.mode, item.level, newLevel);
+                dataManager.srs.setLevel(item.entry, newLevel, item.mode);
             } else {
                 items.push(item);
             }
@@ -223,30 +244,34 @@ class TestSection extends Section {
         newItem.parts.splice(randNum, 1);
         //// unregisterShortcut("Ctrl+R");
         // TODO: Unregistering shortcut (customize in settings)
-        const promise = this.animate ? 
-            this.itemsDiv.fadeOut(300).then(
-                    () => this.itemsDiv.style.visibility = "visible") :
-            Promise.resolve();
+        let promise = Promise.resolve();
+        if (this.animate) {
+            promise = promise.then(() => this.$("items").fadeOut(300))
+                             .then(() => {
+                                 this.$("items").style.visibility = "visible";
+                             });
+        }
         promise.then(() => {
             // Display stuff
             this._prepareMode(newItem.mode, part);
-            this.testItem.textContent = newItem.entry;
-            this.correctAnswers.innerHTML = "";
-            this.ignoreAnswerButton.setAttribute("disabled", "");
-            this.addAnswerButton.setAttribute("disabled", "");
-            this.modifyItemButton.setAttribute("disabled", "");
+            this.$("test-item").textContent = newItem.entry;
+            this.$("correct-answers").innerHTML = "";
+            this.$("ignore-answer").setAttribute("disabled", "");
+            this.$("add-answer").setAttribute("disabled", "");
+            this.$("modify-item").setAttribute("disabled", "");
+            this.$("levels-frame").hide();
             // Exchange button and entry
-            this.continueButton.hide();
-            this.answerEntry.show();
-            this.answerEntry.focus();
+            this.$("continue-button").hide();
+            this.$("answer-entry").show();
+            this.$("answer-entry").focus();
         });
     }
 
     _showAnswers(solutions) {
         for (const solution of solutions) {
-            const div = document.createElement("div");
-            div.textContent = solution;
-            this.correctAnswers.appendChild(div);
+            const answerLabel = document.createElement("div");
+            answerLabel.textContent = solution;
+            this.$("correct-answers").appendChild(answerLabel);
         }
     }
 
@@ -256,17 +281,6 @@ class TestSection extends Section {
         this.testInfo.item.lastAnswerIncorrect = false;
         this._createQuestion();
         // unregisterShortcut("Ctrl+R");
-    }
-
-    /**
-     * Updates SRS system and daily stats.
-     */
-    _updateData(item, answeredCorrectly) {
-        const newLevel =
-            answeredCorrectly ? item.level + 1 : Math.max(1, item.level - 1);
-        dataManager.stats.incrementTestedCounter(item.mode);
-        dataManager.stats.updateScore(item.mode, item.level, newLevel);
-        dataManager.srs.setLevel(item.entry, newLevel, item.mode);
     }
 
     _getSolutions(entry, mode, part) {

@@ -3,37 +3,36 @@
 class AddKanjiPanel extends Panel {
     constructor() {
         super("add-kanji");
-        this.allLevelsPopup = this.root.getElementById("all-srs-levels");
-        this.meaningsLevelPopup =
-            this.root.getElementById("srs-level-meanings");
-        this.kunYomiLevelPopup = this.root.getElementById("srs-level-kun-yomi");
-        this.onYomiLevelPopup = this.root.getElementById("srs-level-on-yomi");
         // Attach event handlers
         this.$("on-yomi-entry").enableKanaInput("kata");
         this.$("kun-yomi-entry").enableKanaInput("hira");
-        this.root.getElementById("close-button").addEventListener(
+        this.$("close-button").addEventListener(
             "click", () => main.closePanel("add-kanji"));
-        this.root.getElementById("cancel-button").addEventListener(
+        this.$("cancel-button").addEventListener(
             "click", () => main.closePanel("add-kanji"));
-        this.root.getElementById("save-button").addEventListener(
+        this.$("save-button").addEventListener(
             "click", () => this.save());
-        this.allLevelsPopup.callback = (label, value) => {
-            const idx = value - 1;
-            this.meaningsLevelPopup.set(this.meaningsLevelPopup.children[idx]);
-            this.onYomiLevelPopup.set(this.onYomiLevelPopup.children[idx]);
-            this.kunYomiLevelPopup.set(this.kunYomiLevelPopup.children[idx]);
+        this.$("all-srs-levels").callback = (label, value) => {
+            this.$("srs-level-meanings").setByIndex(value - 1);
+            this.$("srs-level-on-yomi").setByIndex(value - 1);
+            this.$("srs-level-kun-yomi").setByIndex(value - 1);
         };
     }
 
     registerCentralEventListeners() {
         events.onAll(["language-changed", "current-srs-scheme-edited"], () => {
-            const popups = [this.allLevelsPopup, this.meaningsLevelPopup,
-                            this.kunYomiLevelPopup, this.onYomiLevelPopup];
+            // Fill SRS level popup stacks
+            const numLevels = dataManager.srs.currentScheme.numLevels;
+            const intervalTexts = dataManager.srs.currentScheme.intervalTexts;
+            const popups = [
+                this.$("all-srs-levels"), this.$("srs-level-meanings"),
+                this.$("srs-level-kun-yomi"), this.$("srs-level-on-yomi")
+            ];
             for (const popup of popups) {
-                for (let i = 1; i < popup.children.length + 1; ++i) {
-                    const option = popup.children[i - 1];
-                    option.dataset.tooltip =
-                        dataManager.srs.currentScheme.intervalTexts[i];
+                popup.empty();
+                for (let level = 1; level <= numLevels; ++level) {
+                    const option = popup.addOption(level);
+                    option.dataset.tooltip = intervalTexts[level];
                 }
             }
         });
@@ -42,10 +41,10 @@ class AddKanjiPanel extends Panel {
     open() {
         this.$("kanji-entry").style.width =
             `${this.$("kanji-entry").offsetHeight}px`;
-        this.allLevelsPopup.set(this.allLevelsPopup.firstChild);
-        this.meaningsLevelPopup.set(this.meaningsLevelPopup.firstChild);
-        this.kunYomiLevelPopup.set(this.kunYomiLevelPopup.firstChild);
-        this.onYomiLevelPopup.set(this.onYomiLevelPopup.firstChild);
+        this.$("all-srs-levels").setByIndex(0);
+        this.$("srs-level-meanings").setByIndex(0);
+        this.$("srs-level-kun-yomi").setByIndex(0);
+        this.$("srs-level-on-yomi").setByIndex(0);
         if (this.$("kanji-entry").textContent.length === 0)
             this.$("kanji-entry").focus();
         else
@@ -57,18 +56,6 @@ class AddKanjiPanel extends Panel {
         this.$("meanings-entry").value = "";
         this.$("on-yomi-entry").value = "";
         this.$("kun-yomi-entry").value = "";
-    }
-
-    adjustToLanguage(language, secondary) {
-        if (language !== "Japanese") return;
-        // Fill SRS level popup stack
-        const numLevels = dataManager.srs.currentScheme.numLevels;
-        const popups = [this.allLevelsPopup, this.meaningsLevelPopup,
-                        this.kunYomiLevelPopup, this.onYomiLevelPopup];
-        for (const popup of popups) {
-            popup.empty();
-            for (let i = 1; i <= numLevels; ++i) popup.addOption(i);
-        }
     }
 
     load(kanji) {
@@ -88,9 +75,9 @@ class AddKanjiPanel extends Panel {
         // Read values
         const kanji = this.$("kanji-entry").value.trim();
         const levels = {
-            meanings: parseInt(this.meaningsLevelPopup.value),
-            on_yomi: parseInt(this.onYomiLevelPopup.value),
-            kun_yomi: parseInt(this.kunYomiLevelPopup.value)
+            meanings: parseInt(this.$("srs-level-meanings").value),
+            on_yomi: parseInt(this.$("srs-level-on-yomi").value),
+            kun_yomi: parseInt(this.$("srs-level-kun-yomi").value)
         };
         const values = {
             meanings: utility.parseEntries(

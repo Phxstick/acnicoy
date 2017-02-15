@@ -3,7 +3,7 @@
 class PopupStack extends Widget {
 
     static get observedAttributes() {
-        return ["disabled", "orientation", "overlap", "animate",
+        return ["disabled", "direction", "overlap", "animate",
                 "slide-duration"];
     }
 
@@ -14,7 +14,7 @@ class PopupStack extends Widget {
             "animate": true,
             "disabled": false,
             "overlap": 0,
-            "orientation": "horizontal",
+            "direction": "right",
             "slideDuration": 300,
             "easing": "ease-out"
         }
@@ -71,17 +71,21 @@ class PopupStack extends Widget {
     open() {
         if (this.isOpen || this.children.length === 0) return;
         this.isOpen = true;
-        // Set names of the properties to be changed depending on orientation
+        // Set names of the properties to be changed depending on direction
         let propertyNames;
-        if (this._attributes["orientation"] === "horizontal") {
+        if (this._attributes["direction"] === "left" ||
+                this._attributes["direction"] === "right") {
             propertyNames = {
                 size: "offsetWidth", offset: "left", dimension: "width"
             };
-        } else if (this._attributes["orientation"] === "vertical") {
+        } else if (this._attributes["direction"] === "up" ||
+                   this._attributes["direction"] === "down") {
             propertyNames = {
                 size: "offsetHeight", offset: "top", dimension: "height"
             };
         }
+        const sign = (this._attributes["direction"] === "up" ||
+                      this._attributes["direction"] === "left") ? -1 : 1;
         // Open the popup-stack by animating/setting these property names
         const itemSize = this.children[0][propertyNames.size];
         let current = 0;
@@ -96,7 +100,7 @@ class PopupStack extends Widget {
             } else {
                 child.style[propertyNames.offset] = `${current}px`;
             }
-            current += itemSize - this._attributes["overlap"];
+            current += sign * (itemSize - this._attributes["overlap"]);
         }
         this.topItem.style.zIndex = this.children.length;
         if (this._attributes["animate"]) {
@@ -116,13 +120,15 @@ class PopupStack extends Widget {
         this.style.pointerEvents = "none";
         this.closing = true;
         this.isOpen = false;
-        // Set names of the properties to be changed depending on orientation
+        // Set names of the properties to be changed depending on direction
         let propertyNames;
-        if (this._attributes["orientation"] === "horizontal") {
+        if (this._attributes["direction"] === "left" ||
+                this._attributes["direction"] === "right") {
             propertyNames = {
                 size: "offsetWidth", offset: "left", dimension: "width"
             };
-        } else if (this._attributes["orientation"] === "vertical") {
+        } else if (this._attributes["direction"] === "up" ||
+                   this._attributes["direction"] === "down") {
             propertyNames = {
                 size: "offsetHeight", offset: "top", dimension: "height"
             };
@@ -163,12 +169,13 @@ class PopupStack extends Widget {
                 this.topItem.classList.toggle(
                     "disabled", this._attributes["disabled"]);
             }
-        } else if (name === "orientation") {
-            if (newValue === "horizontal" || newValue === "vertical") {
-                this._attributes["orientation"] = newValue;
+        } else if (name === "direction") {
+            if (newValue === "up" || newValue === "down" ||
+                    newValue === "left" || newValue === "right") {
+                this._attributes["direction"] = newValue;
             } else {
-                throw new Error("popup-stack orientation must be either " +
-                                "'horizontal' or 'vertical'.");
+                throw new Error("'direction' attribute must be one of " +
+                                "['up', 'down', 'left', 'right'].");
             }
         } else if (name === "overlap") {
             if (!isNaN(newValue)) {
@@ -192,12 +199,12 @@ class PopupStack extends Widget {
         return this.hasAttribute("disabled");
     }
 
-    set orientation(value) {
-        this.setAttribute("orientation", value);
+    set direction(value) {
+        this.setAttribute("direction", value);
     }
 
-    get orientation() {
-        return this.getAttribute("orientation");
+    get direction() {
+        return this.getAttribute("direction");
     }
 
     set overlap(value) {

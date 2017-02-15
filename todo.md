@@ -1,7 +1,5 @@
-- Create function which linkifies kanji
-  - Use for unit-of-length-label and example words in kanji info panel
-
 ### Up next
+- Fix problem with tooltip centering
 - Move stuff in settings section into a settings manager?
 - Fix: Focusing inputs in srs-schemes-overlay does not work anymore!
 - Make kana input not only react to shift, but also caps-lock and caps letters
@@ -12,6 +10,8 @@
     - Allow user to start downloads and link to settings for progress bar
   - Implement content downloading (Use stylable HTML5 progress bar for this)
 - Finish removing languages and refactor init-chain and windows for that
+- Choose better standard font for languages with cyrillic characters
+- Allow using Ctrl+Enter for saving notes and submitting new vocab/kanji
 
 ### As soon as available
 - Celebrate the day async/await is fully supported in electron (maybe with flag)
@@ -142,7 +142,6 @@ once? --> Faster loading, centralized resource loading
 - Properly handle overflow if correct-answer-frame gets too large
   - Try to fade out items at bottom if list is too large,
     remove fading when bottom reached
-- Show where the entry goes (And allow directly choosing other level aswell)
 - Show score gained during test
 - Show test progress
 - Animate:
