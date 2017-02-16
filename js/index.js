@@ -9,7 +9,7 @@ const globals = {
                "migrate-srs"],
     sections: ["home", "stats", "vocab", "settings",
                "test", "dictionary", "kanji"],
-    settingsSubsections: ["languages"],
+    settingsSubsections: ["languages", "test"],
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
     suggestionPanes: ["add-vocab"],
     widgets: ["popup-stack", "switch-button", "switch-bar", "popup-list",

@@ -22,6 +22,7 @@ $answer-input-padding: 5px;
 }
 
 #bottom {
+  position: relative;
   flex-direction: column;
   height: 40%;
   display: flex;
@@ -178,5 +179,25 @@ $answer-input-padding: 5px;
         background-image: none;
       }
     }
+  }
+}
+
+#progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 10px;
+  appearance: none;
+
+  &::-webkit-progress-bar {
+    background-color: $background-color-dark;
+  }
+  &::-webkit-progress-value {
+    background-color: $color-light;
+  }
+  &::-webkit-progress-inner-element {
+    border: 0;
   }
 }

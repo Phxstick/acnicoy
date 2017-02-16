@@ -143,7 +143,6 @@ once? --> Faster loading, centralized resource loading
   - Try to fade out items at bottom if list is too large,
     remove fading when bottom reached
 - Show score gained during test
-- Show test progress
 - Animate:
   - Test item container (fade in sliding to right, fade out sliding to right)
   - solution-items (fade in each one sliding to bottom after previous one)

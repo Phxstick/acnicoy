@@ -68,11 +68,16 @@ class TestSection extends Section {
         events.onAll(["language-changed", "current-srs-scheme-edited"], () => {
             const numLevels = dataManager.srs.currentScheme.numLevels;
             const intervalTexts = dataManager.srs.currentScheme.intervalTexts;
+            this.$("new-level").empty();
             for (let level = 1; level <= numLevels; ++level) {
                 const option = this.$("new-level").addOption(level);
                 option.dataset.tooltip = intervalTexts[level];
                 option.dataset.tooltipPos = "left";
             }
+        });
+        events.on("settings-test-show-progress", () => {
+            this.$("progress").toggleDisplay(
+                dataManager.settings.test.showProgress);
         });
     }
     
@@ -206,6 +211,7 @@ class TestSection extends Section {
         const items = this.testInfo.itemList;
         if (item !== null) {
             if (item.parts.length === 0) {
+                this.testInfo.itemsFinished++;
                 if (!item.marked && !item.lastAnswerIncorrect) {
                     this.testInfo.numCorrect++;
                 } else {
@@ -260,6 +266,8 @@ class TestSection extends Section {
             this.$("add-answer").setAttribute("disabled", "");
             this.$("modify-item").setAttribute("disabled", "");
             this.$("levels-frame").hide();
+            this.$("progress").max = this.testInfo.itemsTotal;
+            this.$("progress").value = this.testInfo.itemsFinished;
             // Exchange button and entry
             this.$("continue-button").hide();
             this.$("answer-entry").show();
@@ -361,7 +369,9 @@ class TestSection extends Section {
                     item: null,
                     part: null,
                     numCorrect: 0,
-                    numIncorrect: 0
+                    numIncorrect: 0,
+                    itemsTotal: itemList.length,
+                    itemsFinished: 0
                 };
                 this._createQuestion();
             });
