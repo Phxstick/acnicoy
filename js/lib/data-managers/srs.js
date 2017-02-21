@@ -166,18 +166,20 @@ module.exports = function (paths, modules) {
         Getting SRS info
     ========================================================================= */
 
-    srs.getDueVocab = function () {
+    srs.getDueVocab = function (startTime=0) {
         return modules.database.query(
-            "SELECT word FROM vocabulary WHERE review_date <= ? AND level > 0",
-            utility.getTime())
+            `SELECT word FROM vocabulary
+             WHERE review_date <= ? AND review_date > ? AND level > 0`,
+            utility.getTime(), startTime)
         .then((rows) => rows.map((row) => row.word));
     };
 
-    srs.getDueKanji = function (mode) {
+    srs.getDueKanji = function (mode, startTime=0) {
         const table = modules.test.modeToTable(mode);
         return modules.database.query(
-            `SELECT kanji FROM ${table} WHERE review_date <= ? AND level > 0`,
-             utility.getTime())
+            `SELECT kanji FROM ${table}
+             WHERE review_date <= ? AND review_date > ? AND level > 0`,
+             utility.getTime(), startTime)
         .then((rows) => rows.map((row) => row.kanji));
     };
 

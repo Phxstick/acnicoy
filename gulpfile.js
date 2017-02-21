@@ -1,22 +1,25 @@
 "use strict";
 
-var gulp = require("gulp");
+const gulp = require("gulp");
+const changed = require("gulp-changed");
 
 gulp.task("default", function() {
     gulp.start("style");
 });
 
 gulp.task("style", function() {
-    var sass = require("gulp-sass")
-    var postcss = require("gulp-postcss");
-    var sourcemaps = require("gulp-sourcemaps");
-    var autoprefixer = require("autoprefixer");
+    const sass = require("gulp-sass")
+    const postcss = require("gulp-postcss");
+    const sourcemaps = require("gulp-sourcemaps");
+    const autoprefixer = require("autoprefixer");
 
-    return gulp.src(["./sass/*.scss"])
+    const SRC = "./sass/*.scss"
+    const DEST = "./css"
+
+    return gulp.src(SRC)
         .pipe(sourcemaps.init())
-        // .pipe(sass().on("error", () => { sass.logError(); process.exit(1); }))
         .pipe(sass().on("error", sass.logError))
         .pipe(postcss([autoprefixer({ browsers: ["last 2 versions"] })]))
         .pipe(sourcemaps.write("./sourcemaps"))
-        .pipe(gulp.dest("./css"));
+        .pipe(gulp.dest(DEST));
 });

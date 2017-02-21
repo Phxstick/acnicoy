@@ -1,0 +1,42 @@
+@import "base";
+
+.settings-list {
+  padding: 10px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  overflow: auto;
+
+  > :not(:last-child) {
+    margin-bottom: 20px;
+  }
+
+  check-box {
+    margin-right: 10px;
+
+    &.radio-button-style {
+      margin-right: 5px;
+    }
+  }
+}
+
+.radio-button-row {
+  .description {
+    display: inline-block;
+    margin-right: 30px;
+  }
+  .option:not(:last-child) {
+    display: inline-block;
+    margin-right: 30px;
+  }
+}
+
+.keyboard-shortcut {
+  padding: 6px;
+  border-radius: 6px;
+  background-color: $background-color-dark;
+
+  &:hover {
+    background-color: $view-hover-background;
+    color: $view-hover-color;
+  }
+}

@@ -6,7 +6,7 @@ const globals = {
               "stats", "test", "history"],
     windows: ["init-path", "init-lang", "init-default-lang", "loading", "main"],
     overlays: ["add-lang", "info-dialog", "confirm-dialog", "srs-schemes",
-               "migrate-srs"],
+               "migrate-srs", "choose-shortcut"],
     sections: ["home", "stats", "vocab", "settings",
                "test", "dictionary", "kanji"],
     settingsSubsections: ["languages", "test"],
@@ -119,6 +119,7 @@ console.log("Loaded all required modules after %f ms", totalTime);
         } else {
             dataManager.settings.setDefault();
         }
+        shortcuts.initialize();
         // Load registered srs-schemes
         dataManager.srs.loadSchemes();
         // Find registered languages. If none exist, let user register new ones

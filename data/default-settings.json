@@ -1,11 +1,15 @@
 {
     "test": {
         "showProgress": false,
-        "showStats": false,
-        "font": {
-            "size": 24,
-            "family": "TakaoPGothic"
-        },
+        "showScore": false,
+        "makeContinuous": true,
+        "animate": false,
+        "enableIgnoreShortcut": false,
+        "useSerifFont": true,
+        "fontSize": "normal",
+        "useFlashcardMode": false,
+        "useBackgroundColors": false,
+        "skipEvaluationOnCorrect": false
     },
     "srs": {
         "intervalModifier": "4 hours"
@@ -17,14 +21,14 @@
         "separator": ","
     },
     "shortcuts": {
-        "force-quit": "Ctrl+Esc",
-        "quit": "Ctrl+Q",
-        "add-vocab": "Ctrl+A",
-        "add-kanji": "Ctrl+K",
-        "dictionary": "Ctrl+F",
-        "test": "Ctrl+T",
+        "force-quit": "CmdOrCtrl+Esc",
+        "quit": "CmdOrCtrl+Q",
+        "add-vocab": "CmdOrCtrl+A",
+        "add-kanji": "CmdOrCtrl+K",
+        "dictionary": "CmdOrCtrl+F",
+        "test": "CmdOrCtrl+T",
         "help": "F1",
-        "ignore-answer": "Ctrl+I",
+        "ignore-answer": "CmdOrCtrl+I",
         "fullscreen": "F11"
     }
 }

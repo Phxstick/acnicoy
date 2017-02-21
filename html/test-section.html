@@ -14,9 +14,23 @@
     <i id="level-arrow" class="fa fa-arrow-right"></i>
     <popup-stack id="new-level" direction="up"></popup-stack>
   </div>
+  <div id="score-frame">
+    <div id="score-animation"></div>
+    <div id="score"></div>
+  </div>
 </div>
 <div id="bottom">
   <input id="answer-entry"></input>
   <button id="continue-button">Continue</button>
-  <progress id="progress"></progress>
+  <button id="show-solutions-button">Show solutions</button>
+  <div id="evaluation-buttons">
+    <!--div>Forgot</div>
+    <div>Hard</div>
+    <div>OK</div>
+    <div>Easy</div-->
+    <button id="evaluation-button-wrong">Wrong</button>
+    <button id="evaluation-button-correct">Correct</button>
+  </div>
+  <progress id="progress" class="contrast"></progress>
+  <div id="progress-text"></div>
 </div>

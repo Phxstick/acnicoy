@@ -69,7 +69,8 @@ module.exports = function (paths, modules) {
         for (let level = 1; level < timeIntervals.length; ++level) {
             const totalTime = timeIntervals.slice(1, level + 1).sum();
             if (totalTime > milestones.last()) {
-                dataMap[language].levelToScore[level] = 1;
+                dataMap[language].levelToScore[level] =
+                    scoreCalculation["scoreMultiplier"];
                 continue;
             }
             let i = 1;
@@ -177,6 +178,7 @@ module.exports = function (paths, modules) {
                             * scoreCalculation.modeToMultiplier[mode];
         data.data["daily"].last()["score"] += difference;
         data.data["scorePerMode"][mode] += difference;
+        return difference;
     };
 
     /* =========================================================================

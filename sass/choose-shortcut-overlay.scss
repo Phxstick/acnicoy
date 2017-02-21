@@ -1,0 +1,10 @@
+@import "overlay";
+
+.pulsating-triple-dots {
+  margin: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  > div {
+    background-color: $color;
+  }
+}

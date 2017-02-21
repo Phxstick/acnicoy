@@ -13,6 +13,7 @@ $dragging-cursor: grabbing;
 // =============================================================================
 
 $font: TakaoPGothic, Helvetica, Verdana, sans-serif;
+$serif-font: TakaoPMincho, serif;
 $light-font: OpenSans-Light;
 $header-font: Questrial;
 $button-font: $header-font;
@@ -37,6 +38,8 @@ $highlight-color: white;
 $border-color-light: darken($background-color, 20%);
 $border-color-medium: darkgrey;
 $border-color-dark: grey;
+$contrast-font-color: black;
+$contrast-font-shadow-color: $background-color;
 
 // Local links (to open another section/panel/overlay)
 $link-color: darkred;

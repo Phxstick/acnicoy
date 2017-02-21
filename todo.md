@@ -1,10 +1,22 @@
 ### Up next
+- Finish some TODO's in test-section
+- Where to put button for customzizing SRS schemes?
 - Fix problem with tooltip centering
-- Move stuff in settings section into a settings manager?
+- Fix: Something is wrong with Velocity? (E.g. opening panels throws Error)
+- Move stuff in settings subsections into a settings manager?
 - Fix: Focusing inputs in srs-schemes-overlay does not work anymore!
 - Make kana input not only react to shift, but also caps-lock and caps letters
-- Implement test-settings and extend test-section accordingly
+- Finish test functionality
+  - Implement testing on vocbabulary lists
+  - Color test item background according to test item type
+  - Skip evaluation panel of correctly answered items
 - Implement most of the general settings
+- Implement some design settings
+- Implement shortcut settings for known shortcuts so far
+  - How to check whether shortcut is a native electron menu shortcut
+  - Finish key map in shortcut manager
+  - Make sure always valid bindings are extracted in shortcut manager function
+  - Use shortcuts-subsection event for ignore-shortcut aswell
 - Create a content management system for downloading and updating content
   - Info window when (new) language pack is available for a language
     - Allow user to start downloads and link to settings for progress bar
@@ -31,6 +43,8 @@
 - Height of diagrams in stats section is slightly too large for some reason
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
 - Order of context menu items is not preserved
+- Item changes/deletes are not considered in a running test session
+
 
 By category
 --------------------------------------------------------------------------------
@@ -137,12 +151,9 @@ once? --> Faster loading, centralized resource loading
 - Display tooltips (showing e.g. "current/total") on hover when flag is set
 
 ### Test section
-- Save test state when closing an unfinished test. Only confirm on program exit
-- Also construct extended solutions in `_createTest` already ?
 - Properly handle overflow if correct-answer-frame gets too large
   - Try to fade out items at bottom if list is too large,
     remove fading when bottom reached
-- Show score gained during test
 - Animate:
   - Test item container (fade in sliding to right, fade out sliding to right)
   - solution-items (fade in each one sliding to bottom after previous one)
@@ -152,7 +163,7 @@ once? --> Faster loading, centralized resource loading
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)
-- Use mapping to quickly load kanji examples (Store in file)
+- Use mapping to quickly load kanji examples (Store in file)? (Memory?)
 - Possibly make mapping from kanji parts to actual parts in SVG drawing
   to make sure all parts are properly highlighted
 - Show info for kanji which are part of the Chinese zodiac
@@ -287,17 +298,6 @@ List of settings
 - [Button] Check for program updates (Check automatically every ~1 hour)
   - [Button] Update program (Do so safely)
 
-#### Test settings
-- [Checkbox] Display test progress
-- [Checkbox] Display score gained (with xp-like animations when upated)
-- [Checkbox] Load new test items during test
-- [Checkbox] Color test item background according to test item type?
-  - [Checkbox] Fade test item background
-- [Button] Customize SRS schemes
-- [Checkbox] Use flashcard-style testing
-- [Checkbox] Allow ignoring answer per shortcut
-  - [Shortcut-Widget] Choose shortcut for ignoring answer
-
 #### Design settings
 - [Checkbox] Animate test items
 - [Checkbox] Animate panels
@@ -313,9 +313,6 @@ List of settings
   - Have "designs" subfolder in sass directory with named sass partials
   - Definitely implement dark version for current default scheme
   - Solarized (Light/Dark) and Ubuntu (Light/Dark) Color schemes
-
-#### Shortcuts
-- [Shortcut-widgets] For all known shortcuts in the settings
 
 #### TODO: Categorize these
 - [Radiobuttons] Choose separator for separating translations/readings
@@ -396,6 +393,7 @@ Credits to add
 --------------------------------------------------------------------------------
 - <https://subtlepatterns.com/>
 - [List of kokuji](http://www.sljfaq.org/afaq/kokuji-list.html)
+- [Spinners](https://tobiasahlin.com/spinkit/)
 
 Resources
 --------------------------------------------------------------------------------

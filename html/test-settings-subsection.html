@@ -1,6 +1,59 @@
-<div>
+<div class="settings-list">
+  <div>
+    <check-box id="use-flashcard-mode"></check-box>
+    <span>Flashcard-style testing</span>
+  </div>
+  <div>
+    <check-box id="make-continuous"></check-box>
+    <span>Continuously add new items to running test session</span>
+  </div>
+  <div>
+    <check-box id="skip-evaluation-on-correct"></check-box>
+    <span>Immediately skip to next item after a correct answer</span>
+  </div>
+  <div>
+    <check-box id="enable-ignore-shortcut"></check-box>
+    <span>Enable ignoring answers per keyboard shortcut</span>
+    <span id="choose-ignore-shortcut">
+      <span class="keyboard-shortcut" id="ignore-shortcut"></span>
+    </span>
+  </div>
+
+  <hr>
+
   <div>
     <check-box id="show-progress"></check-box>
     <span>Show test progress</span>
+  </div>
+  <div>
+    <check-box id="show-score"></check-box>
+    <span>Show score gained in current run</span>
+  </div>
+  <div>
+    <check-box id="animate"></check-box>
+    <span>Enable animations</span>
+  </div>
+  <div>
+    <check-box id="use-serif-font"></check-box>
+    <span>Use serif font for test items</span>
+  </div>
+  <div>
+    <check-box id="use-background-colors"></check-box>
+    <span>Color background according to test item type</span>
+  </div>
+  <div class="radio-button-row" id="font-sizes">
+    <span class="description">Test item font size:</span>
+    <span class="option">
+      <check-box data-value="small" class="radio-button-style"></check-box>
+      <span>Small</span>
+    </span>
+    <span class="option">
+      <check-box data-value="normal" class="radio-button-style"></check-box>
+      <span>Normal</span>
+    </span>
+    <span class="option">
+      <check-box data-value="large" class="radio-button-style"></check-box>
+      <span>Large</span>
+    </span>
   </div>
 </div>

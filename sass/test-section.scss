@@ -47,8 +47,13 @@ $answer-input-padding: 5px;
   flex: 1;
   
   #test-item {
-    font-size: 300%;
     color: $test-frame-color;
+
+    &.serif { font-family: $serif-font; }
+
+    &.small { font-size: 200%; }
+    &.normal { font-size: 300%; }
+    &.large { font-size: 400%; }
   }
 
   #correct-answers {
@@ -86,8 +91,8 @@ $answer-input-padding: 5px;
 
 #levels-frame {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
+  bottom: 15px;
+  right: 15px;
   display: flex;
   flex-direction: row;
   font-size: 140%;
@@ -104,6 +109,31 @@ $answer-input-padding: 5px;
   }
 }
 
+#score-frame {
+  position: absolute;
+  bottom: 10px;
+  left: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+
+  #score {
+    font-size: 140%;
+    font-family: $light-font;
+    color: mix($test-section-test-frame-background,
+               $test-section-test-frame-color, 30%);
+    margin-top: -10px;
+  }
+  #score-animation {
+    font-size: 120%;
+    font-family: $header-font;
+    margin-left: -6px;
+
+    &.positive { color: $test-section-correct-color; }
+    &.negative { color: $test-section-incorrect-color; }
+  }
+}
+
 #answer-entry {
   @extend input.styled;
   text-align: center;
@@ -114,7 +144,7 @@ $answer-input-padding: 5px;
   box-sizing: border-box;
 }
 
-#continue-button {
+#continue-button, #show-solutions-button {
   background-color: darken($input-background, 6%);
   border: 1px solid $input-border-color;
   color: $input-color;
@@ -129,6 +159,42 @@ $answer-input-padding: 5px;
   }
   &:hover {
     background-color: darken($input-background, 10%);
+  }
+}
+
+#show-solutions-button {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 6px;
+}
+
+#evaluation-buttons {
+  margin-top: $answer-input-margin;
+  display: flex;
+  flex-direction: row;
+
+  > button {
+    background-color: darken($input-background, 6%);
+    border: 1px solid $input-border-color;
+    color: $input-color;
+    font-family: $button-font;
+    font-size: $answer-input-font-size;
+    width: 0.6 * $answer-input-width;
+    padding: $answer-input-padding;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    box-sizing: border-box;
+    border-radius: 6px;
+
+    &:focus {
+      box-shadow: none;
+    }
+    &:hover {
+      background-color: darken($input-background, 10%);
+    }
+    &:not(:last-child) {
+      margin-right: 20px;
+    }
   }
 }
 
@@ -148,27 +214,34 @@ $answer-input-padding: 5px;
     background-repeat: no-repeat;
     background-position: center top;
     color: $control-bar-button-color;
-    border-right-width: 1px;
-    border-left: 0;
     border-top: 0;
+    border-bottom: 0;
+    border-left: 0;
     font-family: $button-font;
     @include fading-border(lighten($control-bar-border-color, 15%),"to bottom");
-    &:hover {
+    &:hover:not(.flashcard-mode) {
       background-image: linear-gradient(to bottom,
         darken($control-bar-border-color, 40%), transparent 75%);
       text-shadow: 0 0 1px $control-bar-button-color;
     }
-    &:first-child {
-      border-left: 0;
+    &:not(:last-child) {
+      border-right-width: 1px;
+    }
+    &:first-child:not(:last-child):not(.flashcard-mode) {
       &:hover {
         background-image: linear-gradient(to bottom left,
           darken($control-bar-border-color, 40%), transparent, transparent);
       }
     }
-    &:last-child {
-      border-right: 0;
+    &:last-child:not(:first-child):not(.flashcard-mode) {
       &:hover {
         background-image: linear-gradient(to bottom right,
+          darken($control-bar-border-color, 40%), transparent, transparent);
+      }
+    }
+    &.flashcard-mode {
+      &:hover {
+        background-image: radial-gradient(ellipse at top,
           darken($control-bar-border-color, 40%), transparent, transparent);
       }
     }
@@ -188,7 +261,7 @@ $answer-input-padding: 5px;
   left: 0;
   right: 0;
   width: 100%;
-  height: 10px;
+  height: 20px;
   appearance: none;
 
   &::-webkit-progress-bar {
@@ -200,4 +273,15 @@ $answer-input-padding: 5px;
   &::-webkit-progress-inner-element {
     border: 0;
   }
+}
+
+#progress-text {
+  @include center-content;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  font-family: $small-font;
+  font-size: 90%;
 }

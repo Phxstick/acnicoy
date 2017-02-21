@@ -1,16 +1,5 @@
-@import "base";
+@import "settings";
 
-#partitioned-window {
-  padding: 10px;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  overflow: auto;
-
-  > :not(:last-child) {
-    margin-bottom: 20px;
-  }
-}
-
-#show-progress {
-  margin-right: 10px;
+#ignore-shortcut {
+  margin-left: 20px;
 }

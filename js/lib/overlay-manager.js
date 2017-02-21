@@ -19,6 +19,9 @@ function get(name) {
 }
 
 function open(name, ...args) {
+    if (!contents.hasOwnProperty(name)) {
+        throw Error(`Overlay with name '${name}' is not registered.`);
+    }
     return overlayWindow.open(contents[name], args);
 }
 

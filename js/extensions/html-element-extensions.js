@@ -158,7 +158,7 @@ HTMLElement.prototype.safeDeepClone = function() {
  */
 HTMLElement.prototype.fadeOut = function(
         { distance=300, duration=500, easing="easeOutSine" }={}) {
-    const fadeOutSpan = this.cloneNode(true); //this.safeDeepClone(); //this.cloneNode(true);
+    const fadeOutSpan = this.safeDeepClone(); //this.cloneNode(true);
     fadeOutSpan.style.position = "fixed";
     fadeOutSpan.style.overflow = "hidden";
     this.style.visibility = "hidden";
@@ -176,7 +176,7 @@ HTMLElement.prototype.fadeOut = function(
     const options = { queue: false, duration, easing };
     Velocity(fadeOutSpan, { left: `+=${distance}` }, options);
     return Velocity(fadeOutSpan, "fadeOut", options).then(() => {
-        // fadeOutSpan.remove();
+        fadeOutSpan.remove();
     });
 }
 

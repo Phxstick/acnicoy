@@ -47,6 +47,27 @@ module.exports = function (paths, modules) {
         }
     };
 
+    test.getExtendedSolutions = function (item, mode, part) {
+        return test.getSolutions(item, mode, part).then((result) => {
+            const solutions = new Set(result);
+            const originalSolutions = new Set(result);
+            // If the language is English, make solutions without "to" count
+            if (modules.currentSecondaryLanguage === "English") {
+                for (const solution of originalSolutions) {
+                    if (solution.startsWith("to "))
+                        solutions.add(solution.slice(3));
+                }
+            }
+            // Also ignore braces and their content for the solutions
+            const pattern = /\(.*?\)/g;
+            const temp = new Set(solutions);
+            for (const solution of temp) {
+                solutions.add(solution.replace(pattern, "").trim());
+            }
+            return solutions;
+        });
+    }
+
     test.setLanguage = function (language) {
         test.modes = test.modesForLanguage(language);
     };
@@ -59,6 +80,14 @@ module.exports = function (paths, modules) {
             return [test.mode.WORDS];
         }
     };
+
+    test.getNewLevel = function (oldLevel, isCorrect) {
+        if (isCorrect) {
+            return oldLevel + 1;
+        } else {
+            return Math.max(1, oldLevel - 1);
+        }
+    }
 
     return test;
 };

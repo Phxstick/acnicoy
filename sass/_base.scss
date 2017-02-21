@@ -1,6 +1,7 @@
 @import "assets";
 @import "variables";
 @import "layers";
+@import "spinners";
 
 @import "tooltip";
 @import "views";
@@ -124,6 +125,13 @@ a {
   font-size: 80%;
   font-family: $small-font;
   margin-top: 3px;
+}
+
+.contrast {
+  color: $contrast-font-color;
+  text-shadow: 0px 0px 1px $contrast-font-shadow-color,
+               0px 0px 2px $contrast-font-shadow-color,
+               0px 0px 3px $contrast-font-shadow-color;
 }
 
 .flex-spacer {
