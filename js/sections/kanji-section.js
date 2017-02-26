@@ -12,8 +12,7 @@ class KanjiSection extends Section {
         this.selectedKanji = null;
         // Add event listeners
         this.$("show-overview-button").addEventListener("click", () => {
-            this.$("overview-pane").show();
-            this.$("search-pane").hide();
+            this.showOverview();
         });
         this.$("search-button").addEventListener("click", () => {
             this.searchByKanji();
@@ -63,6 +62,20 @@ class KanjiSection extends Section {
                 resultEntry.$("add-button").show();
             }
         });
+    }
+
+    open() {
+        this.$("search-entry").focus();
+    }
+
+    showOverview() {
+        this.$("overview-pane").show();
+        this.$("search-pane").hide();
+    }
+
+    showSearchResults() {
+        this.$("overview-pane").hide();
+        this.$("search-pane").show();
     }
 
     processLanguageContent(language) {
@@ -222,8 +235,7 @@ class KanjiSection extends Section {
             this.$("search-results").empty();
             this.kanjiToSearchResultEntry.clear();
             this.displayMoreSearchResults(this.searchResultsBatchSize);
-            this.$("overview-pane").hide();
-            this.$("search-pane").show();
+            this.showSearchResults();
         });
     }
 }

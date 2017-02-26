@@ -1,6 +1,7 @@
 "use strict";
 
-const { ipcRenderer } = require("electron");
+const { ipcRenderer, remote } = require("electron");
+const mainBrowserWindow = remote.getCurrentWindow();
 
 const menuItems = popupMenu.registerItems({
     "copy-kanji": {
@@ -13,8 +14,8 @@ const menuItems = popupMenu.registerItems({
     "view-kanji-info": {
         label: "View kanji info",
         click: ({ currentNode }) => {
-            main.kanjiInfoPanel.load(currentNode.textContent);
-            main.kanjiInfoPanel.open();
+            main.$("kanji-info-panel").load(currentNode.textContent);
+            main.$("kanji-info-panel").open();
         }
     },
     "add-kanji": {
@@ -43,7 +44,6 @@ class MainWindow extends Window {
         this.sections = {};
         this.panels = {};
         this.suggestionPanes = {};
-        this.kanjiInfoPanel = this.$("kanji-info-panel");
         this.fadingOutPreviousSection = false;
         this.nextSection = "";
         this.currentPanel = null;
@@ -149,6 +149,11 @@ class MainWindow extends Window {
             this.sections["home"].open();
         });
         this.currentSection = "home";
+        // Load any character in kanji info panel to render stuff there
+        // (Prevents buggy animation when first opening the panel)
+        if (dataManager.content.isAvailable["Japanese"]) {
+            this.$("kanji-info-panel").load("字");
+        }
         // Regularly update displayed SRS info
         setInterval(() => events.emit("update-srs-status"),
             1000 * 60 * 5);  // Every 5 minutes
@@ -170,14 +175,48 @@ class MainWindow extends Window {
             });
         });
         // Register shortcuts
-        shortcuts.register("force-quit",
-                () => ipcRenderer.send("close-now"));
-        shortcuts.register("quit", () => ipcRenderer.send("quit"));
-        shortcuts.register("add-vocab", () => this.openPanel("add-vocab"));
+        shortcuts.register("add-word", () => this.openPanel("add-vocab"));
         shortcuts.register("add-kanji", () => this.openPanel("add-kanji"));
-        shortcuts.register("dictionary",
-                () => this.openSection("dictionary"));
-        shortcuts.register("test", () => this.openTestSection());
+        shortcuts.register("open-test-section", () => this.openTestSection());
+        shortcuts.register("open-dictionary", () => {
+            this.openSection("dictionary");
+            this.sections["dictionary"].$("words-filter").focus();
+        });
+        shortcuts.register("open-kanji-search", () => {
+            this.sections["kanji"].showSearchResults();
+            this.openSection("kanji");
+            this.sections["kanji"].$("search-entry").focus();
+        });
+        shortcuts.register("open-kanji-overview", () => {
+            this.sections["kanji"].showOverview();
+            this.openSection("kanji");
+        });
+        shortcuts.register("open-home-section", () => this.openSection("home"));
+        shortcuts.register("open-stats-section",
+            () => this.openSection("stats"));
+        shortcuts.register("open-vocab-section",
+            () => this.openSection("vocab"));
+        shortcuts.register("open-settings", () => this.openSection("settings"));
+        // TODO Complete this as soon as help section is done
+        // shortcuts.register("open-help", () => ...);
+        shortcuts.register("quit", () => ipcRenderer.send("quit"));
+        shortcuts.register("force-quit", () => ipcRenderer.send("close-now"));
+        // Close whatever is currently on top
+        shortcuts.register("close-sliding-panels", () => {
+            if (overlay.isAnyOpen()) {
+                overlay.close();
+            } else if (this.currentPanel !== null) {
+                this.closePanel(this.currentPanel);
+            } else if (this.$("kanji-info-panel").isOpen) {
+                this.$("kanji-info-panel").close();
+            }
+        });
+        shortcuts.register("toggle-fullscreen", () => {
+            mainBrowserWindow.setFullScreen(!mainBrowserWindow.isFullScreen());
+        });
+        shortcuts.register("refresh", () => {
+            events.emit("update-srs-status");
+        });
     }
 
     openSection(name) {
@@ -229,6 +268,7 @@ class MainWindow extends Window {
             if (currentPanel === name) return;
         } else {
             if (dataManager.settings.design.animateSlidingPanels) {
+                Velocity(this.$("filter"), "stop");
                 Velocity(this.$("filter"), "fadeIn",
                     { duration: this.panelSlideDuration });
             } else {
@@ -241,6 +281,7 @@ class MainWindow extends Window {
         this.currentPanel = name;
         this.panels[name].open();
         if (dataManager.settings.design.animateSlidingPanels) {
+            Velocity(this.panels[name], "stop");
             Velocity(this.panels[name],
                     { left: "0px" }, { duration: this.panelSlideDuration });
         } else {
@@ -249,6 +290,7 @@ class MainWindow extends Window {
         if (showSuggestions) {
             this.suggestionsShown = true;
             if (dataManager.settings.design.animateSlidingPanels) {
+                Velocity(this.suggestionPanes[name], "stop");
                 Velocity(this.suggestionPanes[name], "fadeIn",
                     { duration: this.panelSlideDuration });
             } else {
@@ -261,6 +303,7 @@ class MainWindow extends Window {
     closePanel(name, noOtherPanelOpening=true) {
         const panel = this.panels[name];
         if (dataManager.settings.design.animateSlidingPanels) {
+            Velocity(panel, "stop");
             Velocity(panel, { left: "-400px" },
                 { duration: this.panelSlideDuration}).then(() => panel.close());
         } else {
@@ -271,6 +314,7 @@ class MainWindow extends Window {
         if (noOtherPanelOpening) {
             this.currentPanel = null;
             if (dataManager.settings.design.animateSlidingPanels) {
+                Velocity(this.$("filter"), "stop");
                 Velocity(this.$("filter"), "fadeOut",
                     { duration: this.panelSlideDuration });
             } else {
@@ -280,6 +324,7 @@ class MainWindow extends Window {
         if (this.suggestionsShown) {
             this.suggestionsShown = false;
             if (dataManager.settings.design.animateSlidingPanels) {
+                Velocity(this.suggestionPanes[name], "stop");
                 Velocity(this.suggestionPanes[name], "fadeOut",
                     { duration: this.panelSlideDuration });
             } else {
@@ -348,7 +393,7 @@ class MainWindow extends Window {
             this.$("add-kanji-button").hide();
             this.$("dictionary-button").hide();
             this.$("find-kanji-button").hide();
-            this.kanjiInfoPanel.close();
+            this.$("kanji-info-panel").close();
             if (this.currentSection === "kanji" ||
                     this.currentSection === "dictionary") {
                 this.openSection("home");
@@ -403,8 +448,8 @@ class MainWindow extends Window {
             if (isKanji) {
                 element.classList.add("kanji-info-link");
                 element.addEventListener("click", () => {
-                    this.kanjiInfoPanel.load(character);
-                    this.kanjiInfoPanel.open();
+                    this.$("kanji-info-panel").load(character);
+                    this.$("kanji-info-panel").open();
                 });
             }
             element.popupMenu(menuItems, () => {

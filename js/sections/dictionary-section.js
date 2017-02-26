@@ -51,6 +51,9 @@ class DictionarySection extends Section {
         }
     }
 
+    open() {
+        this.$("words-filter").focus();
+    }
 
     displayMoreResults(amount) {
         this.doneLoading = false;

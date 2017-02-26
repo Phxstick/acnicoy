@@ -9,7 +9,7 @@ const globals = {
                "migrate-srs", "choose-shortcut"],
     sections: ["home", "stats", "vocab", "settings",
                "test", "dictionary", "kanji"],
-    settingsSubsections: ["languages", "test", "design"],
+    settingsSubsections: ["languages", "test", "design", "shortcuts"],
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
     suggestionPanes: ["add-vocab"],
     widgets: ["popup-stack", "switch-button", "switch-bar", "popup-list",
@@ -188,11 +188,6 @@ console.log("Loaded all required modules after %f ms", totalTime);
             return main.processLanguageContent(languages);
         });
     }).then(() => {
-        // Load any character in kanji info panel to render stuff there
-        // (Prevents buggy animation when first opening the panel)
-        if (dataManager.content.isAvailable["Japanese"]) {
-            main.kanjiInfoPanel.load("字");
-        }
         return utility.finishEventQueue();
     }).then(() => {
         closeWindow("loading");

@@ -29,7 +29,12 @@ function close() {
     return overlayWindow.close();
 }
 
+function isAnyOpen() {
+    return overlayWindow.overlays.length > 0;
+}
+
 module.exports.create = create;
 module.exports.get = get;
 module.exports.open = open;
 module.exports.close = close;
+module.exports.isAnyOpen = isAnyOpen;

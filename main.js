@@ -32,7 +32,7 @@ app.on('ready', function() {
   mainWindow.loadURL(`file://${__dirname}/html/index.html`);
   mainWindow.webContents.openDevTools();
   // mainWindow.setAutoHideMenuBar(true);
-  // mainWindow.setMenuBarVisibility(false);
+  mainWindow.setMenu(null);
   let forceQuit = true;
 
   // Allow mainWindow to control when the app gets closed

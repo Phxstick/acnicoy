@@ -6,7 +6,7 @@ class TestSettingsSubsection extends SettingsSubsection {
         this.globalSettingsList = [
             "use-flashcard-mode", "make-continuous", "show-progress",
             "show-score", "animate", "enable-ignore-shortcut",
-            "font-style", "font-size", "use-serif-font", "ignore-shortcut",
+            "font-style", "font-size", "use-serif-font",
             "use-background-colors", "skip-evaluation-on-correct"
         ];
         this.$("show-progress").addEventListener("click", (event) => {
@@ -34,7 +34,7 @@ class TestSettingsSubsection extends SettingsSubsection {
             overlay.open("choose-shortcut").then((newShortcut) => {
                 if (newShortcut === null) return;
                 shortcuts.setBindingFor("ignore-answer", newShortcut);
-                this.broadcastGlobalSetting("ignore-shortcut");
+                events.emit("settings-shortcuts-ignore-answer");
             });
         });
         this.$("use-serif-font").addEventListener("click", (event) => {
@@ -94,7 +94,7 @@ class TestSettingsSubsection extends SettingsSubsection {
             this.$("enable-ignore-shortcut").checked = enabled;
             this.$("choose-ignore-shortcut").toggleDisplay(enabled, "inline");
         });
-        events.on("settings-test-ignore-shortcut", () => {
+        events.on("settings-shortcuts-ignore-answer", () => {
             this.$("ignore-shortcut").textContent =
                 shortcuts.getBindingFor("ignore-answer");
         });

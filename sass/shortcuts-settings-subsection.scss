@@ -1,0 +1,15 @@
+@import "settings";
+
+#shortcuts-list > *:not(:last-child):not(hr) {
+  margin-bottom: 10px;
+}
+#shortcuts-list > hr {
+  margin-top: 14px;
+  margin-bottom: 14px;
+}
+
+.keyboard-shortcut {
+  margin-right: 15px;
+  width: 145px;
+  display: inline-block;
+}

@@ -155,7 +155,13 @@ class TestSection extends Section {
             this.$("test-item").classList.add(newSize);
         });
         events.on("settings-test-use-background-colors", () => {
-            if (!dataManager.settings.test.useBackgroundColors) {
+            if (dataManager.settings.test.useBackgroundColors) {
+                if (this.testInfo !== null) {
+                    const mode = this.testInfo.currentItem.mode;
+                    const part = this.testInfo.currentPart;
+                    this._applyColors(mode, part);
+                }
+            } else {
                 this.$("top").className =
                     dataManager.settings.test.animate ? "animate" : "";
             }
@@ -237,12 +243,30 @@ class TestSection extends Section {
     }
     
     open() {
+        // If no test session is currently running, create one
         if (this.testInfo === null) {
             this.createTest();
-        } else if (this.testInfo.inEvalStep &&
+        } else {
+            // Register shortcut for ignoring answer
+            if (this.testInfo.inEvalStep &&
                    !dataManager.settings.test.useFlashcardMode &&
                    dataManager.settings.test.enableIgnoreShortcut) {
-            shortcuts.register("ignore-answer", () => this._ignoreAnswer());
+                shortcuts.register("ignore-answer", () => this._ignoreAnswer());
+            }
+            // Put focus on correct element
+            if (dataManager.settings.test.useFlashcardMode) {
+                if (this.testInfo.inEvalStep) {
+                    this.$("evaluation-button-correct").focus();
+                } else {
+                    this.$("show-solutions-button").focus();
+                }
+            } else {
+                if (this.testInfo.inEvalStep) {
+                    this.$("continue-button").focus();
+                } else {
+                    this.$("answer-entry").focus();
+                }
+            }
         }
     }
 
@@ -462,23 +486,27 @@ class TestSection extends Section {
                 text = `Name a KUN-Yomi of the following kanji.`;
             this.$("status").textContent = text;
         }
-        // Use colors according to item type if flag is set
         if (dataManager.settings.test.useBackgroundColors) {
-            const modes = dataManager.test.mode;
-            let className;
-            switch (mode) {
-                case modes.WORDS:
-                    if (part === "solutions") className = "word-meaning";
-                    if (part === "readings") className = "word-reading";
-                    break;
-                case modes.KANJI_MEANINGS: className = "kanji-meaning"; break;
-                case modes.KANJI_ON_YOMI: className = "kanji-on-yomi"; break;
-                case modes.KANJI_KUN_YOMI: className = "kanji-kun-yomi"; break;
-            }
-            this.$("top").className = className;
-            if (dataManager.settings.test.animate) {
-                this.$("top").classList.add("animate");
-            }
+            this._applyColors(mode, part);
+        }
+    }
+
+    // Use colors according to item type (mode and part)
+    _applyColors(mode, part) {
+        const modes = dataManager.test.mode;
+        let className;
+        switch (mode) {
+            case modes.WORDS:
+                if (part === "solutions") className = "word-meaning";
+                if (part === "readings") className = "word-reading";
+                break;
+            case modes.KANJI_MEANINGS: className = "kanji-meaning"; break;
+            case modes.KANJI_ON_YOMI: className = "kanji-on-yomi"; break;
+            case modes.KANJI_KUN_YOMI: className = "kanji-kun-yomi"; break;
+        }
+        this.$("top").className = className;
+        if (dataManager.settings.test.animate) {
+            this.$("top").classList.add("animate");
         }
     }
 

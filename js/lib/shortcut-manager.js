@@ -7,10 +7,6 @@ const localShortcut = remote.require("electron-localshortcut");
 const nameToCallback = new Map();
 const bindingToName = new Map();
 
-const acceleratorKeyToEventKey = {
-    "CmdOrCtrl": "Ctrl"
-};
-
 function initialize() {
     for (const name in dataManager.settings.shortcuts) {
         bindingToName.set(dataManager.settings.shortcuts[name], name);
@@ -40,8 +36,8 @@ function setBindingFor(name, shortcut) {
         callback = nameToCallback.get(name);
     }
     unregister(name);
-    dataManager.settings.shortcuts[name] = shortcut;
     bindingToName.delete(dataManager.settings.shortcuts[name]);
+    dataManager.settings.shortcuts[name] = shortcut;
     bindingToName.set(shortcut, name);
     // Re-register existing callback for new shortcut
     if (callback) {
@@ -71,22 +67,36 @@ function isBindingUsed(binding) {
  *     or null if the keys pressed in the event do not comprise a valid binding.
  */
 function extractBinding(event) {
-    if (!event.ctrlKey && !event.altKey) return null;
+    // Key combination must contain either ctrl, alt, esc or a function key
+    if (!event.ctrlKey &&
+            !event.altKey &&
+            event.key !== "Escape" &&
+            !(event.key[0] === "F" && parseInt(event.key.slice(1)) !== NaN))
+        return null;
+    // Key combination cannot only be one of the modifier keys
     if (event.key === "Control" ||
-        event.key === "Alt" ||
-        event.key === "Shift") return null;
+            event.key === "Alt" ||
+            event.key === "Shift")
+        return null;
     let accelerator = `${event.ctrlKey ? "CmdOrCtrl+" : ""}` +
                       `${event.altKey ? "Alt+" : ""}` +
-                      event.key.toUpperCase();
+                      `${event.shiftKey ? "Shift+" : ""}`;
+    if (event.key.length === 1) {
+        accelerator += event.key.toUpperCase();
+    } else if (event.key === " ") {
+        accelerator += "Space";
+    } else if (event.key === "+") {
+        accelerator += "Plus";
+    } else {
+        accelerator += event.key;
+    }
     return accelerator;
 }
 
 function bindingToReadableForm(accelerator) {
     const keys = accelerator.split("+");
     keys.forEach((key, index) => {
-        if (acceleratorKeyToEventKey.hasOwnProperty(key)) {
-            keys[index] = acceleratorKeyToEventKey[key];
-        }
+        if (key === "CmdOrCtrl") keys[index] = "Ctrl";
     });
     return keys.join(" + ");
 }

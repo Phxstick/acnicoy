@@ -16,8 +16,9 @@ class ChooseShortcutOverlay extends Overlay {
             const accelerator = shortcuts.extractBinding(event);
             if (accelerator === null) return;
             if (shortcuts.isBindingUsed(accelerator)) {
+                const keys = shortcuts.bindingToReadableForm(accelerator);
                 dialogWindow.info(
-                    `Key combination '${accelerator}' is already in use.`);
+                    `Key combination '${keys}' is already in use.`);
                 return;
             }
             this.resolve(accelerator);

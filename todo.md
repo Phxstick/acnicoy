@@ -1,14 +1,8 @@
 ### Up next
 - Where to put button for customizing SRS schemes?
-- Move stuff in settings subsections into a settings manager?
 - Fix: Focusing inputs in srs-schemes-overlay does not work anymore!
 - Make kana input not only react to shift, but also caps-lock and caps letters
 - Implement most of the general settings
-- Implement shortcut settings for known shortcuts so far
-  - How to check whether shortcut is a native electron menu shortcut?
-  - Finish key map in shortcut manager
-  - Make sure always valid bindings are extracted in shortcut manager function
-  - Use shortcuts-subsection event for ignore-shortcut aswell
 - Create a content management system for downloading and updating content
   - Info window when (new) language pack is available for a language
     - Allow user to start downloads and link to settings for progress bar
@@ -58,11 +52,10 @@ By category
   visible well. Also consider using thin, rounded scrollbars with margin
 - Improve policy for incorrectly answered SRS items
   - Don't always move down two levels, but one with adjusted review time instead
-- Calculate *urgency level* for given set of vocabulary (Show in home-section)
-  - Allow testing vocabulary in approximate urgency order
 - Use "srs-schemes-edited" event instead of "current-srs-scheme-edited"?
 - How to get undo/redo possibility for each item seperately?
 - Also make files for improved on/kun-yomi (or rather put in same file?)
+- Create stylable `<select>` alternative
 
 ### Code
 ##### Naming
@@ -77,6 +70,7 @@ By category
   - Especially in dataManager
 
 ##### Refactoring
+- Move stuff in settings subsections into a settings manager?
 - Have htmlManager and cssManager which make sure all assets are only loaded
 once? --> Faster loading, centralized resource loading
 - Make automatically-loading-upon-scrolling-divs into widgets?
@@ -126,10 +120,8 @@ once? --> Faster loading, centralized resource loading
   - Display on program start if not disabled
 - Highlight menu button whose corresponding section/panel is opened?
   Or otherwise indicate which section/panel is currently opened?
-- Shortcut, probably Ctrl+R, to reload stuff, e.g. update SRS stuff?
 - Create shortcut for testing all languages in given order.
   - Order can then be changed by dragging languages around in settings
-- Close-Panel shortcut (Default: ESC)
 
 ### Home section
 - Extend srs-status-bar
@@ -193,7 +185,6 @@ once? --> Faster loading, centralized resource loading
   - Maybe even replace add-panels with edit-panels
 
 ### Vocab section
-- Implement tests on vocabulary lists
 - Implement searching in vocab lists and list contents
 
 ### Dictionary
@@ -202,10 +193,8 @@ once? --> Faster loading, centralized resource loading
   - [Checkbox] Display part-of-speech in Japanese
   - [Checkbox] Only show a single combined search entry (like Jisho)
   - [Checkbox] Search for names instead of words
-- Implement better sort algorithm including word-length
+- Implement better sorting algorithm including word-length
 - Keep search history (viewable using a button in control bar?)
-- Focus on search entry when using Ctrl+f shortcut
-  - Switch between search entries when repeatedly pressing shortcut
 
 ### Kanji section
 #### Overview
@@ -219,10 +208,10 @@ once? --> Faster loading, centralized resource loading
   - [Checkbox] Display Jinmeiyou kanji [default OFF]
   - [Checkbox] Display hyougai kanji [default OFF]
   - [Checkbox] Display added kanji [default ON]
+
 #### Search
 - Display search info when searching with empty bar (or list all added kanji?)
-- If query stayed the same, just open search results without searching again
-- Filter duplicates
+- Display info messages as in dictionary section
 - Search customization:
   - Search by:
     * [Radiobutton] kanji [default]
@@ -246,7 +235,7 @@ once? --> Faster loading, centralized resource loading
 ### Stats/Achievements
 - Use single-bar diagram for kanji progress to display relative to total!
 - Display earned achievement in status bar and make it glow to highlight
-- Daily stats diagrams below the general stats, next to each other
+- Daily stats diagrams below the general stats (next to each other?)
   - One for mastery points, one for new vocab/kanji added
   - Allow displaying both daily and cumulative progress for each diagram
   - Also color each bar in two colors according to kanji and vocab progress
@@ -277,6 +266,7 @@ once? --> Faster loading, centralized resource loading
 ### About
 - Use overlay and include (hardcoded is fine I guess):
   - Tribute to base technologies (Electron and node.js)
+  - Name of author
   - List of all used language recources as links
   - Link to project on Github and link to feedback opportunity
   - Specify used license
