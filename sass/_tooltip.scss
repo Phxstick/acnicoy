@@ -101,6 +101,7 @@ $offset-arrow: calc(100% + #{$spacing});
   // Fade and slide tooltip window on hovering
   &[data-tooltip-pos="top"]:hover:after, &:not([data-tooltip-pos]):hover:after {
     animation-name: fade, slide-tooltip-down;
+    transform: translateX(-60%);
   }
   &[data-tooltip-pos="right"]:hover:after {
     animation-name: fade, slide-tooltip-to-left;
@@ -133,6 +134,7 @@ $offset-arrow: calc(100% + #{$spacing});
     animation-name: fade, slide-arrow-to-right;
     border-width: ($arrow-width / 2) 0 ($arrow-width / 2) $arrow-height;
     border-color: transparent transparent transparent $tooltip-background;
+    transform: translateY(80%);
   }
 }
 

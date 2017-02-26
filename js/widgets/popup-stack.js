@@ -102,6 +102,7 @@ class PopupStack extends Widget {
             }
             current += sign * (itemSize - this._attributes["overlap"]);
         }
+        // Also expand the shadow
         this.topItem.style.zIndex = this.children.length;
         if (this._attributes["animate"]) {
             return Velocity(this.$("shadow"), { 
@@ -135,17 +136,22 @@ class PopupStack extends Widget {
         }
         // Close the popup-stack by animating/setting these property names
         if (this._attributes["animate"]) {
-            Velocity(this.children, { [propertyNames.offset] : "0" },
-                { duration: this._attributes["slideDuration"],
-                  easing: this._attributes["easing"] });
+            for (const child of this.children) {
+                Velocity(child, "stop");
+                Velocity(child, { [propertyNames.offset]: "0px" },
+                    { duration: this._attributes["slideDuration"],
+                      easing: this._attributes["easing"] });
+            }
         } else {
             for (const child of this.children) {
-                child.style[propertyNames.offset] = "0";
+                child.style[propertyNames.offset] = "0px";
             }
         }
+        // Also shrink shadow again
         const closedSize = this.$("frame")[propertyNames.size];
         let promise = Promise.resolve();
         if (this._attributes["animate"]) {
+            Velocity(this.$("shadow"), "stop");
             promise = Velocity(this.$("shadow"), {
                 [propertyNames.dimension]: `${closedSize}px`
             }, {

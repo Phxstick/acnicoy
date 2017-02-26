@@ -3,9 +3,30 @@
 module.exports = function (paths, modules) {
     const kanjiModule = {};
 
+    /**
+     * Add given kanji with given details. If kanji is already added, just add
+     * new values without changing previous values or previous SRS levels.
+     * @param {String} kanji - Kanji to be added
+     * @param {Object[Array[String]]} values - Kanji information in form
+     *     of an object mapping each attribute ("meanings", "on_yomi",
+     *     "kun_yomi") to an array of strings.
+     * @param {Object[Integer]} levels - SRS levels in form of an object mapping
+     *     each attribute ("meanings", "on_yomi", "kun_yomi") to an integer.
+     * @returns {Promise}
+     */
     kanjiModule.add = function (kanji, values, levels) {
         let newStatus = "no-change";
+        const attributes = ["meanings", "on_yomi", "kun_yomi"];
+        // Fill in missing values
+        if (levels === undefined) {
+            levels = {};
+        }
+        for (const attribute of attributes) {
+            if (!values.hasOwnProperty(attribute)) values[attribute] = [];
+            if (!levels.hasOwnProperty(attribute)) levels[attribute] = 1;
+        }
         return kanjiModule.isAdded(kanji).then((alreadyAdded) => {
+            // Add kanji if it's not already added yet
             if (!alreadyAdded) {
                 newStatus = "added";
                 modules.stats.incrementKanjiAddedToday();
@@ -14,7 +35,6 @@ module.exports = function (paths, modules) {
                     kanji, utility.getTime());
             }
         }).then(() => {
-            const attributes = ["meanings", "on_yomi", "kun_yomi"];
             const modes = {
                 "meanings": modules.test.mode.KANJI_MEANINGS,
                 "on_yomi": modules.test.mode.KANJI_ON_YOMI,
@@ -79,6 +99,17 @@ module.exports = function (paths, modules) {
         });
     };
 
+    /**
+     * Edit given kanji using given values by completely replacing previous
+     * values with the new ones and changing the SRS levels for each attribute.
+     * @param {String} kanji - Kanji to be edited
+     * @param {Object[Array[String]]} values - Kanji information in form
+     *     of an object mapping each attribute ("meanings", "on_yomi",
+     *     "kun_yomi") to an array of strings.
+     * @param {Object[Integer]} levels - SRS levels in form of an object mapping
+     *     each attribute ("meanings", "on_yomi", "kun_yomi") to an integer.
+     * @returns {Promise}
+     */
     kanjiModule.edit = function (kanji, values, levels) {
         let newStatus = "no-change";
         const attributes = ["meanings", "on_yomi", "kun_yomi"];
@@ -161,33 +192,80 @@ module.exports = function (paths, modules) {
         });
     };
 
+    /**
+     * Completely remove kanji from the database.
+     * @param {String} kanji
+     * @returns {Promise}
+     */
     kanjiModule.remove = function (kanji) {
         return modules.database.run("DELETE FROM kanji WHERE kanji = ?", kanji);
     };
 
-    // Following three functions assume that queried field is not empty 
+    /**
+     * Return meanings added for given kanji in the vocabulary.
+     * If kanji is not added to the vocabulary, return an empty array.
+     * @param {String} kanji
+     * @returns {Promise[Array[String]]}
+     */
     kanjiModule.getMeanings = function (kanji) {
         return modules.database.query(
             "SELECT meanings FROM kanji_meanings WHERE kanji = ?", kanji)
-        .then(([{meanings}]) => meanings.split(";"));
+        .then((rows) => {
+            if (rows.length === 0) return [];
+            if (rows[0].meanings.length === 0) return [];
+            return rows[0].meanings.split(";");
+        });
     };
+
+    /**
+     * Return on-yomi added for given kanji in the vocabulary.
+     * If kanji is not added to the vocabulary, return an empty array.
+     * @param {String} kanji
+     * @returns {Promise[Array[String]]}
+     */
     kanjiModule.getOnYomi = function (kanji) {
         return modules.database.query(
             "SELECT on_yomi FROM kanji_on_yomi WHERE kanji = ?", kanji)
-        .then(([{on_yomi}]) => on_yomi.split(";"));
+        .then((rows) => {
+            if (rows.length === 0) return [];
+            if (rows[0].on_yomi.length === 0) return [];
+            return rows[0].on_yomi.split(";");
+        });
     };
+
+    /**
+     * Return kun-yomi added for given kanji in the vocabulary.
+     * If kanji is not added to the vocabulary, return an empty array.
+     * @param {String} kanji
+     * @returns {Promise[Array[String]]}
+     */
     kanjiModule.getKunYomi = function (kanji) {
         return modules.database.query(
             "SELECT kun_yomi FROM kanji_kun_yomi WHERE kanji = ?", kanji)
-        .then(([{kun_yomi}]) => kun_yomi.split(";"));
+        .then((rows) => {
+            if (rows.length === 0) return [];
+            if (rows[0].kun_yomi.length === 0) return [];
+            return rows[0].kun_yomi.split(";");
+        });
     };
 
+    /**
+     * Check if given kanji is added in the vocabulary database.
+     * @param {String} kanji
+     * @returns {Promise[Boolean]}
+     */
     kanjiModule.isAdded = function (kanji) {
         return modules.database.query(
             "SELECT COUNT(*) AS amount FROM kanji WHERE kanji = ?", kanji)
         .then(([{amount}]) => amount > 0);
     };
 
+    /**
+     * Return info for given kanji from the vocabulary database.
+     * @param {String} kanji
+     * @returns {Promise[Object]} Info object containing the fields "meanings",
+     *     "kunYomi", "onYomi", "meaningsLevel", "kunYomiLevel", "onYomiLevel".
+     */
     kanjiModule.getInfo = function (kanji) {
         const info = { meanings: [], kunYomi: [], onYomi: [],
                        meaningsLevel: 1, kunYomiLevel: 1, onYomiLevel: 1 };
@@ -218,11 +296,19 @@ module.exports = function (paths, modules) {
         });
     };
 
+    /**
+     * Return total amount of added kanji in the vocabulary database.
+     * @returns {Promise[Integer]}
+     */
     kanjiModule.getAmountAdded = function () {
         return modules.database.query("SELECT COUNT(*) AS amount FROM kanji")
                .then(([{amount}]) => amount);
     };
 
+    /**
+     * Return total amount of added kanji in the vocabulary for given grade.
+     * @returns {Promise[Integer]}
+     */
     kanjiModule.getAmountAddedForGrade = function (grade) {
         return modules.content.dataMap["Japanese"].query(
             `SELECT COUNT(*) AS amount
@@ -231,6 +317,10 @@ module.exports = function (paths, modules) {
         .then(([{amount}]) => amount);
     };
 
+    /**
+     * Return total amount of added kanji in the vocabulary for each grade.
+     * @returns {Promise[Object[Integer]]}
+     */
     kanjiModule.getAmountsAddedPerGrade = function () {
         return modules.content.dataMap["Japanese"].query(
             `SELECT k.grade, COUNT(t.kanji) AS amount
@@ -245,6 +335,10 @@ module.exports = function (paths, modules) {
         });
     };
 
+    /**
+     * Return total amount of added kanji in the vocabulary for each JLPT level.
+     * @returns {Promise[Object[Integer]]}
+     */
     kanjiModule.getAmountsAddedPerJlptLevel = function () {
         return modules.content.dataMap["Japanese"].query(
             `SELECT k.jlpt AS level, COUNT(*) AS amount

@@ -152,6 +152,10 @@ class EditVocabPanel extends Panel {
             this.$("readings-frame").toggleDisplay(
                 dataManager.languageSettings["readings"]);
         });
+        events.on("settings-design-animate-popup-stacks", () => {
+            const animate = dataManager.settings.design.animatePopupStacks;
+            this.$("srs-level").animate = animate;
+        });
     }
 
     adjustToLanguage(language, secondary) {
@@ -323,7 +327,7 @@ class EditVocabPanel extends Panel {
                 events.emit("word-deleted", originalWord);
                 main.updateStatus("The vocabulary entry has been removed.");
             } else if (newStatus === "updated") {
-                events.emit("vocab-changed");
+                events.emit("vocab-changed", word);
                 main.updateStatus("The vocabulary entry has been updated.");
             } else if (newStatus === "no-change") {
                 if (originalWord === word) {

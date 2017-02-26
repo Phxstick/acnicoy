@@ -47,6 +47,22 @@ module.exports = function (paths, modules) {
         }
     };
 
+    test.addToSolutions = function (item, newSolution, mode, part) {
+        switch (mode) {
+            case test.mode.WORDS:
+                if (part === "solutions")
+                    return modules.vocab.add(item, [newSolution], []);
+                else if (part === "readings")
+                    return modules.vocab.add(item, [], [newSolution]);
+            case test.mode.KANJI_MEANINGS:
+                return modules.kanji.add(item, { "meanings": [newSolution] });
+            case test.mode.KANJI_ON_YOMI:
+                return modules.kanji.add(item, { "on_yomi": [newSolution] });
+            case test.mode.KANJI_KUN_YOMI:
+                return modules.kanji.add(item, { "kun_yomi": [newSolution] });
+        }
+    }
+
     test.getExtendedSolutions = function (item, mode, part) {
         return test.getSolutions(item, mode, part).then((result) => {
             const solutions = new Set(result);

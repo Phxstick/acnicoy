@@ -143,6 +143,13 @@ class EditKanjiPanel extends Panel {
                 }
             }
         });
+        events.on("settings-design-animate-popup-stacks", () => {
+            const animate = dataManager.settings.design.animatePopupStacks;
+            this.$("all-srs-levels").animate = animate;
+            this.$("srs-level-meanings").animate = animate;
+            this.$("srs-level-on-yomi").animate = animate;
+            this.$("srs-level-kun-yomi").animate = animate;
+        });
     }
 
     load(kanji) {
@@ -254,6 +261,7 @@ class EditKanjiPanel extends Panel {
                 events.emit("kanji-removed", kanji);
             } else if (result === "updated") {
                 main.updateStatus(`Kanji ${kanji} has been updated.`);
+                events.emit("kanji-changed", kanji);
             } else if (result === "no-change") {
                 main.updateStatus(`Kanji ${kanji} has not been changed.`);
             }

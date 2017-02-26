@@ -24,6 +24,7 @@ class AddVocabPanel extends Panel {
                 const option = this.$("srs-level").addOption(level);
                 option.dataset.tooltip = intervalTexts[level];
             }
+            this.$("srs-level").setByIndex(0);
         });
         events.on("settings-languages-readings", () => {
             this.$("readings-entry").toggleDisplay(
@@ -41,6 +42,10 @@ class AddVocabPanel extends Panel {
                     option.remove();
                 }
             }
+        });
+        events.on("settings-design-animate-popup-stacks", () => {
+            const animate = dataManager.settings.design.animatePopupStacks;
+            this.$("srs-level").animate = animate;
         });
     }
 
@@ -119,7 +124,7 @@ class AddVocabPanel extends Panel {
                                   `translation${string1} been added. ` +
                                   `${failedString}${string2}`);
                 events.emit("word-added", word);
-                events.emit("vocab-changed");
+                events.emit("vocab-changed", word);
             }
         );
         main.closePanel("add-vocab");

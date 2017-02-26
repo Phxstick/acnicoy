@@ -131,21 +131,24 @@ HTMLElement.prototype.safeDeepClone = function() {
         const oldNode = nodes.pop();
         // "Copy" old note with correct tag, textContent and style
         const newNode = document.createElement(oldNode.tagName);
-        newNode.textContent = oldNode.textContent;
         newNode.style.cssText =
             document.defaultView.getComputedStyle(oldNode, "").cssText;
         // Map the old node to its copy
         nodeToCopyMap.set(oldNode, newNode);
         // Append new node to the copied tree
         if (oldNode !== this) {
-            // console.log("Appending ", newNode, " to ",
-            //         nodeToCopyMap[oldNode.parentNode]);
             nodeToCopyMap.get(oldNode.parentNode).appendChild(newNode);
         }
         // Append children of old node into array for traversing
         const oldSize = nodes.length;
-        for (const child of oldNode.children) {
-            nodes.push(child);
+        for (const child of oldNode.childNodes) {
+            if (child.nodeType === 3) {
+                if (child.textContent.trim().length > 0) {
+                    newNode.textContent = child.textContent;
+                }
+            } else {
+                nodes.push(child);
+            }
         }
     }
     return nodeToCopyMap.get(this);
@@ -153,30 +156,39 @@ HTMLElement.prototype.safeDeepClone = function() {
 
 
 /**
- *  Fade out this element while moving it given distance to the right,
+ *  Fade out this element while moving it given distance into given direction,
  *  starting from the current position.
  */
 HTMLElement.prototype.fadeOut = function(
-        { distance=300, duration=500, easing="easeOutSine" }={}) {
-    const fadeOutSpan = this.safeDeepClone(); //this.cloneNode(true);
-    fadeOutSpan.style.position = "fixed";
-    fadeOutSpan.style.overflow = "hidden";
+        { distance=300, duration=500, easing="easeOutSine",
+          direction="right" }={}) {
+    const fadeOutNode = this.safeDeepClone();
+    fadeOutNode.style.position = "fixed";
+    fadeOutNode.style.overflow = "hidden";
+    fadeOutNode.style.zIndex = layers["fade-item"];
     this.style.visibility = "hidden";
-    this.parentNode.appendChild(fadeOutSpan);
+    document.body.appendChild(fadeOutNode);
     const oldWidth = this.offsetWidth;
     const oldHeight = this.offsetHeight;
-    const oldOffsetTop = this.offsetTop;
-    const oldOffsetLeft = this.offsetLeft;
-    fadeOutSpan.textContent = this.textContent;
-    fadeOutSpan.style.width = `${oldWidth + 1}px`;
-    fadeOutSpan.style.height = `${oldHeight}px`;
-    fadeOutSpan.style.display = "block";
-    fadeOutSpan.style.top = `${oldOffsetTop}px`;
-    fadeOutSpan.style.left = `${oldOffsetLeft}px`;
+    const oldOffsets = this.getBoundingClientRect();
+    fadeOutNode.style.width = `${oldWidth + 1}px`;
+    fadeOutNode.style.height = `${oldHeight}px`;
+    fadeOutNode.style.display = "block";
+    const directionToAttribute = {
+        right: "left", down: "top", left: "right", up: "bottom"
+    };
+    const directionToSecondaryAttribute = {
+        right: "top", down: "left", left: "top", up: "left"
+    };
+    fadeOutNode.style[directionToAttribute[direction]] =
+        `${oldOffsets[directionToAttribute[direction]]}px`;
+    fadeOutNode.style[directionToSecondaryAttribute[direction]] =
+        `${oldOffsets[directionToSecondaryAttribute[direction]]}px`;
     const options = { queue: false, duration, easing };
-    Velocity(fadeOutSpan, { left: `+=${distance}` }, options);
-    return Velocity(fadeOutSpan, "fadeOut", options).then(() => {
-        fadeOutSpan.remove();
+    Velocity(fadeOutNode, {
+        [directionToAttribute[direction]]: `+=${distance}` }, options);
+    return Velocity(fadeOutNode, "fadeOut", options).then(() => {
+        fadeOutNode.remove();
     });
 }
 
@@ -186,24 +198,37 @@ HTMLElement.prototype.fadeOut = function(
  *  arriving at the current position.
  */
 HTMLElement.prototype.fadeIn = function(
-        { distance=300, duration=500, easing="easeOutSine" }={}) {
-    const fadeInSpan = this.safeDeepClone();//this.cloneNode(true);
-    fadeInSpan.style.position = "fixed";
-    fadeInSpan.style.overflow = "hidden";
-    fadeInSpan.style.visibility = "visible";
-    this.parentNode.appendChild(fadeInSpan);
-    const newWidth = this.offsetWidth;
-    const newOffsetTop = this.offsetTop;
-    const newOffsetLeft = this.offsetLeft;
-    fadeInSpan.style.top = `${newOffsetTop}px`;
-    fadeInSpan.style.left = `${newOffsetLeft - distance}px`;
-    fadeInSpan.style.display = "none";
-    fadeInSpan.style.width = `${newWidth + 1}px`;
-    const options = { queue: false, duration, easing };
-    Velocity(fadeInSpan, { left: `+=${distance}` }, options);
-    return Velocity(fadeInSpan, "fadeIn", options).then(() => {
-        fadeInSpan.remove();
+        { distance=300, duration=500, easing="easeOutSine",
+          direction="right", delay=0 }={}) {
+    const fadeInNode = this.safeDeepClone();
+    fadeInNode.style.position = "fixed";
+    fadeInNode.style.overflow = "hidden";
+    fadeInNode.style.zIndex = layers["fade-item"];
+    fadeInNode.style.visibility = "visible";
+    document.body.appendChild(fadeInNode);
+    const oldWidth = this.offsetWidth;
+    const oldHeight = this.offsetHeight;
+    const newOffsets = this.getBoundingClientRect();
+    fadeInNode.style.width = `${oldWidth + 1}px`;
+    fadeInNode.style.height = `${oldHeight}px`;
+    fadeInNode.style.display = "none";
+    const directionToAttribute = {
+        right: "left", down: "top", left: "right", up: "bottom"
+    };
+    const directionToSecondaryAttribute = {
+        right: "top", down: "left", left: "top", up: "left"
+    };
+    fadeInNode.style[directionToAttribute[direction]] =
+        `${newOffsets[directionToAttribute[direction]] - distance}px`;
+    fadeInNode.style[directionToSecondaryAttribute[direction]] =
+        `${newOffsets[directionToSecondaryAttribute[direction]]}px`;
+    const options = { queue: false, duration, easing, delay };
+    Velocity(fadeInNode, {
+        [directionToAttribute[direction]]: `+=${distance}` }, options);
+    return Velocity(fadeInNode, "fadeIn", options).then(() => {
+        fadeInNode.remove();
         this.style.visibility = "visible";
+        this.style.opacity = "1";
     });
 }
 

@@ -165,6 +165,16 @@ $test-section-test-frame-background: dimgray;
 $test-section-test-frame-color: whitesmoke;
 $test-section-correct-color: lawngreen;
 $test-section-incorrect-color: orange;
+$test-section-status-shadow-color: rgba(0, 0, 0, 0.2);
+$test-section-test-item-shadow-color: rgba(0, 0, 0, 0.1);
+$test-section-progress-text-shadow-color: rgba(255, 255, 255, 0.3);
+
+// Test section item type colors
+$test-section-item-type-word-meaning: darkorchid;
+$test-section-item-type-word-reading: darkorchid;  //mediumvioletred;
+$test-section-item-type-kanji-meaning: indianred;
+$test-section-item-type-kanji-on-yomi: indianred;
+$test-section-item-type-kanji-kun-yomi: indianred;
 
 // Kanji stroke SVGs
 $kanji-strokes-color: #888;

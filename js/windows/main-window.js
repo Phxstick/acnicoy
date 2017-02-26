@@ -46,6 +46,9 @@ class MainWindow extends Window {
         this.kanjiInfoPanel = this.$("kanji-info-panel");
         this.fadingOutPreviousSection = false;
         this.nextSection = "";
+        this.currentPanel = null;
+        this.currentSection = null;
+        this.suggestionsShown = false;
         // Top menu button events
         this.$("exit-button").addEventListener("click",
                 () => ipcRenderer.send("quit"));
@@ -94,7 +97,6 @@ class MainWindow extends Window {
             this.sections[name] = section;
             promises.push(customElements.whenDefined(name + "-section"));
         }
-        this.currentSection = null;
         return promises;
     }
 
@@ -107,7 +109,6 @@ class MainWindow extends Window {
             this.panels[name] = panel;
             promises.push(customElements.whenDefined(name + "-panel"));
         }
-        this.currentPanel = null;
         return promises;
     }
 
@@ -190,24 +191,34 @@ class MainWindow extends Window {
                 this.sections[currentSection].confirmClose())
         .then((confirmed) => {
             if (!confirmed) return;
-            this.fadingOutPreviousSection = true;
             this.nextSection = name;
             this.sections[currentSection].close();
-            Velocity(this.sections[currentSection], "fadeOut",
-                { duration: this.sectionFadeDuration })
-            .then(() => {
-                // Make sure section is already displayed when "open" is called
-                this.fadingOutPreviousSection = false;
-                const nextSection = this.nextSection;
-                this.currentSection = nextSection;
-                this.sections[nextSection].style.opacity = "0";
-                this.sections[nextSection].show();
-                Velocity(this.sections[nextSection], "fadeIn",
-                    { duration: this.sectionFadeDuration });
-                return utility.finishEventQueue().then(() => {
-                    this.sections[nextSection].open();
+            if (dataManager.settings.design.fadeSectionSwitching) {
+                this.fadingOutPreviousSection = true;
+                return Velocity(this.sections[currentSection], "fadeOut", {
+                    duration: this.sectionFadeDuration
+                }).then(() => {
+                    // Make sure section is already displayed when "open" called
+                    this.fadingOutPreviousSection = false;
+                    const nextSection = this.nextSection;
+                    this.currentSection = nextSection;
+                    this.sections[nextSection].style.opacity = "0";
+                    this.sections[nextSection].show();
+                    Velocity(this.sections[nextSection], "fadeIn",
+                        { duration: this.sectionFadeDuration });
+                    return utility.finishEventQueue().then(() => {
+                        this.sections[nextSection].open();
+                    });
                 });
-            });
+            } else {
+                this.sections[currentSection].hide();
+                this.currentSection = this.nextSection;
+                this.sections[this.nextSection].style.opacity = "1";
+                this.sections[this.nextSection].show();
+                return utility.finishEventQueue().then(() => {
+                    this.sections[this.nextSection].open();
+                });
+            }
         });
     }
 
@@ -217,33 +228,64 @@ class MainWindow extends Window {
             this.closePanel(currentPanel, currentPanel === name);
             if (currentPanel === name) return;
         } else {
-            Velocity(this.$("filter"), "fadeIn",
-                { duration: this.panelSlideDuration });
+            if (dataManager.settings.design.animateSlidingPanels) {
+                Velocity(this.$("filter"), "fadeIn",
+                    { duration: this.panelSlideDuration });
+            } else {
+                this.$("filter").style.opacity = "1";
+                this.$("filter").show();
+            }
         }
         this.panels[name].style.zIndex = layers["panel"];
         this.$("filter").classList.toggle("dark", showSuggestions);
         this.currentPanel = name;
         this.panels[name].open();
-        Velocity(this.panels[name],
-                { left: "0px" }, { duration: this.panelSlideDuration });
+        if (dataManager.settings.design.animateSlidingPanels) {
+            Velocity(this.panels[name],
+                    { left: "0px" }, { duration: this.panelSlideDuration });
+        } else {
+            this.panels[name].style.left = "0";
+        }
         if (showSuggestions) {
-            Velocity(this.suggestionPanes[name], "fadeIn",
-                { duration: this.panelSlideDuration });
+            this.suggestionsShown = true;
+            if (dataManager.settings.design.animateSlidingPanels) {
+                Velocity(this.suggestionPanes[name], "fadeIn",
+                    { duration: this.panelSlideDuration });
+            } else {
+                this.suggestionPanes[name].style.opacity = "1";
+                this.suggestionPanes[name].show();
+            }
         }
     }
 
     closePanel(name, noOtherPanelOpening=true) {
         const panel = this.panels[name];
-        Velocity(panel, { left: "-400px" },
-            { duration: this.panelSlideDuration}).then(() => panel.close());
+        if (dataManager.settings.design.animateSlidingPanels) {
+            Velocity(panel, { left: "-400px" },
+                { duration: this.panelSlideDuration}).then(() => panel.close());
+        } else {
+            panel.style.left = "-400px";
+            panel.close();
+        }
         panel.style.zIndex = layers["closing-panel"];
         if (noOtherPanelOpening) {
             this.currentPanel = null;
-            Velocity(this.$("filter"), "fadeOut",
-                { duration: this.panelSlideDuration });
+            if (dataManager.settings.design.animateSlidingPanels) {
+                Velocity(this.$("filter"), "fadeOut",
+                    { duration: this.panelSlideDuration });
+            } else {
+                this.$("filter").hide();
+            }
         }
-        Velocity(this.suggestionPanes[name], "fadeOut",
-            { duration: this.panelSlideDuration });
+        if (this.suggestionsShown) {
+            this.suggestionsShown = false;
+            if (dataManager.settings.design.animateSlidingPanels) {
+                Velocity(this.suggestionPanes[name], "fadeOut",
+                    { duration: this.panelSlideDuration });
+            } else {
+                this.suggestionPanes[name].hide();
+            }
+        }
     }
 
     updateStatus(text) {
@@ -299,7 +341,7 @@ class MainWindow extends Window {
     adjustToLanguage(language, secondary) {
         if (language === "Japanese") {
             this.$("add-kanji-button").show();
-            const contentAvailable = dataManager.content.isAvailable["Japanese"];
+            const contentAvailable = dataManager.content.isAvailable["Japanese"]
             this.$("find-kanji-button").toggleDisplay(contentAvailable);
             this.$("dictionary-button").toggleDisplay(contentAvailable);
         } else {

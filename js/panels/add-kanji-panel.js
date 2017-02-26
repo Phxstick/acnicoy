@@ -35,16 +35,22 @@ class AddKanjiPanel extends Panel {
                     option.dataset.tooltip = intervalTexts[level];
                 }
             }
+            for (const popup of popups) {
+                popup.setByIndex(0);
+            }
+        });
+        events.on("settings-design-animate-popup-stacks", () => {
+            const animate = dataManager.settings.design.animatePopupStacks;
+            this.$("all-srs-levels").animate = animate;
+            this.$("srs-level-meanings").animate = animate;
+            this.$("srs-level-on-yomi").animate = animate;
+            this.$("srs-level-kun-yomi").animate = animate;
         });
     }
 
     open() {
         this.$("kanji-entry").style.width =
             `${this.$("kanji-entry").offsetHeight}px`;
-        this.$("all-srs-levels").setByIndex(0);
-        this.$("srs-level-meanings").setByIndex(0);
-        this.$("srs-level-kun-yomi").setByIndex(0);
-        this.$("srs-level-on-yomi").setByIndex(0);
         if (this.$("kanji-entry").textContent.length === 0)
             this.$("kanji-entry").focus();
         else
@@ -56,6 +62,10 @@ class AddKanjiPanel extends Panel {
         this.$("meanings-entry").value = "";
         this.$("on-yomi-entry").value = "";
         this.$("kun-yomi-entry").value = "";
+        this.$("all-srs-levels").setByIndex(0);
+        this.$("srs-level-meanings").setByIndex(0);
+        this.$("srs-level-kun-yomi").setByIndex(0);
+        this.$("srs-level-on-yomi").setByIndex(0);
     }
 
     load(kanji) {
@@ -107,6 +117,7 @@ class AddKanjiPanel extends Panel {
                 events.emit("kanji-added", kanji);
             } else if (result === "updated") {
                 main.updateStatus(`Kanji ${kanji} has been updated.`);
+                events.emit("kanji-changed", kanji);
             } else if (result === "no-change") {
                 main.updateStatus(`Kanji ${kanji} has not been changed.`);
             }

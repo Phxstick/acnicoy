@@ -1,21 +1,34 @@
 {
-    "test": {
-        "showProgress": false,
-        "showScore": false,
-        "makeContinuous": true,
-        "animate": false,
-        "enableIgnoreShortcut": false,
-        "useSerifFont": true,
-        "fontSize": "normal",
-        "useFlashcardMode": false,
-        "useBackgroundColors": false,
-        "skipEvaluationOnCorrect": false
-    },
-    "srs": {
-        "intervalModifier": "4 hours"
+    "general": {
+        "notify-srs": true,
+        "notify-srs-interval": 900,
+        "do-regular-backup": false,
+        "regular-backup-interval": "1 week"
     },
     "languages": {
         "default": ""
+    },
+    "test": {
+        "useFlashcardMode": false,
+        "makeContinuous": false,
+        "skipEvaluationOnCorrect": false,
+        "enableIgnoreShortcut": false,
+        "showProgress": false,
+        "showScore": false,
+        "animate": true,
+        "useSerifFont": false,
+        "useBackgroundColors": false,
+        "fontSize": "normal"
+    },
+    "design": {
+        "animateSlidingPanels": true,
+        "animatePopupStacks": true,
+        "fadeSectionSwitching": true,
+        "cursor": "default",
+        "colorScheme": "default"
+    },
+    "srs": {
+        "intervalModifier": "4 hours"
     },
     "add": {
         "separator": ","

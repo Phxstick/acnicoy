@@ -19,8 +19,8 @@
 #menu-bar {
   height: $menu-bar-height;
   display: flex;
-  flex-direction: row;
   z-index: var(--menu-bar-layer);
+  flex-direction: row;
   box-sizing: border-box;
   background: $main-window-background;
   color: $main-window-color;
@@ -61,7 +61,6 @@
       text-align: center;
       padding-top: 5px;
       padding-bottom: 5px;
-      @include justify($top: -1px);
     }
   }
 }

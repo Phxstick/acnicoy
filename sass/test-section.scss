@@ -19,6 +19,29 @@ $answer-input-padding: 5px;
   background-color: $test-section-test-frame-background;
   color: $test-section-test-frame-color;
   align-items: center;
+
+  &.animate {
+    // Timing function is ease-out-sine
+    transition-property: background-color;
+    transition-timing-function: cubic-bezier(0.390, 0.575, 0.565, 1.000);
+    transition-duration: .4s;
+  }
+
+  &.word-meaning {
+    background-color: $test-section-item-type-word-meaning;
+  }
+  &.word-reading {
+    background-color: $test-section-item-type-word-reading;
+  }
+  &.kanji-meaning {
+    background-color: $test-section-item-type-kanji-meaning;
+  }
+  &.kanji-on-yomi {
+    background-color: $test-section-item-type-kanji-on-yomi;
+  }
+  &.kanji-kun-yomi {
+    background-color: $test-section-item-type-kanji-kun-yomi;
+  }
 }
 
 #bottom {
@@ -33,6 +56,7 @@ $answer-input-padding: 5px;
   margin-top: 30px;
   color: $test-section-test-frame-color;
   font-size: 120%;
+  text-shadow: 1px 1px 0 $test-section-status-shadow-color;
   &.correct {
     color: $test-section-correct-color;
   }
@@ -51,12 +75,21 @@ $answer-input-padding: 5px;
 
     &.serif { font-family: $serif-font; }
 
-    &.small { font-size: 200%; }
-    &.normal { font-size: 300%; }
-    &.large { font-size: 400%; }
+    &.small {
+      correfont-size: 200%;
+      text-shadow: 1px 1px 0 $test-section-test-item-shadow-color;
+    }
+    &.normal {
+      font-size: 300%;
+      text-shadow: 2px 2px 0 $test-section-test-item-shadow-color;
+    }
+    &.large {
+      font-size: 400%;
+      text-shadow: 3px 3px 0 $test-section-test-item-shadow-color;
+    }
   }
 
-  #correct-answers {
+  #solutions {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -227,19 +260,19 @@ $answer-input-padding: 5px;
     &:not(:last-child) {
       border-right-width: 1px;
     }
-    &:first-child:not(:last-child):not(.flashcard-mode) {
+    &:first-child:not(:last-child):not(.flashcard-mode):not(:disabled) {
       &:hover {
         background-image: linear-gradient(to bottom left,
           darken($control-bar-border-color, 40%), transparent, transparent);
       }
     }
-    &:last-child:not(:first-child):not(.flashcard-mode) {
+    &:last-child:not(:first-child):not(.flashcard-mode):not(:disabled) {
       &:hover {
         background-image: linear-gradient(to bottom right,
           darken($control-bar-border-color, 40%), transparent, transparent);
       }
     }
-    &.flashcard-mode {
+    &.flashcard-mode:not(:disabled) {
       &:hover {
         background-image: radial-gradient(ellipse at top,
           darken($control-bar-border-color, 40%), transparent, transparent);
@@ -284,4 +317,29 @@ $answer-input-padding: 5px;
   height: 20px;
   font-family: $small-font;
   font-size: 90%;
+  text-shadow: 1px 1px 0 $test-section-progress-text-shadow-color;
+}
+
+#list-mode-info {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  color: lighten($color, 5%);
+  
+  #list-mode-info-label {
+    margin-left: 10px;
+    font-family: $header-font;
+  }
+  #vocab-list {
+    margin-left: 15px;
+    flex: 1;
+    font-size: 120%;
+    font-family: $header-font;
+  }
+  #exit-list-mode {
+  }
 }

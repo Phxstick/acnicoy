@@ -1,19 +1,11 @@
 ### Up next
-- Finish some TODO's in test-section
-- Where to put button for customzizing SRS schemes?
-- Fix problem with tooltip centering
-- Fix: Something is wrong with Velocity? (E.g. opening panels throws Error)
+- Where to put button for customizing SRS schemes?
 - Move stuff in settings subsections into a settings manager?
 - Fix: Focusing inputs in srs-schemes-overlay does not work anymore!
 - Make kana input not only react to shift, but also caps-lock and caps letters
-- Finish test functionality
-  - Implement testing on vocbabulary lists
-  - Color test item background according to test item type
-  - Skip evaluation panel of correctly answered items
 - Implement most of the general settings
-- Implement some design settings
 - Implement shortcut settings for known shortcuts so far
-  - How to check whether shortcut is a native electron menu shortcut
+  - How to check whether shortcut is a native electron menu shortcut?
   - Finish key map in shortcut manager
   - Make sure always valid bindings are extracted in shortcut manager function
   - Use shortcuts-subsection event for ignore-shortcut aswell
@@ -43,7 +35,8 @@
 - Height of diagrams in stats section is slightly too large for some reason
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
 - Order of context menu items is not preserved
-- Item changes/deletes are not considered in a running test session
+- What happens when animating overflowing solutions in test section?
+- Update messages after editing kanji/words are still not correct...
 
 
 By category
@@ -154,12 +147,13 @@ once? --> Faster loading, centralized resource loading
 - Properly handle overflow if correct-answer-frame gets too large
   - Try to fade out items at bottom if list is too large,
     remove fading when bottom reached
-- Animate:
-  - Test item container (fade in sliding to right, fade out sliding to right)
-  - solution-items (fade in each one sliding to bottom after previous one)
-  - Animation when score gets updated (green/red text with +/- sliding up)?
+- Re-evaluate answer after current item has been edited?
+- It item has been renamed, directly display change instead of skipping?
 - Display more detailed statistics at end of test (`test-finished-overlay`)
   - Display items answered incorrectly (along with answers on click/hover)
+- Also confirm in continuous mode when closing a test, i.e. when
+  switching language, closing program, or opening a vocab list test
+  - Set continous mode as default in settings then
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)
@@ -299,11 +293,6 @@ List of settings
   - [Button] Update program (Do so safely)
 
 #### Design settings
-- [Checkbox] Animate test items
-- [Checkbox] Animate panels
-- [Checkbox] Animate Popup stacks
-- [Checkbox] Animate section switching
-- [Checkbox] Compress side bar into icons
 - [Popup-List] Cursor selection (Some have to be unlocked)
   - Drill cursor for large achievement (e.g. 1000 kanji)
   - Tamamo's fluffy tail cursor for larger achievement (e.g. 600 kanji)
@@ -316,6 +305,7 @@ List of settings
 
 #### TODO: Categorize these
 - [Radiobuttons] Choose separator for separating translations/readings
+- [Checkbutton/Entry] Choose interval-modifier for SRS-levels
 
 List of achievements
 --------------------------------------------------------------------------------
