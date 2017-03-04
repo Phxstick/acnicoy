@@ -195,6 +195,7 @@ class TestSection extends Section {
         });
         // If current item has been deleted, immediately skip to next item
         events.on("word-deleted", (word) => {
+            if (this.testInfo === null) return;
             const currentItem = this.testInfo.currentItem;
             if (currentItem.entry === word &&
                     currentItem.mode === dataManager.test.mode.WORDS) {
@@ -204,6 +205,7 @@ class TestSection extends Section {
             }
         });
         events.on("kanji-removed", (kanji) => {
+            if (this.testInfo === null) return;
             const currentItem = this.testInfo.currentItem;
             if (currentItem.entry === kanji &&
                   (currentItem.mode === dataManager.test.mode.KANJI_MEANINGS ||
@@ -216,6 +218,7 @@ class TestSection extends Section {
         });
         // If current item has been edited, display new solutions
         events.onAll(["vocab-changed", "kanji-changed"], (entry) => {
+            if (this.testInfo === null) return;
             const item = this.testInfo.currentItem;
             if (item.entry === entry) {
                 dataManager.test.getSolutions(

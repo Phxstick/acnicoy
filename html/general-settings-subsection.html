@@ -1,0 +1,57 @@
+<div class="settings-list">
+  <div id="data-path-frame">
+    <span>Location for user data folder:</span>
+    <span id="data-path"></span>
+    <button id="choose-data-path" class="light no-shadow">
+      <i class="fa fa-folder-open-o"></i>
+    </button>
+  </div>
+  <div>
+    <check-box id="auto-launch-on-startup"></check-box>
+    <span>Automatically launch application on startup</span>
+  </div>
+  <div id="srs-notifications-frame">
+    <div>
+      <check-box id="show-srs-notifications"></check-box>
+      <span>Periodically display notifications when SRS item reviews are
+        available</span>
+    </div>
+    <div class="radio-button-row" id="srs-notifications-intervals">
+      <span class="description">Notification interval:</span>
+      <span class="option">
+        <check-box data-value="900" class="radio-button-style"></check-box>
+        <span>15 minutes</span>
+      </span>
+      <span class="option">
+        <check-box data-value="3600" class="radio-button-style"></check-box>
+        <span>1 hour</span>
+      </span>
+      <span class="option">
+        <check-box data-value="7200" class="radio-button-style"></check-box>
+        <span>2 hours</span>
+      </span>
+    </div>
+  </div>
+  <div>
+    <div>
+      <check-box id="do-regular-backup"></check-box>
+      <span>Regularly backup user data</span>
+    </div>
+    <div class="radio-button-row" id="regular-backup-intervals">
+      <span class="description">Backup interval:</span>
+      <span class="option">
+        <check-box data-value="604800" class="radio-button-style"></check-box>
+        <span>1 week</span>
+      </span>
+      <span class="option">
+        <check-box data-value="1209600" class="radio-button-style"></check-box>
+        <span>2 weeks</span>
+      </span>
+      <span class="option">
+        <check-box data-value="2592000" class="radio-button-style"></check-box>
+        <span>1 month</span>
+      </span>
+    </div>
+  </div>
+  </div>
+</div>

@@ -9,7 +9,7 @@ const globals = {
                "migrate-srs", "choose-shortcut"],
     sections: ["home", "stats", "vocab", "settings",
                "test", "dictionary", "kanji"],
-    settingsSubsections: ["languages", "test", "design", "shortcuts"],
+    settingsSubsections:["general", "languages", "test", "design", "shortcuts"],
     panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
     suggestionPanes: ["add-vocab"],
     widgets: ["popup-stack", "switch-button", "switch-bar", "popup-list",
@@ -68,6 +68,18 @@ for (const name of globals.extensions) require(paths.js.extension(name));
 const totalTime = performance.now() - startTime;
 console.log("Loaded all required modules after %f ms", totalTime);
 
+function loadGlobalSettings() {
+    if (paths.getDataPath() && !dataManager.settings.isLoaded()) {
+        if (utility.existsFile(paths.globalSettings)) {
+            dataManager.settings.load();
+        } else {
+            dataManager.settings.setDefault();
+        }
+        shortcuts.initialize();
+        dataManager.srs.loadSchemes();
+    }
+}
+
 {
     window.events = new EventEmitter();  // Communication between components
     const windows = {};
@@ -92,6 +104,8 @@ console.log("Loaded all required modules after %f ms", totalTime);
     new Promise((resolve) => {
         window.onload = resolve;
     }).then(() => {
+        // If settings already exist, load them before creating any UI elements
+        loadGlobalSettings();
         // Create all windows
         const windowsLoaded = [];
         for (const name of globals.windows) {
@@ -110,18 +124,12 @@ console.log("Loaded all required modules after %f ms", totalTime);
         if (!paths.getDataPath()) {
             openWindow("init-path");
             return windows["init-path"].getNewDataPath()
-                   .then((newPath) => paths.setDataPath(newPath));
+                .then((newPath) => {
+                    paths.setDataPath(newPath);
+                    loadGlobalSettings();
+                });
         }
     }).then(() => {
-        // Load the global settings. If they don't exist, create defaults
-        if (utility.existsFile(paths.globalSettings)) {
-            dataManager.settings.load();
-        } else {
-            dataManager.settings.setDefault();
-        }
-        shortcuts.initialize();
-        // Load registered srs-schemes
-        dataManager.srs.loadSchemes();
         // Find registered languages. If none exist, let user register new ones
         languages = dataManager.languages.find();
         if (languages.length === 0) {

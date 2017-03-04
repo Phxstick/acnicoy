@@ -459,6 +459,41 @@ function enableQuickSelect(inputNode) {
     });
 }
 
+/**
+ * Provide functionality for a group of radiobuttons by calling a callback
+ * whenever a different radiobutton in the group has been selected.
+ * @param {HTMLElement} container - Element containing <check-box> elements
+ *     among its descendents. All radiobuttons must have their 'dataset-value'
+ *     attribute set.
+ * @param {*} initialValue - Value of the radiobutton which should be selected
+ *     initially.
+ * @param {function} callback - Function taking a single value as argument,
+ *     which is the value of the radiobutton that has been selected.
+ *     The callback is called whenever the user clicks a checkbox other than
+ *     the currently selected one.
+ */
+function bindRadiobuttonGroup(container, initialValue, callback) {
+    let currentlySelected = container.querySelector(
+        `check-box[data-value='${initialValue}']`);
+    if (currentlySelected === null) {
+        console.log(
+            `Radiobutton with value '${initialValue}' could not be found.`);
+    }
+    currentlySelected.checked = true;
+    container.addEventListener("click", (event) => {
+        if (event.target.tagName !== "CHECK-BOX") return;
+        const radiobutton = event.target;
+        const value = radiobutton.dataset.value;
+        if (radiobutton.checked === false) {
+            radiobutton.checked = true;
+            return;
+        }
+        currentlySelected.checked = false;
+        currentlySelected = radiobutton;
+        callback(value);
+    });
+}
+
 
 // Non DOM-related functions
 module.exports.getTime = getTime;
@@ -486,3 +521,4 @@ module.exports.insertNodeIntoSortedList = insertNodeIntoSortedList;
 module.exports.removeEntryFromSortedList = removeEntryFromSortedList;
 module.exports.calculateHeaderCellWidths = calculateHeaderCellWidths;
 module.exports.enableQuickSelect = enableQuickSelect;
+module.exports.bindRadiobuttonGroup = bindRadiobuttonGroup;

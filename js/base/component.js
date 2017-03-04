@@ -8,12 +8,16 @@ class Component extends HTMLElement {
         this.root = this.attachShadow({ mode: "open", delegatesFocus });
         const style = document.createElement("style");
         style.textContent = `@import url(${paths.fontAwesome});`;
-        if (utility.existsFile(paths.css(name))) {
-            style.textContent += `@import url(${paths.css(name)});`
+        let design = "default";
+        if (dataManager.settings.isLoaded()) {
+            design = dataManager.settings.design.colorScheme;
+        }
+        if (utility.existsFile(paths.css(name, design))) {
+            style.textContent += `@import url(${paths.css(name, design)});`;
         }
         if (utility.existsFile(paths.html(name))) {
             this.root.appendChild(
-                utility.parseHtmlFile(paths.html(name), wrapHtml))
+                utility.parseHtmlFile(paths.html(name), wrapHtml));
         }
         this.root.appendChild(style);
         // jQuery-like shortcut for getting elements in shadow DOM

@@ -1,5 +1,10 @@
 "use strict";
 
+const fs = require("fs");
+const path = require("path");
+const { remote } = require("electron");
+const mainBrowserWindow = remote.getCurrentWindow();
+
 class DesignSettingsSubsection extends SettingsSubsection {
     constructor() {
         super("design");
@@ -21,6 +26,26 @@ class DesignSettingsSubsection extends SettingsSubsection {
             dataManager.settings.design.fadeSectionSwitching =
                 event.target.checked;
             this.broadcastGlobalSetting("fade-section-switching");
+        });
+        const colorSchemes = fs.readdirSync(paths.colorSchemes)
+            .map((filename) => path.basename(filename, ".scss"));
+        for (const colorScheme of colorSchemes) {
+            const option = document.createElement("option");
+            if (colorScheme === dataManager.settings.design.colorScheme) {
+                option.setAttribute("selected", "");
+            }
+            option.value = colorScheme;
+            option.textContent = colorScheme;
+            this.$("color-scheme").appendChild(option);
+        }
+        this.$("color-scheme").addEventListener("change", () => {
+            dataManager.settings.design.colorScheme =
+                this.$("color-scheme").value;
+        });
+        this.$("reload").addEventListener("click", () => {
+            main.attemptToQuit().then((confirmed) => {
+                if (confirmed) mainBrowserWindow.reload();
+            });
         });
     }
 

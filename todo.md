@@ -1,20 +1,22 @@
 ### Up next
-- Where to put button for customizing SRS schemes?
+- Update Electron to 1.6.1
+- Rewrite index.js chain, main window, datamanager methods with async/await
+- Remove custom-elements-flag in main.js (as soon as electron has chrome v54)
+- Add cursor design functionality
 - Fix: Focusing inputs in srs-schemes-overlay does not work anymore!
 - Make kana input not only react to shift, but also caps-lock and caps letters
-- Implement most of the general settings
 - Create a content management system for downloading and updating content
   - Info window when (new) language pack is available for a language
     - Allow user to start downloads and link to settings for progress bar
   - Implement content downloading (Use stylable HTML5 progress bar for this)
+- Implement program updating
+  - Add update button to settings
+  - Make sure user data is saved before an update
 - Finish removing languages and refactor init-chain and windows for that
 - Choose better standard font for languages with cyrillic characters
 - Allow using Ctrl+Enter for saving notes and submitting new vocab/kanji
 
 ### As soon as available
-- Celebrate the day async/await is fully supported in electron (maybe with flag)
-  - Immediately rewrite index.js chain, main window, datamanager methods
-- Remove custom-elements-flag in main.js (as soon as electron has chrome v54)
 - Use thin symbols for fa-times, fa-plus etc. where fitting
 - Implement dynamic adding of tabs in tabbed-frame using slotchange-event
 
@@ -31,6 +33,7 @@
 - Order of context menu items is not preserved
 - What happens when animating overflowing solutions in test section?
 - Update messages after editing kanji/words are still not correct...
+- Display correct info texts and take correct actions when setting data path
 
 
 By category
@@ -56,6 +59,7 @@ By category
 - How to get undo/redo possibility for each item seperately?
 - Also make files for improved on/kun-yomi (or rather put in same file?)
 - Create stylable `<select>` alternative
+- Make dark deflt, Solarized (Light/Dark) and Ubuntu (Light/Dark) color schemes
 
 ### Code
 ##### Naming
@@ -70,6 +74,7 @@ By category
   - Especially in dataManager
 
 ##### Refactoring
+- "paths.getDataPath" and "paths.setDataPath" are very confusing
 - Move stuff in settings subsections into a settings manager?
 - Have htmlManager and cssManager which make sure all assets are only loaded
 once? --> Faster loading, centralized resource loading
@@ -186,6 +191,7 @@ once? --> Faster loading, centralized resource loading
 
 ### Vocab section
 - Implement searching in vocab lists and list contents
+- Display small label with amount of items in each vocabulary list
 
 ### Dictionary
 - Display link to dictionary section help in info-frame
@@ -274,11 +280,6 @@ once? --> Faster loading, centralized resource loading
 List of settings
 --------------------------------------------------------------------------------
 #### General settings
-- [File-Dialog] Change user data path
-- [Checkbox] Notify me when SRS item reviews are available
-  - [Widget] Choose time intervals for notification
-- [Checkbox] Regularly backup data
-  - [Widget] Choose backup interval
 - [Button] Check for program updates (Check automatically every ~1 hour)
   - [Button] Update program (Do so safely)
 
@@ -288,14 +289,11 @@ List of settings
   - Tamamo's fluffy tail cursor for larger achievement (e.g. 600 kanji)
   - Yona's hairpin cursor for medium achievement (e.g. 300 kanji)
   - Meliodas' dragon handle for small achievement (e.g. 150 kanji)
-- [Popup-List] Color schemes
-  - Have "designs" subfolder in sass directory with named sass partials
-  - Definitely implement dark version for current default scheme
-  - Solarized (Light/Dark) and Ubuntu (Light/Dark) Color schemes
 
 #### TODO: Categorize these
 - [Radiobuttons] Choose separator for separating translations/readings
 - [Checkbutton/Entry] Choose interval-modifier for SRS-levels
+- [Button] Edit SRS schemes
 
 List of achievements
 --------------------------------------------------------------------------------

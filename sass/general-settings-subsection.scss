@@ -1,0 +1,30 @@
+@import "settings";
+
+#data-path-frame {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  #data-path {
+    flex: 1;
+    padding: 8px;
+    background-color: $background-color-dark;
+    color: $view-color;
+    margin-left: 10px;
+    margin-right: 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:hover {
+      background-color: $view-hover-background;
+      color: $view-hover-color;
+    }
+  }
+}
+
+#srs-notifications-intervals, #regular-backup-intervals {
+  margin-top: 6px;
+  margin-left: 37px;
+}

@@ -2,6 +2,7 @@
 
 const { ipcRenderer, remote } = require("electron");
 const mainBrowserWindow = remote.getCurrentWindow();
+const AutoLaunch = require("auto-launch");
 
 const menuItems = popupMenu.registerItems({
     "copy-kanji": {
@@ -49,6 +50,9 @@ class MainWindow extends Window {
         this.currentPanel = null;
         this.currentSection = null;
         this.suggestionsShown = false;
+        this.srsNotificationCallbackId = null;
+        this.regularBackupCallbackId = null;
+        this.creatingBackup = false;
         // Top menu button events
         this.$("exit-button").addEventListener("click",
                 () => ipcRenderer.send("quit"));
@@ -83,8 +87,71 @@ class MainWindow extends Window {
                 });
             }
         }
+        // Auto launch functionality
+        this.autoLauncher = new AutoLaunch({ name: "Acnicoy", isHidden: true });
+    }
+
+    registerCentralEventListeners() {
         // Update amount of SRS items displayed on test button regularly
         events.on("update-srs-status", () => this.updateTestButton());
+        // Regulary notify user if SRS items are ready to be reviewed
+        events.onAll(["settings-general-show-srs-notifications",
+                      "settings-general-srs-notifications-interval"], () => {
+            if (this.srsNotificationCallbackId !== null) {
+                window.clearInterval(this.srsNotificationCallbackId);
+                this.srsNotificationCallbackId = null;
+            }
+            if (dataManager.settings.general.showSrsNotifications) {
+                this.srsNotificationCallbackId =
+                    window.setInterval(() => this.showSrsNotification(), 1000 *
+                    parseInt(
+                        dataManager.settings.general.srsNotificationsInterval));
+            }
+        });
+        events.onAll(["settings-general-do-regular-backup",
+                      "settings-general-regular-backup-interval"], () => {
+            if (this.regularBackupCallbackId !== null) {
+                window.clearTimeout(this.regularBackupCallbackId);
+                this.regularBackupCallbackId = null;
+            }
+            if (dataManager.settings.general.doRegularBackup) {
+                let lastBackupDate = dataManager.getLastBackupTime();
+                let currentDate = utility.getTime();
+                const interval =
+                    parseInt(dataManager.settings.general.regularBackupInterval)
+                // If a backup is due, immediately create it.
+                // Schedule following backups (check each day whether a backup
+                // is necessary by repeatedly setting timeouts)
+                const createBackupIfDue = () => {
+                    currentDate = utility.getTime();
+                    if (currentDate >= lastBackupDate + interval &&
+                            !this.creatingBackup) {
+                        this.creatingBackup = true;
+                        lastBackupDate = currentDate;
+                        dataManager.createBackup({ event: "regular-backup" })
+                        .then(() => {
+                            this.creatingBackup = false;
+                        });
+                    }
+                    if (this.regularBackupCallbackId !== null) {
+                        window.clearTimeout(this.regularBackupCallbackId);
+                    }
+                    this.regularBackupCallbackId = window.setTimeout(() => {
+                        createBackupIfDue();
+                    }, 1000 * 60 * 60 * 24);  // 1 day
+                };
+                createBackupIfDue();
+            }
+        });
+        events.on("settings-general-auto-launch-on-startup", () => {
+            this.autoLauncher.isEnabled().then((isEnabled) => {
+                if (dataManager.settings.general.autoLaunchOnStartup) {
+                    if (!isEnabled) this.autoLauncher.enable();
+                } else {
+                    this.autoLauncher.disable();
+                }
+            });
+        });
     }
 
     createSections () {
@@ -155,23 +222,13 @@ class MainWindow extends Window {
             this.$("kanji-info-panel").load("字");
         }
         // Regularly update displayed SRS info
-        setInterval(() => events.emit("update-srs-status"),
+        window.setInterval(() => events.emit("update-srs-status"),
             1000 * 60 * 5);  // Every 5 minutes
-        // Regulary notify user if SRS items are ready to be reviewed
-        setInterval(() => {
-            this.showSrsNotification();
-        }, 1000 * 60 * 15);  // Every 15 min
         // Confirm close command and save data before exiting application
         ipcRenderer.send("activate-controlled-closing");
         ipcRenderer.on("closing-window", () => {
-            Promise.resolve(
-                this.sections[this.currentSection].confirmClose())
-            .then((confirmed) => {
-                if (!confirmed) return;
-                this.sections[this.currentSection].close();
-                dataManager.save();
-                // networkManager.stopAllDownloads();
-                ipcRenderer.send("close-now");
+            this.attemptToQuit().then((confirmed) => {
+                if (confirmed) ipcRenderer.send("close-now");
             });
         });
         // Register shortcuts
@@ -349,7 +406,7 @@ class MainWindow extends Window {
                                   "scheduled for testing!");
             }
         });
-    };
+    }
 
     updateTestButton() {
         return dataManager.srs.getTotalAmountDue().then((amount) => {
@@ -359,6 +416,7 @@ class MainWindow extends Window {
     }
 
     showSrsNotification() {
+        if (!dataManager.settings.general.showSrsNotifications) return;
         const languages = dataManager.languages.visible;
         const promises = [];
         for (const language of languages) {
@@ -483,6 +541,19 @@ class MainWindow extends Window {
             for (const span of spans) {
                 element.appendChild(span);
             }
+        });
+    }
+
+    attemptToQuit() {
+        return Promise.resolve(
+            this.sections[this.currentSection].confirmClose())
+        .then((confirmed) => {
+            if (!confirmed) return;
+            this.sections[this.currentSection].close();
+            dataManager.save();
+            // TODO
+            // networkManager.stopAllDownloads();
+            return confirmed;
         });
     }
 }

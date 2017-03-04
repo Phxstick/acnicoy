@@ -4,26 +4,26 @@
 
 @font-face {
   font-family: OpenSans-Light;
-  src: url(../fonts/OpenSans-Light.woff);
+  src: url(../../fonts/OpenSans-Light.woff);
 }
 
 @font-face {
   font-family: TakaoPGothic;
-  src: url(../fonts/TakaoPGothic.ttf);
+  src: url(../../fonts/TakaoPGothic.ttf);
 }
 
 @font-face {
   font-family: TakaoPMincho;
-  src: url(../fonts/TakaoPMincho.ttf);
+  src: url(../../fonts/TakaoPMincho.ttf);
 }
 
 @font-face {
   font-family: Questrial;
-  src: url(../fonts/Questrial-Regular.otf) format("opentype");
+  src: url(../../fonts/Questrial-Regular.otf) format("opentype");
 }
 
 // =============================================================================
 // Cursor loading
 // =============================================================================
 
-$test-cursor: url(../img/test_cursor.png);
+$test-cursor: url(../../img/test_cursor.png), auto;

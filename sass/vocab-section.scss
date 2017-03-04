@@ -78,10 +78,21 @@ body {
 
 #all-lists > * {
   cursor: $pointer-cursor;
+  position: relative;
+
   &[contenteditable]:focus {
     position: relative;
     cursor: auto;
     z-index: 1;
+  }
+
+  > .amount-words {
+    @include center-content;
+    position: absolute;
+    right: 5px;
+    top: 0;
+    bottom: 0;
+    font-family: $header-font;
   }
 }
 

@@ -6,11 +6,15 @@ module.exports = function (paths, modules) {
     const settings = {};
     let data;
 
+    settings.isLoaded = function() {
+        return data !== undefined;
+    };
+
     settings.setDefault = function() {
         const defaultSettings = fs.readFileSync(paths.defaultSettings);
         fs.writeFileSync(paths.globalSettings, defaultSettings);
         settings.load();
-    }
+    };
 
     settings.load = function() {
         data = require(paths.globalSettings);
@@ -29,5 +33,5 @@ module.exports = function (paths, modules) {
             if (data !== undefined && Reflect.has(data, key)) data[key] = value;
             else throw new Error("You cannot create new settings!")
         }
-    })
+    });
 };

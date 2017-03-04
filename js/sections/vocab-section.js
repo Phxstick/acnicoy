@@ -11,13 +11,13 @@ const menuItems = popupMenu.registerItems({
     "delete-list": {
         label: "Delete list",
         click: ({ currentNode, data: {section} }) => {
-            section.deleteList(currentNode, currentNode.textContent);
+            section.deleteList(currentNode, currentNode.dataset.listName);
         }
     },
     "test-on-list": {
         label: "Take test on list",
         click: ({ currentNode, data: {section} }) => {
-            main.sections["test"].createTest(currentNode.textContent);
+            main.sections["test"].createTest(currentNode.dataset.listName);
             main.openSection("test");
         }
     },
@@ -60,6 +60,7 @@ class VocabSection extends Section {
         this.draggedItem = null;
         this.draggedItemType = null;
         this.allWordsQuery = "";
+        this.listNameToAmountLabel = new Map();
         // Add event listeners
         this.$("search-vocab-entry").addEventListener("keypress", (event) => {
             if (event.key !== "Enter") return;
@@ -72,10 +73,10 @@ class VocabSection extends Section {
             const item = this.createAllListsItem("");
             this.$("all-lists").appendChild(item);
             this.$("all-lists").scrollToBottom();
-            item.contentEditable = "true";
-            item.focus();
             this.$("all-lists-frame").show("flex");
             this.$("no-lists-info").hide();
+            item.contentEditable = "true";
+            item.focus();
         });
         this.$("rename-list-button").addEventListener("click", () => {
             this.selectedListNode.contentEditable = "true";
@@ -140,16 +141,21 @@ class VocabSection extends Section {
             if (this.selectedList === list) {
                 utility.removeEntryFromSortedList(this.$("list-contents"), word);
             }
+            const amountLabel = this.listNameToAmountLabel.get(list);
+            amountLabel.textContent = parseInt(amountLabel.textContent) - 1;
         });
         events.on("added-to-list", (word, list) => {
             if (this.selectedList === list) {
                 utility.insertNodeIntoSortedList(
                     this.$("list-contents"), this.createListContentsItem(word));
             }
+            const amountLabel = this.listNameToAmountLabel.get(list);
+            amountLabel.textContent = parseInt(amountLabel.textContent) + 1;
         });
         // If a vocab item has been deleted, delete it from all lists
         events.on("word-deleted", (word) => {
             utility.removeEntryFromSortedList(this.$("all-words"), word);
+            this.removeFromList
             utility.removeEntryFromSortedList(this.$("list-contents"), word);
             events.emit("removed-from-list");
         });
@@ -167,7 +173,9 @@ class VocabSection extends Section {
                 const item = this.createListContentsItem(word);
                 utility.insertNodeIntoSortedList(this.$("list-contents"), item);
             }
-            events.emit("added-to-list");
+            if (dataManager.vocabLists.isWordInList(word)) {
+                events.emit("added-to-list");
+            }
         });
         events.onAll(["language-changed", "word-added", "word-deleted"],
         () => { 
@@ -209,6 +217,7 @@ class VocabSection extends Section {
         this.$("all-lists").empty();
         this.$("all-words").empty();
         this.deselectList();
+        this.listNameToAmountLabel.clear();
         // Fill the left section with first few words in the vocabulary
         dataManager.vocab.getAll().then((words) => {
             this.nextRowIndex = 0;
@@ -261,7 +270,7 @@ class VocabSection extends Section {
     createListContentsItem(word) {
         const item = document.createElement("div");
         item.textContent = word;
-        item.draggable = true;
+        // item.draggable = true;
         // TODO: Allow dragging item into a different vocabulary list,
         //       or somewhere outside to remvove it from the list
         // item.addEventListener("dragstart", (event) => {
@@ -276,6 +285,7 @@ class VocabSection extends Section {
     createAllListsItem(name) {
         const node = document.createElement("div");
         node.textContent = name;
+        node.dataset.listName = name;
         // Remember old list name before editing
         node.addEventListener("focusin", () => {
             this.oldListName = node.textContent;
@@ -345,7 +355,7 @@ class VocabSection extends Section {
                 return;
             }
             const word = event.dataTransfer.getData("text");
-            this.addToList(word, this.selectedList);
+            this.addToList(word, listName);
             node.classList.remove("dragover");
         });
         // Highlight list name when dragging valid vocabulary item over it
@@ -359,6 +369,14 @@ class VocabSection extends Section {
         node.addEventListener("dragleave", (event) => {
             node.classList.remove("dragover");
         });
+        // Display small label with amount of items in this vocabulary list
+        const amountLabel = document.createElement("div");
+        amountLabel.classList.add("amount-words");
+        amountLabel.textContent =
+            dataManager.vocabLists.getWordsForList(name).length;
+        this.listNameToAmountLabel.set(name, amountLabel);
+        // TODO: Finish amount-label functionality
+        // node.appendChild(amountLabel);
         node.popupMenu(menuItems,
                 ["test-on-list", "rename-list", "delete-list"],
                 { section: this });
@@ -367,16 +385,17 @@ class VocabSection extends Section {
 
     // Make sure list of vocablist-names stays sorted
     insertListNameAtCorrectPosition(node) {
-        const name = node.textContent;
+        // TODO: Do this more efficiently
+        const name = node.dataset.listName;
         const allLists = this.$("all-lists").children;
         for (const listNode of allLists) {
-            if (listNode.textContent > name) {
+            if (listNode.dataset.listName > name) {
                 this.$("all-lists").insertBefore(node, listNode);
                 break;
             }
         }
         if (allLists.length === 0 ||
-                allLists[allLists.length - 1].textContent < name)
+                allLists[allLists.length - 1].dataset.listName < name)
             this.$("all-lists").appendChild(node);
     }
 
@@ -398,7 +417,7 @@ class VocabSection extends Section {
 
     selectList(node) {
         if (this.selectedListNode === node) return;
-        const listName = node.textContent;
+        const listName = node.dataset.listName;
         if (this.selectedListNode !== null) {
             this.selectedListNode.classList.remove("selected");
         }
@@ -409,6 +428,7 @@ class VocabSection extends Section {
         this.selectedList = listName;
         this.selectedListNode = node;
         const words = dataManager.vocabLists.getWordsForList(listName);
+        words.sort();
         const fragment = document.createDocumentFragment();
         for (const word of words) {
             fragment.appendChild(this.createListContentsItem(word));

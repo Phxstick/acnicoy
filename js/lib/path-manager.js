@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require("path");
-const fs = require("fs");
+const fs = require("fs-extra");
 const os = require("os");
 
 module.exports = function (basePath) {
@@ -11,6 +11,8 @@ module.exports = function (basePath) {
     const dataPathBaseName = trainerName + "Data";
     const dataPathConfigFile = path.resolve(basePath, "data", "data-path.txt");
     paths.standardDataPathPrefix = path.resolve(os.homedir(), "Documents");
+    paths.dataPathBaseName = dataPathBaseName;
+    paths.dataPathPrefix = null;
     let dataPath = null;
     let langPath = null;
     let backupsPath = null;
@@ -32,27 +34,41 @@ module.exports = function (basePath) {
     }
     
     // Set a path for folder to store user data in
-    paths.setDataPath = function (prefix) { 
+    paths.setDataPath = function (prefix, overwrite=false) { 
+        const previousPath = dataPath;
+        const newPath = path.resolve(prefix, dataPathBaseName);
+        if (previousPath === newPath)
+            return true;
+        if (previousPath !== null && fs.existsSync(newPath) && !overwrite)
+            return false;
+        if (previousPath !== null && newPath.startsWith(previousPath))
+            return false;
         fs.writeFileSync(dataPathConfigFile, prefix);
-        paths.data = dataPath = path.resolve(prefix, dataPathBaseName);
+        paths.dataPathPrefix = prefix;
+        paths.data = dataPath = newPath;
         paths.languages = langPath = path.resolve(dataPath, "Languages");
         paths.downloads = downloadsPath = path.resolve(dataPath, "Downloads");
         paths.backups = backupsPath = path.resolve(dataPath, "Backups");
         paths.globalSettings = path.resolve(dataPath, "settings.json");
         paths.srsSchemes = path.resolve(dataPath, "srs-schemes.json")
         contentPath = path.resolve(dataPath, "Content");
-        // Create folder and subfolders if it doesn't exists yet
-        try {
-            fs.readdirSync(dataPath);
-        } catch (error) {
-            if (error.errno === -2) {
+        if (previousPath === null) {
+            // Create folders if they do not exist yet
+            if (!fs.existsSync(dataPath)) {
                 fs.mkdirSync(dataPath);
                 fs.mkdirSync(langPath);
                 fs.mkdirSync(backupsPath);
                 fs.mkdirSync(downloadsPath);
                 fs.mkdirSync(contentPath);
             }
+        } else {
+            // Copy previous data to new location
+            if (fs.existsSync(newPath) && overwrite) {
+                fs.removeSync(previousPath);
+            }
+            fs.renameSync(previousPath, newPath);
         }
+        return true;
     };
 
     // Global data
@@ -105,10 +121,12 @@ module.exports = function (basePath) {
     paths.template = (name) => path.resolve(templatePath, name + ".hbs");
 
     // CSS
-    paths.css = (name) => path.resolve(basePath, "css", name + ".css");
-    paths.layers = path.resolve(basePath, "css", "layers.css");
+    paths.css = (name, design) =>
+        path.resolve(basePath, "css", design, name + ".css");
+    paths.layers = path.resolve(basePath, "css", "default", "layers.css");
     paths.fontAwesome = path.resolve(basePath, "font-awesome",
                                      "css", "font-awesome.min.css");
+    paths.colorSchemes = path.resolve(basePath, "sass", "designs");
 
     // Language data
     paths.languageData = (language) => ({
@@ -122,7 +140,15 @@ module.exports = function (basePath) {
 
     // Language data backup
     paths.newBackup = () => {
-        const id = fs.readdirSync(paths.backups).length;
+        const backups = fs.readdirSync(paths.backups);
+        let previousId = 0;
+        for (const backup of backups) {
+            const backupId = parseInt(backup.slice(0, 5));
+            if (backupId > previousId) {
+                previousId = backupId;
+            }
+        }
+        const id = previousId + 1;
         const currentDate = new Date();
         const day = currentDate.getDate();
         const month = currentDate.getMonth() + 1;
@@ -135,6 +161,10 @@ module.exports = function (basePath) {
         ].join("-"));
         return { directory: backupDir,
                  infoFile: path.resolve(backupDir, "info.json") };
+    };
+    paths.backupInfo = (backupName) => {
+        return path.resolve(
+            path.resolve(backupsPath, backupName), "info.json");
     };
 
     // Language content

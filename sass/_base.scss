@@ -1,5 +1,18 @@
+// TODO: How to solve cursor problem?
+// $default-cursor: var(--default-cursor);
+// $pointer-cursor: var(--pointer-cursor);
+// $wait-cursor: var(--wait-cursor);
+// $grab-cursor: var(--grab-cursor);
+// $dragging-cursor: var(--dragging-cursor);
+$default-cursor: default;
+$pointer-cursor: pointer;
+$wait-cursor: wait;
+$grab-cursor: grab;
+$dragging-cursor: grabbing;
+
+
 @import "assets";
-@import "variables";
+@import "design";
 @import "layers";
 @import "spinners";
 
@@ -14,6 +27,7 @@
 * {
   font-family: $font;
   user-select: none;
+
   &::selection {
     color: $select-color;
     background: $select-background;
@@ -37,6 +51,13 @@
 }
 
 body, :host {
+  // --default-cursor: $test-cursor;
+  // --pointer-cursor: $test-cursor;
+  // --wait-cursor: $test-cursor;
+  // --grab-cursor: $test-cursor;
+  // --dragging-cursor: $test-cursor;
+
+  // cursor: var(--default-cursor);
   cursor: $default-cursor;
 }
 
@@ -48,7 +69,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  color: #303030;
+  color: $color;
 }
 
 #partitioned-window {
@@ -171,6 +192,17 @@ hr {
 
 .dragging {
   cursor: $dragging-cursor;
+}
+
+.radio-button-row {
+  .description {
+    display: inline-block;
+    margin-right: 30px;
+  }
+  .option:not(:last-child) {
+    display: inline-block;
+    margin-right: 30px;
+  }
 }
 
 // =============================================================================

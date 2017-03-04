@@ -55,22 +55,13 @@ class TestSettingsSubsection extends SettingsSubsection {
                 event.target.checked;
             this.broadcastGlobalSetting("skip-evaluation-on-correct");
         });
-        let currentlyChecked = this.$$(`#font-sizes check-box[data-value='${
-            dataManager.settings.test.fontSize}']`)[0];
-        currentlyChecked.checked = true;
-        this.$("font-sizes").addEventListener("click", (event) => {
-            if (event.target.tagName !== "CHECK-BOX") return;
-            const checkbox = event.target;
-            const value = checkbox.dataset.value;
-            if (checkbox.checked === false) {
-                checkbox.checked = true;
-                return;
+        utility.bindRadiobuttonGroup(this.$("font-sizes"),
+            dataManager.settings.test.fontSize,
+            (value) => {
+                dataManager.settings.test.fontSize = value;
+                this.broadcastGlobalSetting("font-size");
             }
-            dataManager.settings.test.fontSize = value;
-            currentlyChecked.checked = false;
-            currentlyChecked = checkbox;
-            this.broadcastGlobalSetting("font-size");
-        });
+        );
     }
 
     registerCentralEventListeners() {

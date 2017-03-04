@@ -1,9 +1,10 @@
 {
     "general": {
-        "notify-srs": true,
-        "notify-srs-interval": 900,
-        "do-regular-backup": false,
-        "regular-backup-interval": "1 week"
+        "autoLaunchOnStartup": false,
+        "showSrsNotifications": true,
+        "srsNotificationsInterval": 900,
+        "doRegularBackup": false,
+        "regularBackupInterval": "604800"
     },
     "languages": {
         "default": ""

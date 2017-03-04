@@ -86,7 +86,26 @@ module.exports = function (paths) {
                 });
             });
         });
-    }
+    };
+
+    /**
+     * Get date of last backup in seconds.
+     */
+    modules.getLastBackupTime = function () {
+        const backups = fs.readdirSync(paths.backups);
+        let lastBackupIndex = 0;
+        let lastBackupId = 0;
+        for (let i = 0; i < backups.length; ++i) {
+            const backupId = parseInt(backups[i].slice(0, 5));
+            if (backupId > lastBackupId) {
+                lastBackupIndex = i;
+                lastBackupId = backupId;
+            }
+        }
+        const lastBackup = backups[lastBackupIndex];
+        const backupInfo = require(paths.backupInfo(lastBackup));
+        return backupInfo.time;
+    };
 
     return modules;
 };

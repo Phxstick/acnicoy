@@ -1,14 +1,4 @@
 // =============================================================================
-// Cursors
-// =============================================================================
-
-$default-cursor: default;
-$pointer-cursor: pointer;
-$wait-cursor: wait;
-$grab-cursor: grab;
-$dragging-cursor: grabbing;
-
-// =============================================================================
 // Fonts
 // =============================================================================
 
@@ -59,7 +49,7 @@ $tooltip-color: white;
 $tooltip-shadow-color: white;
 
 // Views
-$view-color: #303030;
+$view-color: $color;
 $view-color-greyed-out: darkgrey;
 $view-background: #fff;
 $view-background-dark: darken($view-background, 6%);
@@ -79,7 +69,7 @@ $view-header-background: darken($view-background, 10%);
 $input-background: darken(white, 5%);
 $input-background-focus: white;
 $input-background-hover: darken(white, 2%);
-$input-color: #303030;
+$input-color: $color;
 $input-color-focus: $input-color;
 $input-color-hover: $input-color;
 $input-color-placeholder: darken($input-background, 40%);
