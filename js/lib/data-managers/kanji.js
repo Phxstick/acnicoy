@@ -14,9 +14,14 @@ module.exports = function (paths, modules) {
      *     each attribute ("meanings", "on_yomi", "kun_yomi") to an integer.
      * @returns {Promise}
      */
-    kanjiModule.add = function (kanji, values, levels) {
+    kanjiModule.add = async function (kanji, values, levels) {
         let newStatus = "no-change";
         const attributes = ["meanings", "on_yomi", "kun_yomi"];
+        const modes = {
+            "meanings": modules.test.mode.KANJI_MEANINGS,
+            "on_yomi": modules.test.mode.KANJI_ON_YOMI,
+            "kun_yomi": modules.test.mode.KANJI_KUN_YOMI
+        };
         // Fill in missing values
         if (levels === undefined) {
             levels = {};
@@ -25,78 +30,68 @@ module.exports = function (paths, modules) {
             if (!values.hasOwnProperty(attribute)) values[attribute] = [];
             if (!levels.hasOwnProperty(attribute)) levels[attribute] = 1;
         }
-        return kanjiModule.isAdded(kanji).then((alreadyAdded) => {
-            // Add kanji if it's not already added yet
-            if (!alreadyAdded) {
-                newStatus = "added";
-                modules.stats.incrementKanjiAddedToday();
-                return modules.database.run(
-                    "INSERT INTO kanji (kanji, date_added) VALUES (?, ?)",
-                    kanji, utility.getTime());
-            }
-        }).then(() => {
-            const modes = {
-                "meanings": modules.test.mode.KANJI_MEANINGS,
-                "on_yomi": modules.test.mode.KANJI_ON_YOMI,
-                "kun_yomi": modules.test.mode.KANJI_KUN_YOMI
-            };
-            const promises = [];
-            for (const attribute of attributes) {
-                const mode = modes[attribute];
-                const table = modules.test.modeToTable(mode);
-                const newValues = values[attribute];
-                const newLevel = levels[attribute];
-                const newReviewDate = utility.getTime()
-                    + modules.srs.currentScheme.intervals[newLevel];
-                let oldValues;
-                let oldLevel;
-                let oldReviewDate;
-                modules.database.run("BEGIN TRANSACTION");
-                const promise = modules.database.query(
-                    // Get old values from the database
-                    `SELECT ${attribute}, level, review_date
-                     FROM ${table} WHERE kanji = ?`, kanji)
-                .then((rows) => { 
-                    if (rows.length) {
-                        oldValues = rows[0][attribute].split(";");
-                        oldLevel = rows[0]["level"];
-                        oldReviewDate = rows[0]["review_date"];
-                    } else {
-                        oldValues = [];
-                    }
-                }).then(() => {
-                    if (oldValues.length > 0 && newValues.length > 0) {
-                        // Add new values and don't overwrite existing ones
-                        for (const value of newValues) {
-                            if (!oldValues.includes(value)) {
-                                oldValues.push(value);
-                            }
+        // Add kanji if it's not already added yet
+        const alreadyAdded = await kanjiModule.isAdded(kanji);
+        if (!alreadyAdded) {
+            newStatus = "added";
+            modules.stats.incrementKanjiAddedToday();
+            await modules.database.run(
+                "INSERT INTO kanji (kanji, date_added) VALUES (?, ?)",
+                kanji, utility.getTime());
+        }
+        const promises = [];
+        // Update kanji data for each attribute
+        modules.database.run("BEGIN TRANSACTION");
+        for (const attribute of attributes) {
+            const mode = modes[attribute];
+            const table = modules.test.modeToTable(mode);
+            const newValues = values[attribute];
+            const newLevel = levels[attribute];
+            const newReviewDate = utility.getTime()
+                + modules.srs.currentScheme.intervals[newLevel];
+            let oldValues;
+            let oldLevel;
+            let oldReviewDate;
+            const promise = modules.database.query(
+                // Get old values from the database
+                `SELECT ${attribute}, level, review_date
+                 FROM ${table} WHERE kanji = ?`, kanji)
+            .then(async (rows) => { 
+                if (rows.length) {
+                    oldValues = rows[0][attribute].split(";");
+                    oldLevel = rows[0]["level"];
+                    oldReviewDate = rows[0]["review_date"];
+                } else {
+                    oldValues = [];
+                }
+                if (oldValues.length > 0 && newValues.length > 0) {
+                    // Add new values and don't overwrite existing ones
+                    for (const value of newValues) {
+                        if (!oldValues.includes(value)) {
+                            oldValues.push(value);
                         }
-                        return modules.database.run(
-                            `UPDATE ${table} SET ${attribute} = ?
-                             WHERE kanji = ?`, oldValues.join(";"), kanji);
-                    } else if (oldValues.length === 0 && newValues.length > 0) {
-                        modules.stats.updateScore(mode, 0, newLevel);
-                        return modules.database.run(
-                            `INSERT INTO ${table}
-                             (kanji, ${attribute}, level, review_date)
-                             VALUES (?, ?, ?, ?)`,
-                            kanji, newValues.join(";"), newLevel,
-                            newReviewDate);
                     }
-                }).then(() => {
-                     if (newStatus !== "added" &&
-                         !utility.setEqual(new Set(newValues),
-                                           new Set(oldValues)))
-                        newStatus = "updated";
-                });
-                promises.push(promise);
-            }
-            return Promise.all(promises).then(() => {
-                modules.database.run("END");
-                return newStatus;
+                    await modules.database.run(
+                        `UPDATE ${table} SET ${attribute} = ?
+                         WHERE kanji = ?`, oldValues.join(";"), kanji);
+                } else if (oldValues.length === 0 && newValues.length > 0) {
+                    modules.stats.updateScore(mode, 0, newLevel);
+                    await modules.database.run(
+                        `INSERT INTO ${table}
+                         (kanji, ${attribute}, level, review_date)
+                         VALUES (?, ?, ?, ?)`,
+                        kanji, newValues.join(";"), newLevel, newReviewDate);
+                }
+                if (newStatus !== "added" &&
+                    !utility.setEqual(new Set(newValues),
+                                      new Set(oldValues)))
+                    newStatus = "updated";
             });
-        });
+            promises.push(promise);
+        }
+        await Promise.all(promises);
+        modules.database.run("END");
+        return newStatus;
     };
 
     /**
@@ -110,7 +105,7 @@ module.exports = function (paths, modules) {
      *     each attribute ("meanings", "on_yomi", "kun_yomi") to an integer.
      * @returns {Promise}
      */
-    kanjiModule.edit = function (kanji, values, levels) {
+    kanjiModule.edit = async function (kanji, values, levels) {
         let newStatus = "no-change";
         const attributes = ["meanings", "on_yomi", "kun_yomi"];
         const modes = {
@@ -119,6 +114,7 @@ module.exports = function (paths, modules) {
             "kun_yomi": modules.test.mode.KANJI_KUN_YOMI
         };
         const promises = [];
+        modules.database.run("BEGIN TRANSACTION");
         for (const attribute of attributes) {
             const mode = modes[attribute];
             const table = modules.test.modeToTable(mode);
@@ -129,12 +125,11 @@ module.exports = function (paths, modules) {
             let oldValues;
             let oldLevel;
             let oldReviewDate;
-            modules.database.run("BEGIN TRANSACTION");
             const promise = modules.database.query(
                 // Get old values from the database
                 `SELECT ${attribute}, level, review_date
                  FROM ${table} WHERE kanji = ?`, kanji)
-            .then((rows) => { 
+            .then(async (rows) => { 
                 if (rows.length) {
                     oldValues = rows[0][attribute].split(";");
                     oldLevel = rows[0]["level"];
@@ -142,7 +137,6 @@ module.exports = function (paths, modules) {
                 } else {
                     oldValues = [];
                 }
-            }).then(() => {
                 // Update database with new values
                 if (oldValues.length > 0 && newValues.length > 0) {
                     modules.stats.updateScore(mode, oldLevel, newLevel);
@@ -150,46 +144,43 @@ module.exports = function (paths, modules) {
                     if (oldLevel === newLevel) {
                         newReviewDate = oldReviewDate;
                     }
-                    return modules.database.run(
+                    await modules.database.run(
                         `UPDATE ${table}
                          SET ${attribute} = ?, level = ?, review_date = ?
                          WHERE kanji = ?`,
                         newValues.join(";"), newLevel, newReviewDate, kanji);
                 } else if (oldValues.length === 0 && newValues.length > 0) {
                     modules.stats.updateScore(mode, 0, newLevel);
-                    return modules.database.run(
+                    await modules.database.run(
                         `INSERT INTO ${table}
                          (kanji, ${attribute}, level, review_date)
                          VALUES (?, ?, ?, ?)`,
                         kanji, newValues.join(";"), newLevel, newReviewDate);
                 } else if (oldValues.length > 0 && newValues.length === 0) {
                     modules.stats.updateScore(mode, oldLevel, 0);
-                    return modules.database.run(
+                    await modules.database.run(
                         `DELETE FROM ${table} WHERE kanji = ?`, kanji);
                 }
-            }).then(() => {
-                if (!utility.setEqual(new Set(newValues),
-                                      new Set(oldValues)) ||
+                // Set status to "updated" if any values changed
+                if (!utility.setEqual(new Set(newValues), new Set(oldValues)) ||
                         (oldLevel !== undefined && oldLevel !== newLevel))
                     newStatus = "updated";
             });
             promises.push(promise);
         }
-        return Promise.all(promises).then(() => {
-            // If there are no new values provided, delete the kanji
-            let totalNumValues = 0;
-            for (const attribute of attributes) {
-                totalNumValues += values[attribute].length;
-            }
-            if (totalNumValues === 0) {
-                newStatus = "removed";
-                return modules.database.run(
-                    "DELETE FROM kanji WHERE kanji = ?", kanji);
-            }
-        }).then(() => {
-            modules.database.run("END");
-            return newStatus;
-        });
+        await Promise.all(promises);
+        // If there are no new values provided, delete the kanji
+        let totalNumValues = 0;
+        for (const attribute of attributes) {
+            totalNumValues += values[attribute].length;
+        }
+        if (totalNumValues === 0) {
+            newStatus = "removed";
+            await modules.database.run(
+                "DELETE FROM kanji WHERE kanji = ?", kanji);
+        }
+        modules.database.run("END");
+        return newStatus;
     };
 
     /**

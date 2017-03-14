@@ -315,6 +315,8 @@ class EditVocabPanel extends Panel {
         ).then((newStatus) => {
             // Apply changes to vocab-lists
             const oldLists = dataManager.vocabLists.getListsForWord(word);
+            const listsChanged = !utility.setEqual(new Set(oldLists),
+                                                   new Set(lists));
             for (const list of oldLists) {
                 dataManager.vocabLists.removeWordFromList(word, list);
                 events.emit("removed-from-list", word, list);
@@ -326,17 +328,11 @@ class EditVocabPanel extends Panel {
             if (newStatus === "removed") {
                 events.emit("word-deleted", originalWord);
                 main.updateStatus("The vocabulary entry has been removed.");
-            } else if (newStatus === "updated") {
+            } else if (newStatus === "updated" || originalWord !== word) {
                 events.emit("vocab-changed", word);
                 main.updateStatus("The vocabulary entry has been updated.");
-            } else if (newStatus === "no-change") {
-                if (originalWord === word) {
-                    main.updateStatus(
-                        "The vocabulary entry has not been changed.");
-                } else {
-                    main.updateStatus(
-                        "The vocabulary entry has been renamed.");
-                }
+            } else if (listsChanged) {
+                main.updateStatus("Vocabulary lists have been updated.")
             }
         });
     }

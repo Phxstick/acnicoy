@@ -53,7 +53,7 @@ class AddLangOverlay extends Overlay {
         this.$("srs-scheme").appendChild(
             utility.createDefaultOption("Select SRS scheme"));
         this.$("edit-srs-schemes").addEventListener("click", () => {
-            overlay.open("srs-schemes");
+            overlays.open("srs-schemes");
         });
         events.onAll(["srs-scheme-created", "srs-scheme-deleted"],
             () => this.loadSrsSchemes());

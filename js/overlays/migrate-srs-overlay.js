@@ -33,7 +33,7 @@ class MigrateSrsOverlay extends Overlay {
             this.migrate();
         });
         this.$("help-link").addEventListener("click", () => {
-            main.updateStatus("Not yet implemented.");
+            dialogWindow.info("Not yet implemented.");
             // TODO: Link to open help
         });
         // Display intervals for selected scheme

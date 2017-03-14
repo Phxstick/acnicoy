@@ -77,53 +77,49 @@ module.exports = function (paths, modules) {
      * @param {Integer} level
      * @returns {Promise[Array[String]}
      */
-    vocab.add = function (word, translations, readings, level) {
-        return modules.database.query(
-            "SELECT * FROM vocabulary WHERE word = ?", word)
-        .then((rows) => {
-            if (!rows.length) {
-                // Word not added. Insert new row into the the vocabulary table
-                const spacing = modules.srs.currentScheme.intervals[level];
-                modules.stats.updateScore(modules.test.mode.WORDS, 0, level);
-                return modules.database.run(`
-                    INSERT INTO vocabulary
-                    (word, date_added, level, review_date,
-                     translations, readings)
-                    VALUES (?, ?, ?, ?, ?, ?)`,
-                    word, utility.getTime(), level, utility.getTime() + spacing,
-                    translations.join(";"), readings.join(";"))
-                .then(() => [true, translations.length, readings.length]);
+    vocab.add = async function (word, translations, readings, level) {
+        const rows = await modules.database.query(
+            "SELECT * FROM vocabulary WHERE word = ?", word);
+        if (!rows.length) {
+            // Word not added. Insert new row into the the vocabulary table
+            const spacing = modules.srs.currentScheme.intervals[level];
+            modules.stats.updateScore(modules.test.mode.WORDS, 0, level);
+            await modules.database.run(`
+                INSERT INTO vocabulary
+                (word, date_added, level, review_date,
+                 translations, readings)
+                VALUES (?, ?, ?, ?, ?, ?)`,
+                word, utility.getTime(), level, utility.getTime() + spacing,
+                translations.join(";"), readings.join(";"));
+            return [true, translations.length, readings.length];
+        }
+        const oldTranslations = rows[0].translations.length === 0 ?
+            new Set() : new Set(rows[0].translations.split(";"));
+        const oldReadings = rows[0].readings.length === 0 ?
+            new Set() : new Set(rows[0].readings.split(";"));
+        const newTranslations = [...oldTranslations];
+        const newReadings = [...oldReadings];
+        for (const translation of translations) {
+            if (!oldTranslations.has(translation)) {
+                newTranslations.push(translation);
             }
-            const oldTranslations = rows[0].translations.length === 0 ?
-                new Set() : new Set(rows[0].translations.split(";"));
-            const oldReadings = rows[0].readings.length === 0 ?
-                new Set() : new Set(rows[0].readings.split(";"));
-            const newTranslations = [...oldTranslations];
-            const newReadings = [...oldReadings];
-            for (const translation of translations) {
-                if (!oldTranslations.has(translation)) {
-                    newTranslations.push(translation);
-                }
+        }
+        for (const reading of readings) {
+            if (!oldReadings.has(reading)) {
+                newReadings.push(reading);
             }
-            for (const reading of readings) {
-                if (!oldReadings.has(reading)) {
-                    newReadings.push(reading);
-                }
-            }
-            return modules.database.run(`
-                UPDATE vocabulary SET translations = ?, readings = ?
-                WHERE word = ?`,
-                newTranslations.join(";"), newReadings.join(";"), word)
-            .then(() => {
-                let numTranslationsAdded = 0;
-                let numReadingsAdded = 0;
-                for (const translation of translations)
-                    numTranslationsAdded += !oldTranslations.has(translation);
-                for (const reading of readings)
-                    numReadingsAdded += !oldReadings.has(reading);
-                return [false, numTranslationsAdded, numReadingsAdded];
-            });
-        });
+        }
+        await modules.database.run(`
+            UPDATE vocabulary SET translations = ?, readings = ?
+            WHERE word = ?`,
+            newTranslations.join(";"), newReadings.join(";"), word);
+        let numTranslationsAdded = 0;
+        let numReadingsAdded = 0;
+        for (const translation of translations)
+            numTranslationsAdded += !oldTranslations.has(translation);
+        for (const reading of readings)
+            numReadingsAdded += !oldReadings.has(reading);
+        return [false, numTranslationsAdded, numReadingsAdded];
     }
 
     /**
@@ -131,51 +127,47 @@ module.exports = function (paths, modules) {
      * and readings are replaced with new ones. If a different SRS level is
      * given, review date gets adjusted, otherwise stays the same.
      * Status information about the process is returned in form of a string
-     * which can take the values "updated" or "no-change".
+     * which can take the values "removed", "updated" or "no-change".
      * @param {String} word
      * @param {Array[String]} translations
      * @param {Array[String]} readings
      * @param {Integer} level
      * @returns {Promise[String]}
      */
-    vocab.edit = function (word, translations, readings, level) {
+    vocab.edit = async function (word, translations, readings, level) {
         // If there are no translations, completely remove the word
         if (!translations.length) {
-            return getSrsLevel(word).then((oldLvl) => {
-                modules.stats.updateScore(modules.test.mode.WORDS, oldLvl, 0);
-                return vocab.remove(word).then(() => "removed");
-            });
+            const oldLevel = await getSrsLevel(word);
+            modules.stats.updateScore(modules.test.mode.WORDS, oldLevel, 0);
+            await vocab.remove(word);
+            return "removed";
         }
-        return modules.database.query(
-            "SELECT * FROM vocabulary WHERE word = ?", word)
-        .then((rows) => {
-            // Get old values
-            const oldTranslations = rows[0].translations.length === 0 ?
-                [] : new Set(rows[0].translations.split(";"));
-            const oldReadings = rows[0].readings.length === 0 ?
-                [] : new Set(rows[0].readings.split(";"));
-            const oldLevel = rows[0].level;
-            const oldReviewDate = rows[0].review_date;
-            // Check if anything has changed
-            const updated =
-                !utility.setEqual(
-                    new Set(oldTranslations), new Set(translations)) ||
-                !utility.setEqual(
-                    new Set(oldReadings), new Set(readings)) ||
-                oldLevel !== level;
-            // Apply changes to database
-            const spacing = modules.srs.currentScheme.intervals[level];
-            const newReviewDate = oldLevel === level ? oldReviewDate :
-                utility.getTime() + spacing;
-            modules.stats.updateScore(modules.test.mode.WORDS, oldLevel, level);
-            return modules.database.run(`
-                UPDATE vocabulary
-                SET translations = ?, readings = ?, level = ?, review_date = ?
-                WHERE word = ?`,
-                translations.join(";"), readings.join(";"), level,
-                newReviewDate, word)
-            .then(() => updated ? "updated" : "no-change");
-        });
+        // Get old values
+        const rows = await modules.database.query(
+            "SELECT * FROM vocabulary WHERE word = ?", word);
+        const oldTranslations = rows[0].translations.length === 0 ?
+            [] : new Set(rows[0].translations.split(";"));
+        const oldReadings = rows[0].readings.length === 0 ?
+            [] : new Set(rows[0].readings.split(";"));
+        const oldLevel = rows[0].level;
+        const oldReviewDate = rows[0].review_date;
+        // Apply changes to database
+        const spacing = modules.srs.currentScheme.intervals[level];
+        const newReviewDate = oldLevel === level ? oldReviewDate :
+            utility.getTime() + spacing;
+        modules.stats.updateScore(modules.test.mode.WORDS, oldLevel, level);
+        await modules.database.run(`
+            UPDATE vocabulary
+            SET translations = ?, readings = ?, level = ?, review_date = ?
+            WHERE word = ?`,
+            translations.join(";"), readings.join(";"), level,
+            newReviewDate, word);
+        // Report whether anything has changed
+        const updated =
+            !utility.setEqual(new Set(oldTranslations), new Set(translations))
+            || !utility.setEqual(new Set(oldReadings), new Set(readings))
+            || oldLevel !== level;
+        return updated ? "updated" : "no-change";
     }
 
     /**

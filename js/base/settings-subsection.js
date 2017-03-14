@@ -8,6 +8,12 @@ class SettingsSubsection extends Component {
         this.languageSettingsList = [];
     }
 
+    /**
+     * Called when main window is opened.
+     */
+    initialize() {
+    }
+
     adjustToLanguage(language, secondary) {
     }
 

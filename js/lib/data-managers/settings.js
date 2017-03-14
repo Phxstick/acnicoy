@@ -13,11 +13,17 @@ module.exports = function (paths, modules) {
     settings.setDefault = function() {
         const defaultSettings = fs.readFileSync(paths.defaultSettings);
         fs.writeFileSync(paths.globalSettings, defaultSettings);
-        settings.load();
+        return require(paths.defaultSettings);
     };
 
     settings.load = function() {
-        data = require(paths.globalSettings);
+        if (fs.existsSync(paths.globalSettings)) {
+            data = require(paths.globalSettings);
+        } else {
+            data = settings.setDefault();
+        }
+        shortcuts.initialize();
+        modules.srs.loadSchemes();
     };
 
     settings.save = function() {

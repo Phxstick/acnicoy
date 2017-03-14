@@ -5,6 +5,10 @@ class LanguagesSettingsSubsection extends SettingsSubsection {
         super("languages");
         this.languageSettingsList = ["readings", "visibility"];
         this.$("languages-table").settingsSubsection = this;
+    }
+
+    initialize() {
+        this.$("languages-table").clear();
         for (const language of dataManager.languages.all) {
             const languageSettings = dataManager.languageSettings.for(language);
             this.$("languages-table").addTableRow({

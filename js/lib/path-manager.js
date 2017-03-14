@@ -13,37 +13,27 @@ module.exports = function (basePath) {
     paths.standardDataPathPrefix = path.resolve(os.homedir(), "Documents");
     paths.dataPathBaseName = dataPathBaseName;
     paths.dataPathPrefix = null;
+    paths.base = basePath;
     let dataPath = null;
     let langPath = null;
     let backupsPath = null;
     let downloadsPath = null;
     let contentPath = null;
 
-    // Try to load path for user data, return true if path could be loaded
-    paths.getDataPath = function () {
-        let prefix;
-        try {
-            prefix = fs.readFileSync(dataPathConfigFile, "utf8");
-            if (prefix[prefix.length - 1] == "\n")
-                prefix = prefix.slice(0, prefix.length - 1);
-        } catch (error) {
-            return false;
-        }
-        paths.setDataPath(prefix);
-        return true;
-    }
-    
-    // Set a path for folder to store user data in
-    paths.setDataPath = function (prefix, overwrite=false) { 
+    // Return true if location for user data is set
+    paths.existsDataPath = function () {
+        return fs.existsSync(dataPathConfigFile);
+    };
+
+    // Initialize paths for user data
+    paths.init = function() {
+        if (!paths.existsDataPath())
+            throw Error("Path for user data has not been set!");
+        let prefix = fs.readFileSync(dataPathConfigFile, "utf8");
+        if (prefix[prefix.length - 1] == "\n")
+            prefix = prefix.slice(0, prefix.length - 1);
         const previousPath = dataPath;
         const newPath = path.resolve(prefix, dataPathBaseName);
-        if (previousPath === newPath)
-            return true;
-        if (previousPath !== null && fs.existsSync(newPath) && !overwrite)
-            return false;
-        if (previousPath !== null && newPath.startsWith(previousPath))
-            return false;
-        fs.writeFileSync(dataPathConfigFile, prefix);
         paths.dataPathPrefix = prefix;
         paths.data = dataPath = newPath;
         paths.languages = langPath = path.resolve(dataPath, "Languages");
@@ -54,21 +44,24 @@ module.exports = function (basePath) {
         contentPath = path.resolve(dataPath, "Content");
         if (previousPath === null) {
             // Create folders if they do not exist yet
-            if (!fs.existsSync(dataPath)) {
-                fs.mkdirSync(dataPath);
-                fs.mkdirSync(langPath);
-                fs.mkdirSync(backupsPath);
-                fs.mkdirSync(downloadsPath);
-                fs.mkdirSync(contentPath);
-            }
+            if (!fs.existsSync(dataPath)) fs.mkdirSync(dataPath);
+            if (!fs.existsSync(langPath)) fs.mkdirSync(langPath);
+            if (!fs.existsSync(backupsPath)) fs.mkdirSync(backupsPath);
+            if (!fs.existsSync(downloadsPath)) fs.mkdirSync(downloadsPath);
+            if (!fs.existsSync(contentPath)) fs.mkdirSync(contentPath);
         } else {
             // Copy previous data to new location
-            if (fs.existsSync(newPath) && overwrite) {
-                fs.removeSync(previousPath);
+            if (fs.existsSync(newPath)) {
+                fs.removeSync(newPath);
             }
             fs.renameSync(previousPath, newPath);
         }
-        return true;
+    };
+    
+    // Set location for folder to store user data in
+    paths.setDataPath = function (prefix) { 
+        fs.writeFileSync(dataPathConfigFile, prefix);
+        paths.init();
     };
 
     // Global data
@@ -78,6 +71,7 @@ module.exports = function (basePath) {
                                          "default-settings.json");
     paths.defaultSrsSchemes = path.resolve(basePath, "data",
                                            "default-srs-schemes.json");
+    paths.componentRegister = path.resolve(basePath, "component-register.json");
     paths.img = {
         programIcon: path.resolve(basePath, "img", "icon.png")
     };

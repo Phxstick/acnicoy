@@ -15,9 +15,6 @@ app.on('window-all-closed', function() {
   }
 });
 
-// TODO: Remove when electron has chrome version 54
-app.commandLine.appendSwitch("--enable-blink-features", "CustomElementsV1");
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 app.on('ready', function() {
@@ -38,6 +35,9 @@ app.on('ready', function() {
   // Allow mainWindow to control when the app gets closed
   ipcMain.on("activate-controlled-closing", (event) => {
       forceQuit = false;
+  });
+  ipcMain.on("deactivate-controlled-closing", (event) => {
+      forceQuit = true;
   });
   ipcMain.on("close-now", (event) => {
       forceQuit = true;

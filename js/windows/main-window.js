@@ -89,6 +89,58 @@ class MainWindow extends Window {
         }
         // Auto launch functionality
         this.autoLauncher = new AutoLaunch({ name: "Acnicoy", isHidden: true });
+        // Shortcut callbacks
+        this.shortcutMap = {
+            "add-word": () => this.openPanel("add-vocab"),
+            "add-kanji": () => this.openPanel("add-kanji"),
+            "open-test-section": () => this.openTestSection(),
+            "open-dictionary": () => {
+                this.openSection("dictionary");
+                this.sections["dictionary"].$("words-filter").focus();
+            },
+            "open-kanji-search": () => {
+                this.sections["kanji"].showSearchResults();
+                this.openSection("kanji");
+                this.sections["kanji"].$("search-entry").focus();
+            },
+            "open-kanji-overview": () => {
+                this.sections["kanji"].showOverview();
+                this.openSection("kanji");
+            },
+            "open-home-section": () => this.openSection("home"),
+            "open-stats-section": () => this.openSection("stats"),
+            "open-vocab-section": () => this.openSection("vocab"),
+            "open-settings": () => this.openSection("settings"),
+            // TODO Change this as soon as help section is done
+            "open-help": () => this.updateStatus("Not yet implemented."),
+            "quit": () => ipcRenderer.send("quit"),
+            "force-quit": () => ipcRenderer.send("close-now"),
+            "close-sliding-panels": () => {
+                // Close whatever is currently on top
+                if (overlays.isAnyOpen()) {
+                    overlays.closeTopmost();
+                } else if (this.currentPanel !== null) {
+                    this.closePanel(this.currentPanel);
+                } else if (this.$("kanji-info-panel").isOpen) {
+                    this.$("kanji-info-panel").close();
+                }
+            },
+            "toggle-fullscreen": () =>
+                mainBrowserWindow.setFullScreen(
+                    !mainBrowserWindow.isFullScreen()),
+            "refresh": () => events.emit("update-srs-status")
+        };
+        this.shortcutsForLanguage = {
+            "Japanese":
+                ["add-kanji", "open-kanji-search", "open-kanji-overview",
+                 "open-dictionary"]
+        };
+        // Confirm on closing and save data before exiting the application
+        ipcRenderer.on("closing-window", () => {
+            this.attemptToQuit().then((confirmed) => {
+                if (confirmed) ipcRenderer.send("close-now");
+            });
+        });
     }
 
     registerCentralEventListeners() {
@@ -121,7 +173,7 @@ class MainWindow extends Window {
                     parseInt(dataManager.settings.general.regularBackupInterval)
                 // If a backup is due, immediately create it.
                 // Schedule following backups (check each day whether a backup
-                // is necessary by repeatedly setting timeouts)
+                // is necessary by repeatedly setting timeouts).
                 const createBackupIfDue = () => {
                     currentDate = utility.getTime();
                     if (currentDate >= lastBackupDate + interval &&
@@ -154,61 +206,16 @@ class MainWindow extends Window {
         });
     }
 
-    createSections () {
-        const promises = [];
-        for (const name of globals.sections) {
-            const section = document.createElement(name + "-section");
-            section.classList.add("section");
-            section.hide();
-            this.$("section-frame").appendChild(section);
-            this.sections[name] = section;
-            promises.push(customElements.whenDefined(name + "-section"));
-        }
-        return promises;
-    }
-
-    createPanels () {
-        const promises = [];
-        for (const name of globals.panels) {
-            const panel = document.createElement(name + "-panel");
-            panel.classList.add("sliding-pane");
-            this.$("section-frame").appendChild(panel);
-            this.panels[name] = panel;
-            promises.push(customElements.whenDefined(name + "-panel"));
-        }
-        return promises;
-    }
-
-    createSuggestionPanes () {
-        const promises = [];
-        for (const name of globals.suggestionPanes) {
-            const suggestionPane = 
-                document.createElement(name + "-suggestion-pane");
-            suggestionPane.classList.add("suggestion-pane");
-            suggestionPane.hide();
-            this.$("section-frame").appendChild(suggestionPane);
-            this.suggestionPanes[name] = suggestionPane;
-            promises.push(customElements.whenDefined(
-                name + "-suggestion-pane"));
-        }
-        return promises;
-    }
-
-    processLanguageContent(languages) {
+    async open() {
+        app.openWindow("loading", "Initializing...");
+        // Initialize all subcomponents
         const results = [];
-        for (const language of languages) {
-            if (dataManager.content.isAvailable[language]) {
-                for (const name in this.sections) {
-                    results.push(
-                        this.sections[name].processLanguageContent(language));
-                }
-            }
+        for (const name in this.sections) {
+            results.push(this.sections[name].initialize());
         }
-        return Promise.all(results);
-    }
-
-    initialize() {
-        // Adjust to global settings
+        await Promise.all(results);
+        // Set language and adjust to global settings
+        await this.setLanguage(dataManager.settings.languages.default);
         this.sections["settings"].broadcastGlobalSettings();
         // Only display home section
         this.sections["home"].show();
@@ -222,58 +229,72 @@ class MainWindow extends Window {
             this.$("kanji-info-panel").load("字");
         }
         // Regularly update displayed SRS info
-        window.setInterval(() => events.emit("update-srs-status"),
-            1000 * 60 * 5);  // Every 5 minutes
-        // Confirm close command and save data before exiting application
+        this.srsStatusCallbackId = window.setInterval(
+            () => events.emit("update-srs-status"), 1000 * 60 * 5);  // 5 min
         ipcRenderer.send("activate-controlled-closing");
-        ipcRenderer.on("closing-window", () => {
-            this.attemptToQuit().then((confirmed) => {
-                if (confirmed) ipcRenderer.send("close-now");
-            });
-        });
-        // Register shortcuts
-        shortcuts.register("add-word", () => this.openPanel("add-vocab"));
-        shortcuts.register("add-kanji", () => this.openPanel("add-kanji"));
-        shortcuts.register("open-test-section", () => this.openTestSection());
-        shortcuts.register("open-dictionary", () => {
-            this.openSection("dictionary");
-            this.sections["dictionary"].$("words-filter").focus();
-        });
-        shortcuts.register("open-kanji-search", () => {
-            this.sections["kanji"].showSearchResults();
-            this.openSection("kanji");
-            this.sections["kanji"].$("search-entry").focus();
-        });
-        shortcuts.register("open-kanji-overview", () => {
-            this.sections["kanji"].showOverview();
-            this.openSection("kanji");
-        });
-        shortcuts.register("open-home-section", () => this.openSection("home"));
-        shortcuts.register("open-stats-section",
-            () => this.openSection("stats"));
-        shortcuts.register("open-vocab-section",
-            () => this.openSection("vocab"));
-        shortcuts.register("open-settings", () => this.openSection("settings"));
-        // TODO Complete this as soon as help section is done
-        // shortcuts.register("open-help", () => ...);
-        shortcuts.register("quit", () => ipcRenderer.send("quit"));
-        shortcuts.register("force-quit", () => ipcRenderer.send("close-now"));
-        // Close whatever is currently on top
-        shortcuts.register("close-sliding-panels", () => {
-            if (overlay.isAnyOpen()) {
-                overlay.close();
-            } else if (this.currentPanel !== null) {
-                this.closePanel(this.currentPanel);
-            } else if (this.$("kanji-info-panel").isOpen) {
-                this.$("kanji-info-panel").close();
+        await utility.finishEventQueue();
+        app.closeWindow("loading");
+    }
+
+    async close() {
+        window.clearInterval(this.srsStatusCallbackId);
+        for (const shortcutName in this.shortcutMap) {
+            shortcuts.unregister(shortcutName);
+        }
+        ipcRenderer.send("deactivate-controlled-closing");
+    }
+
+    createSections () {
+        const promises = [];
+        for (const name of components.sections) {
+            const section = document.createElement(name + "-section");
+            section.classList.add("section");
+            section.hide();
+            this.$("section-frame").appendChild(section);
+            this.sections[name] = section;
+            promises.push(customElements.whenDefined(name + "-section"));
+        }
+        return promises;
+    }
+
+    createPanels () {
+        const promises = [];
+        for (const name of components.panels) {
+            const panel = document.createElement(name + "-panel");
+            panel.classList.add("sliding-pane");
+            this.$("section-frame").appendChild(panel);
+            this.panels[name] = panel;
+            promises.push(customElements.whenDefined(name + "-panel"));
+        }
+        return promises;
+    }
+
+    createSuggestionPanes () {
+        const promises = [];
+        for (const name of components.suggestionPanes) {
+            const suggestionPane = 
+                document.createElement(name + "-suggestion-pane");
+            suggestionPane.classList.add("suggestion-pane");
+            suggestionPane.hide();
+            this.$("section-frame").appendChild(suggestionPane);
+            this.suggestionPanes[name] = suggestionPane;
+            promises.push(customElements.whenDefined(
+                name + "-suggestion-pane"));
+        }
+        return promises;
+    }
+
+    processLanguageContent() {
+        const results = [];
+        for (const language of dataManager.languages.all) {
+            if (dataManager.content.isAvailable[language]) {
+                for (const name in this.sections) {
+                    results.push(
+                        this.sections[name].processLanguageContent(language));
+                }
             }
-        });
-        shortcuts.register("toggle-fullscreen", () => {
-            mainBrowserWindow.setFullScreen(!mainBrowserWindow.isFullScreen());
-        });
-        shortcuts.register("refresh", () => {
-            events.emit("update-srs-status");
-        });
+        }
+        return Promise.all(results);
     }
 
     openSection(name) {
@@ -457,47 +478,52 @@ class MainWindow extends Window {
                 this.openSection("home");
             }
         }
+        // Register shortcuts for this language
+        for (const shortcutName in this.shortcutMap) {
+            shortcuts.register(shortcutName, this.shortcutMap[shortcutName]);
+        }
+        for (const l in this.shortcutsForLanguage) {
+            if (language !== l) {
+                for (const shortcutName of this.shortcutsForLanguage[l]) {
+                    shortcuts.unregister(shortcutName);
+                }
+            }
+        }
         this.updateTestButton();
     }
 
-    setLanguage(language) {
-        if (dataManager.currentLanguage === language)
-            return Promise.resolve(false);
-        return Promise.resolve(this.currentSection === null ? 
-                true : this.sections[this.currentSection].confirmClose())
-        .then((confirmed) => {
-            if (!confirmed) return false;
-            if (this.currentSection !== null) {
-                this.sections[this.currentSection].close();
-            }
-            dataManager.setLanguage(language);
-            this.adjustToLanguage(dataManager.currentLanguage,
-                                  dataManager.currentSecondaryLanguage);
-            const promises = [];
-            for (const key in this.sections) {
-                promises.push(Promise.resolve(
-                    this.sections[key].adjustToLanguage(
-                        dataManager.currentLanguage,
-                        dataManager.currentSecondaryLanguage)));
-            }
-            for (const key in this.panels) {
-                promises.push(Promise.resolve(
-                    this.panels[key].adjustToLanguage(
-                        dataManager.currentLanguage,
-                        dataManager.currentSecondaryLanguage)));
-            }
-            this.$("language-popup").set(language);
-            return Promise.all(promises).then(() => {
-                if (this.currentSection !== null) {
-                    return this.sections[this.currentSection].open();
-                }
-            }).then(() => {
-                // Adjust to language specific settings
-                this.sections["settings"].broadcastLanguageSettings(language);
-                events.emit("language-changed", language);
-                return true;
-            });
-        });
+    async setLanguage(language) {
+        if (dataManager.currentLanguage === language) return false;
+        if (this.currentSection !== null) {
+            if (!(await this.sections[this.currentSection].confirmClose()))
+                return false;
+            this.sections[this.currentSection].close();
+        }
+        dataManager.setLanguage(language);
+        this.adjustToLanguage(dataManager.currentLanguage,
+                              dataManager.currentSecondaryLanguage);
+        const promises = [];
+        for (const key in this.sections) {
+            promises.push(Promise.resolve(
+                this.sections[key].adjustToLanguage(
+                    dataManager.currentLanguage,
+                    dataManager.currentSecondaryLanguage)));
+        }
+        for (const key in this.panels) {
+            promises.push(Promise.resolve(
+                this.panels[key].adjustToLanguage(
+                    dataManager.currentLanguage,
+                    dataManager.currentSecondaryLanguage)));
+        }
+        this.$("language-popup").set(language);
+        await Promise.all(promises);
+        if (this.currentSection !== null) {
+            await this.sections[this.currentSection].open();
+        }
+        // Adjust to language specific settings
+        this.sections["settings"].broadcastLanguageSettings(language);
+        events.emit("language-changed", language);
+        return true;
     }
 
     makeKanjiInfoLink(element, character) {
@@ -544,17 +570,15 @@ class MainWindow extends Window {
         });
     }
 
-    attemptToQuit() {
-        return Promise.resolve(
-            this.sections[this.currentSection].confirmClose())
-        .then((confirmed) => {
-            if (!confirmed) return;
-            this.sections[this.currentSection].close();
-            dataManager.save();
-            // TODO
-            // networkManager.stopAllDownloads();
-            return confirmed;
-        });
+    async attemptToQuit() {
+        const confirmed =
+            await this.sections[this.currentSection].confirmClose();
+        if (!confirmed) return false;
+        this.sections[this.currentSection].close();
+        await dataManager.save(); 
+        // TODO
+        // networkManager.stopAllDownloads();
+        return true;
     }
 }
 

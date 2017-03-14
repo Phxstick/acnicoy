@@ -4,15 +4,15 @@ const { remote, nativeImage } = require("electron");
 const { dialog } = remote;
 
 function confirm(text) {
-    return overlay.open("confirm-dialog", text);
+    return overlays.open("confirm-dialog", text);
 }
 
 function info(text, title="Info") {
-    return overlay.open("info-dialog", text, title);
+    return overlays.open("info-dialog", text, title);
 }
 
 function error(text, title="Error") {
-    return overlay.open("info-dialog", text, title);
+    return overlays.open("info-dialog", text, title);
 }
 
 function chooseDataPath(defaultPath) {

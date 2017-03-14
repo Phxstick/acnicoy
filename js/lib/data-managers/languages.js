@@ -9,7 +9,7 @@ module.exports = function (paths, modules) {
     // Find all registered languages in the data folder and return the list
     languageManager.find = function() {
         languageList = fs.readdirSync(paths.languages);
-        return languageList;
+        return languageList.slice();
     };
 
     // Get list of all registered languages

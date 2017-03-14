@@ -15,8 +15,8 @@ class KanjiSearchResultEntry extends Widget {
         this.root.innerHTML += templates.get("kanji-search-result-entry")(info);
         main.makeKanjiInfoLink(this.$("kanji"), kanji);
         this.$("kanji").addEventListener("click", () => {
-            main.kanjiInfoPanel.load(kanji);
-            main.kanjiInfoPanel.open();
+            main.$("kanji-info-panel").load(kanji);
+            main.$("kanji-info-panel").open();
         });
         this.$("added-label").addEventListener("click", () => {
             main.panels["edit-kanji"].load(kanji);
@@ -30,7 +30,7 @@ class KanjiSearchResultEntry extends Widget {
         // TODO: Create detail spans with handlebars aswell?
         const detailsBar = this.$("details-bar");
         const detailSpans =
-            main.kanjiInfoPanel.getKanjiDetailSpans(kanji, info);
+            main.$("kanji-info-panel").getKanjiDetailSpans(kanji, info);
         detailSpans.forEach((span) => detailsBar.appendChild(span));
     }
 }

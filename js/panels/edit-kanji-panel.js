@@ -262,8 +262,6 @@ class EditKanjiPanel extends Panel {
             } else if (result === "updated") {
                 main.updateStatus(`Kanji ${kanji} has been updated.`);
                 events.emit("kanji-changed", kanji);
-            } else if (result === "no-change") {
-                main.updateStatus(`Kanji ${kanji} has not been changed.`);
             }
         });
     }

@@ -1,8 +1,15 @@
 "use strict";
 
 class Window extends Component {
-    constructor(name) {
+    constructor(name, onTop=false) {
         super(name + "-window");
+        this.onTop = onTop;
+    }
+
+    open() {
+    }
+
+    close() {
     }
 }
 

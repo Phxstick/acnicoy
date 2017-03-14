@@ -5,7 +5,7 @@ class SettingsSection extends Section {
         super("settings");
         this.subsections = [];
         // Create subsections
-        for (const name of globals.settingsSubsections) {
+        for (const name of components.settingsSubsections) {
             const subsection = 
                 document.createElement(name + "-settings-subsection");
             this.subsections.push(subsection);
@@ -14,6 +14,12 @@ class SettingsSection extends Section {
             // TODO: Use subsections directly, without wrapping with divs
             this.$$(`div[slot='panels'][data-tab-name='${name}']`)[0]
                 .appendChild(subsection);
+        }
+    }
+
+    initialize() {
+        for (const subsection of this.subsections) {
+            subsection.initialize();
         }
     }
 

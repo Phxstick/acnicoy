@@ -1,28 +1,7 @@
 "use strict";
 
-const globals = {
-    modules: ["languages", "settings", "language-settings", "database",
-              "vocab-lists", "pinwall", "content", "vocab", "kanji", "srs",
-              "stats", "test", "history"],
-    windows: ["init-path", "init-lang", "init-default-lang", "loading", "main"],
-    overlays: ["add-lang", "info-dialog", "confirm-dialog", "srs-schemes",
-               "migrate-srs", "choose-shortcut"],
-    sections: ["home", "stats", "vocab", "settings",
-               "test", "dictionary", "kanji"],
-    settingsSubsections:["general", "languages", "test", "design", "shortcuts"],
-    panels: ["add-kanji", "edit-kanji", "add-vocab", "edit-vocab"],
-    suggestionPanes: ["add-vocab"],
-    widgets: ["popup-stack", "switch-button", "switch-bar", "popup-list",
-              "svg-bar-diagram", "kanji-info-panel", "srs-status-bar",
-              "kanji-search-result-entry", "dictionary-search-result-entry",
-              "pinwall-notes", "srs-status-table", "language-table",
-              "language-popup", "check-box", "example-word-entry",
-              "tabbed-frame", "srs-review-schedule"],
-    extensions: ["converter", "array-extensions", "html-element-extensions",
-                 "event-emitter-extensions", "string-extensions"]
-};
-
 const startTime = performance.now();
+
 // Load node modules
 const { clipboard, remote } = require("electron");
 const EventEmitter = require("events");
@@ -31,12 +10,13 @@ const Velocity = require("velocity-animate");
 // Load modules
 const basePath = remote.app.getAppPath();
 const paths = require(basePath + "/js/lib/path-manager.js")(basePath);
+const components = require(paths.componentRegister);
 const dataManager = require(paths.js.lib("data-manager"))(paths);
 const utility = require(paths.js.lib("utility"));
 const dialogWindow = require(paths.js.lib("dialog-window"));
 const layers = require(paths.js.lib("layer-manager"));
 const shortcuts = require(paths.js.lib("shortcut-manager"));
-const overlay = require(paths.js.lib("overlay-manager"));
+const overlays = require(paths.js.lib("overlay-manager"));
 const templates = require(paths.js.lib("template-manager"));
 const popupMenu = require(paths.js.lib("popup-menu"));
 const networkManager = require(paths.js.lib("network-manager"));
@@ -53,151 +33,155 @@ const SettingsSubsection = require(paths.js.base("settings-subsection"));
 
 const OverlayWindow = require(paths.js.widget("overlay-window"));
 
-// Load everything else defined in globals object
-for (const name of globals.windows) require(paths.js.window(name));
-for (const name of globals.overlays) require(paths.js.overlay(name));
-for (const name of globals.sections) require(paths.js.section(name));
-for (const name of globals.settingsSubsections)
+// Load all registered components
+for (const name of components.windows) require(paths.js.window(name));
+for (const name of components.overlays) require(paths.js.overlay(name));
+for (const name of components.sections) require(paths.js.section(name));
+for (const name of components.settingsSubsections)
     require(paths.js.settingsSubsection(name));
-for (const name of globals.panels) require(paths.js.panel(name));
-for (const name of globals.suggestionPanes)
+for (const name of components.panels) require(paths.js.panel(name));
+for (const name of components.suggestionPanes)
     require(paths.js.suggestionPane(name));
-for (const name of globals.widgets) require(paths.js.widget(name));
-for (const name of globals.extensions) require(paths.js.extension(name));
+for (const name of components.widgets) require(paths.js.widget(name));
+for (const name of components.extensions) require(paths.js.extension(name));
 
 const totalTime = performance.now() - startTime;
 console.log("Loaded all required modules after %f ms", totalTime);
 
-function loadGlobalSettings() {
-    if (paths.getDataPath() && !dataManager.settings.isLoaded()) {
-        if (utility.existsFile(paths.globalSettings)) {
-            dataManager.settings.load();
-        } else {
-            dataManager.settings.setDefault();
-        }
-        shortcuts.initialize();
-        dataManager.srs.loadSchemes();
-    }
-}
 
-{
-    window.events = new EventEmitter();  // Communication between components
-    const windows = {};
-    let languages;
-    let defaultLanguage;
-    let currentWindow;
+class Application {
+    constructor() {
+        this.windows = {};
+        this.currentWindow = null;
+    }
 
-    function openWindow(name, closePrevious=true) {
-        if (currentWindow === name) return;
-        if (closePrevious && currentWindow !== undefined) {
-            closeWindow(currentWindow);
+    async openWindow(name, ...args) {
+        this.windows[name].open(...args);
+        if (this.currentWindow === name) return;
+        if (this.currentWindow !== null && !this.windows[name].onTop) {
+            this.closeWindow(this.currentWindow);
         }
-        windows[name].show();
-        currentWindow = name;
+        if (!this.windows[name].onTop) {
+            this.currentWindow = name;
+        }
+        this.windows[name].show();
+        return new Promise((resolve) => {
+            this.windows[name].resolve = resolve;
+        });
     }
-    
-    function closeWindow(name) {
-        windows[name].hide();
-        currentWindow = undefined;
+
+    async closeWindow(name) {
+        this.windows[name].hide();
+        if (!this.windows[name].onTop)
+            this.currentWindow = null;
+        return this.windows[name].close();
     }
-    
-    new Promise((resolve) => {
-        window.onload = resolve;
-    }).then(() => {
-        // If settings already exist, load them before creating any UI elements
-        loadGlobalSettings();
-        // Create all windows
+
+    async createWindows() {
         const windowsLoaded = [];
-        for (const name of globals.windows) {
+        for (const name of components.windows) {
             const windowName = name + "-window";
             windowsLoaded.push(customElements.whenDefined(windowName));
-            windows[name] = document.createElement(windowName);
-            windows[name].classList.add("window");
-            document.body.appendChild(windows[name]);
+            this.windows[name] = document.createElement(windowName);
+            this.windows[name].classList.add("window");
+            document.body.appendChild(this.windows[name]);
         }
-        window.main = windows["main"];
-        overlay.create(); // Create overlay windows
-        return Promise.all(windowsLoaded)
-        .then(utility.finishEventQueue);
-    }).then(() => {
-        // Load data path. If it doesn't exist, let user choose it
-        if (!paths.getDataPath()) {
-            openWindow("init-path");
-            return windows["init-path"].getNewDataPath()
-                .then((newPath) => {
-                    paths.setDataPath(newPath);
-                    loadGlobalSettings();
-                });
-        }
-    }).then(() => {
-        // Find registered languages. If none exist, let user register new ones
-        languages = dataManager.languages.find();
+        overlays.create();
+        await Promise.all(windowsLoaded);
+        await utility.finishEventQueue();
+    }
+
+    async initLanguages() {
+        const languages = dataManager.languages.find();
         if (languages.length === 0) {
-            openWindow("init-lang");
-            return windows["init-lang"].getLanguageConfigs().then((configs) => {
-                openWindow("loading");
-                windows["loading"].setStatus("Creating language files...");
-                const promises = [];
-                for (const { language, settings } of configs) {
-                    const p = dataManager.languages.add(language, settings);
-                    promises.push(p);
-                    languages.push(language);
-                }
-                return Promise.all(promises);
-            });
-        }
-    }).then(() => {
-        defaultLanguage = dataManager.settings["languages"]["default"];
-        // If no default language has been set or if it's not available...
-        if (!defaultLanguage || !languages.includes(defaultLanguage)) {
-            // ... if there's only one language, use it as default language
-            if (languages.length === 1) {
-                defaultLanguage = languages[0];
-            // ... otherwise, let user choose the default language
-            } else {
-                openWindow("init-default-lang");
-                return windows["init-default-lang"].getDefaultLang(languages)
-                .then((language) => {
-                    defaultLanguage = language;
-                });
+            this.closeWindow("loading");
+            const configs = await this.openWindow("init-lang");
+            this.openWindow("loading", "Creating language files...");
+            const promises = [];
+            for (const { language, settings } of configs) {
+                const promise = dataManager.languages.add(language, settings);
+                promises.push(promise);
+                languages.push(language);
             }
+            await Promise.all(promises);
         }
-    }).then(() => {
-        dataManager.settings["languages"]["default"] = defaultLanguage;
-        dataManager.settings.save();
-    }).then(() => {
-        windows["loading"].setStatus("Loading language data...");
-        openWindow("loading");
         // Load all language data
-        const start = performance.now();
+        this.openWindow("loading", "Loading language data...");
+        let start = performance.now();
         const promises = [];
-        for (const language of languages) {
+        for (const language of dataManager.languages.all) {
             promises.push(dataManager.load(language));
         }
-        return Promise.all(promises).then(() => {
-            const total = performance.now() - startTime;
-            console.log("Loaded all language data after %f ms", total);
-        });
-    }).then(() => {
+        await Promise.all(promises);
+        let total = performance.now() - start;
+        console.log("Loaded all language data after %f ms", total);
+        // Process language content
+        start = performance.now();
+        this.openWindow("loading", "Processing language content...");
+        await main.processLanguageContent();
+        total = performance.now() - start;
+        this.closeWindow("loading");
+        console.log("Loaded all language content after %f ms", total);
+    }
+
+    async initDefaultLang() {
+        const languages = dataManager.languages.all;
+        let defaultLanguage = dataManager.settings["languages"]["default"];
+        if (!defaultLanguage || !languages.includes(defaultLanguage)) {
+            if (languages.length === 1) {
+                defaultLanguage = languages[0];
+            } else {
+                this.closeWindow("loading");
+                const newDefaultLang =
+                    await this.openWindow("init-default-lang", languages);
+                defaultLanguage = newDefaultLang;
+            }
+            dataManager.settings["languages"]["default"] = defaultLanguage;
+            await dataManager.settings.save();
+        }
+    }
+
+    async initialize() {
+        await new Promise((resolve) => { window.onload = resolve; });
+
+        // Immediately load/create settings if data path is already set
+        if (paths.existsDataPath()) {
+            paths.init();
+            dataManager.settings.load();
+        }
+
+        // Create interface (using design settings if already loaded above)
+        await this.createWindows();
+        window.main = this.windows["main"];
+
+        // If user data location is not set, let user choose it
+        if (!paths.existsDataPath()) {
+            const newPath = await this.openWindow("init-path");
+            paths.setDataPath(newPath);
+            dataManager.settings.load();
+        }
+
         // Create sections, panels and suggestion panes in main-window
-        windows["loading"].setStatus("Creating interface...");
-        return Promise.all([
+        this.openWindow("loading", "Creating inferface...");
+        await utility.finishEventQueue();
+        await Promise.all([
             main.createSections(),
             main.createPanels(),
             main.createSuggestionPanes()
         ]);
-    }).then(() => {
-        // Display main window but don't hide loading window yet
-        openWindow("main", false);
-        // Set language and initialize stuff in main-window
-        return main.setLanguage(defaultLanguage).then(() => {
-            main.initialize();
-            windows["loading"].setStatus("Processing language content...");
-            return main.processLanguageContent(languages);
-        });
-    }).then(() => {
-        return utility.finishEventQueue();
-    }).then(() => {
-        closeWindow("loading");
-    });
+
+        // Load registered languages. If none exist, let user register new ones
+        await this.initLanguages();
+
+        // Let user choose a default language if there's more than one and
+        // default is not set yet or the current default one is not available
+        await this.initDefaultLang();
+
+        // Initialize stuff in main-window
+        this.openWindow("main");
+    }
 }
+
+window.events = new EventEmitter();  // Communication between components
+window.app = new Application();
+app.initialize();

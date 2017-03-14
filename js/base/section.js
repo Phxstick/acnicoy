@@ -6,6 +6,12 @@ class Section extends Component {
     }
 
     /**
+     * Called when main window is opened.
+     */
+    initialize() {
+    }
+
+    /**
     **  Called before the section is being opened.
     **/
     open() {

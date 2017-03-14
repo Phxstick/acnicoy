@@ -2,12 +2,15 @@
 
 class LoadingWindow extends Window {
     constructor() {
-        super("loading");
-        this.statusMessage = this.root.getElementById("status-message");
+        super("loading", true);
+    }
+
+    open(text) {
+        this.setStatus(text);
     }
     
     setStatus(text) {
-        this.statusMessage.textContent = text;
+        this.$("status-message").textContent = text;
     }
 }
 

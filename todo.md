@@ -1,7 +1,10 @@
 ### Up next
-- Update Electron to 1.6.1
-- Rewrite index.js chain, main window, datamanager methods with async/await
-- Remove custom-elements-flag in main.js (as soon as electron has chrome v54)
+- Make status update message fade out after a short while if not updated
+- Implement dynamic adding of tabs in tabbed-frame using slotchange-event
+- Implement chronological ordering of vocabulary
+- Include "usually written with kana only" functionality into suggestion pane
+- Implement test-complete-overlay
+- Make sure entry content in dictionaries is always selected on focus!
 - Add cursor design functionality
 - Fix: Focusing inputs in srs-schemes-overlay does not work anymore!
 - Make kana input not only react to shift, but also caps-lock and caps letters
@@ -12,13 +15,13 @@
 - Implement program updating
   - Add update button to settings
   - Make sure user data is saved before an update
-- Finish removing languages and refactor init-chain and windows for that
 - Choose better standard font for languages with cyrillic characters
 - Allow using Ctrl+Enter for saving notes and submitting new vocab/kanji
+- Test on new data instance whether deleting kanji also deletes kanji data
+  (are constraints really applied to database now?)
 
 ### As soon as available
 - Use thin symbols for fa-times, fa-plus etc. where fitting
-- Implement dynamic adding of tabs in tabbed-frame using slotchange-event
 
 ### Fixes
 - SRS level editing is not fully stable (Maybe remove ability to edit levels?)
@@ -32,8 +35,6 @@
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
 - Order of context menu items is not preserved
 - What happens when animating overflowing solutions in test section?
-- Update messages after editing kanji/words are still not correct...
-- Display correct info texts and take correct actions when setting data path
 
 
 By category
@@ -44,7 +45,6 @@ By category
 - Create a custom menu bar?
 - Remove flickering when quickly dragging vocab item over list contents column
   - Not a bug in Acnicoy - Events are just fired incorrectly
-- Expose shortcut for reloading program?
 - Implement suggestion windows for other panels
   - Remove `globals.suggestionPanes` and use `globals.panels` instead
 - Store user data path somewhere else (e.g. localStorage/`app.getPath(name)`)
@@ -60,21 +60,19 @@ By category
 - Also make files for improved on/kun-yomi (or rather put in same file?)
 - Create stylable `<select>` alternative
 - Make dark deflt, Solarized (Light/Dark) and Ubuntu (Light/Dark) color schemes
+- Implement global stats somewhere
+- Add "all languages" option to SRS review schedule
 
 ### Code
 ##### Naming
 - Rename panels into "panes" or "sliding-panes"?
-- Probably rename "window" to "screen"
-- Rename "overlay" global into "overlays"
 - Call "popupMenu" "contextMenu" instead
 - Use folder "widgets" only for base widgets, put everything else directly into
   a folder called "gui-components"
   - Adjust pathManager and index.js
-- Remove inconsistencies in code, e.g. unify glossary ("word" <-> "entry")
-  - Especially in dataManager
+- Rename "Windows" to "Screens"?
 
 ##### Refactoring
-- "paths.getDataPath" and "paths.setDataPath" are very confusing
 - Move stuff in settings subsections into a settings manager?
 - Have htmlManager and cssManager which make sure all assets are only loaded
 once? --> Faster loading, centralized resource loading
@@ -95,6 +93,7 @@ once? --> Faster loading, centralized resource loading
   3. Functions operating on current language
   4. Functions depending on any other language (using `dataMap`)
 - svg-bar-diagram: Pass in length-parameters as options to draw-function
+- Make "events" and "main" globals attributes of "app" global
 
 ##### Adaptions
 - Use `position: sticky` for kanji info panel in kanji section?
@@ -113,10 +112,10 @@ once? --> Faster loading, centralized resource loading
   Replace with `calc(100% - x)` or `width: fill`?
 
 ### Init window
-- Make init section feel more welcoming and less plain
-  - Consider including a welcome message
-  - Consider putting program name above panes
-  - Consider using a subtle pattern as background picture
+- Make init section feel more welcoming and less plain. Consider:
+  - including a welcome message
+  - putting program name above panes
+  - using a subtle pattern as background picture
 
 ### Main window
 - Remember where focus was when opening panel, restore after closing panel again
@@ -271,6 +270,7 @@ once? --> Faster loading, centralized resource loading
 
 ### About
 - Use overlay and include (hardcoded is fine I guess):
+  - Program version
   - Tribute to base technologies (Electron and node.js)
   - Name of author
   - List of all used language recources as links
@@ -312,6 +312,7 @@ List of achievements
 
 Future
 --------------------------------------------------------------------------------
+- Seperate whole framework into an own NPM package
 - Allow converting parts of vocabulary into html/pdf/markdown file
   - Use electrons builtin for pdf (And a fitting media stylesheet?)
 - Correctly assign furigana

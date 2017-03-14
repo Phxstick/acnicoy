@@ -1,0 +1,37 @@
+{
+    "modules": [
+        "languages", "settings", "language-settings", "database", "vocab-lists",
+        "pinwall", "content", "vocab", "kanji", "srs", "stats", "test",
+        "history"
+    ],
+    "windows": [
+        "init-path", "init-lang", "init-default-lang", "loading", "main"
+    ],
+    "overlays": [
+        "add-lang", "info-dialog", "confirm-dialog", "srs-schemes",
+        "migrate-srs", "choose-shortcut"
+    ],
+    "sections": [
+        "home", "stats", "vocab", "settings", "test", "dictionary", "kanji"
+    ],
+    "settingsSubsections": [
+        "general", "languages", "test", "design", "shortcuts"
+    ],
+    "panels": [
+        "add-kanji", "edit-kanji", "add-vocab", "edit-vocab"
+    ],
+    "suggestionPanes": [
+        "add-vocab"
+    ],
+    "widgets": [
+        "popup-stack", "switch-button", "switch-bar", "popup-list",
+        "svg-bar-diagram", "kanji-info-panel", "srs-status-bar",
+        "kanji-search-result-entry", "dictionary-search-result-entry",
+        "pinwall-notes", "srs-status-table", "language-table", "language-popup",
+        "check-box", "example-word-entry", "tabbed-frame", "srs-review-schedule"
+    ],
+    "extensions": [
+        "converter", "array-extensions", "html-element-extensions",
+        "event-emitter-extensions", "string-extensions"
+    ]
+}

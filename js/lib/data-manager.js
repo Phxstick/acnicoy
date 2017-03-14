@@ -7,7 +7,7 @@ module.exports = function (paths) {
     const modules = { };
 
     // Load all modules
-    for (const name of globals.modules) {
+    for (const name of components.modules) {
         modules[name] = require(paths.js.dataModule(name))(paths, modules);
     }
 
@@ -93,6 +93,7 @@ module.exports = function (paths) {
      */
     modules.getLastBackupTime = function () {
         const backups = fs.readdirSync(paths.backups);
+        if (backups.length === 0) return 0;
         let lastBackupIndex = 0;
         let lastBackupId = 0;
         for (let i = 0; i < backups.length; ++i) {

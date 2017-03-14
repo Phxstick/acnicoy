@@ -141,16 +141,18 @@ class VocabSection extends Section {
             if (this.selectedList === list) {
                 utility.removeEntryFromSortedList(this.$("list-contents"), word);
             }
-            const amountLabel = this.listNameToAmountLabel.get(list);
-            amountLabel.textContent = parseInt(amountLabel.textContent) - 1;
+            // TODO
+            // const amountLabel = this.listNameToAmountLabel.get(list);
+            // amountLabel.textContent = parseInt(amountLabel.textContent) - 1;
         });
         events.on("added-to-list", (word, list) => {
             if (this.selectedList === list) {
                 utility.insertNodeIntoSortedList(
                     this.$("list-contents"), this.createListContentsItem(word));
             }
-            const amountLabel = this.listNameToAmountLabel.get(list);
-            amountLabel.textContent = parseInt(amountLabel.textContent) + 1;
+            // TODO
+            // const amountLabel = this.listNameToAmountLabel.get(list);
+            // amountLabel.textContent = parseInt(amountLabel.textContent) + 1;
         });
         // If a vocab item has been deleted, delete it from all lists
         events.on("word-deleted", (word) => {
@@ -298,6 +300,7 @@ class VocabSection extends Section {
             node.addEventListener("click", node.selectListCallback);
             const oldName = this.oldListName;
             const newName = node.textContent.trim();
+            node.dataset.listName = newName;
             // Case that an existing vocabulary list was renamed
             if (oldName.length > 0 && newName.length > 0) {
                 if (newName === oldName) return;
@@ -370,13 +373,15 @@ class VocabSection extends Section {
             node.classList.remove("dragover");
         });
         // Display small label with amount of items in this vocabulary list
-        const amountLabel = document.createElement("div");
-        amountLabel.classList.add("amount-words");
-        amountLabel.textContent =
-            dataManager.vocabLists.getWordsForList(name).length;
-        this.listNameToAmountLabel.set(name, amountLabel);
-        // TODO: Finish amount-label functionality
-        // node.appendChild(amountLabel);
+        if (name.length !== 0) {
+            const amountLabel = document.createElement("div");
+            amountLabel.classList.add("amount-words");
+            amountLabel.textContent =
+                dataManager.vocabLists.getWordsForList(name).length;
+            this.listNameToAmountLabel.set(name, amountLabel);
+            // TODO: Finish amount-label functionality
+            // node.appendChild(amountLabel);
+        }
         node.popupMenu(menuItems,
                 ["test-on-list", "rename-list", "delete-list"],
                 { section: this });

@@ -1,5 +1,8 @@
 "use strict";
 
+const fs = require("fs");
+const path = require("path");
+
 class GeneralSettingsSubsection extends SettingsSubsection {
     constructor() {
         super("general");
@@ -58,24 +61,34 @@ class GeneralSettingsSubsection extends SettingsSubsection {
             this.$("regular-backup-intervals").toggleDisplay(
                 dataManager.settings.general.doRegularBackup);
         });
+        events.on("settings-general-auto-launch-on-startup", () => {
+            this.$("auto-launch-on-startup").checked = 
+                dataManager.settings.general.autoLaunchOnStartup;
+        });
     }
 
-    chooseDataPath() {
-        const previousPath = this.$("data-path").textContent;
-        const newPath = dialogWindow.chooseDataPath(previousPath);
-        if (previousPath === newPath) return;
-        if (!paths.setDataPath(newPath)) {
-            dialogWindow.confirm(`The specified location '${newPath}' ` +
-                `already contains a file named '${paths.dataPathBaseName}'. ` +
-                `Are you sure you want to overwrite that file?`)
-            .then((confirmed) => {
-                if (!confirmed) return;
-                paths.setDataPath(newPath, true);
-                this.$("data-path").textContent = newPath;
-            });
-        } else {
-            this.$("data-path").textContent = newPath;
+    async chooseDataPath() {
+        const previousPrefix = this.$("data-path").textContent;
+        const newPrefix = dialogWindow.chooseDataPath(previousPrefix);
+        const previousPath = path.resolve(
+            previousPrefix, paths.dataPathBaseName);
+        const newPath = path.resolve(newPrefix, paths.dataPathBaseName);
+        if (previousPath === newPath)
+            return;
+        if (newPath.startsWith(previousPath)) {
+            dialogWindow.info(
+                `The new location must not be a subfolder of the previous one.`)
+            return;
         }
+        if (fs.existsSync(newPath)) {
+            const confirmed = await dialogWindow.confirm(
+                `The specified location '${newPrefix}' already contains a ` +
+                `file named '${paths.dataPathBaseName}'. ` +
+                `Are you sure you want to overwrite that file?`);
+            if (!confirmed) return;
+        }
+        paths.setDataPath(newPrefix);
+        this.$("data-path").textContent = newPrefix;
     }
 }
 

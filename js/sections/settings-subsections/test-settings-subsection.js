@@ -31,7 +31,7 @@ class TestSettingsSubsection extends SettingsSubsection {
             this.broadcastGlobalSetting("enable-ignore-shortcut");
         });
         this.$("ignore-shortcut").addEventListener("click", () => {
-            overlay.open("choose-shortcut").then((newShortcut) => {
+            overlays.open("choose-shortcut").then((newShortcut) => {
                 if (newShortcut === null) return;
                 shortcuts.setBindingFor("ignore-answer", newShortcut);
                 events.emit("settings-shortcuts-ignore-answer");

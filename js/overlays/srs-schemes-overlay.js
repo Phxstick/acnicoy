@@ -15,19 +15,15 @@ class SrsSchemesOverlay extends Overlay {
         this.$("add-level-button").hide();
         this.hideSchemeDetails();
         // Add all event listeners
-        this.$("done-button").addEventListener("click", () => {
+        this.$("done-button").addEventListener("click", async () => {
             if (this.editModeActive) {
-                dialogWindow.confirm(
+                const confirmed = dialogWindow.confirm(
                     `The current scheme has unsaved changes.
                      Do you want to save those changes?`)
-                .then((confirmed) => {
-                    if (confirmed === null) return;
-                    if (confirmed && !this.saveChanges()) return;
-                    this.resolve();
-                });
-            } else {
-                this.resolve();
+                if (confirmed === null) return;
+                if (confirmed && !(await this.saveChanges())) return;
             }
+            this.resolve();
         });
         this.$("add-scheme-button").addEventListener("click", () => {
             if (this.selectedSchemeItem !== null) {
@@ -44,8 +40,8 @@ class SrsSchemesOverlay extends Overlay {
         this.$("edit-scheme-button").addEventListener("click", () => {
             this.openEditMode();
         });
-        this.$("save-scheme-button").addEventListener("click", () => {
-            if (this.saveChanges()) {
+        this.$("save-scheme-button").addEventListener("click", async () => {
+            if (await this.saveChanges()) {
                 this.exitEditMode();
             }
         });
@@ -63,33 +59,25 @@ class SrsSchemesOverlay extends Overlay {
             this.openEditMode();
             this.$("scheme-name-input").focus();
         });
-        this.$("remove-scheme-button").addEventListener("click", () => {
-            // TODO: Rewrite this with async/await
+        this.$("remove-scheme-button").addEventListener("click", async () => {
             const schemeName = this.selectedScheme.name;
-            dialogWindow.confirm(
+            const confirmed = await dialogWindow.confirm(
                 `Are you sure you want to delete the SRS scheme` +
-                ` '${schemeName}'?`)
-            .then((confirmed) => {
-                if (!confirmed) return;
-                const languagesUsingScheme =
-                    dataManager.srs.getLanguagesUsingScheme(schemeName);
-                const removeScheme = () => {
-                    this.$("schemes-list").removeChild(this.selectedSchemeItem);
-                    dataManager.srs.schemes.remove(this.selectedScheme);
-                    dataManager.srs.saveSchemes();
-                    events.emit("srs-scheme-deleted", schemeName);
-                    this.hideSchemeDetails();
-                };
-                // If scheme is in use, let user choose new scheme + migrate
-                if (languagesUsingScheme.length > 0) {
-                    overlay.open("migrate-srs", "delete-scheme", { schemeName })
-                    .then((migrated) => {
-                        if (migrated) removeScheme();
-                    });
-                } else {
-                    removeScheme();
-                }
-            });
+                ` '${schemeName}'?`);
+            if (!confirmed) return;
+            const languagesUsingScheme =
+                dataManager.srs.getLanguagesUsingScheme(schemeName);
+            // If scheme is in use, let user choose new scheme + migrate
+            if (languagesUsingScheme.length > 0) {
+                const migrated = await overlays.open(
+                    "migrate-srs", "delete-scheme", { schemeName });
+                if (!migrated) return;
+            }
+            this.$("schemes-list").removeChild(this.selectedSchemeItem);
+            dataManager.srs.schemes.remove(this.selectedScheme);
+            dataManager.srs.saveSchemes();
+            events.emit("srs-scheme-deleted", schemeName);
+            this.hideSchemeDetails();
         });
         // Remove SRS level if cross next to it was clicked
         this.$("scheme-levels").addEventListener("click", (event) => {
@@ -114,32 +102,23 @@ class SrsSchemesOverlay extends Overlay {
             this.$("scheme-levels").lastElementChild.children[2].focus();
         });
         // Show scheme details when scheme has been selected
-        this.$("schemes-list").addEventListener("click", (event) => {
+        this.$("schemes-list").addEventListener("click", async (event) => {
             if (event.target.parentNode !== this.$("schemes-list")) return;
             const item = event.target;
             if (this.selectedSchemeItem === item) return;
             if (this.editModeActive) {
-                dialogWindow.confirm(
+                const confirmed = await dialogWindow.confirm(
                     `The current scheme has unsaved changes.
-                    Do you want to save those changes?`)
-                .then((confirmed) => {
-                    if (confirmed === null) return;
-                    if (confirmed && !this.saveChanges()) return;
-                    this.exitEditMode();
-                    if (this.selectedSchemeItem !== null)
-                        this.selectedSchemeItem.classList.remove("selected");
-                    this.selectedSchemeItem = item;
-                    this.selectedSchemeItem.classList.add("selected");
-                    this.showSchemeDetails(this.schemeItemToOptions.get(item));
-                });
-            } else {
-                if (this.selectedSchemeItem !== null) {
-                    this.selectedSchemeItem.classList.remove("selected");
-                }
-                this.selectedSchemeItem = item;
-                this.selectedSchemeItem.classList.add("selected");
-                this.showSchemeDetails(this.schemeItemToOptions.get(item));
+                     Do you want to save those changes?`);
+                if (confirmed === null) return;
+                if (confirmed && !(await this.saveChanges())) return;
+                this.exitEditMode();
             }
+            if (this.selectedSchemeItem !== null)
+                this.selectedSchemeItem.classList.remove("selected");
+            this.selectedSchemeItem = item;
+            this.selectedSchemeItem.classList.add("selected");
+            this.showSchemeDetails(this.schemeItemToOptions.get(item));
         });
         // Show validity of entered timespans and sort level items upon typing
         this.$("scheme-levels").addEventListener("keydown", (event) => {
@@ -315,9 +294,9 @@ class SrsSchemesOverlay extends Overlay {
     /**
     * If all entered values in edit mode are valid, save changes and return
     * true. Otherwise return false.
-    * @returns {bool} Whether values in the input entries are valid.
+    * @returns {Promise[bool]} Whether values in the input entries are valid.
     */
-    saveChanges() {
+    async saveChanges() {
         if (!this.editModeActive) {
             throw new Error("Changes can only be saved in edit mode.");
         }
@@ -350,21 +329,14 @@ class SrsSchemesOverlay extends Overlay {
             oldName = newName;
             events.emit("srs-scheme-created", newName);
         } else {
-            // TODO: Rewrite this with async/await
-            // If scheme is being used by languages, migrate SRS items first
-            dataManager.srs.getNonEmptyLanguagesUsingScheme(oldName).then(
-            (languagesUsingScheme) => {
-                // If scheme is in use, let user migrate SRS items
-                if (languagesUsingScheme.length > 0) {
-                    overlay.open("migrate-srs", "edit-scheme",
-                        { schemeName: oldName })
-                    .then((migrated) => {
-                        if (migrated) {
-                            // TODO: Continue
-                        }
-                    });
-                }
-            });
+            // If scheme is in use, let user migrate SRS items first
+            const languagesUsingScheme =
+                await dataManager.srs.getNonEmptyLanguagesUsingScheme(oldName);
+            if (languagesUsingScheme.length > 0) {
+                const migrated = await overlays.open(
+                    "migrate-srs", "edit-scheme", { schemeName: oldName });
+                if (!migrated) return false;
+            }
         }
         // Save changed name
         this.$("scheme-name").textContent = newName;

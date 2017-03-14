@@ -15,7 +15,7 @@ class ShortcutsSettingsSubsection extends SettingsSubsection {
         const shortcutLabels = this.$$("#shortcuts-list .keyboard-shortcut");
         for (const label of shortcutLabels) {
             label.addEventListener("click", () => {
-                overlay.open("choose-shortcut").then((newShortcut) => {
+                overlays.open("choose-shortcut").then((newShortcut) => {
                     if (newShortcut === null) return;
                     shortcuts.setBindingFor(label.id, newShortcut);
                     this.broadcastGlobalSetting(label.id);
@@ -30,6 +30,21 @@ class ShortcutsSettingsSubsection extends SettingsSubsection {
             events.on(`settings-shortcuts-${label.id}`, () => {
                 label.textContent = shortcuts.getBindingFor(label.id);
             });
+        }
+    }
+
+    adjustToLanguage(language, secondary) {
+        const shortcutLabels = this.$$("#shortcuts-list .keyboard-shortcut");
+        const shortcutsToHide = new Set();
+        if (language !== "Japanese") {
+            const shortcutNames = [
+                "add-kanji", "open-kanji-search", "open-kanji-overview",
+                "open-dictionary"
+            ];
+            for (const name of shortcutNames) shortcutsToHide.add(name);
+        }
+        for (const label of shortcutLabels) {
+            label.parentNode.toggleDisplay(!shortcutsToHide.has(label.id));
         }
     }
 }

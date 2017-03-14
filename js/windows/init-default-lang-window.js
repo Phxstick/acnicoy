@@ -3,7 +3,6 @@
 class InitDefaultLangWindow extends Window {
     constructor() {
         super("init-default-lang");
-        this.resolve = () => { };
         this.$("continue-button").addEventListener("click", () => {
             const language = this.$("default-language").value;
             if (!language) {
@@ -14,18 +13,16 @@ class InitDefaultLangWindow extends Window {
         });
     }
 
-    getDefaultLang(languages) {
+    open(languages) {
         this.$("default-language").empty();
         this.$("default-language").appendChild(
                 utility.createDefaultOption("Choose default language"));
         for (const language of languages) {
             const option = document.createElement("option");
             option.textContent = language;
+            option.value = language;
             this.$("default-language").appendChild(option);
         }
-        return new Promise((resolve) => {
-            this.resolve = resolve;
-        });
     }
 }
 

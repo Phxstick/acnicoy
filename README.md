@@ -37,12 +37,12 @@ stable, so there's no release yet. You can build it from source instead, as
 described below.
 
 ### Building from source
-Acnicoy requires [Node.js] v5+ to run and uses the [npm package manager][npm].
+Acnicoy requires [Node.js] v7.7+ to run and uses the [npm package manager][npm].
 To get started, run:
 ```sh
 $ git clone https://github.com/phxstick/acnicoy
-$ make install
-$ make build
+$ npm install
+$ gulp
 ```
 You can then run the program using `make start`.
 

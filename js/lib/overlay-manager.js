@@ -7,7 +7,7 @@ function create() {
     overlayWindow = document.createElement("overlay-window");
     overlayWindow.id = "overlay";
     document.body.appendChild(overlayWindow);
-    for (const name of globals.overlays) {
+    for (const name of components.overlays) {
         contents[name] = document.createElement(name + "-overlay");
         // (Workaround) Force chromium to apply css to hidden element
         contents[name].style.display = "none";
@@ -25,8 +25,8 @@ function open(name, ...args) {
     return overlayWindow.open(contents[name], args);
 }
 
-function close() {
-    return overlayWindow.close();
+function closeTopmost() {
+    return overlayWindow.closeTopmost();
 }
 
 function isAnyOpen() {
@@ -36,5 +36,5 @@ function isAnyOpen() {
 module.exports.create = create;
 module.exports.get = get;
 module.exports.open = open;
-module.exports.close = close;
+module.exports.closeTopmost = closeTopmost;
 module.exports.isAnyOpen = isAnyOpen;

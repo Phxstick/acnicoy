@@ -9,32 +9,30 @@ class LanguageTable extends Widget {
     constructor() {
         super("language-table");
         this.$("table").hide();
+        for (const element of this.$$(".interactive-only")) {
+            element.hide();
+        }
         this.languageConfigs = [];
         this.rowToConfig = new WeakMap();
         this.interactiveMode = false;
         this.settingsSubsection = null;
-        this.$("add-language-button").addEventListener("click", () => {
-            overlay.open("add-lang").then((config) => {
-                if (config === null) return;
-                for (const { language } of this.languageConfigs) {
-                    if (config.language === language) {
-                        dialogWindow.info("You cannot add a language twice!"); 
-                        return;
-                    }
+        this.$("add-language-button").addEventListener("click", async () => {
+            const config = await overlays.open("add-lang");
+            if (config === null) return;
+            for (const { language } of this.languageConfigs) {
+                if (config.language === language) {
+                    dialogWindow.info("You cannot add a language twice!"); 
+                    return;
                 }
-                let promise = Promise.resolve();
-                if (this.interactiveMode) {
-                    promise = dataManager.languages.add(
-                        config.language, config.settings).then(() => {
-                            dataManager.load(config.language);
-                        });
-                }
-                promise.then(() => {
-                    config.interactiveMode = this.interactiveMode;
-                    config.default = false;
-                    this.addTableRow(config);
-                });
-            });
+            }
+            if (this.interactiveMode) {
+                await dataManager.languages.add(
+                    config.language, config.settings);
+                await dataManager.load(config.language);
+            }
+            config.interactiveMode = this.interactiveMode;
+            config.default = false;
+            this.addTableRow(config);
         });
         // When a readings checkbox is clicked, update config
         this.$("table-body").addEventListener("click", (target) => {
@@ -50,11 +48,12 @@ class LanguageTable extends Widget {
         });
         // Allow user to change SRS scheme and migrate items for a language
         this.$("table-body").addEventListener("click", (event) => {
+            if (!this.interactiveMode) return;
             if (!event.target.classList.contains("scheme-button")) return;
             const label = event.target;
             const row = event.target.parentNode.parentNode;
             const config = this.rowToConfig.get(row);
-            overlay.open("migrate-srs", "switch-scheme", {
+            overlays.open("migrate-srs", "switch-scheme", {
                 language: config.language,
                 schemeName: config.settings.srs.scheme
             }).then((migrated) => {
@@ -95,42 +94,59 @@ class LanguageTable extends Widget {
             this.settingsSubsection.broadcastLanguageSetting("visibility");
         });
         // Remove language if a remove-icon is clicked
-        this.$("table-body").addEventListener("click", (event) => {
+        this.$("table-body").addEventListener("click", async (event) => {
             if (!event.target.classList.contains("remove-button")) return;
             const row = event.target.parentNode.parentNode;
             const config = this.rowToConfig.get(row);
-            let promise = Promise.resolve(true);
             if (this.interactiveMode) {
-                promise = dialogWindow.confirm(
+                const confirmed = await dialogWindow.confirm(
                     `Are you sure you want to remove the language ` +
                     `'${config.language}' and delete all its data?`);
-            }
-            promise.then((confirmed) => {
                 if (!confirmed) return;
-                // If the removed language is the current one, switch to other
-                let promise = Promise.resolve()
+                const languages = dataManager.languages.all.slice();
+                languages.remove(config.language);
+                // If the removed language is the current one, switch to another
                 if (config.language === dataManager.currentLanguage) {
-                    const languages = dataManager.languages.all.slice();
-                    languages.remove(config.language);
-                    promise = main.setLanguage(languages[0]);
+                    if (languages.length > 0) {
+                        const switched = await main.setLanguage(languages[0]);
+                        if (!switched) return;
+                    }
                 }
-                promise.then((switched) => {
-                    if (!switched) return;
-                    const defaultLang = dataManager.settings.languages.default;
-                    if (config.language === defaultLang) {
-                        // TODO: Let user choose new default language
-                    }
-                    this.languageConfigs.remove(config);
-                    this.$("table-body").removeChild(row);
-                    if (this.languageConfigs.length === 0) {
-                        this.$("table").hide();
-                        if (this.interactiveMode) {
-                            // TODO: Open init window for choosing new lang
+                await dataManager.languages.remove(config.language);
+                const defaultLang = dataManager.settings.languages.default;
+                if (config.language === defaultLang && languages.length > 0) {
+                    if (languages.length === 1) {
+                        // Set single remaining language as default
+                        const rows = this.$("table-body").children;
+                        for (const row of rows) {
+                            if (this.rowToConfig.get(row).language !==
+                                    config.language) {
+                                row.querySelectorAll(
+                                        ".default-language-checkbox")[0]
+                                .checked = true;
+                                dataManager.settings.languages.default =
+                                    this.rowToConfig.get(row).language;
+                            }
                         }
+                    } else {
+                        // Let user choose new default language
+                        await app.initDefaultLang();
+                        app.openWindow("main");
+                        return;
                     }
-                    dataManager.languages.remove(config.language);
-                });
-            });
+                }
+            }
+            this.languageConfigs.remove(config);
+            this.$("table-body").removeChild(row);
+            if (this.languageConfigs.length === 0) {
+                if (this.interactiveMode) {
+                    await app.initLanguages();
+                    await app.initDefaultLang();
+                    app.openWindow("main");
+                } else {
+                    this.$("table").hide();
+                }
+            }
         });
     }
 
@@ -141,6 +157,12 @@ class LanguageTable extends Widget {
         this.$("table-body").appendChild(row);
         this.rowToConfig.set(row, config);
         this.$("table").show();
+    }
+
+    clear() {
+        this.languageConfigs.length = 0;
+        this.$("table").hide();
+        this.$("table-body").empty();
     }
 
     getLanguageConfigs() {

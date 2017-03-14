@@ -28,7 +28,6 @@ start:
 
 install:
 	npm install
-	bash install.sh $(ELECTRON_PATH)
 
 data: dictionary_data kanji_data
 

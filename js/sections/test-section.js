@@ -601,6 +601,7 @@ class TestSection extends Section {
             }
             // Check if test is completed (no items left)
             if (this.testInfo.pickedItems.length === 0) {
+                dataManager.database.run("END TRANSACTION");
                 dialogWindow.info(
                     `You answered ${this.testInfo.numCorrect} ` +
                     `out of ${this.testInfo.itemsTotal} items correctly.`);

@@ -33,7 +33,7 @@ class OverlayWindow extends Widget {
         // Create a promise which the opened overlay can resolve at any time
         const promise = new Promise((resolve) => {
             overlay.resolve = (results) => {
-                this.close();
+                this.closeTopmost();
                 resolve(results);
             };
         });
@@ -68,7 +68,7 @@ class OverlayWindow extends Widget {
         return promise;
     }
     
-    close() {
+    closeTopmost() {
         if (this.overlays.length === 0) return;
         const overlay = this.overlays.pop();
         const filter = this.filters.pop();

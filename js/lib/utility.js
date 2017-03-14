@@ -94,7 +94,7 @@ function parseCssFile(filepath) {
 function setEqual(a, b) {
     for (let element of a)
         if (!b.has(element)) return false;
-    return a.length === b.length;
+    return a.size === b.size;
 }
 
 /**
