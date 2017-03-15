@@ -1,0 +1,37 @@
+$font: var(--main-font);
+$serif-font: var(--main-font-serif);
+
+:host(.GLOBAL-main-font-Chinese) {
+  --main-font: TakaoPGothic;
+  --main-font-serif: TakaoPMincho;
+}
+:host(.GLOBAL-main-font-Cyrillic) {
+  --main-font: Ubuntu;
+  --main-font-serif: RobotoSlab-Regular;
+}
+:host(.GLOBAL-main-font-Latin) {
+  --main-font: OpenSans-Regular;
+  --main-font-serif: RobotoSlab-Regular;
+}
+
+
+$default-cursor: var(--default-cursor);
+$pointer-cursor: var(--pointer-cursor);
+$wait-cursor: var(--wait-cursor);
+$grab-cursor: var(--grab-cursor);
+$dragging-cursor: var(--dragging-cursor);
+
+:host(.GLOBAL-cursor-default) {
+  --default-cursor: default;
+  --pointer-cursor: pointer;
+  --wait-cursor: wait;
+  --grab-cursor: grab;
+  --dragging-cursor: grabbing;
+}
+:host(.GLOBAL-cursor-test) {
+  --default-cursor: $test-cursor;
+  --pointer-cursor: $test-cursor;
+  --wait-cursor: $test-cursor;
+  --grab-cursor: $test-cursor;
+  --dragging-cursor: $test-cursor;
+}

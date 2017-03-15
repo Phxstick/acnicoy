@@ -55,7 +55,7 @@ svg-bar-diagram {
   --small-separator-color: $border-color-medium;
   --large-separator-color: $border-color-medium;
   --label-color: $diagram-label-color;
-  --value-font: $font;
-  --description-font: $font;
+  --value-font: $small-font;
+  --description-font: $small-font;
   --separator-font: $header-font;
 }

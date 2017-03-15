@@ -64,6 +64,7 @@ body {
 
   .search-entry {
     @extend input.light;
+    width: 1px;
     flex: 1;
     padding-left: 4px;
   }

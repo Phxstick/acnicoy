@@ -72,6 +72,7 @@ module.exports = function (basePath) {
     paths.defaultSrsSchemes = path.resolve(basePath, "data",
                                            "default-srs-schemes.json");
     paths.componentRegister = path.resolve(basePath, "component-register.json");
+    paths.styleClasses = path.resolve(basePath, "data", "style-classes.json");
     paths.img = {
         programIcon: path.resolve(basePath, "img", "icon.png")
     };

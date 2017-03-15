@@ -153,6 +153,7 @@ class Application {
         // Create interface (using design settings if already loaded above)
         await this.createWindows();
         window.main = this.windows["main"];
+        Component.setStyleClass("cursor", "default");
 
         // If user data location is not set, let user choose it
         if (!paths.existsDataPath()) {

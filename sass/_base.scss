@@ -1,21 +1,9 @@
-// TODO: How to solve cursor problem?
-// $default-cursor: var(--default-cursor);
-// $pointer-cursor: var(--pointer-cursor);
-// $wait-cursor: var(--wait-cursor);
-// $grab-cursor: var(--grab-cursor);
-// $dragging-cursor: var(--dragging-cursor);
-$default-cursor: default;
-$pointer-cursor: pointer;
-$wait-cursor: wait;
-$grab-cursor: grab;
-$dragging-cursor: grabbing;
-
-
 @import "assets";
 @import "design";
 @import "layers";
 @import "spinners";
 
+@import "dynamic";
 @import "tooltip";
 @import "views";
 @import "buttons";
@@ -25,7 +13,7 @@ $dragging-cursor: grabbing;
 @import "mixins";
 
 * {
-  font-family: $font;
+  font-family: var(--main-font);
   user-select: none;
 
   &::selection {
@@ -50,14 +38,7 @@ $dragging-cursor: grabbing;
   }
 }
 
-body, :host {
-  // --default-cursor: $test-cursor;
-  // --pointer-cursor: $test-cursor;
-  // --wait-cursor: $test-cursor;
-  // --grab-cursor: $test-cursor;
-  // --dragging-cursor: $test-cursor;
-
-  // cursor: var(--default-cursor);
+:host {
   cursor: $default-cursor;
 }
 

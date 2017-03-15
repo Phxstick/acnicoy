@@ -1,11 +1,9 @@
 ### Up next
+- Implement test-complete-overlay
 - Make status update message fade out after a short while if not updated
-- Implement dynamic adding of tabs in tabbed-frame using slotchange-event
 - Implement chronological ordering of vocabulary
 - Include "usually written with kana only" functionality into suggestion pane
-- Implement test-complete-overlay
 - Make sure entry content in dictionaries is always selected on focus!
-- Add cursor design functionality
 - Fix: Focusing inputs in srs-schemes-overlay does not work anymore!
 - Make kana input not only react to shift, but also caps-lock and caps letters
 - Create a content management system for downloading and updating content
@@ -15,13 +13,13 @@
 - Implement program updating
   - Add update button to settings
   - Make sure user data is saved before an update
-- Choose better standard font for languages with cyrillic characters
 - Allow using Ctrl+Enter for saving notes and submitting new vocab/kanji
 - Test on new data instance whether deleting kanji also deletes kanji data
   (are constraints really applied to database now?)
 
 ### As soon as available
 - Use thin symbols for fa-times, fa-plus etc. where fitting
+- Implement dynamic adding of tabs in tabbed-frame using slotchange-event
 
 ### Fixes
 - SRS level editing is not fully stable (Maybe remove ability to edit levels?)
@@ -147,6 +145,7 @@ once? --> Faster loading, centralized resource loading
 - It item has been renamed, directly display change instead of skipping?
 - Display more detailed statistics at end of test (`test-finished-overlay`)
   - Display items answered incorrectly (along with answers on click/hover)
+  - Allow exiting test earlier in continous mode to see these statistics
 - Also confirm in continuous mode when closing a test, i.e. when
   switching language, closing program, or opening a vocab list test
   - Set continous mode as default in settings then
@@ -312,6 +311,7 @@ List of achievements
 
 Future
 --------------------------------------------------------------------------------
+- Add cursor design functionality
 - Seperate whole framework into an own NPM package
 - Allow converting parts of vocabulary into html/pdf/markdown file
   - Use electrons builtin for pdf (And a fitting media stylesheet?)

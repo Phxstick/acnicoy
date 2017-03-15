@@ -21,7 +21,12 @@ class PopupStack extends Widget {
         this.isOpen = false;
         this.closing = false;
         this.topItem = null;
+        this.usedEvents = new Set();
         window.addEventListener("click", (event) => {
+            if (this.usedEvents.has(event)) {
+                this.usedEvents.delete(event);
+                return;
+            }
             if (this._attributes["disabled"]) return;
             if (this.closing) return;
             this.close();
@@ -36,7 +41,7 @@ class PopupStack extends Widget {
             } else {
                 this.open();
             }
-            event.stopPropagation();
+            this.usedEvents.add(event);
         });
     }
 

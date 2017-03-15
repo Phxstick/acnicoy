@@ -1,0 +1,11 @@
+{
+    "main-font": [
+        "Chinese",
+        "Cyrillic",
+        "Latin"
+    ],
+    "cursor": [
+        "default",
+        "test"
+    ]
+}

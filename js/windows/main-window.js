@@ -490,6 +490,22 @@ class MainWindow extends Window {
             }
         }
         this.updateTestButton();
+        // Choose fitting font
+        const chineseBased = new Set(["Chinese", "Japanese", "Korean"]);
+        const cyrillicBased = new Set(["Belarusian", "Bulgarian", "Macedonian",
+            "Russian", "Rusyn", "Serbo-Croatian", "Ukrainian", "Bosnian",
+            "Montenegrin", "Serbian",
+            "Abkhaz", "Bashkir", "Chuvash", "Erzya", "Kazakh", "Kildi Sami",
+            "Komi", "Kyrgyz", "Mari", "Moksha", "Mongolian", "Ossetic",
+            "Romani", "Sakha", "Yakut", "Tajik", "Tatar", "Tuvan", "Udmurt",
+            "Yuit", "Yupik"]);
+        if (chineseBased.has(language)) {
+            Component.setStyleClass("main-font", "Chinese");
+        } else if (cyrillicBased.has(language)) {
+            Component.setStyleClass("main-font", "Cyrillic");
+        } else {
+            Component.setStyleClass("main-font", "Latin");
+        }
     }
 
     async setLanguage(language) {
