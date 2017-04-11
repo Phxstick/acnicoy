@@ -3,17 +3,14 @@
 class StatsSection extends Section {
     constructor() {
         super("stats");
-        // Store important elements
-        this.jouyouKanjiDiagram = this.$("jouyou-kanji");
-        this.jlptKanjiDiagram = this.$("jlpt-kanji");
         // Configure diagram display  parameters
-        this.jouyouKanjiDiagram.bottomLineWidth = 1;
-        this.jouyouKanjiDiagram.topLineWidth = 1;
-        this.jouyouKanjiDiagram.margin =
+        this.$("jouyou-kanji").bottomLineWidth = 1;
+        this.$("jouyou-kanji").topLineWidth = 1;
+        this.$("jouyou-kanji").margin =
             { top: 0, bottom: 30, left: 20, right: 20 };
-        this.jlptKanjiDiagram.bottomLineWidth = 1;
-        this.jlptKanjiDiagram.topLineWidth = 1;
-        this.jlptKanjiDiagram.margin =
+        this.$("jlpt-kanji").bottomLineWidth = 1;
+        this.$("jlpt-kanji").topLineWidth = 1;
+        this.$("jlpt-kanji").margin =
             { top: 0, bottom: 30, left: 20, right: 20 };
     }
 
@@ -32,16 +29,18 @@ class StatsSection extends Section {
     }
 
     adjustToLanguage(language, secondary) {
-        this.jouyouKanjiDiagram.hide();
+        this.$("jouyou-kanji").hide();
+        this.$("jlpt-kanji").hide();
         if (language === "Japanese") {
             this.$("kanji-added-frame").show();
             this.$("kanji-diagrams").show();
-            if (dataManager.content.isAvailable[language]) {
-                this.jouyouKanjiDiagram.show();
-                this.jlptKanjiDiagram.show();
+            if (secondary === "English" &&
+                    dataManager.content.isAvailable(language, secondary)) {
+                this.$("jouyou-kanji").show();
+                this.$("jlpt-kanji").show();
             } else {
-                this.jouyouKanjiDiagram.hide();
-                this.jlptKanjiDiagram.hide();
+                this.$("jouyou-kanji").hide();
+                this.$("jlpt-kanji").hide();
             }
         } else {
             this.$("kanji-added-frame").hide();
@@ -66,9 +65,10 @@ class StatsSection extends Section {
                 this.$("kanji-added").textContent = amount;
             }));
             // Display percentages of jouyou kanjj per grade in bar diagram
-            if (dataManager.content.isAvailable["Japanese"]) {
+            if (dataManager.currentSecondaryLanguage === "English" &&
+                    dataManager.content.isAvailable("Japanese", "English")) {
                 const numKanjiPerGrade =
-                    dataManager.content.data.numKanjiPerGrade;
+                    dataManager.content.numKanjiPerGrade;
                 dataManager.kanji.getAmountsAddedPerGrade().then((amounts) => {
                     const values = [];
                     const maxValues = [];
@@ -84,13 +84,13 @@ class StatsSection extends Section {
                     descriptions.push("Sec");
                     utility.finishEventQueue()
                     .then(() => {
-                        this.jouyouKanjiDiagram.draw(
+                        this.$("jouyou-kanji").draw(
                             values, { maxValues, descriptions }); 
                     });
                 });
                 // Display percentages of kanji per jlpt level in bar diagram
                 const numKanjiPerJlptLevel =
-                    dataManager.content.data.numKanjiPerJlptLevel;
+                    dataManager.content.numKanjiPerJlptLevel;
                 dataManager.kanji.getAmountsAddedPerJlptLevel()
                 .then((amounts) => {
                     const values = [];
@@ -103,7 +103,7 @@ class StatsSection extends Section {
                     }
                     utility.finishEventQueue()
                     .then(() => {
-                        this.jlptKanjiDiagram.draw(
+                        this.$("jlpt-kanji").draw(
                             values, { maxValues, descriptions });
                     });
                 });

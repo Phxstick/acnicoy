@@ -105,14 +105,14 @@ class KanjiInfoPanel extends Widget {
     }
 
     load (kanji) {
-        const content = dataManager.content.dataMap["Japanese"];
+        const content = dataManager.content.get("Japanese", "English");
         this.examplesLoaded = false;
         this.strokesLoaded = false;
         this.currentKanji = kanji;
         // Fill info fields
         this.$("kanji").textContent = kanji;
         this.openSection("info");
-        return dataManager.content.getKanjiInfo(kanji).then((info) => {
+        return content.getKanjiInfo(kanji).then((info) => {
             // Display meanings, on-yomi, kun-yomi
             this.$("meanings-label").textContent = info.meanings.join(", ");
             // TODO: Dont just insert spaces, treat as separate clickable
@@ -202,7 +202,7 @@ class KanjiInfoPanel extends Widget {
     }
 
     displayStrokeGraphics() {
-        const kanjiStrokes = dataManager.content.data.kanjiStrokes;
+        const kanjiStrokes = dataManager.content.kanjiStrokes;
         this.$("stroke-graphics").empty();
         // If no stroke info is available, display a note
         const strokesAvailable = kanjiStrokes.hasOwnProperty(this.currentKanji);
@@ -283,7 +283,7 @@ class KanjiInfoPanel extends Widget {
     }
     
     getKanjiDetailSpans(kanji, info) {
-        const content = dataManager.content.dataMap["Japanese"];
+        const content = dataManager.content.get("Japanese", "English");
         const spans = [];
         const makeSpan = (text) => {
             const span = document.createElement("span");

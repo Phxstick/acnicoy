@@ -88,7 +88,7 @@ class MainWindow extends Window {
             }
         }
         // Auto launch functionality
-        this.autoLauncher = new AutoLaunch({ name: "Acnicoy", isHidden: true });
+        this.autoLauncher = new AutoLaunch({ name: app.name, isHidden: true });
         // Shortcut callbacks
         this.shortcutMap = {
             "add-word": () => this.openPanel("add-vocab"),
@@ -208,6 +208,9 @@ class MainWindow extends Window {
 
     async open() {
         app.openWindow("loading", "Initializing...");
+        // Load info about incomplete downloads
+        // TODO: Move this
+        networkManager.load();
         // Initialize all subcomponents
         const results = [];
         for (const name in this.sections) {
@@ -225,12 +228,15 @@ class MainWindow extends Window {
         this.currentSection = "home";
         // Load any character in kanji info panel to render stuff there
         // (Prevents buggy animation when first opening the panel)
-        if (dataManager.content.isAvailable["Japanese"]) {
+        if (dataManager.content.isAvailable("Japanese", "English")) {
             this.$("kanji-info-panel").load("字");
         }
         // Regularly update displayed SRS info
         this.srsStatusCallbackId = window.setInterval(
             () => events.emit("update-srs-status"), 1000 * 60 * 5);  // 5 min
+        // Regularly update content status
+        window.setInterval(() => events.emit("update-content-status"),
+            1000 * 60 * 60 * 3);  // 3 hours
         ipcRenderer.send("activate-controlled-closing");
         await utility.finishEventQueue();
         app.closeWindow("loading");
@@ -284,14 +290,13 @@ class MainWindow extends Window {
         return promises;
     }
 
-    processLanguageContent() {
+    processLanguageContent(language, secondaryLanguage) {
         const results = [];
-        for (const language of dataManager.languages.all) {
-            if (dataManager.content.isAvailable[language]) {
-                for (const name in this.sections) {
-                    results.push(
-                        this.sections[name].processLanguageContent(language));
-                }
+        if (dataManager.content.isAvailable(language, secondaryLanguage)) {
+            for (const name in this.sections) {
+                results.push(
+                    this.sections[name].processLanguageContent(
+                        language, secondaryLanguage));
             }
         }
         return Promise.all(results);
@@ -465,14 +470,11 @@ class MainWindow extends Window {
     adjustToLanguage(language, secondary) {
         if (language === "Japanese") {
             this.$("add-kanji-button").show();
-            const contentAvailable = dataManager.content.isAvailable["Japanese"]
-            this.$("find-kanji-button").toggleDisplay(contentAvailable);
-            this.$("dictionary-button").toggleDisplay(contentAvailable);
         } else {
             this.$("add-kanji-button").hide();
-            this.$("dictionary-button").hide();
-            this.$("find-kanji-button").hide();
             this.$("kanji-info-panel").close();
+            this.closePanel("add-kanji");
+            this.closePanel("edit-kanji");
             if (this.currentSection === "kanji" ||
                     this.currentSection === "dictionary") {
                 this.openSection("home");
@@ -508,6 +510,21 @@ class MainWindow extends Window {
         }
     }
 
+    adjustToLanguageContent(language, secondaryLanguage) {
+        this.$("find-kanji-button").hide();
+        this.$("dictionary-button").hide();
+        if (!dataManager.content.isAvailable(language, secondaryLanguage))
+            return;
+        if (language === "Japanese") {
+            this.$("find-kanji-button").show();
+            this.$("dictionary-button").show();
+        }
+        for (const name in this.sections) {
+            this.sections[name].adjustToLanguageContent(
+                language, secondaryLanguage);
+        }
+    }
+
     async setLanguage(language) {
         if (dataManager.currentLanguage === language) return false;
         if (this.currentSection !== null) {
@@ -518,6 +535,8 @@ class MainWindow extends Window {
         dataManager.setLanguage(language);
         this.adjustToLanguage(dataManager.currentLanguage,
                               dataManager.currentSecondaryLanguage);
+        this.adjustToLanguageContent(dataManager.currentLanguage,
+                                     dataManager.currentSecondaryLanguage);
         const promises = [];
         for (const key in this.sections) {
             promises.push(Promise.resolve(
@@ -544,7 +563,8 @@ class MainWindow extends Window {
 
     makeKanjiInfoLink(element, character) {
         // TODO: Don't check if kanji is in database here (Do elsewhere)
-        return dataManager.content.isKnownKanji(character).then((isKanji) => {
+        return dataManager.content.get("Japanese", "English")
+        .isKnownKanji(character).then((isKanji) => {
             if (isKanji) {
                 element.classList.add("kanji-info-link");
                 element.addEventListener("click", () => {
@@ -592,8 +612,8 @@ class MainWindow extends Window {
         if (!confirmed) return false;
         this.sections[this.currentSection].close();
         await dataManager.save(); 
-        // TODO
-        // networkManager.stopAllDownloads();
+        networkManager.stopAllDownloads();
+        networkManager.save();
         return true;
     }
 }

@@ -22,11 +22,11 @@ HTMLElement.prototype.hide = function() {
 /**
  *  Set this element's display value to given argument. If no argument is given,
  *  use the previous display value if available, or otherwise 'block'.
- *  If the element already has a display value other than 'none', do nothing.
+ *  If the element is already hidden, do nothing.
  */
 HTMLElement.prototype.show = function(value) {
-    if (getComputedStyle(this, null).getPropertyValue("display") !== "none" &&
-            getComputedStyle(this, null).getPropertyValue("display") !== "")
+    const display = getComputedStyle(this, null).getPropertyValue("display");
+    if (display !== "none" && display !== "")
         return;
     if (value !== undefined) {
         this.style.display = value;
@@ -38,17 +38,25 @@ HTMLElement.prototype.show = function(value) {
 }
 
 /**
- *  Show this element if given condition is true, otherwise hide it.
- *  @param {Boolean} condition - Indicates whether to show or hide this element.
- *  @param {String} [displayValue] - If this element will be shown, use
- *      this parameter as CSS value for the display property.
+ * Show this element if given condition is true, otherwise hide it.
+ * If condition is not given, just hide it if it's visible and show if hidden.
+ * @param {Boolean} [condition] - Whether to show or hide this element.
+ * @param {String} [displayValue] - If this element will be shown, use
+ *     this parameter as CSS value for the display property.
  */
-HTMLElement.prototype.toggleDisplay =
-        function(condition, displayValue) {
-    if (condition) {
-        this.show(displayValue);
+HTMLElement.prototype.toggleDisplay = function(condition, displayValue) {
+    if (condition === undefined) {
+        const display = getComputedStyle(this, null).getPropertyValue("display")
+        if (display !== "none" && display !== "")
+            this.hide();
+        else
+            this.show();
     } else {
-        this.hide();
+        if (condition) {
+            this.show(displayValue);
+        } else {
+            this.hide();
+        }
     }
 }
 

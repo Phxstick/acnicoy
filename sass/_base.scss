@@ -131,9 +131,7 @@ a {
 
 .contrast {
   color: $contrast-font-color;
-  text-shadow: 0px 0px 1px $contrast-font-shadow-color,
-               0px 0px 2px $contrast-font-shadow-color,
-               0px 0px 3px $contrast-font-shadow-color;
+  text-shadow: $contrast-text-shadow;
 }
 
 .flex-spacer {
@@ -183,6 +181,12 @@ hr {
   .option:not(:last-child) {
     display: inline-block;
     margin-right: 30px;
+  }
+}
+
+.pulsating-triple-dots {
+  > div {
+    background-color: $color;
   }
 }
 

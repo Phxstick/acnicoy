@@ -10,6 +10,7 @@ class KanjiSection extends Section {
         this.nextQueryIndex = 0;
         this.lastQueryString = "";
         this.selectedKanji = null;
+        this.contentAvailable = false;
         // Add event listeners
         this.$("show-overview-button").addEventListener("click", () => {
             this.showOverview();
@@ -41,6 +42,7 @@ class KanjiSection extends Section {
 
     registerCentralEventListeners() {
         events.on("kanji-added", (kanji) => {
+            if (!this.contentAvailable) return;
             this.$(kanji).classList.add("added");
             dataManager.content.getKanjiInfo(kanji).then((info) => {
                 this.updateAddedPerGradeCounter(info.grade);
@@ -52,6 +54,7 @@ class KanjiSection extends Section {
             }
         });
         events.on("kanji-removed", (kanji) => {
+            if (!this.contentAvailable) return;
             this.$(kanji).classList.remove("added");
             dataManager.content.getKanjiInfo(kanji).then((info) => {
                 this.updateAddedPerGradeCounter(info.grade);
@@ -78,10 +81,12 @@ class KanjiSection extends Section {
         this.$("search-pane").show();
     }
 
-    processLanguageContent(language) {
-        // Kanji section is only available for Japanese.
+    processLanguageContent(language, secondaryLanguage) {
         if (language === "Japanese") {
-            return dataManager.content.getKanjiList().then((rows) => {
+            if (dataManager.content.isAvailable(language, secondaryLanguage))
+                this.contentAvailable = true;
+            return dataManager.content.get(language, secondaryLanguage)
+            .getKanjiList().then((rows) => {
                 return this.createKanji(rows).then(() => {
                     this.displayKanji("grade");
                 });
@@ -170,7 +175,7 @@ class KanjiSection extends Section {
      */
     updateAddedPerGradeCounter(grade) {
         const numKanjiPerGrade =
-            dataManager.content.dataMap["Japanese"].numKanjiPerGrade;
+            dataManager.content.get("Japanese", "English").numKanjiPerGrade;
         return dataManager.kanji.getAmountAddedForGrade(grade).then((added) => {
             const total = numKanjiPerGrade[grade];
             this.addedPerGradeCounters[grade].textContent =

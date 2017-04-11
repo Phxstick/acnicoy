@@ -7,11 +7,8 @@ const os = require("os");
 module.exports = function (basePath) {
     const paths = {};
 
-    const trainerName = "Acnicoy";
-    const dataPathBaseName = trainerName + "Data";
     const dataPathConfigFile = path.resolve(basePath, "data", "data-path.txt");
     paths.standardDataPathPrefix = path.resolve(os.homedir(), "Documents");
-    paths.dataPathBaseName = dataPathBaseName;
     paths.dataPathPrefix = null;
     paths.base = basePath;
     let dataPath = null;
@@ -32,12 +29,15 @@ module.exports = function (basePath) {
         let prefix = fs.readFileSync(dataPathConfigFile, "utf8");
         if (prefix[prefix.length - 1] == "\n")
             prefix = prefix.slice(0, prefix.length - 1);
+        const dataPathBaseName = `${app.name}-data`;
         const previousPath = dataPath;
         const newPath = path.resolve(prefix, dataPathBaseName);
+        paths.dataPathBaseName = dataPathBaseName;
         paths.dataPathPrefix = prefix;
         paths.data = dataPath = newPath;
         paths.languages = langPath = path.resolve(dataPath, "Languages");
         paths.downloads = downloadsPath = path.resolve(dataPath, "Downloads");
+        paths.downloadsInfo = path.resolve(downloadsPath, "info.json");
         paths.backups = backupsPath = path.resolve(dataPath, "Backups");
         paths.globalSettings = path.resolve(dataPath, "settings.json");
         paths.srsSchemes = path.resolve(dataPath, "srs-schemes.json")
@@ -49,6 +49,9 @@ module.exports = function (basePath) {
             if (!fs.existsSync(backupsPath)) fs.mkdirSync(backupsPath);
             if (!fs.existsSync(downloadsPath)) fs.mkdirSync(downloadsPath);
             if (!fs.existsSync(contentPath)) fs.mkdirSync(contentPath);
+            // Create other necessary files
+            if (!fs.existsSync(paths.downloadsInfo))
+                fs.writeFileSync(paths.downloadsInfo, "{}");
         } else {
             // Copy previous data to new location
             if (fs.existsSync(newPath)) {
@@ -65,6 +68,7 @@ module.exports = function (basePath) {
     };
 
     // Global data
+    paths.packageInfo = path.resolve(basePath, "package.json");
     paths.scoreCalculation = path.resolve(basePath, "data",
                                           "score-calculation.json");
     paths.defaultSettings = path.resolve(basePath, "data",
@@ -91,6 +95,7 @@ module.exports = function (basePath) {
     const librariesPath = path.resolve(jsPath, "lib");
     const extensionsPath = path.resolve(jsPath, "extensions");
     const dataModulesPath = path.resolve(librariesPath, "data-managers");
+    const contentModulesPath = path.resolve(dataModulesPath, "content");
     paths.js = {
         "base": (name) => path.resolve(baseClassPath, name + ".js"),
         "window": (name) => path.resolve(windowsPath, name + "-window.js"),
@@ -104,7 +109,8 @@ module.exports = function (basePath) {
         "widget": (name) => path.resolve(widgetsPath, name + ".js"),
         "lib": (name) => path.resolve(librariesPath, name + ".js"),
         "extension": (name) => path.resolve(extensionsPath, name + ".js"),
-        "dataModule": (name) => path.resolve(dataModulesPath, name + ".js")
+        "dataModule": (name) => path.resolve(dataModulesPath, name + ".js"),
+        "contentModule": (name) => path.resolve(contentModulesPath,`${name}.js`)
     };
 
     // HTML
@@ -176,15 +182,18 @@ module.exports = function (basePath) {
         }
     };
 
-    // Return null if content for given language pair is not available,
-    // otherwise return an object mapping resource names to absolute paths
+    // Return an object mapping content resource names to absolute paths
     paths.content = (language, secondaryLanguage) => {
         const p = path.resolve(contentPath, language + "-" + secondaryLanguage);
-        if (!utility.existsDirectory(p))
-            return null;
-        const resourcePaths = contentRegister[language][secondaryLanguage];
-        for (const resource in resourcePaths)
-            resourcePaths[resource] = path.resolve(p, resourcePaths[resource]);
+        const resourcePaths = {};
+        if (contentRegister.hasOwnProperty(language) &&
+                contentRegister[language].hasOwnProperty(secondaryLanguage)) {
+            for (const resource in contentRegister[language][secondaryLanguage])
+                resourcePaths[resource] = path.resolve(p,
+                    contentRegister[language][secondaryLanguage][resource]);
+        }
+        resourcePaths.directory = p;
+        resourcePaths.versions = path.resolve(p, "versions.json");
         return resourcePaths;
     };
 
@@ -195,8 +204,10 @@ module.exports = function (basePath) {
     paths.downloadData = (filename) => {
         return path.resolve(downloadsPath, filename); 
     };
-    paths.downloadDataOffset = (filename) => {
-        return path.resolve(downloadsPath, filename + ".offset"); 
+    paths.downloadDataUnzipped = (filename) => {
+        if (filename.slice(-4) !== ".zip")
+            throw new Error(`File '${filename}' is not a zip file!`);
+        return path.resolve(downloadsPath, filename.slice(0, -4));
     };
 
     return paths;

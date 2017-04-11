@@ -2,292 +2,408 @@
 
 const http = require("http");
 const fs = require("fs");
+const request = require("request");
+const EventEmitter = require("events");
+const unzip = require("unzip");
 
-//
+// =============================================================================
 // Functions for communicating with the server.
-// ____________________________________________________________________________
+// =============================================================================
+
+const HOSTNAME = "http://acnicoy.netai.net";
+const SCRIPT_URI = "/download.php";
+const TIMEOUT_DURATION = 30000;
+
+class ServerRequestFailedError extends Error {
+    constructor(statusCode, statusMessage) {
+        super(`Error ${statusCode}: ${statusMessage}`);
+        this.statusCode = statusCode;
+        this.statusMessage = statusMessage;
+    }
+}
+class NoServerConnectionError extends Error {
+    constructor(message) {
+        super(message);
+    }
+}
 
 /**
-**  Send HTTP request to server with query defined by given object. Return
-**  the response of the server as http.IncomingMessage object.
-**/
-function queryServer(queryObject) {
-    const host = "http://www.acnicoy.netne.net/";
-    const downloadScript = "download.php";
+ *  Send HTTP POST request to server. Return server response.
+ *  @param {Object} query - JSON object to send as body of the POST request.
+ *  @returns {http.IncomingMessage} - Response of the server.
+ */
+function requestFromServer(query) {
+    const options = {
+        baseUrl: HOSTNAME,
+        url: SCRIPT_URI,
+        method: "POST",
+        headers: { "Content-Type": "application/json",
+                   "Accept-Encoding": "identity",
+                   "Cache-Control": "no-cache, no-store, no-transform" },
+        body: JSON.stringify(query),
+        encoding: null,
+        timeout: TIMEOUT_DURATION
+    };
     return new Promise((resolve, reject) => {
-        const queryArray = [];
-        for (const key in queryObject) {
-            queryArray.push(key + "=" + queryObject[key]);
-        }
-        const queryString = queryArray.join("&");
-        console.log("Query string is ", queryString);
-        http.get(host + downloadScript + "?" + queryString, (response) => {
-            console.log("Response is ", response);
-            if (response.statusCode !== 200) {
-                reject(
-                    `Error ${response.statusCode}: ${response.statusMessage}`);
+        const stream = request(options).on("error", (error) => {
+            reject(new NoServerConnectionError(error.message));
+        });
+        request(options).on("response", (response) => {
+            if (response.statusCode !== 200 && response.statusCode !== 201) {
+                reject(new ServerRequestFailedError(
+                    response.statusCode, response.statusMessage));
+                return;
             }
-            resolve(response);
-            // TODO: Introduct timeout for this method
+            stream.headers = response.headers;
+            stream.destroy = () => response.destroy();
+            resolve(stream);
         });
     });
 }
-module.exports.queryServer = queryServer;
 
 /**
-**  Given an http.IncomingMessage object, return a promise which resolves with
-**  the complete data in a buffer as soon as it's all received.
-**/
-function getAllData(message) {
-    let data = Buffer.alloc(parseInt(message.headers["content-length"]));
-    let offset = 0;
+ *  Send HTTP POST request to server. Return completeBody of server response.
+ *  @param {Object} query - JSON object to send as body of the POST request.
+ *  @returns {Object} - JSON object from response body.
+ */
+function requestFromServerFull(query) {
+    const options = {
+        baseUrl: HOSTNAME,
+        url: SCRIPT_URI,
+        method: "POST",
+        headers: { "Cache-Control": "no-cache" },
+        timeout: TIMEOUT_DURATION,
+        json: true,
+        body: query
+    };
     return new Promise((resolve, reject) => {
-        message.on("data", (chunk) => {
-            chunk.copy(data, offset);
-            offset += chunk.length;
-        });
-        message.on("error", () => {
-            reject("Error: Stream has been terminated.");
-        });
-        message.on("end", () => {
-            resolve(data);
+        request(options, (error, response, body) => {
+            if (error) {
+                reject(new NoServerConnectionError(error.message));
+                return;
+            }
+            if (response.statusCode !== 200 && response.statusCode !== 201) {
+                reject(new ServerRequestFailedError(
+                    response.statusCode, response.statusMessage));
+                return;
+            }
+            resolve(body);
         });
     });
 }
 
-//
-// Functions for handling disk IO.
-// ____________________________________________________________________________
+module.exports.ServerRequestFailedError = ServerRequestFailedError;
+module.exports.NoServerConnectionError = NoServerConnectionError;
+
+
+// =============================================================================
+// Functions handling file IO.
+// =============================================================================
 
 /**
-**  If a *.offset file exists for file with given filename, return the value
-**  stored in that offset file, otherwise 0.
-**/
-function getFileOffset(filename) {
-    const dataOffsetPath = paths.downloadDataOffset(filename);
-    if (utility.existsFile(dataOffsetPath)) {
-        return parseInt(fs.readFileSync(dataOffsetPath, "utf8"));
-    }
-    return 0;
+ * @param {String} filename - Name of file to write fragment to.
+ * @param {Integer} fileOffset - Position (bytes) in file to copy fragment to.
+ * @param {Buffer} dataFragment - Buffer containing data to be copied.
+ * @param {Integer} [dataLength] - Amount of data in buffer to be copied.
+ */
+function saveFragmentToDisk(filename, fileOffset, dataFragment, dataLength) {
+    if (dataLength === undefined)
+        dataLength = dataFragment.length;
+    const handle = fs.openSync(paths.downloadDataPart(filename), "r+");
+    fs.writeSync(handle, dataFragment, 0, dataLength, fileOffset);
+    fs.closeSync(handle);
 }
 
-/**
-**  Given a filename for a download and the total expected size of that file,
-**  create *.offset and *.part files.
-**/
-function initializeDownloadFiles(filename, filesize) {
-    const dataPartPath = paths.downloadDataPart(filename);
-    const dataOffsetPath = paths.downloadDataOffset(filename);
-    if (!utility.existsFile(dataPartPath)) {
-        console.log("Creating file at path ", dataPartPath);
-        fs.writeFileSync(dataPartPath, Buffer.alloc(filesize));
-    }
-    if (!utility.existsFile(dataOffsetPath)) {
-        console.log("Creating file at path ", dataOffsetPath);
-        fs.writeFileSync(dataOffsetPath, "0");
-    }
-}
 
-/**
-**  Given a buffer with a fragment of the data for a download, write data
-**  fragment to file with given filename starting at given file offset.
-**  If a length is given, only copy that much data from the buffer.
-**/
-function saveFragmentToDisk(filename, fileOffset, fragment, length) {
-    if (length === undefined) {
-        length = fragment.length;
-    }
-    const dataPartPath = paths.downloadDataPart(filename);
-    const dataOffsetPath = paths.downloadDataOffset(filename);
-    const handle = fs.openSync(dataPartPath, "r+");
-    fs.writeSync(handle, fragment, 0, length, fileOffset);
-    fs.writeFileSync(dataOffsetPath, fileOffset + length);
-}
-
-//
+// =============================================================================
 // Functions and state information for downloading files.
-// ____________________________________________________________________________
+// =============================================================================
 
 // Size of data fragments written to the hard disk.
-const fragmentSize = 5000000;  // 0.5MB
+const FRAGMENT_SIZE = 500000;  // 0.5MB
 
-// Map filename of a downloaded file to http.IncomingMessage object.
-const downloads = new Map();
+// Map download name to info such as total filesize, current size and versions.
+const downloadsInfo = new Map();
 
-// Map filename to an object { downloading, downloaded, remaining, total }.
-const statuses = new Map();
+// Map download name to http.IncomingMessage stream emitting downloaded data.
+const downloadStreams = new Map();
 
-/**
-**  Initialize download status for file with given filename. If file download
-**  has never started, download status is null.
-**/
-function initializeDownloadStatus(filename) {
-    // If content is fully downloaded
-    if (utility.existsFile(paths.downloadData(filename))) {
-        const totalSize = fs.statSync(paths.downloadData(filename)).size;
-        statuses.set(filename, {
-            downloading: false,
-            downloaded: totalSize,
-            remaining: 0,
-            total: totalSize
-        });
-    // If content is partly downloaded
-    } else if (utility.existsFile(paths.downloadDataPart(filename))) {
-        const totalSize = fs.statSync(paths.downloadDataPart(filename)).size;
-        const currentSize = getFileOffset(filename);
-        statuses.set(filename, {
-            downloading: false,
-            downloaded: currentSize,
-            remaining: totalSize - currentSize,
-            total: totalSize
-        });
-    // Otherwise content download has not even started
-    } else {
-        statuses.set(filename, null);
+function loadDownloadsInfo() {
+    downloadsInfo.clear();
+    const downloadsInfoObject = require(paths.downloadsInfo);
+    for (const downloadName in downloadsInfoObject) {
+        downloadsInfo.set(downloadName, downloadsInfoObject[downloadName]);
     }
 }
 
-/**
-**  Return download status for file with given filename.
-**/
-function getDownloadStatus(filename) {
-    initializeDownloadStatus(filename);
-    return statuses.get(filename);
+function saveDownloadsInfo() {
+    const jsonObject = {};
+    for (const [downloadName, downloadInfo] of downloadsInfo) {
+        jsonObject[downloadName] = downloadInfo;
+    }
+    fs.writeFileSync(paths.downloadsInfo, JSON.stringify(jsonObject, null, 4));
 }
 
 /**
-**  Start download for file with given filename. Return promise resolving to
-**  true if the download was successfully started, otherwise false.
-**/
-function startDownload(filename) {
-    initializeDownloadStatus(filename);
-    if (statuses.get(filename) !== null &&
-            statuses.get(filename).remaining === 0) {
-        return Promise.reject(`File ${filename} is already downloaded.`);
+ * Download data from open data stream for given download name.
+ * @returns {Promise} - Resolves when download has successfully finished.
+ */
+function handleDownload(downloadName, stream) {
+    const downloadInfo = downloadsInfo.get(downloadName);
+    const { filename, currentSize } = downloadInfo;
+    const buffer = Buffer.alloc(FRAGMENT_SIZE);
+    let bufferOffset = 0;
+    let fileOffset = currentSize;
+    let dataCounter = 0;
+    // Fill fragment buffer with received data chunks until full
+    stream.on("data", (chunk) => {
+        let chunkOffset = 0;
+        let chunkRestSize = chunk.length;
+        dataCounter += chunk.length;
+        while (chunkRestSize > 0) {
+            const bufferSpaceLeft = FRAGMENT_SIZE - bufferOffset;
+            const copySize = Math.min(bufferSpaceLeft, chunkRestSize);
+            chunk.copy(
+                buffer, bufferOffset, chunkOffset, chunkOffset + copySize);
+            bufferOffset += copySize;
+            chunkOffset += copySize;
+            chunkRestSize -= copySize;
+            // If buffer has been filled, write fragment to disk
+            if (bufferOffset === FRAGMENT_SIZE) {
+                saveFragmentToDisk(filename, fileOffset, buffer);
+                fileOffset += FRAGMENT_SIZE;
+                downloadInfo.currentSize = fileOffset;
+                bufferOffset = 0;
+                stream.emit("progressing", getDownloadStatus(downloadName));
+            }
+        }
+    });
+    const cleanUp = () => {
+        // Write final chunk to the disk
+        if (bufferOffset > 0) {
+            saveFragmentToDisk(filename, fileOffset, buffer, bufferOffset);
+            downloadInfo.currentSize = fileOffset + bufferOffset;
+            bufferOffset = 0;
+        }
+        // Delete download stream object
+        if (downloadStreams.has(downloadName)) {
+            downloadStreams.delete(downloadName);
+        }
     };
-    let fileOffset = getFileOffset(filename);
-    return queryServer({ file: filename }).then((response) => {
-        return getAllData(response).then((data) => {
-            const filesize = parseInt(data.toString("utf8"));
-            initializeDownloadFiles(filename, filesize);
-            initializeDownloadStatus(filename);
-            console.log("Querying server...");
-            return queryServer({ file: filename, offset: fileOffset });
+    // If download is stopped (e.g. connection lost), save last data chunk
+    stream.on("close", () => {
+        console.log("STREAM HAS BEEN CLOSED!");
+        cleanUp();
+        const { totalSize: total, currentSize: current } = 
+            downloadsInfo.get(downloadName);
+        console.log("Downloaded %d of %d bytes.", current, total);
+        if (total !== current) {
+            stream.emit("connection-lost");
+        }
+    });
+    stream.on("error", (error) => {
+        console.log("ERROR OCCURRED IN STREAM!");
+        cleanUp();
+        stream.emit("connection-lost");
+    });
+    // If all data has been received
+    return new Promise((resolve, reject) => {
+        stream.on("end", () => {
+            console.log("STREAM HAS ENDED!");
+            cleanUp();
+            const { totalSize: total, currentSize: current } = 
+                downloadsInfo.get(downloadName);
+            console.log("Downloaded %d of %d bytes.", current, total);
+            if (total !== current) return;
+            fs.renameSync(
+                paths.downloadDataPart(filename), paths.downloadData(filename));
+            resolve();
         });
-    }).then((response) => {
-        const status = statuses.get(filename);
-        status.downloading = true;
-        console.log("Starting download.");
-        downloads.set(filename, response);
-        const buffer = Buffer.alloc(fragmentSize);
-        let bufferOffset = 0;
-        // Fill fragment buffer with received data chunks until full
-        response.on("data", (chunk) => {
-            let chunkOffset = 0;
-            let chunkRestSize = chunk.length;
-            while (chunkRestSize > 0) {
-                const bufferSpaceLeft = fragmentSize - bufferOffset;
-                const copySize = Math.min(bufferSpaceLeft, chunkRestSize);
-                chunk.copy(buffer, bufferOffset, chunkOffset,
-                        chunkOffset + copySize);
-                bufferOffset += copySize;
-                chunkOffset += copySize;
-                chunkRestSize -= copySize;
-                // If buffer has been filled, write fragment to disk
-                if (bufferOffset === fragmentSize) {
-                    saveFragmentToDisk(filename, fileOffset, buffer);
-                    fileOffset += fragmentSize;
-                    bufferOffset = 0;
-                }
-            }
-            status.downloaded = fileOffset + bufferOffset;
-            status.remaining = status.total - fileOffset - bufferOffset;
-            console.log(`Downloaded ${
-                (100 * status.downloaded / status.total).toFixed(2)
-            }`
-                        + ` percent of data.`);
-            // TODO: Notification event that download is progressing
-        });
-        // If download cannot continue (e.g. connection lost)
-        response.on("close", () => {
-            console.log("Received close event!");
-            if (bufferOffset > 0) {
-                saveFragmentToDisk(filename, fileOffset, bufferOffset);
-                bufferOffset = 0;
-            }
-            downloads.delete(filename);
-            status.downloading = false;
-        });
-        response.on("error", () => {
-            console.log("Received error event!");
-            if (bufferOffset > 0) {
-                saveFragmentToDisk(filename, fileOffset, bufferOffset);
-                bufferOffset = 0;
-            }
-            downloads.delete(filename);
-            status.downloading = false;
-            // TODO: Wait for connection to become available again and restart
-        });
-        // If all data has been received
-        response.on("end", () => {
-            // Write final chunk to the disk
-            if (bufferOffset > 0) {
-                saveFragmentToDisk(filename, fileOffset, bufferOffset);
-                bufferOffset = 0;
-            }
-            downloads.delete(filename);
-            status.downloading = false;
-            // TODO: Notification event that download is finished
-            // TODO: Unzip file in the language download section
-        });
-        return true;
-    });/*, (error) => {
-        console.log(`Download could not be started (${error}).`);
-        return false;
-    });*/
+    });
 }
 
 /**
-**  Stop download for file with given filename.
-**/
-function stopDownload(filename) {
-    if (!downloads.has(filename)) {
-        throw new Error(`Could not find download for file "${filename}".`);
+ * Get status information for download with given name in form of an object
+ * { isActive, downloaded, remaining, total }.
+ */
+function getDownloadStatus(downloadName) {
+    const { currentSize, totalSize } = downloadsInfo.get(downloadName);
+    return {
+        isActive: downloadStreams.has(downloadName),
+        totalSize: totalSize,
+        downloaded: currentSize,
+        remaining: totalSize - currentSize,
+        percentage: 100 * currentSize / totalSize
+    };
+}
+
+/**
+ *  Pause download with given name.
+ */
+function pauseDownload(downloadName) {
+    // TODO: Set "paused" bool here
+    stopDownload(downloadName);
+}
+
+/**
+ *  Stop download with given name.
+ */
+function stopDownload(downloadName) {
+    if (!downloadsInfo.has(downloadName)) {
+        throw new Error(`Could not find download with name "${downloadName}".`);
     }
-    downloads.get(filename).destroy();
-    // TODO: Save remaining data in buffer here somehow
+    if (!downloadStreams.has(downloadName)) {
+        throw new Error(`Download "${downloadName}" is currently not running.`);
+    }
+    downloadStreams.get(downloadName).destroy();
 }
 
 function stopAllDownloads() {
-    for (const filename in downloads) {
-        stopDownload(filename);
+    for (const [downloadName, downloadStream] of downloadStreams) {
+        stopDownload(downloadName);
     }
 }
 
-//
+module.exports.load = loadDownloadsInfo;
+module.exports.save = saveDownloadsInfo;
+module.exports.stopAllDownloads = stopAllDownloads;
+
+// =============================================================================
 // Functions for managing language content downloads.
-// ____________________________________________________________________________
+// =============================================================================
 
 const content = {};
 
-content.isAvailable = function (language, secondary) {
-    // TODO
+function getContentDownloadName (language, secondary) {
+    return `CONTENT-${language}-${secondary}`;
+}
+
+function getContentFileVersions (language, secondary) {
+    if (!dataManager.content.isAvailable(language, secondary))
+        return {};
+    return require(paths.content(language, secondary).versions);
+}
+
+content.getStatus = async function (language, secondary) {
+    const { updateAvailable,
+            programUpdateRequired } = await requestFromServerFull({
+        target: "content",
+        action: "info",
+        languagePair: `${language}-${secondary}`,
+        currentProgramVersion: app.version,
+        currentFileVersions: getContentFileVersions(language, secondary)
+    });
+    const downloadName = getContentDownloadName();
+    const downloadExists = downloadsInfo.has(downloadName);
+    const alreadyDownloaded =
+        dataManager.content.isAvailable(language, secondary);
+    return { alreadyDownloaded, downloadExists, updateAvailable,
+             programUpdateRequired };
 }
 
 content.getDownloadStatus = function (language, secondary) {
-    const filename = `${language}-${secondary}.zip`;
-    return getDownloadStatus(filename);
+    const downloadName = getContentDownloadName(language, secondary);
+    if (!downloadsInfo.has(downloadName))
+        return null;
+    return getDownloadStatus(downloadName);
 }
 
-content.startDownload = function (language, secondary) {
-    const filename = `${language}-${secondary}.zip`;
-    return startDownload(filename);
+content.startDownload = async function (language, secondary) {
+    const downloadName = getContentDownloadName(language, secondary);
+    const downloadAlreadyExists = downloadsInfo.has(downloadName);
+    // If download is already running, just return the download stream
+    if (downloadStreams.has(downloadName)) {
+        return downloadStreams.get(downloadName);
+    }
+    let currentSize;
+    let totalSize;
+    let requestedFileVersions;
+    let filename;
+    if (!downloadAlreadyExists) {
+        // If download doesn't exist yet, get latest file versions from server
+        const contentStatus = await requestFromServerFull({
+            target: "content",
+            action: "info",
+            languagePair: `${language}-${secondary}`,
+            currentProgramVersion: app.version,
+            currentFileVersions: getContentFileVersions(language, secondary)
+        });
+        if (!contentStatus.updateAvailable)
+            throw `Content for language pair '${language}-${secondary}' is ` +
+                  `already up to date.`;
+        filename = `${language}-${secondary}.zip`;
+        requestedFileVersions = contentStatus.latestFileVersions;
+        currentSize = 0;
+    } else {
+        ({ currentSize, totalSize, requestedFileVersions, filename } =
+            downloadsInfo.get(downloadName));
+    }
+    // TODO: Don't request data from server if 100% downloaded
+    const response = await requestFromServer({
+        target: "content",
+        action: "download",
+        offset: currentSize,
+        languagePair: `${language}-${secondary}`,
+        requestedFileVersions
+    });
+    if (!downloadAlreadyExists) {
+        totalSize = parseInt(response.headers["content-length"]);
+        // Create empty file to write downloaded data to
+        fs.writeFileSync(
+            paths.downloadDataPart(filename), Buffer.alloc(totalSize));
+        // Create download info object for this download
+        downloadsInfo.set(downloadName, {
+            currentSize, totalSize, filename, requestedFileVersions
+        });
+        saveDownloadsInfo();
+    }
+    // Check again if a download is already running under this name
+    if (downloadStreams.has(downloadName)) {
+        return downloadStreams.get(downloadName);
+    }
+    downloadStreams.set(downloadName, response);
+    // Start downloading data and process downloaded data afterwards
+    handleDownload(downloadName, response).then(() => {
+        const { totalSize, currentSize } = downloadsInfo.get(downloadName);
+        const contentPaths = paths.content(language, secondary);
+        // Create directory in content directory if it doesn't exist yet
+        if (!dataManager.content.isAvailable(language, secondary)) {
+            fs.mkdirSync(contentPaths.directory);
+        }
+        // Unzip new files into content directory
+        fs.createReadStream(paths.downloadData(filename))
+        .pipe(unzip.Extract({ path: contentPaths.directory }))
+        .on("close", async () => {
+            // Update version register
+            let versions;
+            if (dataManager.content.isAvailable(language, secondary)) {
+                versions = require(contentPaths.versions);
+            } else {
+                versions = {};
+            }
+            const newVersions =
+                downloadsInfo.get(downloadName).requestedFileVersions;
+            for (const filename in newVersions) {
+                versions[filename] = newVersions[filename];
+            }
+            fs.writeFileSync(
+                contentPaths.versions, JSON.stringify(versions, null, 4));
+            downloadsInfo.delete(downloadName);
+            saveDownloadsInfo();
+            fs.unlinkSync(paths.downloadData(filename));
+            await dataManager.content.load(language);
+            dataManager.content.setLanguage(language);
+            await main.processLanguageContent(language, secondary);
+            main.adjustToLanguageContent(language, secondary);
+            response.emit("finished");
+        });
+    });
+    return response;
 }
 
-content.stopDownload = function (language, secondary) {
-    const filename = `${language}-${secondary}.zip`;
-    return stopDownload(filename);
+content.pauseDownload = function (language, secondary) {
+    const downloadName = getContentDownloadName(language, secondary);
+    return pauseDownload(downloadName);
 }
 
-module.exports.stopAllDownloads = stopAllDownloads;
 module.exports.content = content;

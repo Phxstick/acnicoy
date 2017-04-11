@@ -5,9 +5,27 @@
     <check-box class="readings-checkbox"
      {{#if settings.readings}}checked{{/if}}></check-box>
   </td>
-  <td><button class="scheme-button light no-shadow">{{settings.srs.scheme}}</button></td>
+  <td><button class="scheme-button link">{{settings.srs.scheme}}</button></td>
   {{#if interactiveMode}}
-    <td></td>
+    <td>
+      <div class="pulsating-triple-dots connecting-spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+      <div class="content-download-progress-frame">
+        <progress class="content-download-progress-bar"></progress>
+        <span class="content-download-progress-label contrast"></span>
+      </div>
+      <div class="content-status-label-frame">
+        <span class="content-status-label"></span>
+        <span class="update-required-icon"
+              data-tooltip="Certain updates require a newer program version.
+Update the program first to download these.">
+          <i class="fa fa-warning"></i>
+        </span>
+      </div>
+    </td>
     <td><check-box class="default-language-checkbox radio-button-style"
          {{#if default}}checked{{/if}}></check-box></td>
     <td class="hide-button-cell"><button class="hide-button light no-shadow"><i class="fa fa-eye"></i></button></td>

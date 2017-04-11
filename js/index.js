@@ -53,6 +53,14 @@ class Application {
     constructor() {
         this.windows = {};
         this.currentWindow = null;
+        const packageJson = require(paths.packageInfo);
+        this.name = packageJson.name;
+        this.version = packageJson.version;
+        this.description = packageJson.description;
+        this.author = packageJson.author;
+    }
+
+    quit() {
     }
 
     async openWindow(name, ...args) {
@@ -109,7 +117,7 @@ class Application {
         this.openWindow("loading", "Loading language data...");
         let start = performance.now();
         const promises = [];
-        for (const language of dataManager.languages.all) {
+        for (const language of languages) {
             promises.push(dataManager.load(language));
         }
         await Promise.all(promises);
@@ -118,10 +126,16 @@ class Application {
         // Process language content
         start = performance.now();
         this.openWindow("loading", "Processing language content...");
-        await main.processLanguageContent();
+        promises.length = 0;
+        for (const language of languages) {
+            const secondary =
+                dataManager.languageSettings.for(language).secondaryLanguage;
+            promises.push(main.processLanguageContent(language, secondary));
+        }
+        await Promise.all(promises);
         total = performance.now() - start;
-        this.closeWindow("loading");
         console.log("Loaded all language content after %f ms", total);
+        this.closeWindow("loading");
     }
 
     async initDefaultLang() {
@@ -143,6 +157,7 @@ class Application {
 
     async initialize() {
         await new Promise((resolve) => { window.onload = resolve; });
+        document.title = this.name;
 
         // Immediately load/create settings if data path is already set
         if (paths.existsDataPath()) {

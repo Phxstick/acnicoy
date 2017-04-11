@@ -7,7 +7,6 @@
 #table {
   border-collapse: collapse;
   border-top: 1px solid $border-color-dark;
-  padding: 10px;
   width: 100%;
 }
 
@@ -15,7 +14,7 @@ thead tr {
   border-bottom: 1px solid $border-color-dark;
 
   th {
-    padding: 6px;
+    padding: 4px;
     padding-left: 14px;
     padding-right: 14px;
     font-weight: normal;
@@ -26,6 +25,68 @@ thead tr {
 tbody tr {
   padding: 4px;
   height: 40px;
+
+  .content-status-label-frame {
+    @include center-content;
+  }
+
+  .content-status-label {
+    display: inline-block;
+    font-family: $header-font;
+    &.button {
+      @extend button.link;
+      @extend button;
+      font-size: 110%;
+    }
+    &.up-to-date {
+      color: $color-positive;
+    }
+    &.error {
+      color: $color-negative;
+    }
+  }
+
+  .update-required-icon {
+    display: inline-block;
+    margin-left: 5px;
+    color: $warning-icon-color;
+    font-size: 120%;
+    --tooltip-delay: .4s;
+  }
+
+  .content-download-progress-frame {
+    position: relative;
+  }
+
+  .content-download-progress-bar {
+    width: 80px;
+    height: 22px;
+    &:not(:indeterminate) {
+      appearance: none;
+      &::-webkit-progress-inner-element {
+        border: 1px solid $border-color-dark;
+        border-radius: 11px;
+        overflow: hidden;
+      }
+      &::-webkit-progress-bar {
+        background-color: $view-background;
+      }
+      &::-webkit-progress-value {
+        background-color: $highlight-background;
+      }
+    }
+  }
+
+  .content-download-progress-label {
+    @include center-content;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    font-family: $small-font;
+    font-size: 90%;
+  }
 
   td {
     padding: 4px;

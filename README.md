@@ -5,7 +5,7 @@ a [Spaced Repetition System][SRS] (SRS) for memorizing Vocabulary.
 While the basic features work for every language, the program offers a bunch of
 additional features specifically for learning Japanese.
 
-![Screenshot of Kanji Section](https://dl.dropbox.com/s/wg9a3p6c9n4p0wr/acnicoy-screenshot-kanji-section.png?dl=0)
+![Screenshot of Kanji Section](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-kanji-section.png)
 
 Features
 ----
@@ -45,12 +45,6 @@ $ npm install
 $ gulp
 ```
 You can then run the program using `make start`.
-
-**Note**: Additional data for the Japanese language and updates for it will be
-available for download directly from the program. For now, you can download
-the current version from [here](http://acnicoy.netne.net/Japanese-English.zip)
-and manually place the unzipped data into the "Content" subfolder of your
-"AcnicoyData" folder.
 
 License
 ----

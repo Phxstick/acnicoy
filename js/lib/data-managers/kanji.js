@@ -301,7 +301,7 @@ module.exports = function (paths, modules) {
      * @returns {Promise[Integer]}
      */
     kanjiModule.getAmountAddedForGrade = function (grade) {
-        return modules.content.dataMap["Japanese"].query(
+        return modules.content.get("Japanese", "English").query(
             `SELECT COUNT(*) AS amount
              FROM trainer.kanji t JOIN kanji k ON t.kanji = k.entry
              WHERE k.grade = ?`, grade)
@@ -313,7 +313,7 @@ module.exports = function (paths, modules) {
      * @returns {Promise[Object[Integer]]}
      */
     kanjiModule.getAmountsAddedPerGrade = function () {
-        return modules.content.dataMap["Japanese"].query(
+        return modules.content.get("Japanese", "English").query(
             `SELECT k.grade, COUNT(t.kanji) AS amount
              FROM trainer.kanji t JOIN kanji k ON t.kanji = k.entry
              GROUP BY k.grade`)
@@ -331,7 +331,7 @@ module.exports = function (paths, modules) {
      * @returns {Promise[Object[Integer]]}
      */
     kanjiModule.getAmountsAddedPerJlptLevel = function () {
-        return modules.content.dataMap["Japanese"].query(
+        return modules.content.get("Japanese", "English").query(
             `SELECT k.jlpt AS level, COUNT(*) AS amount
              FROM trainer.kanji t JOIN kanji k ON t.kanji = k.entry
              WHERE k.jlpt IS NOT NULL

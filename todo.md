@@ -1,25 +1,29 @@
 ### Up next
 - Implement test-complete-overlay
-- Make status update message fade out after a short while if not updated
 - Implement chronological ordering of vocabulary
+- Implement reverse testing (especially for Russian)
+- Button to manually check for content updates (+ "last checked" label)
+- Button to check for program updates (+ "last checked" label)
+- Implement "Quit session" button for SRS test session aswell
+- Further refactor Application framework
+  - Implement quit-function of Application class, move controlled closing there
+- Make status update message fade out after a short while if not updated
 - Include "usually written with kana only" functionality into suggestion pane
 - Make sure entry content in dictionaries is always selected on focus!
 - Fix: Focusing inputs in srs-schemes-overlay does not work anymore!
 - Make kana input not only react to shift, but also caps-lock and caps letters
-- Create a content management system for downloading and updating content
-  - Info window when (new) language pack is available for a language
-    - Allow user to start downloads and link to settings for progress bar
-  - Implement content downloading (Use stylable HTML5 progress bar for this)
 - Implement program updating
   - Add update button to settings
   - Make sure user data is saved before an update
 - Allow using Ctrl+Enter for saving notes and submitting new vocab/kanji
+- Allow selecting popup-stack item with arrow keys and number keys!
 - Test on new data instance whether deleting kanji also deletes kanji data
   (are constraints really applied to database now?)
+- New setting: [Checkbox] Automatically update language content if available
+- Register content-related shortcuts in adjustToLanguageContent instead
 
 ### As soon as available
 - Use thin symbols for fa-times, fa-plus etc. where fitting
-- Implement dynamic adding of tabs in tabbed-frame using slotchange-event
 
 ### Fixes
 - SRS level editing is not fully stable (Maybe remove ability to edit levels?)
@@ -40,7 +44,6 @@ By category
 ### General
 - Use popupMenu separators when context changes? (see e.g. dictionary entry)
   - Or rather split menu entries into groups to seperate by? (e.g. copy/paste)
-- Create a custom menu bar?
 - Remove flickering when quickly dragging vocab item over list contents column
   - Not a bug in Acnicoy - Events are just fired incorrectly
 - Implement suggestion windows for other panels
@@ -60,50 +63,6 @@ By category
 - Make dark deflt, Solarized (Light/Dark) and Ubuntu (Light/Dark) color schemes
 - Implement global stats somewhere
 - Add "all languages" option to SRS review schedule
-
-### Code
-##### Naming
-- Rename panels into "panes" or "sliding-panes"?
-- Call "popupMenu" "contextMenu" instead
-- Use folder "widgets" only for base widgets, put everything else directly into
-  a folder called "gui-components"
-  - Adjust pathManager and index.js
-- Rename "Windows" to "Screens"?
-
-##### Refactoring
-- Move stuff in settings subsections into a settings manager?
-- Have htmlManager and cssManager which make sure all assets are only loaded
-once? --> Faster loading, centralized resource loading
-- Make automatically-loading-upon-scrolling-divs into widgets?
-- Make data-manager-modules into subclasses and gather similar code
-  - Especially if static variables become implemented (or Typescript is used)!
-- Split widgets into components specific to Acnicoy and base-widgets
-  - Make base-widgets completely independent of Acnicoy (e.g. no base import)
-- Make partitioned window stuff into class?
-- Solve design dilemma concerning tabbed frame
-  - Allow full styling of all frames while keeping it semantic
-- Simply register event listeners in constructor after all?
-- Use JS to position popup-panes and don't make it child of triggering button
-- Hide all initially hidden things with javascript instead of CSS? Works?
-- Organize each dataManager module into following scheme?
-  1. Control functions (load, save, setLanguage)
-  2. Functions completely independent of languages
-  3. Functions operating on current language
-  4. Functions depending on any other language (using `dataMap`)
-- svg-bar-diagram: Pass in length-parameters as options to draw-function
-- Make "events" and "main" globals attributes of "app" global
-
-##### Adaptions
-- Use `position: sticky` for kanji info panel in kanji section?
-- use split function from sqlite instead of JS version?
-- Use ruby annotations for furigana
-- Allow adding text to checkbox in a slot after a margin
-- Use CSS counters where necessary (Especially srs-schemes-overlay)
-- Extend markdown-js to suit the purpose of the program
-  - See Japanese stack exchange for furigana syntax
-  - Provide easy way create kanji-links (or just scan through markdown)
-- Identify SRS schemes by ID instead of name!
-- Use advanced CSS width values where possible (`width: fill`);
 
 ### Performance
 - Things got slower when reworking sass? Maybe because main window is flex now?
@@ -189,7 +148,6 @@ once? --> Faster loading, centralized resource loading
 
 ### Vocab section
 - Implement searching in vocab lists and list contents
-- Display small label with amount of items in each vocabulary list
 
 ### Dictionary
 - Display link to dictionary section help in info-frame
@@ -235,6 +193,20 @@ once? --> Faster loading, centralized resource loading
 - Remove connectors for old scheme levels which have no items associated
 - Make sure that connections starting from the same level are always connected
   to a *consecutive* row of levels (otherwise, disallow connection)?
+
+### Content downloading
+- Download still tends to only work the first time on a day?
+- Also consider data in memory buffer in download status
+  - "currentSizeIncludingBuffered" in downloadsInfo?
+- Implement pausing functionality for downloads (and in settings)
+  - Automatically continue downloads in networkManager unless paused?
+  - Save "paused" boolean in downloadsInfo as well
+  - Save "downloadPaused" boolean in language table config as well
+- Switch between percentage and exact values (in MB) upon clicking progressbar
+- Split "info" request-target into "info" and "versions" to save bandwidth?
+- Try to split some general network stuff off of content.startDownload
+  - Move content-stuff from networkManager into dataManager.content? Partly?
+- Remove all log messages
 
 ### Stats/Achievements
 - Use single-bar diagram for kanji progress to display relative to total!
@@ -282,13 +254,6 @@ List of settings
 - [Button] Check for program updates (Check automatically every ~1 hour)
   - [Button] Update program (Do so safely)
 
-#### Design settings
-- [Popup-List] Cursor selection (Some have to be unlocked)
-  - Drill cursor for large achievement (e.g. 1000 kanji)
-  - Tamamo's fluffy tail cursor for larger achievement (e.g. 600 kanji)
-  - Yona's hairpin cursor for medium achievement (e.g. 300 kanji)
-  - Meliodas' dragon handle for small achievement (e.g. 150 kanji)
-
 #### TODO: Categorize these
 - [Radiobuttons] Choose separator for separating translations/readings
 - [Checkbutton/Entry] Choose interval-modifier for SRS-levels
@@ -300,18 +265,36 @@ List of achievements
 - [Diversity] At least 3 languages registered.
 - [Multicultural] At least 6 languages registered.
 - [Hyperpolyglot] At least 9 languages registered.
-- [Eager] At least 1000 SRS items tested.
-- [Diligent] At least 10000 SRS items tested.
+- [Eager I] At least 1000 SRS items tested.
+- [Eager II] At least 3500 SRS items tested.
+- [Eager III] At least 6000 SRS items tested.
+- [Diligent I] At least 10000 SRS items tested.
+- [Diligent II] At least 20000 SRS items tested.
+- [Diligent III] At least 30000 SRS items tested.
 - [Zealous] At least 50000 SRS items tested.
 
 #### Local achievements (Can be earned for each language)
-- [Beginner] At least 1000 vocabulary items registered.
-- [Learned] At least 5000 vocabulary items registered.
-- [Master] At least 10000 vocabulary items registered.
+- [Beginner I] At least 200 vocabulary items registered.
+- [Beginner II] At least 500 vocabulary items registered.
+- [Intermediate I] At least 1000 vocabulary items registered.
+- [Intermediate II] At least 2000 vocabulary items registered.
+- [Advanced I] At least 4000 vocabulary items registered.
+- [Advanced II] At least 6000 vocabulary items registered.
+- [Advanced III] At least 8000 vocabulary items registered.
+- [Master I] At least 10000 vocabulary items registered.
+- [Master II] At least 15000 vocabulary items registered.
+- [Grand Master] At least 20000 vocabulary items registered.
 
 Future
 --------------------------------------------------------------------------------
-- Add cursor design functionality
+- Init-window for starting language content downloads
+- Add cursor design functionality (Unlock cursors, popup-list in settings)
+  - Find out why custom cursors using local URLs don't work in CSS variables
+  - Drill cursor for large achievement (e.g. 1000 kanji)
+  - Tamamo's fluffy tail cursor for larger achievement (e.g. 600 kanji)
+  - Yona's hairpin cursor for medium achievement (e.g. 300 kanji)
+  - Meliodas' dragon handle for small achievement (e.g. 150 kanji)
+- Display small label with amount of items in each vocabulary list
 - Seperate whole framework into an own NPM package
 - Allow converting parts of vocabulary into html/pdf/markdown file
   - Use electrons builtin for pdf (And a fitting media stylesheet?)
@@ -353,6 +336,21 @@ Future
 - Create custom set of cursors
 - Allow user to customize pinwall (button in settings + overlay side-bar)?
 - Implement changelog-widget (for changelogs saved in local storage somewhere)?
+- Create a custom menu bar?
+
+### In-program notifications
+- Notifications on following events:
+  - New language content or program update is available
+    - Button to start download and link to settings (and progress bar?)
+  - Achievement earned
+  - Download finished
+- Small icon in each notification to remove it
+- "Clear all" functionality
+- Accessable from top right corner of the window?
+- Shortly light up with an animation if there's a new notification
+  - Keep faintly glowing until notification is read
+  - Highlight unread notifications
+- Store in a new file in user data
 
 ### Content section
 - Create similar kanji/word disambiguation pages of the following form:
@@ -367,6 +365,52 @@ Future
 - Allow uploading and sharing vocabulary lists
 - Offer small coding environment for creating cards with extended markdown
 - Link to here for each kanji detail in info panel (like country/measure/number)
+
+Code
+--------------------------------------------------------------------------------
+### Naming
+- Rename panels into "panes" or "sliding-panes"?
+- Call "popupMenu" "contextMenu" instead
+- Use folder "widgets" only for base widgets, put everything else directly into
+  a folder called "gui-components"
+  - Adjust pathManager and index.js
+- Rename "Windows" to "Screens"?
+
+### Refactoring
+- Move stuff in settings subsections into a settings manager?
+- Have htmlManager and cssManager which make sure all assets are only loaded
+once? --> Faster loading, centralized resource loading
+- Make automatically-loading-upon-scrolling-divs into widgets?
+- Make data-manager-modules into subclasses and gather similar code
+  - Especially if static variables become implemented (or Typescript is used)!
+- Split widgets into components specific to Acnicoy and base-widgets
+  - Make base-widgets completely independent of Acnicoy (e.g. no base import)
+- Make partitioned window stuff into class?
+- Solve design dilemma concerning tabbed frame
+  - Allow full styling of all frames while keeping it semantic
+- Simply register event listeners in constructor after all?
+- Use JS to position popup-panes and don't make it child of triggering button
+- Hide all initially hidden things with javascript instead of CSS? Works?
+- Organize each dataManager module into following scheme?
+  1. Control functions (load, save, setLanguage)
+  2. Functions completely independent of languages
+  3. Functions operating on current language
+  4. Functions depending on any other language (using `dataMap`)
+- svg-bar-diagram: Pass in length-parameters as options to draw-function
+- Make "events" and "main" globals attributes of "app" global
+- Implement dynamic adding of tabs in tabbed-frame using `slotchange`-event
+
+### Adaptions
+- Use `position: sticky` for kanji info panel in kanji section?
+- use split function from sqlite instead of JS version?
+- Use ruby annotations for furigana
+- Allow adding text to checkbox in a slot after a margin
+- Use CSS counters where necessary (Especially srs-schemes-overlay)
+- Extend markdown-js to suit the purpose of the program
+  - See Japanese stack exchange for furigana syntax
+  - Provide easy way create kanji-links (or just scan through markdown)
+- Identify SRS schemes by ID instead of name!
+- Use advanced CSS width values where possible (`width: fill`);
 
 Credits to add
 --------------------------------------------------------------------------------

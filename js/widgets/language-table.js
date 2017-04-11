@@ -16,6 +16,17 @@ class LanguageTable extends Widget {
         this.rowToConfig = new WeakMap();
         this.interactiveMode = false;
         this.settingsSubsection = null;
+        this.handledDownloadStreams = new WeakSet();
+        this.updatingContentStatus = new WeakSet();
+        this.retryContentStatusUpdateDelay = 30000;
+        // Quick access to language content elements for each language
+        this.contentDownloadProgressFrames = new WeakMap();
+        this.contentDownloadProgressBars = new WeakMap();
+        this.contentDownloadProgressTexts = new WeakMap();
+        this.contentStatusLabelFrames = new WeakMap();
+        this.contentStatusLabels = new WeakMap();
+        this.updateRequiredIcons = new WeakMap();
+        this.connectingSpinners = new WeakMap();
         this.$("add-language-button").addEventListener("click", async () => {
             const config = await overlays.open("add-lang");
             if (config === null) return;
@@ -29,9 +40,9 @@ class LanguageTable extends Widget {
                 await dataManager.languages.add(
                     config.language, config.settings);
                 await dataManager.load(config.language);
+                config.default = false;
             }
             config.interactiveMode = this.interactiveMode;
-            config.default = false;
             this.addTableRow(config);
         });
         // When a readings checkbox is clicked, update config
@@ -61,6 +72,16 @@ class LanguageTable extends Widget {
                 label.textContent = dataManager.languageSettings
                                     .for(config.language).srs.scheme;
             });
+        });
+        // Functionality for downloading language content
+        this.$("table-body").addEventListener("click", (event) => {
+            if (!event.target.classList.contains("content-status-label")) return
+            const row = event.target.parentNode.parentNode.parentNode;
+            const config = this.rowToConfig.get(row);
+            if (!config.downloadReady) return;
+            config.downloading = true;
+            config.downloadReady = false;
+            this.updateContentStatus(config);
         });
         // Functionality for setting language opened by default
         this.$("table-body").addEventListener("click", (event) => {
@@ -150,13 +171,134 @@ class LanguageTable extends Widget {
         });
     }
 
+    registerCentralEventListeners() {
+        events.on("update-content-status", () => {
+            for (const config of this.languageConfigs) {
+                this.updateContentStatus(config);
+            }
+        });
+    }
+
     addTableRow(config) {
+        config.downloading = networkManager.content.getDownloadStatus(
+                config.language, config.settings.secondary) !== null;
+        config.downloadReady = false;
         this.languageConfigs.push(config);
         const template = templates.get("language-table-entry");
         const row = utility.fragmentFromString(template(config)).children[0];
         this.$("table-body").appendChild(row);
         this.rowToConfig.set(row, config);
         this.$("table").show();
+        this.contentDownloadProgressFrames.set(
+            config, row.querySelector(".content-download-progress-frame"));
+        this.contentDownloadProgressBars.set(
+            config, row.querySelector(".content-download-progress-bar"));
+        this.contentDownloadProgressTexts.set(
+            config, row.querySelector(".content-download-progress-label"));
+        this.contentStatusLabelFrames.set(
+            config, row.querySelector(".content-status-label-frame"));
+        this.contentStatusLabels.set(
+            config, row.querySelector(".content-status-label"));
+        this.updateRequiredIcons.set(
+            config, row.querySelector(".update-required-icon"));
+        this.connectingSpinners.set(
+            config, row.querySelector(".connecting-spinner"));
+        this.updateContentStatus(config);
+    }
+
+    async updateContentStatus(config) {
+        if (this.updatingContentStatus.has(config)) return;
+        this.updatingContentStatus.add(config);
+        const progressFrame = this.contentDownloadProgressFrames.get(config);
+        const progressBar = this.contentDownloadProgressBars.get(config);
+        const progressText = this.contentDownloadProgressTexts.get(config);
+        const statusFrame = this.contentStatusLabelFrames.get(config);
+        const statusLabel = this.contentStatusLabels.get(config);
+        const updateRequiredIcon = this.updateRequiredIcons.get(config);
+        const connectingSpinner = this.connectingSpinners.get(config);
+        progressFrame.hide();
+        statusFrame.hide();
+        connectingSpinner.show();
+        updateRequiredIcon.hide();
+        statusLabel.classList.remove("button");
+        statusLabel.classList.remove("up-to-date");
+        try {
+            // If a download has already been started, continue it
+            if (config.downloading) {
+                const downloadStream =
+                    await networkManager.content.startDownload(
+                        config.language, config.settings.secondary);
+                if (this.handledDownloadStreams.has(downloadStream))
+                    return;
+                this.handledDownloadStreams.add(downloadStream);
+                const { totalSize, downloaded, percentage } =
+                    networkManager.content.getDownloadStatus(
+                    config.language, config.settings.secondary);
+                progressBar.max = totalSize;
+                progressBar.value = downloaded;
+                progressText.textContent = `${percentage.toFixed(0)} %`;
+                downloadStream.on("progressing", (status) => {
+                    progressBar.value = status.downloaded;
+                    progressText.textContent =
+                        `${status.percentage.toFixed(0)} %`;
+                });
+                downloadStream.on("finished", () => {
+                    config.downloading = false;
+                    this.updateContentStatus(config);
+                });
+                downloadStream.on("connection-lost", () => {
+                    this.updateContentStatus(config);
+                });
+                progressFrame.show();
+            } else {
+                const { updateAvailable,
+                        alreadyDownloaded,
+                        programUpdateRequired } =
+                    await networkManager.content.getStatus(
+                        config.language, config.settings.secondary);
+                statusLabel.classList.remove("error");
+                if (updateAvailable) {
+                    if (alreadyDownloaded) {
+                        statusLabel.textContent = "Update";
+                    } else {
+                        statusLabel.textContent = "Download";
+                    }
+                } else {
+                    if (alreadyDownloaded) {
+                        statusLabel.textContent = "Up to date";
+                        statusLabel.classList.add("up-to-date");
+                    } else {
+                        statusLabel.textContent = "n.a.";
+                    }
+                }
+                statusFrame.show();
+                statusLabel.classList.toggle("button", updateAvailable);
+                config.downloadReady = updateAvailable;
+                updateRequiredIcon.toggleDisplay(programUpdateRequired);
+            }
+        } catch (error) {
+            if (error instanceof networkManager.NoServerConnectionError ||
+                    error instanceof networkManager.ServerRequestFailedError) {
+                progressFrame.hide();
+                statusFrame.show();
+                updateRequiredIcon.hide();
+                if (error instanceof networkManager.NoServerConnectionError) {
+                    statusLabel.textContent = "Connection error";
+                }
+                if (error instanceof networkManager.ServerRequestFailedError) {
+                    statusLabel.textContent = "Server error";
+                }
+                statusLabel.classList.add("error");
+                // Frequently try to reconnect
+                window.setTimeout(() => this.updateContentStatus(config),
+                    this.retryContentStatusUpdateDelay);
+            } else {
+                throw error;
+            }
+        } finally {
+            connectingSpinner.hide();
+            this.updatingContentStatus.delete(config);
+        }
     }
 
     clear() {

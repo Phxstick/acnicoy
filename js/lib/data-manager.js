@@ -22,7 +22,6 @@ module.exports = function (paths) {
      */
     modules.load = function (language) {
         modules.languageSettings.load(language);  // Always load settings first
-        modules.languageSettings.setLanguage(language);
         const results = [];
         for (const name in modules) {
             if (modules[name].hasOwnProperty("load")) {

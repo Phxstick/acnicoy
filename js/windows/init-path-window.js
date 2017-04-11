@@ -15,6 +15,8 @@ class InitPathWindow extends Window {
             }
             this.resolve(path);
         });
+        this.$("program-name").textContent = app.programName;
+        this.$("data-folder-name").textContent = paths.dataPathBaseName;
     }
 
     open() {
