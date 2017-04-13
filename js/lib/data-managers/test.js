@@ -34,7 +34,7 @@ module.exports = function (paths, modules) {
     test.getSolutions = function (item, mode, part) {
         switch (mode) {
             case test.mode.WORDS:
-                if (part === "solutions")
+                if (part === "meanings")
                     return modules.vocab.getTranslations(item);
                 else if (part === "readings")
                     return modules.vocab.getReadings(item);
@@ -50,7 +50,7 @@ module.exports = function (paths, modules) {
     test.addToSolutions = function (item, newSolution, mode, part) {
         switch (mode) {
             case test.mode.WORDS:
-                if (part === "solutions")
+                if (part === "meanings")
                     return modules.vocab.add(item, [newSolution], []);
                 else if (part === "readings")
                     return modules.vocab.add(item, [], [newSolution]);

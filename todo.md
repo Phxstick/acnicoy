@@ -1,10 +1,17 @@
 ### Up next
-- Implement test-complete-overlay
+- `text-align: center` impairs fadeIn function. How to work around?
+  - Add `text-align` to solution divs again
+- Make sideward fading local (in order to apply correct layering)
+- Also confirm in continuous mode when closing a test, i.e. when
+  switching language, closing program, or opening a vocab list test,
+  i.e. when testInfo is set to null
+  - Set continous mode as default in settings then
+- Also save number of times answered incorrectly/correctly for each SRS item
+- Implement suggestion panel for edit panels and use it for items without data
 - Implement chronological ordering of vocabulary
 - Implement reverse testing (especially for Russian)
 - Button to manually check for content updates (+ "last checked" label)
 - Button to check for program updates (+ "last checked" label)
-- Implement "Quit session" button for SRS test session aswell
 - Further refactor Application framework
   - Implement quit-function of Application class, move controlled closing there
 - Make status update message fade out after a short while if not updated
@@ -21,6 +28,7 @@
   (are constraints really applied to database now?)
 - New setting: [Checkbox] Automatically update language content if available
 - Register content-related shortcuts in adjustToLanguageContent instead
+- Don't focus editable span on right click in edit panels
 
 ### As soon as available
 - Use thin symbols for fa-times, fa-plus etc. where fitting
@@ -63,6 +71,7 @@ By category
 - Make dark deflt, Solarized (Light/Dark) and Ubuntu (Light/Dark) color schemes
 - Implement global stats somewhere
 - Add "all languages" option to SRS review schedule
+- Differentiate between standard gui-font and "content-font"
 
 ### Performance
 - Things got slower when reworking sass? Maybe because main window is flex now?
@@ -97,17 +106,8 @@ By category
 - Display tooltips (showing e.g. "current/total") on hover when flag is set
 
 ### Test section
-- Properly handle overflow if correct-answer-frame gets too large
-  - Try to fade out items at bottom if list is too large,
-    remove fading when bottom reached
 - Re-evaluate answer after current item has been edited?
-- It item has been renamed, directly display change instead of skipping?
-- Display more detailed statistics at end of test (`test-finished-overlay`)
-  - Display items answered incorrectly (along with answers on click/hover)
-  - Allow exiting test earlier in continous mode to see these statistics
-- Also confirm in continuous mode when closing a test, i.e. when
-  switching language, closing program, or opening a vocab list test
-  - Set continous mode as default in settings then
+- If item has been renamed, directly display change instead of skipping?
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)
@@ -207,6 +207,7 @@ By category
 - Try to split some general network stuff off of content.startDownload
   - Move content-stuff from networkManager into dataManager.content? Partly?
 - Remove all log messages
+- Retry button next to error message in each row
 
 ### Stats/Achievements
 - Use single-bar diagram for kanji progress to display relative to total!

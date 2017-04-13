@@ -49,6 +49,9 @@ class TestSection extends Section {
             }
         };
         // Add callbacks
+        this.$("solutions").addEventListener("scroll", () => {
+            this.$("solutions").fadeScrollableBorders();
+        });
         this.$("continue-button").addEventListener("click", () => {
             ifDelayHasPassed(() => this._createQuestion());
         });
@@ -72,14 +75,20 @@ class TestSection extends Section {
             const newLevel = dataManager.test.getNewLevel(item.level,isCorrect);
             ifDelayHasPassed(() => this._createQuestion(newLevel));
         });
-        this.$("exit-list-mode").addEventListener("click", () => {
-            if (this.testInfo.itemsFinished > 0) {
-                dialogWindow.info(
-                    `You answered ${this.testInfo.numCorrect} ` +
-                    `out of ${this.testInfo.itemsFinished} items correctly.`);
+        this.$("abort-session").addEventListener("click", () => {
+            this.closeSession();
+        });
+        this.$("wrap-up").addEventListener("click", () => {
+            this.testInfo.items.length = 0;
+            this.testInfo.numTotal = this.testInfo.numFinished
+                                     + this.testInfo.pickedItems.length + 1;
+            this.$("progress").max = this.testInfo.numTotal;
+            this.$("progress-text").textContent =
+                `${this.testInfo.numFinished} / ${this.testInfo.numTotal}`;
+            if (!this.testInfo.vocabListMode) {
+                main.updateTestButton();
             }
-            this.testInfo = null;
-            main.openSection("vocab");
+            this.$("wrap-up").hide();
         });
         // Buttons on control bar
         this.$("ignore-answer").addEventListener("click", () => {
@@ -199,7 +208,7 @@ class TestSection extends Section {
             const currentItem = this.testInfo.currentItem;
             if (currentItem.entry === word &&
                     currentItem.mode === dataManager.test.mode.WORDS) {
-                this.testInfo.itemsTotal--;
+                this.testInfo.numTotal--;
                 this.testInfo.skipNextEvaluation = true;
                 this._createQuestion();
             }
@@ -211,7 +220,7 @@ class TestSection extends Section {
                   (currentItem.mode === dataManager.test.mode.KANJI_MEANINGS ||
                    currentItem.mode === dataManager.test.mode.KANJI_ON_YOMI ||
                    currentItem.mode === dataManager.test.mode.KANJI_KUN_YOMI)) {
-                this.testInfo.itemsTotal--;
+                this.testInfo.numTotal--;
                 this.testInfo.skipNextEvaluation = true;
                 this._createQuestion();
             }
@@ -226,7 +235,7 @@ class TestSection extends Section {
                 .then((solutions) => {
                     if (solutions.length === 0) {
                         if (item.parts.length === 0) {
-                            this.testInfo.itemsTotal--;
+                            this.testInfo.numTotal--;
                         } else {
                             this.testInfo.pickedItems.push(item);
                         }
@@ -294,53 +303,62 @@ class TestSection extends Section {
     ===================================================================== */
 
     createTest(vocabList) {
+        const testInfo = {
+            pickedItems: [],
+            mistakes: [],
+            currentItem: null,
+            currentPart: null,
+            numCorrect: 0,
+            numIncorrect: 0,
+            numFinished: 0,
+            inEvalStep: false,
+            skipNextEvaluation: false
+        };
+        let itemsPromise;
+        let vocabListMode;
+        let additionalTestInfo;
         if (vocabList === undefined) {
-            this.$("list-mode-info").hide();
-            return this._getTestItems().then((items) => {
-                this.testInfo = {
-                    items: items,
-                    pickedItems: [],
-                    currentItem: null,
-                    currentPart: null,
-                    numCorrect: 0,
-                    numIncorrect: 0,
-                    itemsTotal: items.length,
-                    itemsFinished: 0,
-                    lastUpdateTime: utility.getTime(),
-                    score: 0,
-                    inEvalStep: false,
-                    vocabListMode: false,
-                    skipNextEvaluation: false
-                };
-                this._createQuestion();
-            });
+            this.$("session-info").textContent = "Testing on SRS items";
+            this.$("vocab-list").hide();
+            itemsPromise = this._getTestItems();
+            vocabListMode = false;
+            additionalTestInfo = {
+                lastUpdateTime: utility.getTime(),
+                score: 0
+            };
         } else {
+            this.$("session-info").textContent = "Testing on vocabulary list:";
+            this.$("vocab-list").textContent = vocabList;
+            this.$("vocab-list").show();
+            this.$("score").textContent = "";
             const itemPromises = [];
             const words = dataManager.vocabLists.getWordsForList(vocabList);
             for (const word of words) {
                 itemPromises.push(
                     this._createTestItem(word, dataManager.test.mode.WORDS));
             }
-            this.$("score").textContent = "";
-            this.$("vocab-list").textContent = vocabList;
-            this.$("list-mode-info").show();
-            return Promise.all(itemPromises).then((items) => {
-                this.testInfo = {
-                    items: items,
-                    pickedItems: [],
-                    currentItem: null,
-                    currentPart: null,
-                    numCorrect: 0,
-                    numIncorrect: 0,
-                    itemsTotal: items.length,
-                    itemsFinished: 0,
-                    inEvalStep: false,
-                    vocabListMode: true,
-                    skipNextEvaluation: false
-                };
+            itemsPromise = Promise.all(itemPromises);
+            vocabListMode = true;
+            additionalTestInfo = {};
+        }
+        this.$("wrap-up").show();
+        return itemsPromise.then((items) => {
+            this.testInfo = Object.assign(testInfo, additionalTestInfo, {
+                items, numTotal: items.length, vocabListMode
+            });
+            return utility.finishEventQueue().then(() => {
                 this._createQuestion();
             });
+        });
+    }
+
+    closeSession() {
+        if (this.testInfo.numFinished > 0) {
+            overlays.open("test-complete", this.testInfo);
         }
+        const inVocabListMode = this.testInfo.vocabListMode;
+        this.testInfo = null;
+        main.openSection(inVocabListMode ? "vocab" : "home");
     }
 
     _evaluateAnswer() {
@@ -446,6 +464,7 @@ class TestSection extends Section {
             }
             this.$("solutions").appendChild(solutionLabel);
         }
+        this.$("solutions").fadeScrollableBorders();
         let delay = 0; 
         // If animation flag is set, fade and slide labels down a bit
         if (animate) {
@@ -500,7 +519,7 @@ class TestSection extends Section {
         let className;
         switch (mode) {
             case modes.WORDS:
-                if (part === "solutions") className = "word-meaning";
+                if (part === "meanings") className = "word-meaning";
                 if (part === "readings") className = "word-reading";
                 break;
             case modes.KANJI_MEANINGS: className = "kanji-meaning"; break;
@@ -537,11 +556,16 @@ class TestSection extends Section {
                     this.testInfo.score += scoreGain;
                 }
                 // Update testinfo-object
-                this.testInfo.itemsFinished++;
+                this.testInfo.numFinished++;
                 if (!item.marked && !item.lastAnswerIncorrect) {
                     this.testInfo.numCorrect++;
                 } else {
                     this.testInfo.numIncorrect++;
+                    this.testInfo.mistakes.push({
+                        name: this.testInfo.currentItem.entry,
+                        mode: this.testInfo.currentItem.mode,
+                        part: this.testInfo.currentPart
+                    });
                 }
                 // Animate label with gained score
                 if (dataManager.settings.test.showScore &&
@@ -572,10 +596,10 @@ class TestSection extends Section {
         }
         this.testInfo.skipNextEvaluation = false;
         // Display score and update progress
-        this.$("progress").max = this.testInfo.itemsTotal;
-        this.$("progress").value = this.testInfo.itemsFinished;
+        this.$("progress").max = this.testInfo.numTotal;
+        this.$("progress").value = this.testInfo.numFinished;
         this.$("progress-text").textContent =
-            `${this.testInfo.itemsFinished} / ${this.testInfo.itemsTotal}`;
+            `${this.testInfo.numFinished} / ${this.testInfo.numTotal}`;
         if (!this.testInfo.vocabListMode) {
             this.$("score").textContent = this.testInfo.score.toFixed();
             main.updateTestButton();
@@ -588,7 +612,7 @@ class TestSection extends Section {
             this.testInfo.lastUpdateTime = utility.getTime();
             promise = this._getTestItems(lastUpdateTime).then((newItems) => {
                 this.testInfo.items.push(...newItems);
-                this.testInfo.itemsTotal += newItems.length;
+                this.testInfo.numTotal += newItems.length;
             });
         }
         return promise.then(() => {
@@ -601,13 +625,10 @@ class TestSection extends Section {
             }
             // Check if test is completed (no items left)
             if (this.testInfo.pickedItems.length === 0) {
-                dataManager.database.run("END TRANSACTION");
-                dialogWindow.info(
-                    `You answered ${this.testInfo.numCorrect} ` +
-                    `out of ${this.testInfo.itemsTotal} items correctly.`);
-                const inVocabListMode = this.testInfo.vocabListMode;
-                this.testInfo = null;
-                main.openSection(inVocabListMode ? "vocab" : "home");
+                if (!this.testInfo.vocabListMode) {
+                    dataManager.database.run("END TRANSACTION");
+                }
+                this.closeSession();
                 return;
             }
             // Randomly choose one of the picked items for reviewing
@@ -624,7 +645,7 @@ class TestSection extends Section {
             .then((solutions) => {
                 if (solutions.length === 0) {
                     if (newItem.parts.length === 0) {
-                        this.testInfo.itemsTotal--;
+                        this.testInfo.numTotal--;
                     } else {
                         this.testInfo.pickedItems.push(newItem);
                     }
@@ -700,7 +721,8 @@ class TestSection extends Section {
             marked: false,
             lastAnswerIncorrect: false,
             mode: mode,
-            parts: ["solutions"]
+            parts: [
+                mode === dataManager.test.mode.WORDS ? "meanings" : "solutions"]
         };
         return dataManager.srs.getLevel(entry, mode).then((level) => {
             newItem.level = level;

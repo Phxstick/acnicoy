@@ -9,7 +9,7 @@
     ],
     "overlays": [
         "add-lang", "info-dialog", "confirm-dialog", "srs-schemes",
-        "migrate-srs", "choose-shortcut"
+        "migrate-srs", "choose-shortcut", "test-complete"
     ],
     "sections": [
         "home", "stats", "vocab", "settings", "test", "dictionary", "kanji"

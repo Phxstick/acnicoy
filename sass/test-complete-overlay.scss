@@ -1,0 +1,119 @@
+@import "overlay";
+
+:host(.no-mistakes) {
+  #stats-bar {
+    border-bottom: 0;
+  }
+  #mistakes-frame {
+    display: none;
+  }
+}
+
+#partitioned-window #main-frame {
+  padding: 0px;
+  max-height: 400px;
+  > *:not(:last-child) {
+    margin-bottom: 0px;
+  }
+}
+
+#stats-bar {
+  display: flex;
+  border-bottom: 1px solid $border-color-medium;
+  flex-shrink: 0;
+
+  > div {
+    @include center-content("horizontal");
+    flex: 1;
+    padding-top: 2px;
+    padding-bottom: 8px;
+
+    &:not(:last-child) {
+      border-right: 1px solid $border-color-medium;
+    }
+
+    .stat-value {
+      display: inline-block;
+      font-family: $light-font;
+      font-size: 200%;
+      margin-right: 8px;
+    }
+
+    .stat-name {
+      display: inline-block;
+      font-family: $header-font;
+      color: $color-light;
+    }
+  }
+}
+
+#mistakes-frame {
+  overflow-y: auto;
+
+  #mistakes-header {
+    font-family: $header-font;
+    text-align: center;
+    font-variant: small-caps;
+    padding-top: 3px;
+    padding-bottom: 6px;
+    font-size: 140%;
+  }
+
+  #mistakes {
+    > div {
+      border-top: 1px solid $border-color-light;
+
+      .mistake-info .caret::before {
+        content: "\f078";  // chevron down
+      }
+      &.open .mistake-info .caret::before {
+        content: "\f077";  // chevron up
+      }
+      &:hover {
+        .mistake-info .caret {
+          display: block;
+        }
+        // background-color: $background-color-dark;
+      }
+
+      .mistake-info {
+        display: flex;
+        flex-direction: row;
+        padding-top: 6px;
+        padding-bottom: 9px;
+        align-items: flex-center;
+
+        .name {
+          font-size: 120%;
+          margin-left: 15px;
+        }
+        .mode {
+          margin-left: 15px;
+          font-variant: small-caps;
+          flex-shrink: 0;
+          font-size: 120%;
+          color: $color-light;
+        }
+        .caret {
+          display: none;
+          font-size: 120%;
+          margin-left: 15px;
+          margin-right: 15px;
+          color: $color-lightest;
+        }
+      }
+      .solutions {
+        margin-top: 2px;
+        margin-bottom: 0px;
+        padding: 5px;
+        padding-top: 0;
+
+        > * {
+          margin-bottom: 5px;
+          margin-left: 30px;
+        }
+      }
+    }
+  }
+}
+

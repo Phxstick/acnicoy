@@ -21,8 +21,8 @@
     background: $select-background;
   }
   &::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: $scrollbar-width;
+    height: $scrollbar-width;
   };
   &::-webkit-scrollbar-track {
     background-color: $scrollbar-track-background;

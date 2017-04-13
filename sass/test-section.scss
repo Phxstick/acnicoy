@@ -27,21 +27,23 @@ $answer-input-padding: 5px;
     transition-duration: .4s;
   }
 
+  --test-frame-background: $test-frame-background;
   &.word-meaning {
-    background-color: $test-section-item-type-word-meaning;
+    --test-frame-background: $test-section-item-type-word-meaning;
   }
   &.word-reading {
-    background-color: $test-section-item-type-word-reading;
+    --test-frame-background: $test-section-item-type-word-reading;
   }
   &.kanji-meaning {
-    background-color: $test-section-item-type-kanji-meaning;
+    --test-frame-background: $test-section-item-type-kanji-meaning;
   }
   &.kanji-on-yomi {
-    background-color: $test-section-item-type-kanji-on-yomi;
+    --test-frame-background: $test-section-item-type-kanji-on-yomi;
   }
   &.kanji-kun-yomi {
-    background-color: $test-section-item-type-kanji-kun-yomi;
+    --test-frame-background: $test-section-item-type-kanji-kun-yomi;
   }
+  background-color: var(--test-frame-background);
 }
 
 #bottom {
@@ -89,17 +91,65 @@ $answer-input-padding: 5px;
     }
   }
 
+  #solutions-wrapper {
+    position: relative;
+    margin-top: 25px;
+    display: flex;
+    flex-direction: row;
+  }
+
   #solutions {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 25px;
     overflow-y: auto;
 
     div {
       color: $test-frame-color;
       font-size: 120%;
-      padding: 2px;
+      padding: 3px;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: $scrollbar-light-width;
+      top: 0;
+      height: var(--top-shadow-height, 0px);
+      background: linear-gradient(
+          to bottom, var(--test-frame-background), transparent);
+    }
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: $scrollbar-light-width;
+      bottom: 0;
+      height: var(--bottom-shadow-height, 0px);
+      background: linear-gradient(
+          to top, var(--test-frame-background), transparent);
+    }
+
+    &::-webkit-scrollbar {
+      width: 16px;
+    }
+    &::-webkit-scrollbar-track {
+      border-radius: 6px;
+      background-color: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      background-clip: padding-box;
+      border: 4px solid transparent;
+      background-color: $scrollbar-light-thumb-background;
+      &:hover {
+        background-color: $scrollbar-light-thumb-background-hover;
+      }
+      &:active {
+        background-color: $scrollbar-light-thumb-background-active;
+      }
     }
   }
 }
@@ -319,7 +369,7 @@ $answer-input-padding: 5px;
   font-size: 90%;
 }
 
-#list-mode-info {
+#session-info-bar {
   position: absolute;
   bottom: 20px;
   left: 0;
@@ -329,16 +379,27 @@ $answer-input-padding: 5px;
   align-items: center;
   color: lighten($color, 5%);
   
-  #list-mode-info-label {
+  #session-info {
     margin-left: 10px;
     font-family: $header-font;
+    color: $color-light;
+    font-size: 110%;
+    flex-shrink: 0;
   }
   #vocab-list {
     margin-left: 15px;
-    flex: 1;
     font-size: 120%;
     font-family: $header-font;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
-  #exit-list-mode {
+  #wrap-up {
+    margin-left: 10px;
+    flex-shrink: 0;
+  }
+  #abort-session {
+    margin-left: 10px;
+    flex-shrink: 0;
   }
 }

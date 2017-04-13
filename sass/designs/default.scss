@@ -62,7 +62,7 @@ $view-select-background: $select-background;
 $view-edit-background: #fde8ec;
 $view-edit-color: black;
 $view-edit-border-color: $highlight-background;
-$view-header-color: dimgray;
+$view-header-color: $color-light;
 $view-header-background: darken($view-background, 10%);
 
 // Inputs
@@ -89,11 +89,11 @@ $button-shadow-color-focus: darkred;
 $button-shadow-color-active: darken($button-background-active, 10%);
 
 // Light button
-$button-light-color: dimgray;
+$button-light-color: $color-light;
 $button-light-color-hover: $color;
 $button-light-icon-color: #999;
 $button-light-icon-color-lightest: #bbb;
-$button-light-icon-color-hover: dimgray;
+$button-light-icon-color-hover: $color-light;
 $button-light-shadow-color-active: lighten($button-light-color, 30%);
 
 // Scrollbar
@@ -101,6 +101,11 @@ $scrollbar-track-background: gainsboro;
 $scrollbar-thumb-background: darken(lightcoral, 5%);
 $scrollbar-thumb-background-hover: darken($scrollbar-thumb-background, 5%);
 $scrollbar-thumb-background-active: darken($scrollbar-thumb-background, 10%);
+
+$scrollbar-light-thumb-background: rgba(255, 255, 255, 0.5);
+$scrollbar-light-thumb-background-hover: rgba(255, 255, 255, 0.7);
+$scrollbar-light-thumb-background-active: rgba(255, 255, 255, 0.9);
+
 
 // Diagrams
 $diagram-graphics-color: mix(darkred, whitesmoke, 60%);
@@ -215,6 +220,10 @@ $button-focus-shadow: 0 0 4px 2px $button-shadow-color-focus;
 $contrast-text-shadow: 0.5px 0.5px 0.5px $contrast-text-shadow-color,
                        0px 0px 5px $contrast-text-shadow-color,
                        0px 0px 10px $contrast-text-shadow-color;
+
+// Scrollbar sizes
+$scrollbar-width: 10px;
+$scrollbar-light-width: 16px;
 
 // Sizes
 $side-bar-width: 80px;

@@ -289,6 +289,30 @@ HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
 }
 
 /**
+ * When the top/bottom of the scrollable content in this element is not reached,
+ * fade out borders at the top/bottom of the scrollable content.
+ * This function only sets two CSS variables --top-shadow-height and 
+ * --bottom-shadow-height in the element, actual CSS must be applied separately.
+ * @param {Integer} [fadeDistance=30]
+ */
+HTMLElement.prototype.fadeScrollableBorders = function (fadeDistance=30) {
+    if (this.scrollHeight <= this.clientHeight) {
+        this.style.setProperty("--top-shadow-height", `0px`);
+        this.style.setProperty("--bottom-shadow-height", `0px`);
+        return;
+    }
+    const distanceFromTop = this.scrollTop;
+    const distanceFromBottom =
+        this.scrollHeight - this.scrollTop - this.clientHeight;
+    const topShadowHeight = Math.min(fadeDistance, distanceFromTop);
+    const bottomShadowHeight = Math.min(fadeDistance, distanceFromBottom);
+    this.style.setProperty(
+        "--top-shadow-height", `${topShadowHeight}px`);
+    this.style.setProperty(
+        "--bottom-shadow-height", `${bottomShadowHeight}px`);
+}
+
+/**
  *  Remove all children elements of this node.
  */
 SVGElement.prototype.empty = function() {
