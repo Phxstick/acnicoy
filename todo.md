@@ -1,14 +1,9 @@
 ### Up next
+- Implement chronological ordering of vocabulary
+- Implement suggestion panel for edit panels and use it for items without data
 - `text-align: center` impairs fadeIn function. How to work around?
   - Add `text-align` to solution divs again
-- Make sideward fading local (in order to apply correct layering)
-- Also confirm in continuous mode when closing a test, i.e. when
-  switching language, closing program, or opening a vocab list test,
-  i.e. when testInfo is set to null
-  - Set continous mode as default in settings then
 - Also save number of times answered incorrectly/correctly for each SRS item
-- Implement suggestion panel for edit panels and use it for items without data
-- Implement chronological ordering of vocabulary
 - Implement reverse testing (especially for Russian)
 - Button to manually check for content updates (+ "last checked" label)
 - Button to check for program updates (+ "last checked" label)
@@ -108,6 +103,7 @@ By category
 ### Test section
 - Re-evaluate answer after current item has been edited?
 - If item has been renamed, directly display change instead of skipping?
+- Also animate upwards-movement of test item when solutions are given
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)

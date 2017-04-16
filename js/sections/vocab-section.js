@@ -17,8 +17,11 @@ const menuItems = popupMenu.registerItems({
     "test-on-list": {
         label: "Take test on list",
         click: ({ currentNode, data: {section} }) => {
-            main.sections["test"].createTest(currentNode.dataset.listName);
-            main.openSection("test");
+            main.sections["test"].createTest(currentNode.dataset.listName)
+            .then((created) => {
+                if (!created) return;
+                main.openSection("test");
+            });
         }
     },
     "edit-item": {
@@ -87,8 +90,11 @@ class VocabSection extends Section {
                 this.selectedListNode, this.selectedListNode.textContent);
         });
         this.$("test-on-list-button").addEventListener("click", () => {
-            main.sections["test"].createTest(this.selectedList);
-            main.openSection("test");
+            main.sections["test"].createTest(this.selectedList)
+            .then((created) => {
+                if (!created) return;
+                main.openSection("test");
+            });
         });
         // =====================================================================
         // Assign drag and drop listeners

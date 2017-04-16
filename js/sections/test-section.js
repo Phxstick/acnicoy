@@ -35,8 +35,9 @@ class TestSection extends Section {
         // Set some constants
         this.delay = 300;
         this.itemFadeDuration = 400;  // Set in scss as well!
+        this.itemFadeDistance = 300;  // Set in scss as well!
         this.solutionFadeDuration = 100;
-        this.solutionFadeDistance = 10;
+        this.solutionFadeDistance = 10;  // Set in scss as well!
         this.solutionFadeDelay = 50;
         this.pickedItemsLimit = 10;
         // Create function which makes sure an action is not taken too fast
@@ -283,13 +284,17 @@ class TestSection extends Section {
     }
 
     confirmClose() {
-        if (!dataManager.settings.test.makeContinuous) {
-            return dialogWindow.confirm(
-                "Are you sure you want to cancel the test?")
-            .then((confirmed) => {
-                if (confirmed) this.testInfo = null;
-                return confirmed;
-            });
+        if (!dataManager.settings.test.makeContinuous)
+            return this.abortSession();
+        return true;
+    }
+
+    async abortSession() {
+        if (this.testInfo !== null) {
+            const confirmed = await dialogWindow.confirm(
+                "A test session is still running.<br>Do you want to abort it?");
+            if (confirmed) this.testInfo = null;
+            return confirmed;
         }
         return true;
     }
@@ -302,7 +307,8 @@ class TestSection extends Section {
         Private testing functions
     ===================================================================== */
 
-    createTest(vocabList) {
+    async createTest(vocabList) {
+        if (!await this.abortSession()) return false;
         const testInfo = {
             pickedItems: [],
             mistakes: [],
@@ -314,13 +320,13 @@ class TestSection extends Section {
             inEvalStep: false,
             skipNextEvaluation: false
         };
-        let itemsPromise;
+        let items;
         let vocabListMode;
         let additionalTestInfo;
         if (vocabList === undefined) {
             this.$("session-info").textContent = "Testing on SRS items";
             this.$("vocab-list").hide();
-            itemsPromise = this._getTestItems();
+            items = await this._getTestItems();
             vocabListMode = false;
             additionalTestInfo = {
                 lastUpdateTime: utility.getTime(),
@@ -337,19 +343,17 @@ class TestSection extends Section {
                 itemPromises.push(
                     this._createTestItem(word, dataManager.test.mode.WORDS));
             }
-            itemsPromise = Promise.all(itemPromises);
+            items = await Promise.all(itemPromises);
             vocabListMode = true;
             additionalTestInfo = {};
         }
         this.$("wrap-up").show();
-        return itemsPromise.then((items) => {
-            this.testInfo = Object.assign(testInfo, additionalTestInfo, {
-                items, numTotal: items.length, vocabListMode
-            });
-            return utility.finishEventQueue().then(() => {
-                this._createQuestion();
-            });
+        this.testInfo = Object.assign(testInfo, additionalTestInfo, {
+            items, numTotal: items.length, vocabListMode
         });
+        await utility.finishEventQueue();
+        this._createQuestion();
+        return true;
     }
 
     closeSession() {
@@ -467,17 +471,28 @@ class TestSection extends Section {
         this.$("solutions").fadeScrollableBorders();
         let delay = 0; 
         // If animation flag is set, fade and slide labels down a bit
-        if (animate) {
-            for (const solutionLabel of this.$("solutions").children) {
-                solutionLabel.fadeIn({
-                    distance: this.solutionFadeDistance,
-                    duration: this.solutionFadeDuration,
-                    direction: "right",
-                    delay: delay
-                });
-                delay += this.solutionFadeDelay;
+        utility.finishEventQueue().then(() => {
+            if (animate) {
+                const solutionNodes = [];
+                for (const solutionNode of this.$("solutions").children) {
+                    if (solutionNode.offsetTop >
+                            this.$("solutions").offsetHeight) {
+                        solutionNode.style.opacity = "1";
+                    } else {
+                        solutionNodes.push(solutionNode);
+                    }
+                }
+                for (const solutionNode of solutionNodes) {
+                    solutionNode.fadeIn({
+                        distance: this.solutionFadeDistance,
+                        duration: this.solutionFadeDuration,
+                        direction: "right",
+                        delay: delay
+                    });
+                    delay += this.solutionFadeDelay;
+                }
             }
-        }
+        });
     }
 
     _prepareMode(mode, part) {
@@ -663,15 +678,61 @@ class TestSection extends Section {
                     for (const solutionNode of this.$("solutions").children) {
                         solutionNodes.push(solutionNode);
                     }
+                    const { top: solutionFrameTop, bottom: solutionFrameBottom,
+                            left: solutionFrameLeft, right: solutionFrameRight }
+                        = this.$("solutions").getBoundingClientRect();
+                    // Animate all solution nodes which are visible
                     for (const solutionNode of solutionNodes) {
-                        solutionNode.fadeOut({
-                            duration: this.itemFadeDuration });
+                        const { top: solutionNodeTop,
+                                bottom: solutionNodeBottom } =
+                            solutionNode.getBoundingClientRect();
+                        if (solutionNodeBottom >= solutionFrameTop &&
+                                solutionNodeTop < solutionFrameBottom) {
+                            solutionNode.fadeOut({
+                                duration: this.itemFadeDuration, zIndex: "-1" })
+                        }
                     }
+                    // Animate test item
                     this.$("test-item").fadeOut({
                         duration: this.itemFadeDuration
                     }).then(() => {
+                        // Reset test item and solution containers afterwards
                         this.$("test-item").style.visibility = "visible";
+                        this.$("solutions").classList.remove("stretch-shadows");
+                        this.$("solutions").style.width = "auto";
+                        this.$("solutions").style.height = "auto";
+                        this.$("solutions").style.left = "0";
+                        this.$("solutions").style.top = "0";
+                        this.$("solutions").style.position = "static";
+                        this.$("solutions-wrapper").style.width = "auto";
+                        this.$("solutions-wrapper").style.height = "auto";
+                        this.$("solutions-wrapper").style.left = "0";
+                        this.$("solutions-wrapper").style.top = "0";
+                        this.$("solutions-wrapper").style.position = "relative";
                     });
+                    // Keep shape of solution containers and stretch shadows
+                    const rootOffsets = this.$("solutions").getRoot().host
+                                        .getBoundingClientRect();
+                    const solutionsWidth = this.$("solutions").offsetWidth;
+                    const solutionsHeight = this.$("solutions").offsetHeight;
+                    this.$("solutions").classList.add("stretch-shadows");
+                    this.$("solutions").style.left =
+                        `${solutionFrameLeft - rootOffsets.left}px`;
+                    this.$("solutions").style.top =
+                        `${solutionFrameTop - rootOffsets.top}px`;
+                    this.$("solutions").style.width = `${solutionsWidth}px`;
+                    this.$("solutions").style.height = `${solutionsHeight}px`;
+                    this.$("solutions").style.position = "fixed";
+                    this.$("solutions-wrapper").style.left =
+                        `${solutionFrameLeft - rootOffsets.left}px`;
+                    this.$("solutions-wrapper").style.top =
+                        `${solutionFrameTop - rootOffsets.top}px`;
+                    this.$("solutions-wrapper").style.width =
+                        `${solutionsWidth}px`;
+                    this.$("solutions-wrapper").style.height =
+                        `${solutionsHeight}px`;
+                    this.$("solutions-wrapper").style.position = "fixed";
+                    // Empty solution container
                     for (const solutionNode of solutionNodes) {
                         this.$("solutions").removeChild(solutionNode);
                     }

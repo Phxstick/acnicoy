@@ -526,12 +526,16 @@ class MainWindow extends Window {
     }
 
     async setLanguage(language) {
-        if (dataManager.currentLanguage === language) return false;
+        if (dataManager.currentLanguage === language)
+            return false;
         if (this.currentSection !== null) {
-            if (!(await this.sections[this.currentSection].confirmClose()))
+            if (!await this.sections[this.currentSection].confirmClose())
                 return false;
             this.sections[this.currentSection].close();
         }
+        const testSessionClosed = await this.sections["test"].abortSession();
+        if (!testSessionClosed)
+            return false;
         dataManager.setLanguage(language);
         this.adjustToLanguage(dataManager.currentLanguage,
                               dataManager.currentSecondaryLanguage);
@@ -610,6 +614,8 @@ class MainWindow extends Window {
         const confirmed =
             await this.sections[this.currentSection].confirmClose();
         if (!confirmed) return false;
+        const testSessionClosed = await this.sections["test"].abortSession();
+        if (!testSessionClosed) return false;
         this.sections[this.currentSection].close();
         await dataManager.save(); 
         networkManager.stopAllDownloads();

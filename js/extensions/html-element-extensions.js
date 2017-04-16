@@ -162,6 +162,16 @@ HTMLElement.prototype.safeDeepClone = function() {
     return nodeToCopyMap.get(this);
 }
 
+/**
+ * Return the root element of the subtree this element is part of.
+ */
+HTMLElement.prototype.getRoot = function() {
+    let node = this;
+    while (node.parentNode && !node.shadowRoot) {
+        node = node.parentNode;
+    }
+    return node;
+}
 
 /**
  *  Fade out this element while moving it given distance into given direction,
@@ -169,16 +179,24 @@ HTMLElement.prototype.safeDeepClone = function() {
  */
 HTMLElement.prototype.fadeOut = function(
         { distance=300, duration=500, easing="easeOutSine",
-          direction="right" }={}) {
+          direction="right", delay=0, zIndex="auto" }={}) {
     const fadeOutNode = this.safeDeepClone();
+    const root = this.getRoot();
     fadeOutNode.style.position = "fixed";
     fadeOutNode.style.overflow = "hidden";
-    fadeOutNode.style.zIndex = layers["fade-item"];
+    fadeOutNode.style.zIndex = zIndex;
     this.style.visibility = "hidden";
-    document.body.appendChild(fadeOutNode);
+    this.parentNode.appendChild(fadeOutNode);
     const oldWidth = this.offsetWidth;
     const oldHeight = this.offsetHeight;
-    const oldOffsets = this.getBoundingClientRect();
+    const nodeOffsets = this.getBoundingClientRect();
+    const rootOffsets = root.host.getBoundingClientRect();
+    const oldOffsets = {
+        top: nodeOffsets.top - rootOffsets.top,
+        right: nodeOffsets.right - rootOffsets.right,
+        bottom: nodeOffsets.bottom - rootOffsets.bottom,
+        left: nodeOffsets.left - rootOffsets.left
+    };
     fadeOutNode.style.width = `${oldWidth + 1}px`;
     fadeOutNode.style.height = `${oldHeight}px`;
     fadeOutNode.style.display = "block";
@@ -192,7 +210,7 @@ HTMLElement.prototype.fadeOut = function(
         `${oldOffsets[directionToAttribute[direction]]}px`;
     fadeOutNode.style[directionToSecondaryAttribute[direction]] =
         `${oldOffsets[directionToSecondaryAttribute[direction]]}px`;
-    const options = { queue: false, duration, easing };
+    const options = { queue: false, duration, easing, delay };
     Velocity(fadeOutNode, {
         [directionToAttribute[direction]]: `+=${distance}` }, options);
     return Velocity(fadeOutNode, "fadeOut", options).then(() => {
@@ -207,16 +225,24 @@ HTMLElement.prototype.fadeOut = function(
  */
 HTMLElement.prototype.fadeIn = function(
         { distance=300, duration=500, easing="easeOutSine",
-          direction="right", delay=0 }={}) {
+          direction="right", delay=0, zIndex="auto" }={}) {
     const fadeInNode = this.safeDeepClone();
+    const root = this.getRoot();
     fadeInNode.style.position = "fixed";
     fadeInNode.style.overflow = "hidden";
-    fadeInNode.style.zIndex = layers["fade-item"];
     fadeInNode.style.visibility = "visible";
-    document.body.appendChild(fadeInNode);
+    fadeInNode.style.zIndex = zIndex;
+    this.parentNode.appendChild(fadeInNode);
     const oldWidth = this.offsetWidth;
     const oldHeight = this.offsetHeight;
-    const newOffsets = this.getBoundingClientRect();
+    const nodeOffsets = this.getBoundingClientRect();
+    const rootOffsets = root.host.getBoundingClientRect();
+    const newOffsets = {
+        top: nodeOffsets.top - rootOffsets.top,
+        right: nodeOffsets.right - rootOffsets.right,
+        bottom: nodeOffsets.bottom - rootOffsets.bottom,
+        left: nodeOffsets.left - rootOffsets.left
+    };
     fadeInNode.style.width = `${oldWidth + 1}px`;
     fadeInNode.style.height = `${oldHeight}px`;
     fadeInNode.style.display = "none";

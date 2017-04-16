@@ -11,6 +11,14 @@ $answer-input-width: 300px;
 $answer-input-font-size: 130%;
 $answer-input-padding: 5px;
 
+$item-fade-timing: cubic-bezier(0.390, 0.575, 0.565, 1.000);  // Ease-out-sine
+$item-fade-duration: .4s;
+$item-fade-distance: 300px;
+$solution-fade-distance: 10px;
+
+$scroll-overflow-shadow-size: 25px;
+
+
 #top {
   position: relative;
   height: 60%;
@@ -23,8 +31,8 @@ $answer-input-padding: 5px;
   &.animate {
     // Timing function is ease-out-sine
     transition-property: background-color;
-    transition-timing-function: cubic-bezier(0.390, 0.575, 0.565, 1.000);
-    transition-duration: .4s;
+    transition-timing-function: $item-fade-timing;
+    transition-duration: $item-fade-duration;
   }
 
   --test-frame-background: $test-frame-background;
@@ -74,6 +82,7 @@ $answer-input-padding: 5px;
   
   #test-item {
     color: $test-frame-color;
+    margin-bottom: 25px;
 
     &.serif { font-family: $serif-font; }
 
@@ -93,9 +102,31 @@ $answer-input-padding: 5px;
 
   #solutions-wrapper {
     position: relative;
-    margin-top: 25px;
     display: flex;
     flex-direction: row;
+    z-index: 0;
+
+    %scroll-overflow-bar {
+      position: absolute;
+      left: -$solution-fade-distance;
+      right: -$item-fade-distance;
+      background-color: var(--test-frame-background);
+      content: "";
+      z-index: 2;
+      transition-property: background-color;
+      transition-timing-function: $item-fade-timing;
+      transition-duration: $item-fade-duration;
+    }
+    &::before {
+      @extend %scroll-overflow-bar;
+      bottom: 100%;
+      top: -$scroll-overflow-shadow-size;
+    }
+    &::after {
+      @extend %scroll-overflow-bar;
+      top: 100%;
+      bottom: -$scroll-overflow-shadow-size;
+    }
   }
 
   #solutions {
@@ -104,6 +135,7 @@ $answer-input-padding: 5px;
     flex-direction: column;
     align-items: center;
     overflow-y: auto;
+    z-index: 1;
 
     div {
       color: $test-frame-color;
@@ -111,25 +143,38 @@ $answer-input-padding: 5px;
       padding: 3px;
     }
 
-    &::before {
+    %scroll-overflow-shadow {
       content: "";
       position: absolute;
-      left: 0;
+      left: -$solution-fade-distance;
       right: $scrollbar-light-width;
+      transition-property: background;
+      transition-timing-function: $item-fade-timing;
+      transition-duration: $item-fade-duration;
+    }
+    &::before {
+      @extend %scroll-overflow-shadow;
       top: 0;
       height: var(--top-shadow-height, 0px);
       background: linear-gradient(
           to bottom, var(--test-frame-background), transparent);
     }
     &::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: $scrollbar-light-width;
+      @extend %scroll-overflow-shadow;
       bottom: 0;
       height: var(--bottom-shadow-height, 0px);
       background: linear-gradient(
           to top, var(--test-frame-background), transparent);
+    }
+
+    &.stretch-shadows {
+      overflow: visible;
+      &::before { 
+        right: -$item-fade-distance;
+      }
+      &::after { 
+        right: -$item-fade-distance;
+      }
     }
 
     &::-webkit-scrollbar {
@@ -282,6 +327,7 @@ $answer-input-padding: 5px;
 }
 
 #button-bar {
+  position: relative;
   display: flex;
   flex-direction: row;
   height: 35px;

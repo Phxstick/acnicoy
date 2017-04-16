@@ -45,9 +45,10 @@ class LanguagePopup extends Widget {
         this.$("label").textContent = language;
     }
 
-    invoke(language) {
-        this.set(language);
-        this.callback(language);
+    async invoke(language) {
+        if (await this.callback(language)) {
+            this.set(language);
+        };
     }
 
     get value() {

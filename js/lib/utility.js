@@ -443,12 +443,7 @@ function calculateHeaderCellWidths(tableBody, tableHead) {
  * @param {HTMLInputElement} inputNode
  */
 function enableQuickSelect(inputNode) {
-    // Find the root element of the subtree this element is part of
-    let node = inputNode;
-    while (node.parentNode && !node.shadowRoot) {
-        node = node.parentNode;
-    }
-    const root = node;
+    const root = inputNode.getRoot();
     inputNode.addEventListener("mousedown", (event) => {
         // If input didn't have focus, select all text in it
         if (root.activeElement !== inputNode) {

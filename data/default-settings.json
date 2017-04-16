@@ -11,7 +11,7 @@
     },
     "test": {
         "useFlashcardMode": false,
-        "makeContinuous": false,
+        "makeContinuous": true,
         "skipEvaluationOnCorrect": false,
         "enableIgnoreShortcut": false,
         "showProgress": false,
