@@ -3,6 +3,7 @@
 class AddVocabPanel extends Panel {
     constructor () {
         super("add-vocab");
+        this.dictionaryId = null;
         this.defaultOption = utility.createDefaultOption(
                 "Select a vocabulary list (optional)");
         // Attach event handlers
@@ -60,6 +61,7 @@ class AddVocabPanel extends Panel {
         this.$("srs-level").setByIndex(0);
         this.defaultOption.setAttribute("selected", "");
         this.$("vocab-list").value = "";
+        this.dictionaryId = null;
     }
 
     adjustToLanguage(language, secondary) {
@@ -88,6 +90,10 @@ class AddVocabPanel extends Panel {
         }
     }
 
+    load(dictionaryId) {
+        this.dictionaryId = dictionaryId;
+    }
+
     save() {
         const separator = dataManager.settings["add"]["separator"];
         // Read entered values
@@ -108,25 +114,24 @@ class AddVocabPanel extends Panel {
             return;
         }
         // Add word and update status message
-        dataManager.vocab.add(word, translations, readings, level).then(
-            ([ entryNew, numTranslationsAdded, numReadingsAdded ]) => {
-                if (list.length > 0) {
-                    dataManager.vocabLists.addWordToList(word, list);
-                }
-                const numFailed = translations.length - numTranslationsAdded;
-                const string1 = numTranslationsAdded !== 1 ? "s have" :
-                                                             " has";
-                const string2 = numFailed > 1 ? " were already registered" :
-                    (numFailed === 1 ? " was already registered" : "");
-                const failedString = numFailed === 0 ? "" : numFailed;
-                const entryString = entryNew ? "The entry and " : "";
-                main.updateStatus(`${entryString}${numTranslationsAdded} ` +
-                                  `translation${string1} been added. ` +
-                                  `${failedString}${string2}`);
-                events.emit("word-added", word);
-                events.emit("vocab-changed", word);
+        dataManager.vocab.add(
+            word, translations, readings, level, this.dictionaryId)
+        .then(([ entryNew, numTranslationsAdded, numReadingsAdded ]) => {
+            if (list.length > 0) {
+                dataManager.vocabLists.addWordToList(word, list);
             }
-        );
+            const numFailed = translations.length - numTranslationsAdded;
+            const string1 = numTranslationsAdded !== 1 ? "s have" : " has";
+            const string2 = numFailed > 1 ? " were already registered" :
+                (numFailed === 1 ? " was already registered" : "");
+            const failedString = numFailed === 0 ? "" : numFailed;
+            const entryString = entryNew ? "The entry and " : "";
+            main.updateStatus(`${entryString}${numTranslationsAdded} ` +
+                              `translation${string1} been added. ` +
+                              `${failedString}${string2}`);
+            events.emit("word-added", word);
+            events.emit("vocab-changed", word);
+        });
         main.closePanel("add-vocab");
     }
 }

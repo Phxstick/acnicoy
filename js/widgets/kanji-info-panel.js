@@ -35,12 +35,10 @@ class KanjiInfoPanel extends Widget {
         }
         this.$("close-button").addEventListener("click", () => this.close());
         this.$("add-button").addEventListener("click", () => {
-            main.panels["add-kanji"].load(this.currentKanji);
-            main.openPanel("add-kanji");
+            main.openPanel("add-kanji", { entryName: this.currentKanji });
         });
         this.$("added-label").addEventListener("click", () => {
-            main.panels["edit-kanji"].load(this.currentKanji);
-            main.openPanel("edit-kanji");
+            main.openPanel("edit-kanji", { entryName: this.currentKanji });
         });
         this.sectionButtons["examples"].addEventListener("click", () => {
             if (this.examplesLoaded) return;

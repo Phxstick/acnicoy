@@ -196,12 +196,25 @@ class EditKanjiPanel extends Panel {
         // If the node is left empty, remove it upon losing focus
         node.addEventListener("focusout", () => {
             this.root.getSelection().removeAllRanges();
-            const newContent = node.textContent.trim();
+            const newText = node.textContent.trim();
             const listNode = node.parentNode;
-            if (newContent.length === 0) {
+            let removeNode = false;
+            // If the node is left empty, remove it
+            if (newText.length === 0) {
+                removeNode = true;
+            }
+            // If the node is a duplicate, remove it
+            for (const otherNode of listNode.children) {
+                if (node === otherNode) continue;
+                if (otherNode.textContent === newText) {
+                    removeNode = true;
+                    break;
+                }
+            }
+            if (removeNode) {
                 node.remove();
             } else {
-                node.textContent = newContent;
+                node.textContent = newText;
             }
             // Disable srs-level-selector if there are no items of this type
             this.typeToPopup[type].disabled = listNode.children.length === 0;

@@ -10,16 +10,19 @@ const menuItems = popupMenu.registerItems({
     "edit-word": {
         label: "Edit vocabulary item",
         click: ({ currentNode }) => {
-            main.panels["edit-vocab"].load(currentNode.dataset.word);
-            main.openPanel("edit-vocab");
+            main.openPanel("edit-vocab", {
+                dictionaryId: currentNode.dataset.wordId,
+                entryName: currentNode.dataset.word
+            });
         }
     },
     "add-word": {
         label: "Add word to vocabulary",
         click: ({ currentNode }) => {
-            main.suggestionPanes["add-vocab"].load(
-                currentNode.dataset.wordId, currentNode.dataset.word);
-            main.openPanel("add-vocab", { showSuggestions: true });
+            main.openPanel("add-vocab", {
+                dictionaryId: currentNode.dataset.wordId,
+                entryName: currentNode.dataset.word
+            });
         }
     }
 });

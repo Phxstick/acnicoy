@@ -59,10 +59,13 @@ module.exports = function (paths, modules) {
                     CREATE TABLE vocabulary (
                         word TEXT PRIMARY KEY,
                         date_added INTEGER,
+                        translations TEXT,
+                        readings TEXT,
                         level INTEGER,
                         review_date INTEGER,
-                        translations TEXT,
-                        readings TEXT )
+                        correct_count INTEGER,
+                        mistake_count INTEGER,
+                        dictionary_id INTEGER )
                 `);
                 if (language === "Japanese") {
                     db.run(`
@@ -76,6 +79,8 @@ module.exports = function (paths, modules) {
                             meanings TEXT,
                             level INTEGER,
                             review_date INTEGER,
+                            correct_count INTEGER,
+                            mistake_count INTEGER,
                             FOREIGN KEY (kanji)
                                 REFERENCES kanji (kanji)
                                 ON DELETE CASCADE )
@@ -86,6 +91,8 @@ module.exports = function (paths, modules) {
                             on_yomi TEXT,
                             level INTEGER,
                             review_date INTEGER,
+                            correct_count INTEGER,
+                            mistake_count INTEGER,
                             FOREIGN KEY (kanji)
                                 REFERENCES kanji (kanji)
                                 ON DELETE CASCADE )
@@ -96,6 +103,8 @@ module.exports = function (paths, modules) {
                             kun_yomi TEXT,
                             level INTEGER,
                             review_date INTEGER,
+                            correct_count INTEGER,
+                            mistake_count INTEGER,
                             FOREIGN KEY (kanji)
                                 REFERENCES kanji (kanji)
                                 ON DELETE CASCADE )
@@ -106,6 +115,8 @@ module.exports = function (paths, modules) {
                         ON vocabulary (date_added DESC)`);
                 db.run(`CREATE INDEX vocabulary_review_date
                         ON vocabulary (review_date ASC)`);
+                db.run(`CREATE INDEX vocabulary_dictionary_id
+                        ON vocabulary (dictionary_id ASC)`);
                 if (language === "Japanese") {
                     db.run(`CREATE INDEX kanji_date_added
                             ON kanji (date_added DESC)`);

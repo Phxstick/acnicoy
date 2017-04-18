@@ -220,13 +220,23 @@ class EditVocabPanel extends Panel {
                     node.enableKanaInput("hira", this.root);
                 }
             });
-            // If the node is left empty, remove it upon losing focus
             node.addEventListener("focusout", () => {
                 this.root.getSelection().removeAllRanges();
-                node.textContent = node.textContent.trim();
-                if (node.textContent.length === 0) {
+                const newText = node.textContent.trim();
+                // If the node is left empty, remove it
+                if (newText.length === 0) {
                     node.remove();
+                    return;
                 }
+                // If the node is a duplicate, remove it
+                for (const otherNode of node.parentNode.children) {
+                    if (node === otherNode) continue;
+                    if (otherNode.textContent === newText) {
+                        node.remove();
+                        return;
+                    }
+                }
+                node.textContent = newText;
             });
             // If Enter key is pressed, quit editing
             node.addEventListener("keypress", (event) => {

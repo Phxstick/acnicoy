@@ -28,8 +28,7 @@ const menuItems = popupMenu.registerItems({
         label: "Edit item",
         click: ({ currentNode }) => {
             const word = currentNode.textContent;
-            main.panels["edit-vocab"].load(word);
-            main.openPanel("edit-vocab");
+            main.openPanel("edit-vocab", { entryName: word });
         }
     },
     "remove-from-list": {

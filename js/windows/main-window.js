@@ -23,8 +23,7 @@ const menuItems = popupMenu.registerItems({
         label: "Add kanji",
         click: ({ currentNode }) => {
             const kanji = currentNode.textContent;
-            main.panels["add-kanji"].load(kanji);
-            main.openPanel("add-kanji");
+            main.openPanel("add-kanji", { entryName: kanji });
         }
     },
     "edit-kanji": {
@@ -32,7 +31,7 @@ const menuItems = popupMenu.registerItems({
         click: ({ currentNode }) => {
             const kanji = currentNode.textContent;
             main.panels["edit-kanji"].load(kanji);
-            main.openPanel("edit-kanji");
+            main.openPanel("edit-kanji", { entryName: kanji });
         }
     }
 });
@@ -344,7 +343,7 @@ class MainWindow extends Window {
         });
     }
 
-    openPanel(name, { showSuggestions=false }={}) {
+    async openPanel(name, { dictionaryId, entryName }={}) {
         const currentPanel = this.currentPanel;
         if (currentPanel !== null) {
             this.closePanel(currentPanel, currentPanel === name);
@@ -360,7 +359,6 @@ class MainWindow extends Window {
             }
         }
         this.panels[name].style.zIndex = layers["panel"];
-        this.$("filter").classList.toggle("dark", showSuggestions);
         this.currentPanel = name;
         this.panels[name].open();
         if (dataManager.settings.design.animateSlidingPanels) {
@@ -370,6 +368,52 @@ class MainWindow extends Window {
         } else {
             this.panels[name].style.left = "0";
         }
+        let showSuggestions = false;
+        if (name === "edit-vocab" || name === "edit-kanji") {
+            if (entryName === undefined) {
+                throw new Error(
+                    "A vocab entry to load must be provided for edit panels!");
+            }
+            this.panels[name].load(entryName);
+        }
+        if (name === "add-kanji") {
+            // TODO: Replace this with a suggestion window and integrate
+            //       into bottom case
+            if (entryName !== undefined) {
+                this.panels[name].load(entryName);
+            }
+        }
+        if (name === "add-vocab" && dictionaryId !== undefined) {
+            this.panels[name].load(dictionaryId);
+        }
+        if (name === "add-vocab" || name === "edit-vocab") {
+            if (dictionaryId !== undefined) {
+                if (entryName === undefined) {
+                    throw new Error("If a dictionary ID is provived, " +
+                        "the chosen word variant must be provided as well.");
+                }
+                showSuggestions = true;
+                this.suggestionPanes[name].load(dictionaryId, entryName);
+            } else if (entryName !== undefined) {
+                if (dataManager.currentLanguage === "Japanese" &&
+                        dataManager.currentSecondaryLanguage === "English" &&
+                        dataManager.content.isAvailable("Japanese", "English")){
+                    dictionaryId = await
+                        dataManager.vocab.getAssociatedDictionaryId(entryName);
+                    if (dictionaryId === null) {
+                        dictionaryId = await
+                            dataManager.content.guessDictionaryId(entryName);
+                    }
+                    if (dictionaryId !== null) {
+                        showSuggestions = true;
+                        this.suggestionPanes[name].load(dictionaryId, entryName)
+                    }
+                }
+            
+            }
+
+        }
+        this.$("filter").classList.toggle("dark", showSuggestions);
         if (showSuggestions) {
             this.suggestionsShown = true;
             if (dataManager.settings.design.animateSlidingPanels) {

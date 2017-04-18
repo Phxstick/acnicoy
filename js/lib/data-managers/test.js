@@ -103,7 +103,23 @@ module.exports = function (paths, modules) {
         } else {
             return Math.max(1, oldLevel - 1);
         }
-    }
+    };
+
+    test.incrementCorrectCounter = function (entry, mode) {
+        const table = test.modeToTable(mode);
+        const column = test.modeToColumn(mode);
+        return modules.database.run(
+            `UPDATE ${table} SET correct_count = correct_count + 1
+             WHERE ${column} = ?`, entry);
+    };
+
+    test.incrementMistakesCounter = function (entry, mode) {
+        const table = test.modeToTable(mode);
+        const column = test.modeToColumn(mode);
+        return modules.database.run(
+            `UPDATE ${table} SET mistake_count = mistake_count + 1
+             WHERE ${column} = ?`, entry);
+    };
 
     return test;
 };

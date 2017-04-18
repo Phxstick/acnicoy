@@ -107,11 +107,9 @@ class TestSection extends Section {
             if (item.mode === dataManager.test.mode.KANJI_MEANINGS ||
                     item.mode === dataManager.test.mode.KANJI_ON_YOMI ||
                     item.mode === dataManager.test.mode.KANJI_KUN_YOMI) {
-                main.panels["edit-kanji"].load(item.entry);
-                main.openPanel("edit-kanji");
+                main.openPanel("edit-kanji", { entryName: item.entry });
             } else if (item.mode === dataManager.test.mode.WORDS) {
-                main.panels["edit-vocab"].load(item.entry);
-                main.openPanel("edit-vocab");
+                main.openPanel("edit-vocab", { entryName: item.entry });
             }
         });
         // Create popup-menus
@@ -562,7 +560,7 @@ class TestSection extends Section {
                     newLevel = this.$("new-level").value;
                 }
                 let scoreGain;
-                // Update SRS system and daily stats
+                // Update SRS system, daily stats, testInfo and counters
                 if (!this.testInfo.vocabListMode) {
                     dataManager.stats.incrementTestedCounter(item.mode);
                     scoreGain = dataManager.stats.updateScore(
@@ -570,11 +568,15 @@ class TestSection extends Section {
                     dataManager.srs.setLevel(item.entry, newLevel, item.mode);
                     this.testInfo.score += scoreGain;
                 }
-                // Update testinfo-object
                 this.testInfo.numFinished++;
-                if (!item.marked && !item.lastAnswerIncorrect) {
+                const itemCorrect = !item.marked && !item.lastAnswerIncorrect;
+                if (itemCorrect) {
+                    dataManager.test.incrementCorrectCounter(
+                        item.entry, item.mode);
                     this.testInfo.numCorrect++;
                 } else {
+                    dataManager.test.incrementMistakesCounter(
+                        item.entry, item.mode);
                     this.testInfo.numIncorrect++;
                     this.testInfo.mistakes.push({
                         name: this.testInfo.currentItem.entry,

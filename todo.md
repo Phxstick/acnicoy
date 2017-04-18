@@ -1,16 +1,13 @@
 ### Up next
 - Implement chronological ordering of vocabulary
-- Implement suggestion panel for edit panels and use it for items without data
 - `text-align: center` impairs fadeIn function. How to work around?
   - Add `text-align` to solution divs again
-- Also save number of times answered incorrectly/correctly for each SRS item
 - Implement reverse testing (especially for Russian)
 - Button to manually check for content updates (+ "last checked" label)
 - Button to check for program updates (+ "last checked" label)
 - Further refactor Application framework
   - Implement quit-function of Application class, move controlled closing there
 - Make status update message fade out after a short while if not updated
-- Include "usually written with kana only" functionality into suggestion pane
 - Make sure entry content in dictionaries is always selected on focus!
 - Fix: Focusing inputs in srs-schemes-overlay does not work anymore!
 - Make kana input not only react to shift, but also caps-lock and caps letters
@@ -39,7 +36,6 @@
 - Height of diagrams in stats section is slightly too large for some reason
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
 - Order of context menu items is not preserved
-- What happens when animating overflowing solutions in test section?
 
 
 By category
@@ -125,6 +121,11 @@ By category
   - Forward and backward buttons (to browse kanji info history)
   - Open kanji info history
 
+### Suggestion panes
+- Consider suggesting vocabulary lists when adding/editing words as well
+  - Requires a dataset of predefined vocabulary lists
+- Use events to notify changes between panel and suggestion pane?
+
 ### Panels
 - Allow vocab-add-separators to be escaped for single translations
 - Add search function for existing vocabulary lists to add in both panels
@@ -133,8 +134,6 @@ By category
   - Allows searching for existing vocab lists quickly
   - Display items for each added list to allow adding multiple ones
   - Highlight items for lists that are not yet created
-- Consider suggesting vocabulary lists when adding/editing words as well
-  - Requires a dataset of predefined vocabulary lists
 - Implement changing order of translations by dragging
 - Consider displaying add-button only when hovering over a section
   - Replace add-button with new editable item on click

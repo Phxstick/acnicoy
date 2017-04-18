@@ -43,9 +43,17 @@ gulp.task("style", function() {
             const lastCompileTime = fs.statSync(cssFiles[0]).mtime;
             if (lastCompileTime < lastDesignModification) {
                 compileAgain = true;
-            }
-            if (lastCompileTime < lastSassModification) {
+            } else if (lastCompileTime < lastSassModification) {
                 compileAgain = true;
+            } else {
+                for (const sassFile of sassFiles) {
+                    const baseName = path.basename(sassFile, ".scss");
+                    if (baseName.startsWith("_")) continue;
+                    if (!fs.existsSync(`./css/${design}/${baseName}.css`)) {
+                        compileAgain = true;
+                        break;
+                    }
+                }
             }
         }
         if (compileAgain) {

@@ -176,6 +176,66 @@ module.exports = function (paths, contentPaths, modules) {
         .then((rows) => rows.map((row) => row.id));
     };
 
+    /**
+     * Given a word from the vocabulary, try to guess ID of the dictionary entry
+     * corresponding to this word by comparing information from the vocabulary
+     * entry and dictionary entry candidates matching the word.
+     * @param {String} word
+     * @returns {Promise[Integer]}
+     */
+    async function guessDictionaryId(word) {
+        let candidateIds =
+            await data.query(`SELECT id FROM words WHERE word = ?`, word)
+            .then((rows) => rows.map((row) => row.id));
+        if (candidateIds.length === 1) {
+            return candidateIds[0];
+        }
+        // Try entries which have only readings associated next
+        if (candidateIds.length === 0) {
+            candidateIds = await
+                data.query(`SELECT id FROM readings WHERE reading = ?`, word)
+                .then((rows) => rows.map((row) => row.id));
+            // TODO: Only take entries which have no words associated here!
+            if (candidateIds.length === 0) {
+                return null;
+            }
+        }
+        // Choose id whose corresponding dictionary entry fits best
+        const existingInfo = await modules.vocab.getInfo(word);
+        const existingTranslations = new Set(existingInfo.translations);
+        const existingReadings = new Set(existingInfo.readings);
+        const promises = [];
+        for (const candidateId of candidateIds) {
+            promises.push(data.query(`
+                SELECT readings, translations FROM dictionary
+                WHERE id = ?
+            `, candidateId).then((rows) => {
+                // TODO: Consider reading/translation restrictions here?
+                let score = 0;
+                const dictionaryTranslations = rows[0].translations.split(";");
+                const dictionaryReadings = rows[0].readings.split(";");
+                for (const translation of dictionaryTranslations) {
+                    if (existingTranslations.has(translation)) score++;
+                }
+                // TODO: Only compare readings if word is associated
+                for (const reading of dictionaryReadings) {
+                    if (existingReadings.has(reading)) score++;
+                }
+                return score;
+            }));
+        }
+        const scores = await Promise.all(promises);
+        let bestScore = -1;
+        let bestCandidateId;
+        for (let i = 0; i < scores.length; ++i) {
+            if (scores[i] > bestScore) {
+                bestScore = scores[i];
+                bestCandidateId = candidateIds[i];
+            }
+        }
+        return bestCandidateId;
+    }
+
     let query;
     return new Promise((resolve) => {
         // Load content database and attach trainer database to it,
@@ -226,7 +286,8 @@ module.exports = function (paths, contentPaths, modules) {
             getKanjiList,
             getDictionaryEntryInfo,
             getEntryIdsForTranslationQuery,
-            getEntryIdsForReadingQuery
+            getEntryIdsForReadingQuery,
+            guessDictionaryId
         });
         return data;
     });

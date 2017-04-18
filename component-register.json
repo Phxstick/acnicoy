@@ -21,7 +21,7 @@
         "add-kanji", "edit-kanji", "add-vocab", "edit-vocab"
     ],
     "suggestionPanes": [
-        "add-vocab"
+        "add-vocab", "edit-vocab"
     ],
     "widgets": [
         "popup-stack", "switch-button", "switch-bar", "popup-list",

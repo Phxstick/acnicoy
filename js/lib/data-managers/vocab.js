@@ -75,9 +75,12 @@ module.exports = function (paths, modules) {
      * @param {Array[String]} translations
      * @param {Array[String]} readings
      * @param {Integer} level
+     * @param {Integer} [dictionaryId=null] Id of the entry in the dictionary
+     *     this word corresponds to. Optional.
      * @returns {Promise[Array[String]}
      */
-    vocab.add = async function (word, translations, readings, level) {
+    vocab.add = async function (word, translations, readings, level,
+                                dictionaryId=null) {
         const rows = await modules.database.query(
             "SELECT * FROM vocabulary WHERE word = ?", word);
         if (!rows.length) {
@@ -87,10 +90,10 @@ module.exports = function (paths, modules) {
             await modules.database.run(`
                 INSERT INTO vocabulary
                 (word, date_added, level, review_date,
-                 translations, readings)
-                VALUES (?, ?, ?, ?, ?, ?)`,
+                 translations, readings, dictionary_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?)`,
                 word, utility.getTime(), level, utility.getTime() + spacing,
-                translations.join(";"), readings.join(";"));
+                translations.join(";"), readings.join(";"), dictionaryId);
             return [true, translations.length, readings.length];
         }
         const oldTranslations = rows[0].translations.length === 0 ?
@@ -256,6 +259,24 @@ module.exports = function (paths, modules) {
             if (rows.length === 0) return [];
             if (rows[0].readings.length === 0) return [];
             return rows[0].readings.split(";");
+        });
+    }
+
+    /**
+     * Return dictionary ID associated with given word in the vocabulary.
+     * If no ID is associated, return null.
+     * @param {String} word
+     * @returns {Promise[Integer|null]}
+     */
+    vocab.getAssociatedDictionaryId = function (word) {
+        return modules.database.query(
+            "SELECT dictionary_id FROM vocabulary WHERE word = ?", word)
+        .then((rows) => {
+            if (rows.length === 0) {
+                throw new Error(
+                    `Word '${word}' could not be found in the vocabulary.`);
+            }
+            return rows[0].dictionary_id;
         });
     }
 
