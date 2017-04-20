@@ -47,9 +47,9 @@ module.exports = function (paths, modules) {
         }
     };
 
-    /*
-     * Functions for reading lists and list contents.
-     */
+    // =====================================================================
+    // Getting list names and list contents
+    // =====================================================================
 
     vocabLists.getLists = function () {
         return Object.keys(data);
@@ -69,9 +69,9 @@ module.exports = function (paths, modules) {
         return data[list];
     };
 
-    /*
-     * Functions for renaming, deleting or adding new lists.
-     */
+    // =====================================================================
+    // Renaming, deleting or adding new lists
+    // =====================================================================
 
     vocabLists.renameList = function (oldName, newName) {
         // Return false if list with new name already exists
@@ -101,9 +101,9 @@ module.exports = function (paths, modules) {
         }
     };
 
-    /*
-     * Functions for modifying list content.
-     */
+    // =====================================================================
+    // Modifying list content
+    // =====================================================================
 
     vocabLists.addWordToList = function (word, list) {
         if (!wordToLists.has(word))
@@ -122,6 +122,29 @@ module.exports = function (paths, modules) {
                 data[list].remove(word);
             }
         }
+    };
+
+    // =====================================================================
+    // Searching for lists or searching lists
+    // =====================================================================
+
+    vocabLists.searchForList = function (query) {
+        query = query.toLowerCase();
+        const searchResult = [];
+        for (const name in data) {
+            if (name.toLowerCase().includes(query)) searchResult.push(name);
+        }
+        return searchResult;
+    };
+
+    vocabLists.searchList = function (listName, query) {
+        query = query.toLowerCase();
+        const searchResult = [];
+        const words = vocabLists.getWordsForList(listName);
+        for (const word of words) {
+            if (word.toLowerCase().includes(query)) searchResult.push(word);
+        }
+        return searchResult;
     };
 
     return vocabLists;

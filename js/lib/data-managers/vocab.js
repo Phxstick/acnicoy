@@ -16,11 +16,19 @@ module.exports = function (paths, modules) {
 
     /**
      * Return a list of all words in the vocabulary.
+     * @param {String} sortingCriterion - "alphabetical", "dateAdded" or "level"
+     * @param {Boolean} [sortBackwards=false]
      * @returns {Promise[Array[String]]}
      */
-    vocab.getAll = function () {
+    vocab.getAll = function (sortingCriterion, sortBackwards=false) {
+        let columnToSortBy;
+        if (sortingCriterion === "alphabetical") columnToSortBy = "word";
+        else if (sortingCriterion === "dateAdded") columnToSortBy = "date_added";
+        else if (sortingCriterion === "level") columnToSortBy = "level";
+        const sortingDirection = sortBackwards ? "DESC" : "ASC";
         return modules.database.query(
-            "SELECT word FROM vocabulary ORDER BY word ASC")
+            `SELECT word FROM vocabulary
+             ORDER BY ${columnToSortBy} ${sortingDirection}`)
         .then((rows) => rows.map((row) => row.word));
     }
 
@@ -277,6 +285,36 @@ module.exports = function (paths, modules) {
                     `Word '${word}' could not be found in the vocabulary.`);
             }
             return rows[0].dictionary_id;
+        });
+    }
+
+    /**
+     * Return a mapping from words to date added (in seconds).
+     * @returns {Promise[Object[Integer]]}
+     */
+    vocab.getDateAddedForEachWord = function () {
+        return modules.database.query(`SELECT word, date_added FROM vocabulary`)
+        .then((rows) => {
+            const mapping = {};
+            for (const { word, date_added } of rows) {
+                mapping[word] = date_added;
+            }
+            return mapping;
+        });
+    }
+
+    /**
+     * Return a mapping from words to their current SRS levels.
+     * @returns {Promise[Object[Integer]]}
+     */
+    vocab.getLevelForEachWord = function () {
+        return modules.database.query(`SELECT word, level FROM vocabulary`)
+        .then((rows) => {
+            const mapping = {};
+            for (const { word, level } of rows) {
+                mapping[word] = level;
+            }
+            return mapping;
         });
     }
 

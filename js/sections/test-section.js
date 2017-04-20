@@ -555,6 +555,14 @@ class TestSection extends Section {
         if (this.testInfo.currentItem !== null &&
                 !this.testInfo.skipNextEvaluation) {
             const item = this.testInfo.currentItem;
+            // Remember mistakes (for display in test-complete-overlay)
+            if (item.lastAnswerIncorrect) {
+                this.testInfo.mistakes.push({
+                    name: item.entry,
+                    mode: item.mode,
+                    part: this.testInfo.currentPart
+                });
+            }
             if (item.parts.length === 0) {
                 if (newLevel === undefined && !this.testInfo.vocabListMode) {
                     newLevel = this.$("new-level").value;
@@ -578,11 +586,6 @@ class TestSection extends Section {
                     dataManager.test.incrementMistakesCounter(
                         item.entry, item.mode);
                     this.testInfo.numIncorrect++;
-                    this.testInfo.mistakes.push({
-                        name: this.testInfo.currentItem.entry,
-                        mode: this.testInfo.currentItem.mode,
-                        part: this.testInfo.currentPart
-                    });
                 }
                 // Animate label with gained score
                 if (dataManager.settings.test.showScore &&

@@ -119,6 +119,7 @@ class AddVocabPanel extends Panel {
         .then(([ entryNew, numTranslationsAdded, numReadingsAdded ]) => {
             if (list.length > 0) {
                 dataManager.vocabLists.addWordToList(word, list);
+                events.emit("added-to-list", word, list);
             }
             const numFailed = translations.length - numTranslationsAdded;
             const string1 = numTranslationsAdded !== 1 ? "s have" : " has";

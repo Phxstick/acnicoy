@@ -331,9 +331,11 @@ class EditVocabPanel extends Panel {
                 dataManager.vocabLists.removeWordFromList(word, list);
                 events.emit("removed-from-list", word, list);
             }
-            for (const list of lists) {
-                dataManager.vocabLists.addWordToList(word, list);
-                events.emit("added-to-list", word, list);
+            if (newStatus !== "removed") {
+                for (const list of lists) {
+                    dataManager.vocabLists.addWordToList(word, list);
+                    events.emit("added-to-list", word, list);
+                }
             }
             if (newStatus === "removed") {
                 events.emit("word-deleted", originalWord);

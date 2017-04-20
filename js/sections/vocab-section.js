@@ -4,24 +4,25 @@ const menuItems = popupMenu.registerItems({
     "rename-list": {
         label: "Rename list",
         click: ({ currentNode }) => {
-            currentNode.contentEditable = "true";
-            currentNode.focus();
+            currentNode.enterEditMode();
         }
     },
     "delete-list": {
         label: "Delete list",
         click: ({ currentNode, data: {section} }) => {
-            section.deleteList(currentNode, currentNode.dataset.listName);
+            section.deleteVocabList(currentNode);
+        }
+    },
+    "create-list": {
+        label: "Create new vocab list",
+        click: ({ currentNode, data: {section} }) => {
+            section.addVocabList();
         }
     },
     "test-on-list": {
         label: "Take test on list",
         click: ({ currentNode, data: {section} }) => {
-            main.sections["test"].createTest(currentNode.dataset.listName)
-            .then((created) => {
-                if (!created) return;
-                main.openSection("test");
-            });
+            section.startTestOnVocabList(currentNode.dataset.listName);
         }
     },
     "edit-item": {
@@ -34,7 +35,7 @@ const menuItems = popupMenu.registerItems({
     "remove-from-list": {
         label: "Remove item from list",
         click: ({ currentNode, data: {section} }) => {
-            section.removeFromList(currentNode);
+            section.removeFromVocabList(currentNode);
         }
     },
     "remove-from-vocab": {
@@ -45,7 +46,11 @@ const menuItems = popupMenu.registerItems({
                 `Are you sure you want to delete the word<br>'${word}'?`)
             .then((confirmed) => {
                 if (!confirmed) return;
+                const oldLists = dataManager.vocabLists.getListsForWord(word);
                 dataManager.vocab.remove(word).then(() => {
+                    for (const list of vocabLists) {
+                        events.emit("removed-from-list", word, list);
+                    }
                     events.emit("word-deleted", word);
                     events.emit("vocab-changed");
                 });
@@ -61,40 +66,27 @@ class VocabSection extends Section {
         this.selectedListNode = null;
         this.draggedItem = null;
         this.draggedItemType = null;
-        this.allWordsQuery = "";
         this.listNameToAmountLabel = new Map();
-        // Add event listeners
-        this.$("search-vocab-entry").addEventListener("keypress", (event) => {
-            if (event.key !== "Enter") return;
-            this.searchVocabulary();
-        });
-        this.$("search-vocab-button").addEventListener("click", () => {
-            this.searchVocabulary();
-        });
+        this.listNameToViewNode = new Map();
+
+        this.$("vocab-lists").popupMenu(
+            menuItems, ["create-list"], { section: this });
+        // =====================================================================
+        // Add event listeners to vocab list control buttons
+        // =====================================================================
         this.$("add-list-button").addEventListener("click", () => {
-            const item = this.createAllListsItem("");
-            this.$("all-lists").appendChild(item);
-            this.$("all-lists").scrollToBottom();
-            this.$("all-lists-frame").show("flex");
-            this.$("no-lists-info").hide();
-            item.contentEditable = "true";
-            item.focus();
+            this.addVocabList();
         });
         this.$("rename-list-button").addEventListener("click", () => {
-            this.selectedListNode.contentEditable = "true";
-            this.selectedListNode.focus();
+            this.selectedListNode.enterEditMode();
         });
         this.$("delete-list-button").addEventListener("click", () => {
-            this.deleteList(
-                this.selectedListNode, this.selectedListNode.textContent);
+            this.deleteVocabList(this.selectedListNode);
         });
         this.$("test-on-list-button").addEventListener("click", () => {
-            main.sections["test"].createTest(this.selectedList)
-            .then((created) => {
-                if (!created) return;
-                main.openSection("test");
-            });
+            this.startTestOnVocabList(this.selectedList);
         });
+
         // =====================================================================
         // Assign drag and drop listeners
         // =====================================================================
@@ -107,10 +99,10 @@ class VocabSection extends Section {
             });
             node.addEventListener("drop", (event) => {
                 if (this.selectedList === null) return;
-                if (this.draggedItemType !== "all-words-item") return;
+                if (this.draggedItemType !== "vocab-item") return;
                 event.preventDefault();
                 const word = event.dataTransfer.getData("text");
-                this.addToList(word, this.selectedList);
+                this.addToVocabList(word, this.selectedList);
                 node.classList.remove("dragover");
                 node.dragCounter = 0;
             });
@@ -129,65 +121,94 @@ class VocabSection extends Section {
                 }
             });
         }
-        // If user scrolls almost to bottom in vocabulary view, load more words
-        const displayAmount = 80;
-        const criticalDistance = 100;
-        this.initialDisplayAmount = 40;
-        this.vocabResultLoaded = false;
-        this.$("all-words").uponScrollingBelow(criticalDistance, () => {
-            if (this.nextRowIndex > 0 && this.vocabResultLoaded &&
-                    this.nextRowIndex < this.vocabResultRows.length)
-                this.loadMoreVocabulary(displayAmount);
-        });
+
+        // =====================================================================
+        // Initialize search info and attach event listeners for searching
+        // =====================================================================
+        this.searchInfo = {
+            "vocab": {
+                initialDisplayAmount: 50,
+                displayAmount: 100
+            },
+            "vocab-lists": {
+                initialDisplayAmount: 40,
+                displayAmount: 40
+            },
+            "list-contents": {
+                initialDisplayAmount: 40,
+                displayAmount: 80
+            }
+        };
+        const criticalScrollDistance = 150;
+        for (const fieldName in this.searchInfo) {
+            const info = this.searchInfo[fieldName];
+            info.lastQuery = null;
+            info.sortingCriterion = "alphabetical";
+            info.sortBackwards = false;
+            info.resultLoaded = "false";
+            info.resultRows = null;
+            info.nextRowIndex = null;
+            // If user scrolls almost to bottom of view, load more entries
+            this.$(fieldName).uponScrollingBelow(criticalScrollDistance, () => {
+                if (info.nextRowIndex > 0 && info.resultLoaded &&
+                        info.nextRowIndex < info.resultRows.length)
+                    this.displayMoreSearchResults(fieldName);
+            });
+            // Attach event listener to search entry
+            const searchEntry = this.$(`search-${fieldName}-entry`)
+            searchEntry.addEventListener("keypress", (event) => {
+                if (event.key !== "Enter") return;
+                const query = searchEntry.value.trim();
+                this.search(fieldName, query);
+            });
+            // Attach event listener to search button
+            const searchButton = this.$(`search-${fieldName}-button`);
+            searchButton.addEventListener("click", () => {
+                const query = searchEntry.value.trim();
+                this.search(fieldName, query);
+            });
+        }
     }
 
     registerCentralEventListeners() {
+        // If content of a vocabulary list changed, update view
         events.on("removed-from-list", (word, list) => {
             if (this.selectedList === list) {
-                utility.removeEntryFromSortedList(this.$("list-contents"), word);
+                this.removeEntryFromSortedView("list-contents", word);
             }
-            // TODO
-            // const amountLabel = this.listNameToAmountLabel.get(list);
-            // amountLabel.textContent = parseInt(amountLabel.textContent) - 1;
+            const amountLabel = this.listNameToAmountLabel.get(list);
+            amountLabel.textContent = parseInt(amountLabel.textContent) - 1;
+            if (this.searchInfo["vocab-lists"].sortingCriterion === "length") {
+                this.insertNodeIntoSortedView(
+                    "vocab-lists", this.listNameToViewNode.get(list));
+            }
         });
         events.on("added-to-list", (word, list) => {
             if (this.selectedList === list) {
-                utility.insertNodeIntoSortedList(
-                    this.$("list-contents"), this.createListContentsItem(word));
+                this.insertEntryIntoSortedView("list-contents", word);
             }
-            // TODO
-            // const amountLabel = this.listNameToAmountLabel.get(list);
-            // amountLabel.textContent = parseInt(amountLabel.textContent) + 1;
+            const amountLabel = this.listNameToAmountLabel.get(list);
+            amountLabel.textContent = parseInt(amountLabel.textContent) + 1;
+            if (this.searchInfo["vocab-lists"].sortingCriterion === "length") {
+                this.insertNodeIntoSortedView(
+                    "vocab-lists", this.listNameToViewNode.get(list));
+            }
         });
-        // If a vocab item has been deleted, delete it from all lists
+        // If a vocab item has been deleted or added, update view
         events.on("word-deleted", (word) => {
-            utility.removeEntryFromSortedList(this.$("all-words"), word);
-            this.removeFromList
-            utility.removeEntryFromSortedList(this.$("list-contents"), word);
-            events.emit("removed-from-list");
+            this.removeEntryFromSortedView("vocab", word);
         });
-        // If a new word has been added to the vocabulary ...
         events.on("word-added", (word) => {
-            // ... show it in list of all words if it matches current filter
-            // TODO: More precisely: Check if word matches query
-            if (this.allWordsQuery.length === 0) {
-                utility.insertNodeIntoSortedList(
-                        this.$("all-words"), this.createAllWordsItem(word));
-            }
-            // ... show it in list contents if selected list contains it
+            this.insertEntryIntoSortedView("vocab", word);
             if (this.selectedList !== null &&
-                dataManager.vocabLists.isWordInList(word, this.selectedList)) {
-                const item = this.createListContentsItem(word);
-                utility.insertNodeIntoSortedList(this.$("list-contents"), item);
-            }
-            if (dataManager.vocabLists.isWordInList(word)) {
-                events.emit("added-to-list");
+                  dataManager.vocabLists.isWordInList(word, this.selectedList)){
+                this.insertEntryIntoSortedView("list-contents", word);
             }
         });
         events.onAll(["language-changed", "word-added", "word-deleted"],
         () => { 
             dataManager.vocab.size().then((size) => {
-                this.$("all-words-frame").toggleDisplay(size > 0);
+                this.$("vocab-frame").toggleDisplay(size > 0);
                 this.$("empty-vocabulary-info").toggleDisplay(size === 0);
             });
         });
@@ -195,7 +216,7 @@ class VocabSection extends Section {
             ["language-changed", "vocab-list-created", "vocab-list-deleted"],
         () => {
             const noLists = dataManager.vocabLists.getLists().length === 0;
-            this.$("all-lists-frame").toggleDisplay(!noLists, "flex");
+            this.$("vocab-lists-frame").toggleDisplay(!noLists, "flex");
             this.$("list-contents-column").toggleDisplay(!noLists, "flex");
             this.$("no-lists-info").toggleDisplay(noLists, "flex");
         });
@@ -221,41 +242,28 @@ class VocabSection extends Section {
     }
     
     adjustToLanguage(language, secondary) {
-        this.$("all-lists").empty();
-        this.$("all-words").empty();
-        this.deselectList();
+        this.deselectVocabList();
         this.listNameToAmountLabel.clear();
-        // Fill the left section with first few words in the vocabulary
-        dataManager.vocab.getAll().then((words) => {
-            this.nextRowIndex = 0;
-            this.vocabResultRows = words;
-            this.loadMoreVocabulary(this.initialDisplayAmount);
-            this.$("all-words").scrollToTop();
-            this.vocabResultLoaded = true;
-        });
-        const lists = dataManager.vocabLists.getLists();
-        lists.sort();
-        // Fill the middle section with all vocab list names
-        const fragment = document.createDocumentFragment();
-        for (const list of lists) {
-            fragment.appendChild(this.createAllListsItem(list));
-        }
-        this.$("all-lists").appendChild(fragment);
+        this.listNameToViewNode.clear();
+        // Load part of vocabulary and list of vocab-list names
+        this.search("vocab", "");
+        this.search("vocab-lists", "");
     }
 
-    loadMoreVocabulary(amount) {
-        const limit = Math.min(this.nextRowIndex + amount,
-                               this.vocabResultRows.length);
-        const words = this.vocabResultRows.slice(this.nextRowIndex, limit);
-        const fragment = document.createDocumentFragment();
-        for (const word of words) {
-            fragment.appendChild(this.createAllWordsItem(word));
-        }
-        this.$("all-words").appendChild(fragment);
-        this.nextRowIndex = limit;
+    // =====================================================================
+    // Functions for creating items for the three data views
+    // =====================================================================
+
+    createViewItem(fieldName, content) {
+        if (fieldName === "vocab")
+            return this.createVocabViewItem(content);
+        if (fieldName === "vocab-lists")
+            return this.createVocabListsViewItem(content);
+        if (fieldName === "list-contents")
+            return this.createListContentsViewItem(content);
     }
 
-    createAllWordsItem(word) {
+    createVocabViewItem(word) {
         const item = document.createElement("div");
         item.draggable = true;
         item.textContent = word;
@@ -265,7 +273,7 @@ class VocabSection extends Section {
         }
         // Attach drag event to the item
         item.addEventListener("dragstart", (event) => {
-            this.draggedItemType = "all-words-item";
+            this.draggedItemType = "vocab-item";
             this.draggedItem = item;
             event.dataTransfer.setData("text/plain", item.textContent);
         });
@@ -274,7 +282,7 @@ class VocabSection extends Section {
         return item;
     }
 
-    createListContentsItem(word) {
+    createListContentsViewItem(word) {
         const item = document.createElement("div");
         item.textContent = word;
         // item.draggable = true;
@@ -289,48 +297,79 @@ class VocabSection extends Section {
         return item;
     }
 
-    createAllListsItem(name) {
+    createVocabListsViewItem(name) {
         const node = document.createElement("div");
-        node.textContent = name;
+        // Display name of the list
+        const nameLabel = document.createElement("div");
+        nameLabel.textContent = name;
+        nameLabel.classList.add("list-name");
+        node.appendChild(nameLabel);
         node.dataset.listName = name;
-        // Remember old list name before editing
-        node.addEventListener("focusin", () => {
-            this.oldListName = node.textContent;
-            node.removeEventListener("click", node.selectListCallback);
+        // Display small label with amount of items in this vocabulary list
+        const amountLabel = document.createElement("div");
+        amountLabel.classList.add("amount-words");
+        amountLabel.textContent = name.length === 0 ? "0" :
+            dataManager.vocabLists.getWordsForList(name).length;
+        if (name.length > 0) {
+            this.listNameToAmountLabel.set(name, amountLabel);
+            this.listNameToViewNode.set(name, node);
+        }
+        node.appendChild(amountLabel);
+        // When clicking on a vocabulary list name, show list contents
+        node.selectVocabListCallback = () => this.selectVocabList(node);
+        node.addEventListener("click", node.selectVocabListCallback);
+        // Allow renaming the list
+        node.enterEditMode = () => {
+            nameLabel.contentEditable = "true";
+            nameLabel.focus();
+            node.classList.add("edit-mode");
+        };
+        nameLabel.addEventListener("focusin", () => {
+            node.removeEventListener("click", node.selectVocabListCallback);
+        });
+        // If Enter key is pressed, quit editing
+        nameLabel.addEventListener("keypress", (event) => {
+            if (event.key === "Enter") {
+                nameLabel.blur();
+            }
         });
         // Apply changes depending on input and previous value
-        node.addEventListener("focusout", () => {
+        nameLabel.addEventListener("focusout", () => {
             this.root.getSelection().removeAllRanges();
-            node.contentEditable = "false";
-            node.addEventListener("click", node.selectListCallback);
-            const oldName = this.oldListName;
-            const newName = node.textContent.trim();
-            node.dataset.listName = newName;
+            nameLabel.contentEditable = "false";
+            node.classList.remove("edit-mode");
+            node.addEventListener("click", node.selectVocabListCallback);
+            const oldName = node.dataset.listName;
+            const newName = nameLabel.textContent.trim();
             // Case that an existing vocabulary list was renamed
+            let doRename = false;
             if (oldName.length > 0 && newName.length > 0) {
-                if (newName === oldName) return;
+                if (newName === oldName) {
+                    nameLabel.textContent = newName;
+                    return;
+                }
                 if (dataManager.vocabLists.renameList(oldName, newName)) {
+                    doRename = true;
                     main.updateStatus(
                         `Renamed list '${oldName}' to '${newName}'.`);
                     events.emit("vocab-list-deleted", oldName);
                     events.emit("vocab-list-created", newName);
-                    this.insertListNameAtCorrectPosition(node);
                 } else {
                     main.updateStatus(
                         `List with name '${newName}' already exists.`);
-                    node.textContent = oldName;
+                    nameLabel.textContent = oldName;
                 }
             // Case that an existing vocabulary list was deleted
             } else if (oldName.length > 0) {
-                this.deleteList(node, oldName).then((confirmed) => {
+                this.deleteVocabList(node).then((confirmed) => {
                     if (!confirmed) {
-                        node.textContent = oldName;
+                        nameLabel.textContent = oldName;
                     }
                 });
             // Case that a new vocabulary list was added
             } else if (newName.length > 0) {
                 if (dataManager.vocabLists.createList(newName)) {
-                    this.insertListNameAtCorrectPosition(node);
+                    doRename = true;
                     main.updateStatus(`Created new list '${newName}'.`);
                     events.emit("vocab-list-created", newName);
                 } else {
@@ -341,75 +380,74 @@ class VocabSection extends Section {
             } else {
                 node.remove();
             }
-        });
-        // If Enter key is pressed, quit editing
-        node.addEventListener("keypress", (event) => {
-            if (event.key === "Enter") {
-                node.blur();
+            if (doRename) {
+                node.dataset.listName = newName;
+                nameLabel.textContent = newName;
+                if (this.selectedList === oldName)
+                    this.selectedList = newName;
+                this.listNameToAmountLabel.set(newName, amountLabel);
+                this.listNameToViewNode.set(newName, node);
+                this.insertNodeIntoSortedView("vocab-lists", node);
             }
         });
-        // When clicking on a vocabulary list name, show list contents
-        node.selectListCallback = () => this.selectList(node);
-        node.addEventListener("click", node.selectListCallback);
         // Allow dropping words on this list name to add word to the list
         node.addEventListener("dragover", (event) => {
             event.preventDefault();
         });
         node.addEventListener("drop", (event) => {
             event.preventDefault();
-            const listName = node.textContent;
+            const listName = node.dataset.listName;
             const type = this.draggedItemType;
-            if (type !== "all-words-item" && type !== "list-contents-item") {
+            if (type !== "vocab-item" && type !== "list-contents-item") {
                 return;
             }
             const word = event.dataTransfer.getData("text");
-            this.addToList(word, listName);
+            this.addToVocabList(word, listName);
             node.classList.remove("dragover");
+            node.dragCounter = 0;
         });
         // Highlight list name when dragging valid vocabulary item over it
+        node.dragCounter = 0;
         node.addEventListener("dragenter", (event) => {
             event.preventDefault();
             const type = this.draggedItemType;
-            if (type === "all-words-item" || type === "list-contents-item") {
-                node.classList.add("dragover");
+            if (type === "vocab-item" || type === "list-contents-item") {
+                if (node.dragCounter === 0) {
+                    node.classList.add("dragover");
+                }
+                node.dragCounter++;
             }
         });
         node.addEventListener("dragleave", (event) => {
-            node.classList.remove("dragover");
+            const type = this.draggedItemType;
+            if (type === "vocab-item" || type === "list-contents-item") {
+                node.dragCounter--;
+                if (node.dragCounter === 0) {
+                    node.classList.remove("dragover");
+                }
+            }
         });
-        // Display small label with amount of items in this vocabulary list
-        if (name.length !== 0) {
-            const amountLabel = document.createElement("div");
-            amountLabel.classList.add("amount-words");
-            amountLabel.textContent =
-                dataManager.vocabLists.getWordsForList(name).length;
-            this.listNameToAmountLabel.set(name, amountLabel);
-            // TODO: Finish amount-label functionality
-            // node.appendChild(amountLabel);
-        }
         node.popupMenu(menuItems,
                 ["test-on-list", "rename-list", "delete-list"],
                 { section: this });
         return node;
     }
 
-    // Make sure list of vocablist-names stays sorted
-    insertListNameAtCorrectPosition(node) {
-        // TODO: Do this more efficiently
-        const name = node.dataset.listName;
-        const allLists = this.$("all-lists").children;
-        for (const listNode of allLists) {
-            if (listNode.dataset.listName > name) {
-                this.$("all-lists").insertBefore(node, listNode);
-                break;
-            }
-        }
-        if (allLists.length === 0 ||
-                allLists[allLists.length - 1].dataset.listName < name)
-            this.$("all-lists").appendChild(node);
+    // =====================================================================
+    // Functions for manipulating, selecting or testing on vocab lists
+    // =====================================================================
+
+    addVocabList() {
+        const item = this.createViewItem("vocab-lists", "");
+        this.$("vocab-lists").appendChild(item);
+        this.$("vocab-lists").scrollToBottom();
+        this.$("vocab-lists-frame").show("flex");
+        this.$("no-lists-info").hide();
+        item.enterEditMode();
     }
 
-    deleteList(node, name) {
+    deleteVocabList(node) {
+        const name = node.dataset.listName;
         return dialogWindow.confirm(
             `Are you sure you want to delete the vocabulary list '${name}'?`)
         .then((confirmed) => {
@@ -418,14 +456,14 @@ class VocabSection extends Section {
             main.updateStatus(`Deleted list '${name}' and its contents.`);
             node.remove();
             if (this.selectedListNode === node) {
-                this.deselectList();
+                this.deselectVocabList();
             }
             events.emit("vocab-list-deleted", name);
             return true;
         });
     }
 
-    selectList(node) {
+    selectVocabList(node) {
         if (this.selectedListNode === node) return;
         const listName = node.dataset.listName;
         if (this.selectedListNode !== null) {
@@ -437,18 +475,11 @@ class VocabSection extends Section {
         this.$("test-on-list-button").show();
         this.selectedList = listName;
         this.selectedListNode = node;
-        const words = dataManager.vocabLists.getWordsForList(listName);
-        words.sort();
-        const fragment = document.createDocumentFragment();
-        for (const word of words) {
-            fragment.appendChild(this.createListContentsItem(word));
-        }
-        this.$("list-contents").empty();
-        this.$("list-contents").appendChild(fragment);
+        this.search("list-contents", "");
         events.emit("vocab-list-selected", listName);
     }
 
-    deselectList() {
+    deselectVocabList() {
         this.selectedListNode = null;
         this.selectedList = null;
         this.$("list-contents").empty();
@@ -458,35 +489,186 @@ class VocabSection extends Section {
         events.emit("vocab-list-deselected");
     }
 
-    addToList (word, listName) {
+    startTestOnVocabList(listName) {
+        if (dataManager.vocabLists.getWordsForList(listName).length === 0) {
+            dialogWindow.info(`The vocabulary list '${listName}' is empty!`);
+            return;
+        }
+        main.sections["test"].createTest(listName).then((created) => {
+            if (created) main.openSection("test");
+        });
+    }
+
+    // =====================================================================
+    // Functions for manipulating vocab list contents
+    // =====================================================================
+
+    addToVocabList (word, listName) {
         if (dataManager.vocabLists.addWordToList(word, listName)) {
             this.draggedItem.classList.add("already-in-list");
             events.emit("added-to-list", word, listName);
         }
     }
 
-    removeFromList(node) {
+    removeFromVocabList(node) {
         const word = node.textContent;
         dataManager.vocabLists.removeWordFromList(word, this.selectedList);
         events.emit("removed-from-list", word, this.selectedList);
     }
 
-    searchVocabulary() {
-        const query = this.$("search-vocab-entry").value.trim();
-        this.allWordsQuery = query;
-        this.$("all-words").empty();
-        const wordsReceived = query.length === 0 ?
-            dataManager.vocab.getAll() :
-            dataManager.vocab.search(query);
-        // If the entry is empty, display all words
-        wordsReceived.then((words) => {
-            this.$("all-words").empty();
-            this.nextRowIndex = 0;
-            this.vocabResultRows = words;
-            this.loadMoreVocabulary(this.initialDisplayAmount);
-            this.$("all-words").scrollToTop();
-            this.vocabResultLoaded = true;
-        });
+    // =====================================================================
+    // Search functionality
+    // =====================================================================
+
+    async getStringKeyForSorting(fieldName) {
+        const sortingCriterion = this.searchInfo[fieldName].sortingCriterion;
+        if (fieldName === "vocab") {
+            if (sortingCriterion === "alphabetical") {
+                return (word) => word;
+            } else if (sortingCriterion === "dateAdded") {
+                return dataManager.vocab.getDateAddedForEachWord()
+                .then((datesAdded) => {
+                    return (word) => datesAdded[word];
+                });
+            } else if (sortingCriterion === "level") {
+                return dataManager.vocab.getLevelForEachWord()
+                .then((levels) => {
+                    return (word) => levels[word];
+                });
+            }
+        } else if (fieldName === "vocab-lists") {
+            if (sortingCriterion === "alphabetical") {
+                return (listName) => listName;
+            } else if (sortingCriterion === "length") {
+                return (listName) => 
+                    dataManager.vocabLists.getWordsForList(listName).length;
+            }
+        } else if (fieldName === "list-contents") {
+            if (sortingCriterion === "alphabetical") {
+                return (word) => word;
+            }
+        }
+    }
+
+    getNodeKeyForSorting(fieldName) {
+        const sortingCriterion = this.searchInfo[fieldName].sortingCriterion;
+        if (fieldName === "vocab") {
+            return (node) => node.textContent;
+        } else if (fieldName === "vocab-lists") {
+            return (node) => node.dataset.listName;
+        } else if (fieldName === "list-contents") {
+            return (node) => node.textContent;
+        }
+    }
+
+    async search(fieldName, query) {
+        const sortingCriterion = this.searchInfo[fieldName].sortingCriterion;
+        const sortBackwards = this.searchInfo[fieldName].sortBackwards;
+        this.searchInfo[fieldName].lastQuery = query;
+        this.$(fieldName).empty();
+        let searchResults;
+        let alreadySorted = false;
+        if (query.length === 0) {
+            // If query is empty, take all items as search result
+            if (fieldName === "vocab") {
+                searchResults = await dataManager.vocab.getAll(
+                    sortingCriterion, sortBackwards);
+                alreadySorted = true;
+            } else if (fieldName === "vocab-lists") {
+                searchResults = dataManager.vocabLists.getLists();
+            } else if (fieldName === "list-contents") {
+                searchResults = dataManager.vocabLists.getWordsForList(
+                    this.selectedList);
+            }
+        } else {
+            if (fieldName === "vocab") {
+                searchResults = await dataManager.vocab.search(query);
+            } else if (fieldName === "vocab-lists") {
+                searchResults = dataManager.vocabLists.searchForList(query);
+            } else if (fieldName === "list-contents") {
+                searchResults =
+                    dataManager.vocabLists.searchList(this.selectedList, query);
+            }
+        }
+        // Sort search result if necessary
+        if (!alreadySorted) {
+            const key = await this.getStringKeyForSorting(fieldName);
+            searchResults.sort((entry1, entry2) => {
+                const value1 = key(entry1);
+                const value2 = key(entry2);
+                if (value1 < value2) return -1 + 2 * sortBackwards;
+                if (value1 > value2) return 1 - 2 * sortBackwards;
+                return 0;
+            });
+        }
+        if (fieldName === "vocab-lists") {
+            this.deselectVocabList();
+        }
+        this.$(fieldName).empty();
+        this.searchInfo[fieldName].nextRowIndex = 0;
+        this.searchInfo[fieldName].resultRows = searchResults;
+        this.displayMoreSearchResults(fieldName);
+        this.$(fieldName).scrollToTop();
+        this.searchInfo[fieldName].resultLoaded = true;
+    }
+
+    displayMoreSearchResults(fieldName) {
+        const amount = this.searchInfo[fieldName].nextRowIndex === 0 ?
+            this.searchInfo[fieldName].initialDisplayAmount :
+            this.searchInfo[fieldName].displayAmount;
+        const limit = Math.min(this.searchInfo[fieldName].nextRowIndex + amount,
+                               this.searchInfo[fieldName].resultRows.length);
+        const texts = this.searchInfo[fieldName].resultRows.slice(
+            this.searchInfo[fieldName].nextRowIndex, limit);
+        const fragment = document.createDocumentFragment();
+        for (const text of texts) {
+            fragment.appendChild(this.createViewItem(fieldName, text));
+        }
+        this.$(fieldName).appendChild(fragment);
+        this.searchInfo[fieldName].nextRowIndex = limit;
+    }
+
+    async insertEntryIntoSortedView(fieldName, content) {
+        const node = this.createViewItem(fieldName, content);
+        await this.insertNodeIntoSortedView(fieldName, node);
+    }
+
+    async insertNodeIntoSortedView(fieldName, node) {
+        const nodeKey = this.getNodeKeyForSorting(fieldName);
+        const content = nodeKey(node).toLowerCase();
+        // Check if content of node matches last query
+        if (!content.includes(this.searchInfo[fieldName].lastQuery)) {
+            return;
+        }
+        const sortBackwards = this.searchInfo[fieldName].sortBackwards;
+        const viewNode = this.$(fieldName);
+        const stringKey = await this.getStringKeyForSorting(fieldName);
+        const key = (node) => stringKey(nodeKey(node));
+        const value = key(node);
+        if (viewNode.children.length === 0) {
+            viewNode.appendChild(node);
+        } else {
+            const index = utility.findIndex(viewNode, value, key, sortBackwards)
+            if (index === -1) {
+                viewNode.prependChild(childNode);
+            } else if (index === viewNode.children.length) {
+                const displayAmount = this.searchInfo[fieldName].displayAmount;
+                const initialDisplayAmount =
+                    this.searchInfo[fieldName].initialDisplayAmount;
+                if ((viewNode.children.length - initialDisplayAmount) %
+                        displayAmount !== 0) {
+                    viewNode.appendChild(childNode);
+                }
+            } else {
+                viewNode.insertChildAt(node, index);
+            }
+        }
+    }
+
+    async removeEntryFromSortedView(fieldName, content) {
+        const stringKey = await this.getStringKeyForSorting(fieldName);
+        await utility.removeEntryFromSortedList(
+            this.$(fieldName), content, stringKey, sortBackwards);
     }
 }
 

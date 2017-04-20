@@ -1,5 +1,4 @@
 ### Up next
-- Implement chronological ordering of vocabulary
 - `text-align: center` impairs fadeIn function. How to work around?
   - Add `text-align` to solution divs again
 - Implement reverse testing (especially for Russian)
@@ -26,6 +25,7 @@
 - Use thin symbols for fa-times, fa-plus etc. where fitting
 
 ### Fixes
+- Make sure each mistake is only added once in test section
 - SRS level editing is not fully stable (Maybe remove ability to edit levels?)
   - Make sure levels are ordered after resolving invalid values in SRS schemes
   - Make sure empty levels get removed/highlighted without requiring user input
@@ -140,9 +140,6 @@ By category
   - Allow immediately adding several items in a row
 - Consider using lists instead of textareas for add-panels too
   - Maybe even replace add-panels with edit-panels
-
-### Vocab section
-- Implement searching in vocab lists and list contents
 
 ### Dictionary
 - Display link to dictionary section help in info-frame
@@ -290,7 +287,6 @@ Future
   - Tamamo's fluffy tail cursor for larger achievement (e.g. 600 kanji)
   - Yona's hairpin cursor for medium achievement (e.g. 300 kanji)
   - Meliodas' dragon handle for small achievement (e.g. 150 kanji)
-- Display small label with amount of items in each vocabulary list
 - Seperate whole framework into an own NPM package
 - Allow converting parts of vocabulary into html/pdf/markdown file
   - Use electrons builtin for pdf (And a fitting media stylesheet?)

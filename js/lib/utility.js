@@ -4,6 +4,7 @@ const fs = require("fs");
 
 /**
  * Return the current time in SECONDS since 1970/01/01.
+ * @returns {Integer}
  */
 function getTime() {
     const date = new Date();
@@ -12,6 +13,8 @@ function getTime() {
 
 /**
  * Given a date object, return date as string of form "yyyy/mm/dd".
+ * @param {Date} date
+ * @returns {String}
  */
 function getShortDateString(date) {
     return date.getUTCFullYear() + "/" +
@@ -20,17 +23,20 @@ function getShortDateString(date) {
 }
 
 /**
-**  Return a promise which is fulfilled when the current event queue is empty.
-**/
+ * Return a promise which is fulfilled when the current event queue is empty.
+ * @returns {Promise}
+ */
 function finishEventQueue() {
     return new Promise((resolve) => window.setTimeout(resolve, 0));
 }
 
 /**
-**  Parse text of given css file and return object with css rules.
-**  Returned object maps each css selector to an object mapping css properties
-**  to their values.
-**/
+ * Parse text of given css file and return object with css rules.
+ * Returned object maps each css selector to an object mapping css properties
+ * to their values.
+ * @param {String} filepath
+ * @returns {Object}
+ */
 function parseCssFile(filepath) {
     const text = fs.readFileSync(filepath, "utf-8");
     let blockOpen = false;
@@ -89,8 +95,11 @@ function parseCssFile(filepath) {
 }
 
 /**
-**  Return true if the two given sets contain equal elements.
-**/
+ * Return true if the two given sets contain equal elements.
+ * @param {Set} a
+ * @param {Set} b
+ * @returns {Boolean}
+ */
 function setEqual(a, b) {
     for (let element of a)
         if (!b.has(element)) return false;
@@ -98,10 +107,13 @@ function setEqual(a, b) {
 }
 
 /**
-**  Given a path, parse the html file at that path and return a fragment node
-**  with the contents.
-**  If wrapBody is true, return a body element wrapping around the contents.
-**/
+ * Given a path, parse the html file at that path and return a fragment node
+ * with the contents.
+ * @param {String} path
+ * @param {Boolean} wrapBody - If true, return a body element wrapping around
+ *     the contents instead of a fragment.
+ * @returns {DocumentFragment|HTMLBodyElement}
+ */
 function parseHtmlFile(path, wrapBody=false) {
     const htmlString = fs.readFileSync(path, "utf-8");
     if (wrapBody) {
@@ -114,8 +126,10 @@ function parseHtmlFile(path, wrapBody=false) {
 }
 
 /**
-**  Given a string with html, return a document fragment with the parsed html.
-**/
+ * Given a string with html, return a document fragment with the parsed html.
+ * @param {String} htmlString
+ * @returns {DocumentFragment}
+ */
 function fragmentFromString(htmlString) {
     const template = document.createElement("template");
     template.innerHTML = htmlString;
@@ -123,8 +137,11 @@ function fragmentFromString(htmlString) {
 }
 
 /**
-**  Return the edit distance (Levenshtein distance) between given two words.
-**/
+ * Return the edit distance (Levenshtein distance) between given two words.
+ * @param {String} word1
+ * @param {String} word2
+ * @returns {Integer}
+ */
 function calculateED(word1, word2) {
     const len1 = word1.length;
     const len2 = word2.length;
@@ -146,9 +163,11 @@ function calculateED(word1, word2) {
 }
 
 /**
-**  Given an integer, return the string representing the number with commas
-**  inserted for readability.
-**/
+ * Given an integer, return the string representing the number with commas
+ * inserted for readability.
+ * @param {Integer} number
+ * @returns {String}
+ */
 function getStringForNumber(number) {
     number = number.toString();
     let string = "";
@@ -162,8 +181,10 @@ function getStringForNumber(number) {
 }
 
 /**
-**  Return the string representing the ordinal number for given integer.
-**/
+ * Return the string representing the ordinal number for given integer.
+ * @param {Integer} number
+ * @returns {String}
+ */
 function getOrdinalNumberString(number) {
     let suffix = "th";
     if      (number % 10 === 1 && number % 100 !== 11) suffix = "st";
@@ -173,9 +194,12 @@ function getOrdinalNumberString(number) {
 }
 
 /**
-**  Given a string of entries, return the array of substrings split on given
-**  separator, if the separator is not between parentheses. Trim substrings.
-**/
+ * Given a string of entries, return the array of substrings split on given
+ * separator, if the separator is not between parentheses. Trim substrings.
+ * @param {String} entryString
+ * @param {String} separator
+ * @returns {Array[String]}
+ */
 function parseEntries(entryString, separator) {
     let entries = [];
     let insideParentheses = false;
@@ -295,8 +319,10 @@ function timeSpanObjectToString(object) {
 }
 
 /**
-**  Return true if given path is an existing file.
-**/
+ * Return true if given path is an existing file.
+ * @param {String} path
+ * @returns {Boolean}
+ */
 function existsFile(path) {
     try {
         const stats = fs.lstatSync(path);
@@ -308,8 +334,10 @@ function existsFile(path) {
 }
 
 /**
-**  Return true if given path is an existing directory.
-**/
+ * Return true if given path is an existing directory.
+ * @param {String} path
+ * @returns {Boolean}
+ */
 function existsDirectory(path) {
     try {
         const stats = fs.lstatSync(path);
@@ -322,8 +350,11 @@ function existsDirectory(path) {
 
 
 /**
-**  Reduce the pain of creating SVG elements in javascript.
-**/
+ * Reduce the pain of creating SVG elements in javascript.
+ * @param {String} type
+ * @param {Object} attributes
+ * @returns {HTMLSVGElement}
+ */
 function createSvgNode(type, attributes) {
     const node = document.createElementNS("http://www.w3.org/2000/svg", type);
     for (let name in attributes) {
@@ -333,8 +364,10 @@ function createSvgNode(type, attributes) {
 }
 
 /**
-**  Create a default option element with empty value for a <select> element.
-**/
+ * Create a default option element with empty value for a <select> element.
+ * @param {String} text
+ * @returns {HTMLOptionElement}
+ */
 function createDefaultOption(text) {
     const defaultOption = document.createElement("option");
     defaultOption.value = "";
@@ -344,63 +377,95 @@ function createDefaultOption(text) {
 }
 
 /**
-**  Given an HTMLElement whose children are sorted lexically by textContent,
-**  return the index of the child node containing given text. If no such child
-**  node is found, return the index where the child node would be inserted.
-**  (Performs binary search using the textContents of the sorted nodes)
-**/
-function findIndex(listNode, text) {
+ * Given an HTMLElement whose children are sorted according to given key,
+ * return the index of the child node with given key value.
+ * If no such child node is found, return the index at which a node with that
+ * key value would be inserted.
+ * @param {HTMLElement} container
+ * @param {*} value
+ * @param {function} key
+ * @param {Boolean} sortedBackwards
+ * @returns {Integer}
+ */
+function findIndex(
+        container, value, key=(node)=>node.textContent, sortedBackwards) {
     let middle = 0;
     let left = 0;
-    let right = listNode.children.length - 1;
-    while (left <= right) {
-        middle = left + parseInt((right - left) / 2);
-        if (listNode.children[middle].textContent < text) {
-            left = middle + 1;
-        } else if (listNode.children[middle].textContent > text) {
-            right = middle - 1;
-        } else {
-            return middle;
+    let right = container.children.length - 1;
+    if (sortedBackwards) {
+        while (left <= right) {
+            middle = left + parseInt((right - left) / 2);
+            if (key(container.children[middle]) > value) {
+                left = middle + 1;
+            } else if (key(container.children[middle]) < value) {
+                right = middle - 1;
+            } else {
+                return middle;
+            }
         }
-    }
-    return left;
-}
-
-/**
-**  Given an HTMLElement whose children are sorted lexically by textContent,
-**  insert given node as child such that the children stay sorted.
-**/
-function insertNodeIntoSortedList(listNode, childNode) {
-    if (listNode.children.length === 0) {
-        listNode.appendChild(childNode);
+        return left;
     } else {
-        const index = findIndex(listNode, childNode.textContent);
+        while (left <= right) {
+            middle = left + parseInt((right - left) / 2);
+            if (key(container.children[middle]) < value) {
+                left = middle + 1;
+            } else if (key(container.children[middle]) > value) {
+                right = middle - 1;
+            } else {
+                return middle;
+            }
+        }
+        return left;
+    }
+}
+
+/**
+ * Given an HTMLElement whose children are sorted according to given key,
+ * insert given node as child such that the children stay sorted.
+ * @param {HTMLElement} container
+ * @param {HTMLElement} node
+ * @param {function} key
+ * @param {Boolean} sortedBackwards
+ */
+function insertNodeIntoSortedList(
+        container, node, key=(n)=>n.textContent, sortedBackwards) {
+    if (container.children.length === 0) {
+        container.appendChild(node);
+    } else {
+        const index = findIndex(container, key(node), key, sortedBackwards);
         if (index === -1) {
-            listNode.prependChild(childNode);
-        } else if (index === listNode.children.length) {
-            listNode.appendChild(childNode);
+            container.prependChild(node);
+        } else if (index === container.children.length) {
+            container.appendChild(node);
         } else {
-            listNode.insertChildAt(childNode, index);
+            container.insertChildAt(node, index);
         }
     }
 }
 
 /**
-**  Given an HTMLElement whose children are sorted lexically by textContent,
-**  remove node with given textContent from children if it exists.
-**/
-function removeEntryFromSortedList(listNode, text) {
-    const index = findIndex(listNode, text);
-    if (listNode.children.length === 0) return;
-    if (index < 0 || index >= listNode.children.length) return;
-    if (listNode.children[index].textContent === text)
-        listNode.removeChildAt(index);
+ * Given an HTMLElement whose children are sorted according to given key,
+ * remove node with given value from children if it exists.
+ * @param {HTMLElement} container
+ * @param {*} value
+ * @param {function} key
+ * @param {Boolean} sortedBackwards
+ */
+function removeEntryFromSortedList(
+        container, value, key=(n)=>n.textContent, sortedBackwards) {
+    if (container.children.length === 0) return;
+    const index = findIndex(container, value, key, sortedBackwards);
+    if (index < 0 || index >= container.children.length) return;
+    if (key(container.children[index]) === value)
+        container.removeChildAt(index);
 }
 
 /**
-**  Given the tbody and thead of an HTML table, size the header cells in the
-**  thead rows to fit the size of table row cells in tbody.
-**/
+ * Given the tbody and thead of an HTML table, size the header cells in the
+ * thead rows to fit the size of table row cells in tbody.
+ * @param {HTMLTBodyElement} tableBody
+ * @param {HTMLTHeadElement} tableHead
+ */
 function calculateHeaderCellWidths(tableBody, tableHead) {
     // If the thead contains no rows, do nothing
     if (tableHead.children.length === 0) {
