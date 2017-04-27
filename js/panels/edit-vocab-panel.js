@@ -74,6 +74,7 @@ const menuItems = popupMenu.registerItems({
 class EditVocabPanel extends Panel {
     constructor() {
         super("edit-vocab");
+        this.dictionaryId = null;
         this.listNameToOption = new Map();
         // Make sure vocablist selector gets hidden when clicking somewhere else
         this.$("select-vocab-list-wrapper").hide();
@@ -194,7 +195,8 @@ class EditVocabPanel extends Panel {
         }
         // Load translations, readings and SRS level for this word
         return dataManager.vocab.getInfo(word)
-        .then(({ translations, readings, level }) => {
+        .then(({ translations, readings, level, dictionaryId }) => {
+            this.dictionaryId = dictionaryId;
             this.$("translations").empty();
             for (const translation of translations) {
                 this.createListItem(translation, "translation");
@@ -283,7 +285,8 @@ class EditVocabPanel extends Panel {
             if (!confirmed) return false;
             return dataManager.vocab.remove(this.originalWord).then(() => {
                 main.closePanel("edit-vocab");
-                events.emit("word-deleted", this.originalWord);
+                events.emit("word-deleted",
+                    this.originalWord, this.dictionaryId);
                 events.emit("vocab-changed");
                 return true;
             });
@@ -316,8 +319,8 @@ class EditVocabPanel extends Panel {
         let promise = Promise.resolve();
         if (originalWord !== word) {
             promise = dataManager.vocab.rename(originalWord, word);
-            events.emit("word-deleted", originalWord);
-            events.emit("word-added", word);
+            events.emit("word-deleted", originalWord, this.dictionaryId);
+            events.emit("word-added", word, this.dictionaryId);
         }
         return promise.then(() =>
             // Apply changes to database
@@ -333,12 +336,13 @@ class EditVocabPanel extends Panel {
             }
             if (newStatus !== "removed") {
                 for (const list of lists) {
-                    dataManager.vocabLists.addWordToList(word, list);
-                    events.emit("added-to-list", word, list);
+                    if (dataManager.vocabLists.addWordToList(word, list)) {
+                        events.emit("added-to-list", word, list);
+                    }
                 }
             }
             if (newStatus === "removed") {
-                events.emit("word-deleted", originalWord);
+                events.emit("word-deleted", originalWord, this.dictionaryId);
                 main.updateStatus("The vocabulary entry has been removed.");
             } else if (newStatus === "updated" || originalWord !== word) {
                 events.emit("vocab-changed", word);

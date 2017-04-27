@@ -33,6 +33,7 @@ const SettingsSubsection = require(paths.js.base("settings-subsection"));
 
 const OverlayWindow = require(paths.js.widget("overlay-window"));
 const VocabSuggestionPane = require(paths.js.base("vocab-suggestion-pane"));
+const KanjiSuggestionPane = require(paths.js.base("kanji-suggestion-pane"));
 
 // Load all registered components
 for (const name of components.windows) require(paths.js.window(name));
@@ -41,8 +42,7 @@ for (const name of components.sections) require(paths.js.section(name));
 for (const name of components.settingsSubsections)
     require(paths.js.settingsSubsection(name));
 for (const name of components.panels) require(paths.js.panel(name));
-for (const name of components.suggestionPanes)
-    require(paths.js.suggestionPane(name));
+for (const name of components.panels) require(paths.js.suggestionPane(name));
 for (const name of components.widgets) require(paths.js.widget(name));
 for (const name of components.extensions) require(paths.js.extension(name));
 

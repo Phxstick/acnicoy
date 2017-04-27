@@ -276,7 +276,7 @@ class MainWindow extends Window {
 
     createSuggestionPanes () {
         const promises = [];
-        for (const name of components.suggestionPanes) {
+        for (const name of components.panels) {
             const suggestionPane = 
                 document.createElement(name + "-suggestion-pane");
             suggestionPane.classList.add("suggestion-pane");
@@ -376,21 +376,24 @@ class MainWindow extends Window {
             }
             this.panels[name].load(entryName);
         }
-        if (name === "add-kanji") {
-            // TODO: Replace this with a suggestion window and integrate
-            //       into bottom case
-            if (entryName !== undefined) {
-                this.panels[name].load(entryName);
+        if (name === "add-kanji" || name === "edit-kanji") {
+            if (dataManager.currentLanguage === "Japanese" &&
+                    dataManager.currentSecondaryLanguage === "English" &&
+                    dataManager.content.isAvailable("Japanese", "English")) {
+                if (entryName !== undefined) {
+                    showSuggestions = true;
+                    this.suggestionPanes[name].load(entryName);
+                }
             }
-        }
-        if (name === "add-vocab" && dictionaryId !== undefined) {
-            this.panels[name].load(dictionaryId);
         }
         if (name === "add-vocab" || name === "edit-vocab") {
             if (dictionaryId !== undefined) {
                 if (entryName === undefined) {
                     throw new Error("If a dictionary ID is provived, " +
                         "the chosen word variant must be provided as well.");
+                }
+                if (name === "add-vocab") {
+                    this.panels["add-vocab"].setDictionaryId(dictionaryId);
                 }
                 showSuggestions = true;
                 this.suggestionPanes[name].load(dictionaryId, entryName);

@@ -223,9 +223,11 @@ module.exports = function (paths, modules) {
      */
     vocab.getInfo = function (word) {
         return modules.database.query(
-            `SELECT date_added, level, review_date, translations, readings
+            `SELECT date_added, level, review_date, translations, readings,
+                    dictionary_id
              FROM vocabulary WHERE word = ?`, word)
-        .then(([{date_added, level, review_date, translations, readings}]) => {
+        .then(([{ date_added, level, review_date, translations, readings,
+                  dictionary_id }]) => {
             const info = {};
             info.translations =
                 translations.length === 0 ? [] : translations.split(";");
@@ -234,6 +236,7 @@ module.exports = function (paths, modules) {
             info.level = level;
             info.reviewDate = review_date;
             info.dateAdded = date_added;
+            info.dictionaryId = dictionary_id;
             return info;
         });
     }

@@ -68,16 +68,6 @@ class AddKanjiPanel extends Panel {
         this.$("srs-level-on-yomi").setByIndex(0);
     }
 
-    load(kanji) {
-        // TODO: Replace this method with a suggestion pane
-        this.$("kanji-entry").value = kanji;
-        dataManager.content.getKanjiInfo(kanji).then((info) => {
-            this.$("meanings-entry").value = info.meanings.join(", ");
-            this.$("on-yomi-entry").value = info.onYomi.join(", ");
-            this.$("kun-yomi-entry").value = info.kunYomi.join(", ");
-        });
-    }
-
     save() {
         const separator = dataManager.settings["add"]["separator"];
         const trim = (val, index, array) => { array[index] = val.trim(); }

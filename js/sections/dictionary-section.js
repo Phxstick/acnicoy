@@ -3,10 +3,6 @@
 class DictionarySection extends Section {
     constructor() {
         super("dictionary");
-        this.lastResult = [];
-        this.doneLoading = false;
-        this.nextRowIndex = 0;
-        this.loadAmount = 20;  // Amout of entries to load at once
         // Initially hide some elements
         this.$("results").hide();
         this.$("no-search-results-info").hide();
@@ -15,25 +11,70 @@ class DictionarySection extends Section {
         // Bind callbacks
         this.$("words-filter").addEventListener("keypress", (event) => {
             if (event.key !== "Enter") return;
-            this.searchByReading();
+            this.searchResultsViewState.search("reading");
         });
         this.$("meanings-filter").addEventListener("keypress", (event) => {
             if (event.key !== "Enter") return;
-            this.searchByMeaning();
+            this.searchResultsViewState.search("meaning");
         });
         this.$("words-filter-button").addEventListener("click", () => {
-            this.searchByReading();
+            this.searchResultsViewState.search("reading");
         });
         this.$("meanings-filter-button").addEventListener("click", () => {
-            this.searchByMeaning();
+            this.searchResultsViewState.search("meaning");
         })
         this.$("settings-button").addEventListener("click", () => {
             main.updateStatus("Not yet implemented!");
         })
         // If the user scrolls almost to table bottom, load more search results
-        this.$("results").uponScrollingBelow(200, () => {
-            if (this.doneLoading && this.nextRowIndex < this.lastResult.length)
-                this.displayMoreResults(this.loadAmount);
+        this.searchResultsViewState = utility.initializeView({
+            view: this.$("results"),
+            getData: (searchCriterion) => {
+                if (searchCriterion === "reading") {
+                    return dataManager.content.getEntryIdsForReadingQuery(
+                        this.$("words-filter").value.trim());
+                } else if (searchCriterion === "meaning") {
+                    return dataManager.content.getEntryIdsForTranslationQuery(
+                        this.$("meanings-filter").value.trim());
+                }
+            },
+            createViewItem: async (entryId) => {
+                const info = await
+                    dataManager.content.getDictionaryEntryInfo(entryId);
+                const resultEntry = 
+                    document.createElement("dictionary-search-result-entry");
+                info.added = await
+                    dataManager.content.doesVocabularyContain(entryId, info);
+                resultEntry.setInfo(info);
+                return resultEntry;
+            },
+            uponResultLoaded: async (resultsFound) => {
+                await utility.finishEventQueue();
+                this.$("info-frame").hide();
+                this.$("no-search-results-info").toggleDisplay(!resultsFound);
+                this.$("results").toggleDisplay(resultsFound);
+            },
+            initialDisplayAmount: 15,
+            displayAmount: 15
+        });
+    }
+
+    registerCentralEventListeners() {
+        events.on("word-added", (word, dictionaryId) => {
+            for (const searchResultEntry of this.$("results").children) {
+                if (searchResultEntry.dataset.id === dictionaryId ||
+                        searchResultEntry.dataset.mainWord === word) {
+                    searchResultEntry.toggleAdded(true);
+                }
+            }
+        });
+        events.on("word-deleted", (word, dictionaryId) => {
+            for (const searchResultEntry of this.$("results").children) {
+                if (searchResultEntry.dataset.id === dictionaryId ||
+                        searchResultEntry.dataset.mainWord === word) {
+                    searchResultEntry.toggleAdded(false);
+                }
+            }
         });
     }
 
@@ -53,60 +94,6 @@ class DictionarySection extends Section {
 
     open() {
         this.$("words-filter").focus();
-    }
-
-    displayMoreResults(amount) {
-        this.doneLoading = false;
-        const limit = Math.min(this.nextRowIndex + amount,
-                               this.lastResult.length);
-        const entryPromises = [];
-        for (let i = this.nextRowIndex; i < limit; ++i) {
-            const entryId = this.lastResult[i];
-            const promise = dataManager.content.getDictionaryEntryInfo(entryId)
-            .then((info) => {
-                const resultEntry = 
-                    document.createElement("dictionary-search-result-entry");
-                resultEntry.setInfo(info);
-                resultEntry.entryId = entryId;
-                return resultEntry;
-            });
-            entryPromises.push(promise);
-        }
-        return Promise.all(entryPromises).then((entries) => {
-            const fragment = document.createDocumentFragment();
-            for (const entry of entries) {
-                fragment.appendChild(entry);
-            }
-            this.$("results").appendChild(fragment);
-            this.nextRowIndex = limit;
-            return utility.finishEventQueue();
-        }).then(() => {
-            this.doneLoading = true;
-            this.$("info-frame").hide();
-            this.$("no-search-results-info").toggleDisplay(
-                this.lastResult.length === 0);
-            this.$("results").toggleDisplay(this.lastResult.length > 0);
-        });
-    }
-
-    searchByReading() {
-        dataManager.content.getEntryIdsForReadingQuery(
-                this.$("words-filter").value.trim()).then((idList) => {
-            this.lastResult = idList;
-            this.nextRowIndex = 0;
-            this.$("results").empty();
-            this.displayMoreResults(this.loadAmount);
-        });
-    }
-
-    searchByMeaning() {
-        dataManager.content.getEntryIdsForTranslationQuery(
-                this.$("meanings-filter").value.trim()).then((idList) => {
-            this.lastResult = idList;
-            this.nextRowIndex = 0;
-            this.$("results").empty();
-            this.displayMoreResults(this.loadAmount);
-        });
     }
 }
 

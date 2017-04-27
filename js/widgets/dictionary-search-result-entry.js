@@ -63,10 +63,27 @@ class DictionarySearchResultEntry extends Widget {
             this.dataset.mainWord = info.wordsAndReadings[0].reading;
         }
         this.popupMenu(menuItems, () => {
-            return dataManager.vocab.contains(this.dataset.mainWord)
+            return dataManager.content.doesVocabularyContain(info.id, info)
             .then((isAdded) => isAdded? ["copy-word", "edit-word"] :
                                         ["copy-word", "add-word"]);
         });
+        this.$("add-button").addEventListener("click", () => {
+            main.openPanel("add-vocab", {
+                dictionaryId: this.dataset.id,
+                entryName: this.dataset.mainWord
+            });
+        });
+        this.$("added-label").addEventListener("click", () => {
+            main.openPanel("edit-vocab", {
+                dictionaryId: this.dataset.id,
+                entryName: this.dataset.mainWord
+            });
+        });
+    }
+
+    toggleAdded(added) {
+        this.$("added-label").toggleDisplay(added);
+        this.$("add-button").toggleDisplay(!added);
     }
 }
 

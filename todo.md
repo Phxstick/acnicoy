@@ -1,9 +1,9 @@
 ### Up next
+- Implement some settings for kanji section, dictionary and kanji-info-panel
 - `text-align: center` impairs fadeIn function. How to work around?
   - Add `text-align` to solution divs again
 - Implement reverse testing (especially for Russian)
 - Button to manually check for content updates (+ "last checked" label)
-- Button to check for program updates (+ "last checked" label)
 - Further refactor Application framework
   - Implement quit-function of Application class, move controlled closing there
 - Make status update message fade out after a short while if not updated
@@ -13,13 +13,15 @@
 - Implement program updating
   - Add update button to settings
   - Make sure user data is saved before an update
+  - Button to check for program updates (+ "last checked" label)
 - Allow using Ctrl+Enter for saving notes and submitting new vocab/kanji
 - Allow selecting popup-stack item with arrow keys and number keys!
 - Test on new data instance whether deleting kanji also deletes kanji data
   (are constraints really applied to database now?)
 - New setting: [Checkbox] Automatically update language content if available
 - Register content-related shortcuts in adjustToLanguageContent instead
-- Don't focus editable span on right click in edit panels
+- Write more sophisticated function to guess whether vocab contains a certain
+  entry from the dictionary
 
 ### As soon as available
 - Use thin symbols for fa-times, fa-plus etc. where fitting
@@ -45,8 +47,6 @@ By category
   - Or rather split menu entries into groups to seperate by? (e.g. copy/paste)
 - Remove flickering when quickly dragging vocab item over list contents column
   - Not a bug in Acnicoy - Events are just fired incorrectly
-- Implement suggestion windows for other panels
-  - Remove `globals.suggestionPanes` and use `globals.panels` instead
 - Store user data path somewhere else (e.g. localStorage/`app.getPath(name)`)
   - Also store downloaded content and language packs somewhere else to allow
     putting all user data (including backups) into Dropbox
@@ -140,6 +140,8 @@ By category
   - Allow immediately adding several items in a row
 - Consider using lists instead of textareas for add-panels too
   - Maybe even replace add-panels with edit-panels
+- Don't focus editable span on right click in edit panels
+  - Use this.root.activeElement?
 
 ### Dictionary
 - Display link to dictionary section help in info-frame

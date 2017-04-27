@@ -90,7 +90,7 @@ class AddVocabPanel extends Panel {
         }
     }
 
-    load(dictionaryId) {
+    setDictionaryId(dictionaryId) {
         this.dictionaryId = dictionaryId;
     }
 
@@ -118,8 +118,9 @@ class AddVocabPanel extends Panel {
             word, translations, readings, level, this.dictionaryId)
         .then(([ entryNew, numTranslationsAdded, numReadingsAdded ]) => {
             if (list.length > 0) {
-                dataManager.vocabLists.addWordToList(word, list);
-                events.emit("added-to-list", word, list);
+                if (dataManager.vocabLists.addWordToList(word, list)) {
+                    events.emit("added-to-list", word, list);
+                };
             }
             const numFailed = translations.length - numTranslationsAdded;
             const string1 = numTranslationsAdded !== 1 ? "s have" : " has";
@@ -130,8 +131,10 @@ class AddVocabPanel extends Panel {
             main.updateStatus(`${entryString}${numTranslationsAdded} ` +
                               `translation${string1} been added. ` +
                               `${failedString}${string2}`);
-            events.emit("word-added", word);
-            events.emit("vocab-changed", word);
+            if (entryNew) {
+                events.emit("word-added", word, this.dictionaryId);
+            }
+            events.emit("vocab-changed", word, this.dictionaryId);
         });
         main.closePanel("add-vocab");
     }

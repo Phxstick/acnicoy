@@ -22,6 +22,53 @@
     border-bottom: 1px solid $dictionary-semi-frequent-words-border-color;
   }
 
+  // #added-label, #add-button {
+  //   width: 30px;
+  //   writing-mode: sideways-lr;
+  //   transform: rotate(-90deg);
+  // }
+
+  // #added-label {
+  //   @extend .small;
+  //   font-variant: small-caps;
+  //   &:hover {
+  //     @extend button.light:hover;
+  //   }
+  // }
+
+  // button#add-button {
+  //   @extend .link;
+  //   font-family: $header-font;
+  //   font-variant: small-caps;
+  //   text-decoration: none;
+  // }
+
+  #added-label, #add-button {
+    @include center-content;
+    width: 25px;
+    padding-right: 5px;
+    border-right: 1px solid $border-color-light;
+    margin-right: 10px;
+  }
+
+  #added-label {
+    color: $color-positive;
+    opacity: 0.6;
+    &:hover {
+      text-shadow: 0 0 1px $color-positive;
+      opacity: 1;
+    }
+  }
+
+  #add-button {
+    color: $color-negative;
+    opacity: 0.6;
+    &:hover {
+      text-shadow: 0 0 1px $color-negative;
+      opacity: 1;
+    }
+  }
+
   #word-frame {
     width: 130px;
     margin-right: 4px;

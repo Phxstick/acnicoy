@@ -40,21 +40,20 @@ const menuItems = popupMenu.registerItems({
     },
     "remove-from-vocab": {
         label: "Remove item from vocabulary",
-        click: ({ currentNode, data: {section} }) => {
+        click: async ({ currentNode, data: {section} }) => {
             const word = currentNode.textContent;
-            return dialogWindow.confirm(
+            const confirmed = await dialogWindow.confirm(
                 `Are you sure you want to delete the word<br>'${word}'?`)
-            .then((confirmed) => {
-                if (!confirmed) return;
-                const oldLists = dataManager.vocabLists.getListsForWord(word);
-                dataManager.vocab.remove(word).then(() => {
-                    for (const list of vocabLists) {
-                        events.emit("removed-from-list", word, list);
-                    }
-                    events.emit("word-deleted", word);
-                    events.emit("vocab-changed");
-                });
-            });
+            if (!confirmed) return;
+            const oldLists = dataManager.vocabLists.getListsForWord(word);
+            const dictionaryId = 
+                await dataManager.vocab.getAssociatedDictionaryId(word);
+            await dataManager.vocab.remove(word);
+            for (const listName of oldLists) {
+                events.emit("removed-from-list", word, listName);
+            }
+            events.emit("word-deleted", word, dictionaryId);
+            events.emit("vocab-changed");
         }
     }
 });
@@ -125,47 +124,44 @@ class VocabSection extends Section {
         // =====================================================================
         // Initialize search info and attach event listeners for searching
         // =====================================================================
-        this.searchInfo = {
+        this.viewStates = {};
+        const displayAmounts = {
             "vocab": {
-                initialDisplayAmount: 50,
-                displayAmount: 100
+                initial: 50,
+                onScroll: 100
             },
             "vocab-lists": {
-                initialDisplayAmount: 40,
-                displayAmount: 40
+                initial: 40,
+                onScroll: 40
             },
             "list-contents": {
-                initialDisplayAmount: 40,
-                displayAmount: 80
+                initial: 40,
+                onScroll: 80
             }
         };
-        const criticalScrollDistance = 150;
-        for (const fieldName in this.searchInfo) {
-            const info = this.searchInfo[fieldName];
-            info.lastQuery = null;
-            info.sortingCriterion = "alphabetical";
-            info.sortBackwards = false;
-            info.resultLoaded = "false";
-            info.resultRows = null;
-            info.nextRowIndex = null;
-            // If user scrolls almost to bottom of view, load more entries
-            this.$(fieldName).uponScrollingBelow(criticalScrollDistance, () => {
-                if (info.nextRowIndex > 0 && info.resultLoaded &&
-                        info.nextRowIndex < info.resultRows.length)
-                    this.displayMoreSearchResults(fieldName);
+        for (const fieldName in displayAmounts) {
+            this.viewStates[fieldName] = utility.initializeView({
+                view: this.$(fieldName),
+                getData: (query) => this.search(fieldName, query),
+                createViewItem: (text) => this.createViewItem(fieldName, text),
+                initialDisplayAmount: displayAmounts[fieldName].initial,
+                displayAmount: displayAmounts[fieldName].onScroll,
+                criticalScrollDistance: 150,
+                sortingCriterion: "alphabetical",
+                sortBackwards: false
             });
             // Attach event listener to search entry
             const searchEntry = this.$(`search-${fieldName}-entry`)
             searchEntry.addEventListener("keypress", (event) => {
                 if (event.key !== "Enter") return;
                 const query = searchEntry.value.trim();
-                this.search(fieldName, query);
+                this.viewStates[fieldName].search(query);
             });
             // Attach event listener to search button
             const searchButton = this.$(`search-${fieldName}-button`);
             searchButton.addEventListener("click", () => {
                 const query = searchEntry.value.trim();
-                this.search(fieldName, query);
+                this.viewStates[fieldName].search(query);
             });
         }
     }
@@ -178,7 +174,7 @@ class VocabSection extends Section {
             }
             const amountLabel = this.listNameToAmountLabel.get(list);
             amountLabel.textContent = parseInt(amountLabel.textContent) - 1;
-            if (this.searchInfo["vocab-lists"].sortingCriterion === "length") {
+            if (this.viewStates["vocab-lists"].sortingCriterion === "length") {
                 this.insertNodeIntoSortedView(
                     "vocab-lists", this.listNameToViewNode.get(list));
             }
@@ -189,7 +185,7 @@ class VocabSection extends Section {
             }
             const amountLabel = this.listNameToAmountLabel.get(list);
             amountLabel.textContent = parseInt(amountLabel.textContent) + 1;
-            if (this.searchInfo["vocab-lists"].sortingCriterion === "length") {
+            if (this.viewStates["vocab-lists"].sortingCriterion === "length") {
                 this.insertNodeIntoSortedView(
                     "vocab-lists", this.listNameToViewNode.get(list));
             }
@@ -246,8 +242,8 @@ class VocabSection extends Section {
         this.listNameToAmountLabel.clear();
         this.listNameToViewNode.clear();
         // Load part of vocabulary and list of vocab-list names
-        this.search("vocab", "");
-        this.search("vocab-lists", "");
+        this.viewStates["vocab"].search("");
+        this.viewStates["vocab-lists"].search("");
     }
 
     // =====================================================================
@@ -475,7 +471,7 @@ class VocabSection extends Section {
         this.$("test-on-list-button").show();
         this.selectedList = listName;
         this.selectedListNode = node;
-        this.search("list-contents", "");
+        this.viewStates["list-contents"].search("");
         events.emit("vocab-list-selected", listName);
     }
 
@@ -521,7 +517,7 @@ class VocabSection extends Section {
     // =====================================================================
 
     async getStringKeyForSorting(fieldName) {
-        const sortingCriterion = this.searchInfo[fieldName].sortingCriterion;
+        const sortingCriterion = this.viewStates[fieldName].sortingCriterion;
         if (fieldName === "vocab") {
             if (sortingCriterion === "alphabetical") {
                 return (word) => word;
@@ -551,7 +547,7 @@ class VocabSection extends Section {
     }
 
     getNodeKeyForSorting(fieldName) {
-        const sortingCriterion = this.searchInfo[fieldName].sortingCriterion;
+        const sortingCriterion = this.viewStates[fieldName].sortingCriterion;
         if (fieldName === "vocab") {
             return (node) => node.textContent;
         } else if (fieldName === "vocab-lists") {
@@ -562,10 +558,8 @@ class VocabSection extends Section {
     }
 
     async search(fieldName, query) {
-        const sortingCriterion = this.searchInfo[fieldName].sortingCriterion;
-        const sortBackwards = this.searchInfo[fieldName].sortBackwards;
-        this.searchInfo[fieldName].lastQuery = query;
-        this.$(fieldName).empty();
+        const sortingCriterion = this.viewStates[fieldName].sortingCriterion;
+        const sortBackwards = this.viewStates[fieldName].sortBackwards;
         let searchResults;
         let alreadySorted = false;
         if (query.length === 0) {
@@ -604,28 +598,7 @@ class VocabSection extends Section {
         if (fieldName === "vocab-lists") {
             this.deselectVocabList();
         }
-        this.$(fieldName).empty();
-        this.searchInfo[fieldName].nextRowIndex = 0;
-        this.searchInfo[fieldName].resultRows = searchResults;
-        this.displayMoreSearchResults(fieldName);
-        this.$(fieldName).scrollToTop();
-        this.searchInfo[fieldName].resultLoaded = true;
-    }
-
-    displayMoreSearchResults(fieldName) {
-        const amount = this.searchInfo[fieldName].nextRowIndex === 0 ?
-            this.searchInfo[fieldName].initialDisplayAmount :
-            this.searchInfo[fieldName].displayAmount;
-        const limit = Math.min(this.searchInfo[fieldName].nextRowIndex + amount,
-                               this.searchInfo[fieldName].resultRows.length);
-        const texts = this.searchInfo[fieldName].resultRows.slice(
-            this.searchInfo[fieldName].nextRowIndex, limit);
-        const fragment = document.createDocumentFragment();
-        for (const text of texts) {
-            fragment.appendChild(this.createViewItem(fieldName, text));
-        }
-        this.$(fieldName).appendChild(fragment);
-        this.searchInfo[fieldName].nextRowIndex = limit;
+        return searchResults;
     }
 
     async insertEntryIntoSortedView(fieldName, content) {
@@ -637,10 +610,10 @@ class VocabSection extends Section {
         const nodeKey = this.getNodeKeyForSorting(fieldName);
         const content = nodeKey(node).toLowerCase();
         // Check if content of node matches last query
-        if (!content.includes(this.searchInfo[fieldName].lastQuery)) {
+        if (!content.includes(this.viewStates[fieldName].lastQuery)) {
             return;
         }
-        const sortBackwards = this.searchInfo[fieldName].sortBackwards;
+        const sortBackwards = this.viewStates[fieldName].sortBackwards;
         const viewNode = this.$(fieldName);
         const stringKey = await this.getStringKeyForSorting(fieldName);
         const key = (node) => stringKey(nodeKey(node));
@@ -650,14 +623,14 @@ class VocabSection extends Section {
         } else {
             const index = utility.findIndex(viewNode, value, key, sortBackwards)
             if (index === -1) {
-                viewNode.prependChild(childNode);
+                viewNode.prependChild(node);
             } else if (index === viewNode.children.length) {
-                const displayAmount = this.searchInfo[fieldName].displayAmount;
+                const displayAmount = this.viewStates[fieldName].displayAmount;
                 const initialDisplayAmount =
-                    this.searchInfo[fieldName].initialDisplayAmount;
+                    this.viewStates[fieldName].initialDisplayAmount;
                 if ((viewNode.children.length - initialDisplayAmount) %
                         displayAmount !== 0) {
-                    viewNode.appendChild(childNode);
+                    viewNode.appendChild(node);
                 }
             } else {
                 viewNode.insertChildAt(node, index);
@@ -667,6 +640,7 @@ class VocabSection extends Section {
 
     async removeEntryFromSortedView(fieldName, content) {
         const stringKey = await this.getStringKeyForSorting(fieldName);
+        const sortBackwards = this.viewStates[fieldName].sortBackwards;
         await utility.removeEntryFromSortedList(
             this.$(fieldName), content, stringKey, sortBackwards);
     }

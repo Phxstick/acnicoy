@@ -40,29 +40,46 @@ class KanjiInfoPanel extends Widget {
         this.$("added-label").addEventListener("click", () => {
             main.openPanel("edit-kanji", { entryName: this.currentKanji });
         });
-        this.sectionButtons["examples"].addEventListener("click", () => {
+        this.sectionButtons["examples"].addEventListener("click", async () => {
             if (this.examplesLoaded) return;
-            this.$("example-words").empty();
-            dataManager.content.getExampleWordsForKanji(this.currentKanji)
-            .then((rows) => {
-                this.nextRowIndex = 0;
-                this.exampleWordRows = rows;
-                this.displayMoreExampleWords(15)
-                this.$("example-words").scrollToTop();
-                this.examplesLoaded = true;
-            });
+            await this.exampleWordsViewState.search(this.currentKanji);
+            this.examplesLoaded = true;
         });
         this.sectionButtons["strokes"].addEventListener("click", () => {
             if (this.strokesLoaded) return;
             this.strokesLoaded = true;
             this.displayStrokeGraphics();
         });
-        // If user scrolls almost to the table bottom, load more example words
-        const displayAmount = 20;
-        this.$("example-words").uponScrollingBelow(50, () => {
-            if (this.nextRowIndex > 0 && this.examplesLoaded &&
-                    this.nextRowIndex < this.exampleWordRows.length)
-                this.displayMoreExampleWords(displayAmount);
+        // =================================================================
+        // Example words view functionality
+        // =================================================================
+        const getExampleWordsDataForSmallEntries = async (kanji) => {
+            return dataManager.content.getExampleWordsDataForKanji(kanji);
+        };
+        const createSmallExampleWordViewItem = (dataRow) => {
+            const ExampleWordEntry = customElements.get("example-word-entry");
+            return new ExampleWordEntry(dataRow);
+        };
+        const getExampleWordsDataForDetailedEntries = async (kanji) => {
+            return dataManager.content.getExampleWordIdsForKanji(kanji);
+        };
+        const createDetailedExampleWordViewItem = async (entryId) => {
+            const info = await
+                dataManager.content.getDictionaryEntryInfo(entryId);
+            const resultEntry = 
+                document.createElement("dictionary-search-result-entry");
+            info.added = await
+                dataManager.content.doesVocabularyContain(entryId, info);
+            resultEntry.setInfo(info);
+            return resultEntry;
+        };
+        this.$("example-words").classList.add("small-entries");
+        this.exampleWordsViewState = utility.initializeView({
+            view: this.$("example-words"),
+            getData: getExampleWordsDataForSmallEntries,
+            createViewItem: createSmallExampleWordViewItem,
+            initialDisplayAmount: 10,
+            displayAmount: 15
         });
     }
 
@@ -184,19 +201,6 @@ class KanjiInfoPanel extends Widget {
                 this.$("kanji-parts").appendChild(span);
             }
         });
-    }
-
-    displayMoreExampleWords(amount) {
-        const limit = Math.min(this.nextRowIndex + amount,
-                               this.exampleWordRows.length);
-        const dataRows = this.exampleWordRows.slice(this.nextRowIndex, limit);
-        const fragment = document.createDocumentFragment();
-        const ExampleWordEntry = customElements.get("example-word-entry");
-        for (const dataRow of dataRows) {
-            fragment.appendChild(new ExampleWordEntry(dataRow));
-        }
-        this.$("example-words").appendChild(fragment);
-        this.nextRowIndex = limit;
     }
 
     displayStrokeGraphics() {

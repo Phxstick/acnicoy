@@ -1,4 +1,14 @@
 <div id="frame" class="{{frequency}}">
+    <!--button id="added-label"
+     {{#unless added}}style="display:none"{{/unless}}>ADDED</button>
+    <button id="add-button"
+     {{#if added}}style="display:none"{{/if}}>ADD</button-->
+    <button id="added-label" {{#unless added}}style="display:none"{{/unless}}>
+        <i class="fa fa-check"></i>
+    </button>
+    <button id="add-button" {{#if added}}style="display:none"{{/if}}>
+        <i class="fa fa-plus"></i>
+    </button>
   <div id="word-frame">
 
     {{! Display reading corresponding to main word }}

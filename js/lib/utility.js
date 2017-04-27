@@ -555,6 +555,71 @@ function bindRadiobuttonGroup(container, initialValue, callback) {
 }
 
 
+function initializeView({ view, getData, createViewItem, uponResultLoaded,
+                          initialDisplayAmount, displayAmount,
+                          sortingCriterion="", sortBackwards=false,
+                          criticalScrollDistance=150 }={}) {
+    const state = {
+        view,
+        getData,
+        createViewItem,
+        uponResultLoaded,
+        lastQuery: null,
+        searchResult: null,
+        nextResultIndex: null,
+        resultLoaded: false,
+        viewItemsLoaded: true,
+        sortingCriterion,
+        sortBackwards,
+        initialDisplayAmount,
+        displayAmount
+    };
+    function displayMoreViewItems() {
+        state.viewItemsLoaded = false;
+        const amount = state.nextResultIndex === 0 ?
+            state.initialDisplayAmount : state.displayAmount;
+        const limit = Math.min(
+            state.nextResultIndex + amount, state.searchResult.length);
+        const viewItemPromises = [];
+        for (let i = state.nextResultIndex; i < limit; ++i) {
+            viewItemPromises.push(state.createViewItem(state.searchResult[i]));
+        }
+        return Promise.all(viewItemPromises).then((viewItems) => {
+            const fragment = document.createDocumentFragment();
+            for (const viewItem of viewItems) {
+                fragment.appendChild(viewItem);
+            };
+            state.view.appendChild(fragment);
+            state.nextResultIndex = limit;
+            state.viewItemsLoaded = true;
+        });
+    }
+    // If user scrolls almost to bottom of view, load more entries
+    state.view.uponScrollingBelow(criticalScrollDistance, () => {
+        if (state.nextResultIndex > 0 &&
+                state.resultLoaded &&
+                state.viewItemsLoaded &&
+                state.nextResultIndex < state.searchResult.length)
+            displayMoreViewItems();
+    });
+    state.search = async function(query) {
+        state.lastQuery = query;
+        state.view.empty();
+        const searchResult = await state.getData(query);
+        state.view.empty();
+        state.nextResultIndex = 0;
+        state.searchResult = searchResult;
+        state.view.scrollToTop();
+        await displayMoreViewItems();
+        state.resultLoaded = true;
+        if (state.uponResultLoaded !== undefined) {
+            state.uponResultLoaded(state.searchResult.length > 0);
+        }
+    };
+    return state;
+}
+
+
 // Non DOM-related functions
 module.exports.getTime = getTime;
 module.exports.getShortDateString = getShortDateString;
@@ -582,3 +647,4 @@ module.exports.removeEntryFromSortedList = removeEntryFromSortedList;
 module.exports.calculateHeaderCellWidths = calculateHeaderCellWidths;
 module.exports.enableQuickSelect = enableQuickSelect;
 module.exports.bindRadiobuttonGroup = bindRadiobuttonGroup;
+module.exports.initializeView = initializeView;

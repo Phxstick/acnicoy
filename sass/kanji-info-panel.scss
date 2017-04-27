@@ -241,11 +241,13 @@
 
     #example-words {
       flex: 1;
-      background-color: $view-background;
-      color: $view-color;
       border-top: 1px solid $border-color-dark;
       border-bottom: 1px solid $border-color-dark;
-      > example-word-entry {
+
+      &.detailed-entries {
+      }
+
+      &.small-entries > example-word-entry {
         border-bottom: 1px solid $border-color-light;
         &:last-child {
           border-bottom: 0;

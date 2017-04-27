@@ -48,15 +48,23 @@ module.exports = function (paths, contentPaths, modules) {
         });
     };
 
-    function getExampleWordsForKanji(kanji) {
+    function getExampleWordIdsForKanji(kanji) {
         const pattern = `%${kanji}%`;
         const start = performance.now();
-        // return data.query(
-        //     "SELECT words FROM dictionary WHERE words LIKE ?", pattern)
-        // .then((rows) => 
-        //     return rows.map((row) => row.words.split(";")[0]);
-        // });
+        return data.query(
+            `SELECT id FROM dictionary WHERE words LIKE ?
+             ORDER BY news_freq DESC`, pattern)
+        .then((rows) => {
+            const totalTime = performance.now() - start;
+            console.log("Received example word rows after %f ms", totalTime);
+            return rows.map((row) => row.id);
+        });
+    }
+
+    function getExampleWordsDataForKanji(kanji) {
         // TODO: Try doing much less in SQL to increase performance
+        const pattern = `%${kanji}%`;
+        const start = performance.now();
         return data.query(
             `WITH frequent_words AS
              (SELECT w1.id, w1.word, w1.news_freq
@@ -236,6 +244,24 @@ module.exports = function (paths, contentPaths, modules) {
         return bestCandidateId;
     }
 
+    /**
+     * Given a dictionary entry by its ID, check whether the vocabulary contains
+     * an entry which has this dictionary ID associated.
+     * If no such entry is found, guess if the vocabulary contains this entry by
+     * checking if any word matches this dictionary entry sufficiently.
+     * @param {Integer} dictionaryId
+     * @param {Object} [dictionaryInfo] If info for this entry has already been
+     *     extracted from the dictionary, pass it in here (Performance boost)
+     * @returns {Promise[Boolean]}
+     */
+    async function doesVocabularyContain(dictionaryId, dictionaryInfo) {
+        if (dictionaryInfo === undefined) {
+            dictionaryInfo = await getDictionaryEntryInfo(dictionaryId);
+        }
+        return modules.vocab.contains(
+            dictionaryInfo.wordsAndReadings[0].word);
+    }
+
     let query;
     return new Promise((resolve) => {
         // Load content database and attach trainer database to it,
@@ -282,12 +308,14 @@ module.exports = function (paths, contentPaths, modules) {
             isKnownKanji,
             getKanjiInfo,
             getKanjiMeanings,
-            getExampleWordsForKanji,
+            getExampleWordIdsForKanji,
+            getExampleWordsDataForKanji,
             getKanjiList,
             getDictionaryEntryInfo,
             getEntryIdsForTranslationQuery,
             getEntryIdsForReadingQuery,
-            guessDictionaryId
+            guessDictionaryId,
+            doesVocabularyContain
         });
         return data;
     });
