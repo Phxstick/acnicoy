@@ -3,15 +3,25 @@
 class KanjiSection extends Section {
     constructor () {
         super("kanji");
-        this.lastQueriedKanji = [];
-        this.searchResultsBatchSize = 10;
-        this.doneLoading = false;
-        this.kanjiToSearchResultEntry = new Map();
-        this.nextQueryIndex = 0;
-        this.lastQueryString = "";
         this.selectedKanji = null;
         this.contentAvailable = false;
-        // Add event listeners
+        this.settingsWindowClicked = false;
+        this.addedPerGroupCounters = {};
+        this.totalAmountPerGroup = {};
+        this.addedAmountPerGroup = {};
+        this.overviewSettings = {
+            splittingCriterion: "grade",
+            sortingCriterion: "alphabetical",
+            onlyMissing: false,
+            showJouyou: true,
+            showJinmeiyou: false,
+            showHyougai: false
+        };
+        this.$("search-results").hide();
+        this.$("no-search-results-info").hide();
+        // =================================================================
+        // Control bar event listeners
+        // =================================================================
         this.$("show-overview-button").addEventListener("click", () => {
             this.showOverview();
         });
@@ -22,53 +32,160 @@ class KanjiSection extends Section {
             if (event.key !== "Enter") return;
             this.searchByKanji();
         });
-        this.$("settings-button").addEventListener("click", () => {
-            main.updateStatus("Not yet implemented!");
-        })
-        // Create counter spans which display amount of added kanji per grade
-        this.addedPerGradeCounters = {};
-        for (let grade = 0; grade <= 9; ++grade) {
-            this.addedPerGradeCounters[grade] = document.createElement("span");
-            this.addedPerGradeCounters[grade].classList.add("statistic-label");
-        }
-        // If the user scrolls almost to bottom of search results, load more
-        this.$("bottom-frame").uponScrollingBelow(300, () => {
-            if (this.doneLoading && this.nextQueryIndex
-                                    < this.lastQueriedKanji.length) {
-                this.displayMoreSearchResults(this.searchResultsBatchSize);
-            }
+        // =================================================================
+        // Kanji search functionality
+        // =================================================================
+        this.kanjiSearchViewState = utility.initializeView({
+            view: this.$("search-results"),
+            getData: async (query) => {
+                // Check which characters are known kanji (i.e. in the database)
+                const knownKanjiPromises = [];
+                for (const character of query) {
+                    knownKanjiPromises.push(
+                        dataManager.content.isKnownKanji(character));
+                }
+                // Display kanji in given order into the input field
+                const kanjiKnown = await Promise.all(knownKanjiPromises);
+                const querySet = new Set();
+                const queriedKanji = [];
+                for (let i = 0; i < query.length; ++i) {
+                    const character = query[i];
+                    const isKnownKanji = kanjiKnown[i];
+                    if (isKnownKanji && !querySet.has(character)) {
+                        querySet.add(character);
+                        queriedKanji.push(character);
+                    }
+                }
+                return queriedKanji;
+            },
+            createViewItem: async (kanji) => {
+                const info = await dataManager.content.getKanjiInfo(kanji);
+                const ResultEntry =
+                    customElements.get("kanji-search-result-entry");
+                return new ResultEntry(kanji, info);
+            },
+            uponResultLoaded: (resultsFound) => {
+                this.$("overview-pane").hide();
+                this.$("search-pane").show();
+            },
+            initialDisplayAmount: 10,
+            displayAmount: 10,
+            placeholder: this.$("search-info"),
+            noResultsPane: this.$("no-search-results-info")
         });
+        // =================================================================
+        // Overview/Search settings
+        // =================================================================
+        this.overviewSettings.splittingCriterion =
+            dataManager.settings.kanjiOverview.splittingCriterion;
+        utility.bindRadiobuttonGroup(
+            this.$("overview-split-criterion"),
+            dataManager.settings.kanjiOverview.splittingCriterion,
+            (value) => {
+                dataManager.settings.kanjiOverview.splittingCriterion = value;
+                this.overviewSettings.splittingCriterion = value;
+                this.displayKanji();
+        });
+        this.$("overview-settings").hide();
+        window.addEventListener("click", (event) => {
+            if (!this.$("overview-settings").isHidden()
+                    && !this.settingsWindowClicked) {
+                this.$("overview-settings").hide();
+            }
+            this.settingsWindowClicked = false;
+        });
+        this.$("overview-settings").addEventListener("click", (event) => {
+            this.settingsWindowClicked = true;
+        });
+        this.$("settings-button").addEventListener("click", (event) => {
+            this.$("overview-settings").toggleDisplay();
+            event.stopPropagation();
+        });
+        const labeledCheckboxes = this.$$(".labeled-checkbox");
+        for (const labeledCheckbox of labeledCheckboxes) {
+            const checkbox = labeledCheckbox.querySelector("check-box");
+            labeledCheckbox.addEventListener("click", (event) => {
+                if (event.target.tagName !== "CHECK-BOX") checkbox.toggle();
+            });
+        }
+        this.$("show-jouyou").checked = this.overviewSettings.showJouyou =
+            dataManager.settings.kanjiOverview.showJouyou;
+        this.$("show-jouyou").callback = (value) => {
+            dataManager.settings.kanjiOverview.showJouyou = value;
+            this.overviewSettings.showJouyou = value;
+            this.displayKanji();
+        };
+        this.$("show-jinmeiyou").checked = this.overviewSettings.showJinmeiyou =
+            dataManager.settings.kanjiOverview.showJinmeiyou;
+        this.$("show-jinmeiyou").callback = (value) => {
+            dataManager.settings.kanjiOverview.showJinmeiyou = value;
+            this.overviewSettings.showJinmeiyou = value;
+            this.displayKanji();
+        };
+        this.$("show-hyougai").checked = this.overviewSettings.showHyougai =
+            dataManager.settings.kanjiOverview.showHyougai;
+        this.$("show-hyougai").callback = (value) => {
+            dataManager.settings.kanjiOverview.showHyougai = value;
+            this.overviewSettings.showHyougai = value;
+            this.displayKanji();
+        };
+        this.$("show-added").checked =
+            !dataManager.settings.kanjiOverview.onlyMissing;
+        this.overviewSettings.onlyMissing =
+            dataManager.settings.kanjiOverview.onlyMissing;
+        this.$("show-added").callback = (value) => {
+            dataManager.settings.kanjiOverview.onlyMissing = !value;
+            this.overviewSettings.onlyMissing = !value;
+            this.displayKanji();
+        };
     }
 
     registerCentralEventListeners() {
         events.on("kanji-added", (kanji) => {
             if (!this.contentAvailable) return;
             this.$(kanji).classList.add("added");
-            dataManager.content.getKanjiInfo(kanji).then((info) => {
-                this.updateAddedPerGradeCounter(info.grade);
-            });
-            if (this.kanjiToSearchResultEntry.has(kanji)) {
-                const resultEntry = this.kanjiToSearchResultEntry.get(kanji);
-                resultEntry.$("added-label").show();
-                resultEntry.$("add-button").hide();
+            if (this.overviewSettings.onlyMissing) {
+                this.$(kanji).hide();
+            }
+            this.updateAddedCounter(kanji, true);
+            for (const kanjiEntry of this.$("search-results").children) {
+                if (kanjiEntry.dataset.kanji === kanji) {
+                    kanjiEntry.toggleAdded(true);
+                    break;
+                }
             }
         });
         events.on("kanji-removed", (kanji) => {
             if (!this.contentAvailable) return;
             this.$(kanji).classList.remove("added");
-            dataManager.content.getKanjiInfo(kanji).then((info) => {
-                this.updateAddedPerGradeCounter(info.grade);
-            });
-            if (this.kanjiToSearchResultEntry.has(kanji)) {
-                const resultEntry = this.kanjiToSearchResultEntry.get(kanji);
-                resultEntry.$("added-label").hide();
-                resultEntry.$("add-button").show();
+            if (this.overviewSettings.onlyMissing) {
+                this.$(kanji).show();
+            }
+            this.updateAddedCounter(kanji, false);
+            for (const kanjiEntry of this.$("search-results").children) {
+                if (kanjiEntry.dataset.kanji === kanji) {
+                    kanjiEntry.toggleAdded(false);
+                    break;
+                }
             }
         });
     }
 
     open() {
         this.$("search-entry").focus();
+    }
+
+    processLanguageContent(language, secondaryLanguage) {
+        if (language === "Japanese") {
+            if (dataManager.content.isAvailable(language, secondaryLanguage))
+                this.contentAvailable = true;
+            return dataManager.content.get(language, secondaryLanguage)
+            .getKanjiLists().then((kanjiList) => {
+                return this.createKanjiOverviewNodes(kanjiList).then(() => {
+                    this.displayKanji();
+                });
+            });
+        }
     }
 
     showOverview() {
@@ -81,167 +198,128 @@ class KanjiSection extends Section {
         this.$("search-pane").show();
     }
 
-    processLanguageContent(language, secondaryLanguage) {
-        if (language === "Japanese") {
-            if (dataManager.content.isAvailable(language, secondaryLanguage))
-                this.contentAvailable = true;
-            return dataManager.content.get(language, secondaryLanguage)
-            .getKanjiList().then((rows) => {
-                return this.createKanji(rows).then(() => {
-                    this.displayKanji("grade");
-                });
-            });
-        }
-    }
-
-    createKanji(rows) {
+    createKanjiOverviewNodes(kanjiList) {
         const promises = [];
         const fragment = document.createDocumentFragment();
-        for (const { kanji, added, strokes, grade } of rows) {
-            const kanjiSpan = document.createElement("span");
-            kanjiSpan.textContent = kanji;
-            kanjiSpan.id = kanji;
-            kanjiSpan.className = 
-              `${added ? "added" : ""} grade-${grade} strokes-${strokes} kanji`;
-            promises.push(main.makeKanjiInfoLink(kanjiSpan, kanji));
-            kanjiSpan.addEventListener("click", () => {
+        for (const { kanji, added } of kanjiList) {
+            const kanjiNode = document.createElement("span");
+            kanjiNode.textContent = kanji;
+            kanjiNode.id = kanji;
+            kanjiNode.classList.toggle("added", added);
+            promises.push(main.makeKanjiInfoLink(kanjiNode, kanji));
+            kanjiNode.addEventListener("click", () => {
                 if (this.selectedKanji !== null)
                     this.selectedKanji.classList.remove("selected");
-                kanjiSpan.classList.add("selected");
-                this.selectedKanji = kanjiSpan;
+                kanjiNode.classList.add("selected");
+                this.selectedKanji = kanjiNode;
             });
-            fragment.appendChild(kanjiSpan);
+            fragment.appendChild(kanjiNode);
         }
         this.$("kanji-container").appendChild(fragment);
         return Promise.all(promises);
     }
 
-    displayKanji(ordering, {
-            onlyMissing=false,
-            showJinmeiyou=false,
-            showHyougai=false }={}) {
-        const kanjiOverview = this.$("kanji-overview");
-        kanjiOverview.empty();
-        if (onlyMissing) {
-            const elements = this.root.getElementsByClassName("added");
-            for (const element in elements) {
-                element.style.display = "none";
+    async displayKanji() {
+        const { splittingCriterion, sortingCriterion, onlyMissing,
+                showJouyou, showJinmeiyou, showHyougai} = this.overviewSettings;
+        let stepSize;
+        if (splittingCriterion === "frequency") {
+            stepSize = 500;
+        } else if (splittingCriterion === "stroke-count") {
+            stepSize = 5;
+        }
+        const kanjiLists = await dataManager.content.get("Japanese",
+                dataManager.languageSettings.for("Japanese").secondaryLanguage)
+                .getKanjiLists({
+            splittingCriterion,
+            includeAdded: !onlyMissing,
+            includeJouyou: showJouyou,
+            includeJinmeiyou: showJinmeiyou,
+            includeHyougai: showHyougai,
+            stepSize
+        });
+        const groups = this.$$("#kanji-overview > dd");
+        for (const group of groups) {
+            const kanjiNodes = Array.from(group.children);
+            for (const kanjiNode of kanjiNodes) {
+                this.$("kanji-container").appendChild(kanjiNode);
             }
         }
-        let content;
-        let title;
-        const titles = [];
-        const gradeNumbers = [];
-        if (ordering === "grade") {
-            for (let i = 1; i <= 6; ++i) {
-                titles.push(`Grade ${i}`);
-                gradeNumbers.push(i);
-            }
-            titles.push("Secondary Grade");
-            gradeNumbers.push(8);
-            if (showJinmeiyou) {
-                titles.push("Jinmeiyou");
-                gradeNumbers.push(9);
-            }
-            if (showHyougai) {
-                titles.push("Hyougai");
-                gradeNumbers.push(0);
-            }
-            for (let i = 0; i < titles.length; ++i) {
-                title = document.createElement("dt");
-                content = document.createElement("dd");
-                const selector = ".grade-" + gradeNumbers[i];
-                const spans = this.root.querySelectorAll(selector);
-                // const added = this.root.querySelectorAll(selector + ".added");
-                const titleSpan = document.createElement("span");
-                titleSpan.textContent = titles[i];
-                title.appendChild(titleSpan);
-                title.appendChild(this.addedPerGradeCounters[gradeNumbers[i]]);
-                this.updateAddedPerGradeCounter(gradeNumbers[i]);
-                for (const span of spans) {
-                    content.appendChild(span);
+        this.$("kanji-overview").empty();
+        const fragment = document.createDocumentFragment();
+        for (const { groupName, groupValue, kanjiList, numTotal,
+                     numAdded } of kanjiLists) {
+            const title = document.createElement("dt");
+            const content = document.createElement("dd");
+            const groupNameLabel = document.createElement("span");
+            groupNameLabel.textContent = groupName;
+            title.appendChild(groupNameLabel);
+            const numAddedCounter = document.createElement("span");
+            numAddedCounter.classList.add("amount-added");
+            numAddedCounter.textContent = `( ${numAdded} / ${numTotal} )`;
+            this.addedPerGroupCounters[groupValue] = numAddedCounter;
+            this.totalAmountPerGroup[groupValue] = numTotal;
+            this.addedAmountPerGroup[groupValue] = numAdded;
+            title.appendChild(numAddedCounter);
+            if (numTotal > 0) {
+                fragment.appendChild(title);
+                if (!(onlyMissing && numAdded === numTotal)) {
+                    for (const kanji of kanjiList) {
+                        content.appendChild(this.$(kanji));
+                    }
+                    fragment.appendChild(content);
                 }
-                kanjiOverview.appendChild(title);
-                kanjiOverview.appendChild(content);
             }
         }
+        this.$("kanji-overview").appendChild(fragment);
     }
 
     /**
      * Update text of counter element which displays amount of kanji added
-     * for a given grade.
-     * @param {Number} grade - The grade of the kanji as valid integer.
-     * @returns {Promise}
+     * for group containing given kanji.
+     * @param {String} kanji - Kanji which has been added/removed.
+     * @param {Boolean} isAdded - True if kanji has been added to vocabulary.
      */
-    updateAddedPerGradeCounter(grade) {
-        const numKanjiPerGrade =
-            dataManager.content.get("Japanese", "English").numKanjiPerGrade;
-        return dataManager.kanji.getAmountAddedForGrade(grade).then((added) => {
-            const total = numKanjiPerGrade[grade];
-            this.addedPerGradeCounters[grade].textContent =
-                `( ${added} / ${total} )`;
-        });
-    }
-
-    displayMoreSearchResults(amount) {
-        this.doneLoading = false;
-        const limit = Math.min(this.nextQueryIndex + amount,
-                               this.lastQueriedKanji.length);
-        const kanjiInfoPromises = [];
-        for (let i = this.nextQueryIndex; i < limit; ++i) {
-            const kanji = this.lastQueriedKanji[i];
-            kanjiInfoPromises.push(dataManager.content.getKanjiInfo(kanji));
+    async updateAddedCounter(kanji, isAdded) {
+        const kanjiInfo = await dataManager.content.getKanjiInfo(kanji);
+        let groupValue;
+        // Get value of the kanji corresponding to current splitting criterion
+        switch (this.overviewSettings.splittingCriterion) {
+            case "grade": groupValue = kanjiInfo.grade; break;
+            case "frequency": groupValue = kanjiInfo.frequency; break;
+            case "jlpt-level": groupValue = kanjiInfo.jlptLevel; break;
+            case "stroke-count": groupValue = kanjiInfo.strokes; break;
+            case "radical": groupValue = kanjiInfo.radicalId; break;
         }
-        const ResultEntry = customElements.get("kanji-search-result-entry");
-        const fragment = document.createDocumentFragment();
-        return Promise.all(kanjiInfoPromises).then((kanjiInfos) => {
-            for (const info of kanjiInfos) {
-                const kanji = info.kanji;
-                const searchResultEntry = new ResultEntry(kanji, info);
-                this.kanjiToSearchResultEntry.set(kanji, searchResultEntry);
-                fragment.appendChild(searchResultEntry);
-            }
-            this.$("search-results").appendChild(fragment);
-            this.nextQueryIndex = limit;
-            this.doneLoading = true;
-        });
+        // If values are split into ranges, find the range the value is in
+        switch (this.overviewSettings.splittingCriterion) {
+            case "frequency":
+            case "stroke-count":
+                for (const rangeString in this.addedPerGroupCounters) {
+                    const [start, end] = rangeString.split("-");
+                    if (parseInt(start) <= groupValue &&
+                            groupValue <= parseInt(end)) {
+                        groupValue = rangeString;
+                        break;
+                    }
+                }
+                break;
+        }
+        this.addedAmountPerGroup[groupValue] += isAdded;
+        const numAdded = this.addedAmountPerGroup[groupValue];
+        const numTotal = this.totalAmountPerGroup[groupValue];
+        const counterNode = this.addedPerGroupCounters[groupValue];
+        counterNode.textContent = `( ${numAdded} / ${numTotal} )`;
     }
 
     searchByKanji() {
-        const queryString = this.$("search-entry").value.trim();
+        const query = this.$("search-entry").value.trim();
         // If query is same as the last, just display search-section again
-        if (this.lastQueryString === queryString) {
-            this.$("overview-pane").hide();
-            this.$("search-pane").show();
+        if (this.kanjiSearchViewState.lastQuery === query) {
+            this.showSearchResults();
             return;
         }
-        this.lastQueryString = queryString;
-        // Check which characters are known kanji (i.e. in the database)
-        const knownKanjiPromises = [];
-        for (const character of queryString) {
-            knownKanjiPromises.push(
-                dataManager.content.isKnownKanji(character));
-        }
-        // Display kanji in given order into the input field
-        return Promise.all(knownKanjiPromises).then((kanjiKnown) => {
-            const querySet = new Set();
-            const queriedKanji = [];
-            for (let i = 0; i < queryString.length; ++i) {
-                const character = queryString[i];
-                const isKnownKanji = kanjiKnown[i];
-                if (isKnownKanji && !querySet.has(character)) {
-                    querySet.add(character);
-                    queriedKanji.push(character);
-                }
-            }
-            // TODO: Display message if no search results found
-            this.lastQueriedKanji = queriedKanji;
-            this.nextQueryIndex = 0;
-            this.$("search-results").empty();
-            this.kanjiToSearchResultEntry.clear();
-            this.displayMoreSearchResults(this.searchResultsBatchSize);
-            this.showSearchResults();
-        });
+        this.kanjiSearchViewState.search(query);
     }
 }
 

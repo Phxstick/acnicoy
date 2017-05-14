@@ -24,6 +24,7 @@ module.exports = function (paths, contentPaths, modules) {
                     k.parts AS parts,
                     k.jlpt AS jlptLevel,
                     r.radical AS radical,
+                    r.id AS radicalId,
                     r.name AS radicalName,
                     (k.entry IN (SELECT kanji FROM trainer.kanji)) AS added
              FROM kanji k JOIN radicals r ON k.radical_id = r.id
@@ -87,20 +88,170 @@ module.exports = function (paths, contentPaths, modules) {
         });
     };
 
-    function getKanjiList() {
-        // TODO: Don't retrieve too much info? Or store info in kanji instead?
-        return data.query(
-            `SELECT k.entry AS kanji,
-                    k.grade AS grade,
-                    k.strokes AS strokes,
-                    k.frequency AS frequency,
-                    k.on_readings AS onYomi,
-                    k.kun_readings AS kunYomi,
-                    k.meanings AS meanings,
-                    r.radical AS radical,
-                    r.name AS radicalName,
-                    (entry IN (SELECT kanji FROM trainer.kanji)) AS added
-            FROM kanji k JOIN radicals r ON k.radical_id = r.id`);
+    async function getKanjiLists({
+            splittingCriterion, includeAdded=true, includeJouyou=true,
+            includeJinmeiyou=true, includeHyougai=true, stepSize }={}) {
+        const whereClauses = [];
+        if (!includeJouyou) whereClauses.push("k.grade NOT BETWEEN 1 AND 8");
+        if (!includeJinmeiyou) whereClauses.push("k.grade != 9");
+        if (!includeHyougai) whereClauses.push("k.grade != 0");
+        const whereClause = (whereClauses.length > 0 ? "WHERE " : "") +
+                whereClauses.map((clause) => "(" + clause + ")").join(" AND ");
+        if (splittingCriterion === undefined) {
+            return data.query(`
+                SELECT k.entry AS kanji,
+                       (k.entry IN (SELECT kanji FROM trainer.kanji)) AS added
+                FROM kanji k
+                ${whereClause}
+            `);
+        }
+        let splitColumn;
+        switch (splittingCriterion) {
+            case "grade": splitColumn = "k.grade"; break;
+            case "frequency": splitColumn = "k.frequency"; break;
+            case "jlpt-level": splitColumn = "k.jlpt"; break;
+            case "stroke-count": splitColumn = "k.strokes"; break;
+            case "radical": splitColumn = "k.radical_id"; break;
+            default: throw new Error(
+                `'${splittingCriterion}' is not a valid splitting criterion.`);
+        }
+        // const groups = await data.query(
+        //     `SELECT ${splitColumn} AS groupValue,
+        //             COUNT(k.entry) AS groupSize
+        //      FROM kanji k JOIN radicals r ON k.radical_id = r.id
+        //      ${whereClause}
+        //      GROUP BY ${splitColumn}
+        //      ORDER BY ${splitColumn} ASC
+        // `);
+        // const promises = [];
+        // for (const { groupValue, groupSize } of groups) {
+        //     let whereClauseGroup = whereClause.length === 0 ? "WHERE " : " AND "
+        //     whereClauseGroup += `${splitColumn} = ${groupValue}`;
+        //     promises.push(data.query(`
+        //         SELECT k.entry AS kanji,
+        //                (k.entry IN (SELECT kanji FROM trainer.kanji)) AS added
+        //         FROM kanji k JOIN radicals r ON k.radical_id = r.id
+        //         ${whereClause}
+        //         ${whereClauseGroup}
+        //     `).then((rows) => {
+        //         let numAdded = 0;
+        //         rows.forEach(({ added }) => { if (added) ++numAdded; });
+        //         return {
+        //             groupValue,
+        //             kanjiList: rows.map((row) => row.kanji),
+        //             numTotal: groupSize,
+        //             numAdded,
+        //         };
+        //     }));
+        // }
+        const groups = [];
+        switch (splittingCriterion) {
+            case "grade":
+                if (includeJouyou) {
+                    for (let i = 1; i <= 6; ++i) {
+                        groups.push({ value: i, name: `Grade ${i}` });
+                    }
+                    groups.push({ value: 8, name: `Secondary Grade` });
+                }
+                if (includeJinmeiyou) {
+                    groups.push({ value: 9, name: `Jinmeiyou` });
+                }
+                if (includeHyougai) {
+                    groups.push({ value: 0, name: `Hyougai` });
+                }
+                break;
+            case "jlpt-level":
+                for (let i = 5; i >= 1; --i) {
+                    groups.push({ value: i, name: `Level ${i}` });
+                }
+                break;
+            case "radical":
+                const radicals = await data.query(
+                    "SELECT id, radical, name FROM radicals");
+                for (const { id, radical, name } of radicals) {
+                    groups.push({ value: id,
+                                  name: `[ ${radical} ] ${name}` });
+                }
+                break;
+            case "frequency": {
+                if (!stepSize)
+                    throw new Error("When splitting by 'frequency' or 'grade'" +
+                                    ", a stepSize must be provided.");
+                const maxFrequency =
+                    await data.query("SELECT MAX(frequency) AS max FROM kanji")
+                              .then(([row]) => row.max);
+                let i = 1;
+                while (i < maxFrequency) {
+                    groups.push({ value: [i, i + stepSize - 1],
+                                  name: `${i} to ${i + stepSize - 1}` });
+                    i += stepSize;
+                }
+                if (maxFrequency - i > 0) {
+                    groups.push({ value: [i, maxFrequency],
+                                  name: `${i} to ${maxFrequency}` });
+                }
+                groups.push({ value: null, name: "Rare" });
+                break;
+            } case "stroke-count": {
+                if (!stepSize)
+                    throw new Error(
+                        "When splitting by 'frequency' or 'strokes-count', " +
+                        "a stepSize must be provided.");
+                const maxStrokeNumber =
+                    await data.query("SELECT MAX(strokes) AS max FROM kanji")
+                              .then(([row]) => row.max);
+                let i = 1;
+                while (i < maxStrokeNumber) {
+                    groups.push({ value: [i, i + stepSize - 1],
+                                  name: `${i} to ${i + stepSize - 1} strokes` });
+                    i += stepSize;
+                }
+                if (maxStrokeNumber - i > 0) {
+                    groups.push({ value: [i, maxStrokeNumber],
+                                  name: `${i} to ${maxFrequency} strokes` });
+                }
+                break;
+            }
+        }
+        const promises = [];
+        for (const { name, value } of groups) {
+            let whereClauseGroup = whereClause.length === 0 ? "WHERE " : " AND "
+            if (!Array.isArray(value)) {
+                if (typeof value === "number") {
+                    whereClauseGroup += `${splitColumn} = ${value}`;
+                } else if (typeof value === "string") {
+                    whereClauseGroup += `${splitColumn} = '${value}'`;
+                } else if (value === null) {
+                    whereClauseGroup += `${splitColumn} IS NULL`;
+                }
+            } else {
+                whereClauseGroup +=
+                    `${splitColumn} BETWEEN ${value[0]} AND ${value[1]}`;
+            }
+            promises.push(data.query(`
+                SELECT k.entry AS kanji,
+                       (k.entry IN (SELECT kanji FROM trainer.kanji)) AS added
+                FROM kanji k JOIN radicals r ON k.radical_id = r.id
+                ${whereClause}
+                ${whereClauseGroup}
+            `).then((rows) => {
+                const kanjiList = [];
+                let numAdded = 0;
+                for (const { kanji, added } of rows) {
+                    if (includeAdded || !added) kanjiList.push(kanji);
+                    if (added) ++numAdded;
+                }
+                return {
+                    groupName: name,
+                    groupValue: !Array.isArray(value) ?
+                        value : `${value[0]}-${value[1]}`,
+                    kanjiList,
+                    numTotal: rows.length,
+                    numAdded,
+                };
+            }));
+        }
+        return Promise.all(promises);
     };
 
     // Convert a string of ";"-separated codes to an array of infos
@@ -310,7 +461,7 @@ module.exports = function (paths, contentPaths, modules) {
             getKanjiMeanings,
             getExampleWordIdsForKanji,
             getExampleWordsDataForKanji,
-            getKanjiList,
+            getKanjiLists,
             getDictionaryEntryInfo,
             getEntryIdsForTranslationQuery,
             getEntryIdsForReadingQuery,

@@ -557,11 +557,21 @@ class TestSection extends Section {
             const item = this.testInfo.currentItem;
             // Remember mistakes (for display in test-complete-overlay)
             if (item.lastAnswerIncorrect) {
-                this.testInfo.mistakes.push({
-                    name: item.entry,
-                    mode: item.mode,
-                    part: this.testInfo.currentPart
-                });
+                let mistakeAlreadyRegistered = false;
+                for (const { name, mode, part } of this.testInfo.mistakes) {
+                    if (name === item.entry && mode === item.mode &&
+                            part === this.testInfo.currentPart) {
+                        mistakeAlreadyRegistered = true;
+                        break;
+                    }
+                }
+                if (!mistakeAlreadyRegistered) {
+                    this.testInfo.mistakes.push({
+                        name: item.entry,
+                        mode: item.mode,
+                        part: this.testInfo.currentPart
+                    });
+                }
             }
             if (item.parts.length === 0) {
                 if (newLevel === undefined && !this.testInfo.vocabListMode) {

@@ -142,6 +142,7 @@ hr {
   border: 0px;
   height: 1px;
   background-color: $border-color-medium;
+  background-clip: content-box;
   margin-top: 12px;
   margin-bottom: 12px;
   margin-left: 0;
@@ -173,7 +174,7 @@ hr {
   cursor: $dragging-cursor;
 }
 
-.radio-button-row {
+.radiobutton-row {
   .description {
     display: inline-block;
     margin-right: 30px;
@@ -187,6 +188,21 @@ hr {
 .pulsating-triple-dots {
   > div {
     background-color: $color;
+  }
+}
+
+#search-info, #no-search-results-info {
+  @include center-content;
+  flex: 1;
+  background-color: $background-color-dark;
+  height: 100%;
+
+  > * {
+    line-height: 150%;
+    color: $color;
+    font-size: 150%;
+    font-family: $light-font;
+    text-align: center;
   }
 }
 

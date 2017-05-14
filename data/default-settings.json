@@ -28,6 +28,14 @@
         "cursor": "default",
         "colorScheme": "default"
     },
+    "kanjiOverview": {
+        "splittingCriterion": "grade",
+        "sortingCriterion": "alphabetical",
+        "onlyMissing": false,
+        "showJouyou": true,
+        "showJinmeiyou": false,
+        "showHyougai": false
+    },
     "srs": {
         "intervalModifier": "4 hours"
     },

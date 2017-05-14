@@ -3,6 +3,7 @@
 class KanjiSearchResultEntry extends Widget {
     constructor (kanji, info) {
         super("kanji-search-result-entry");
+        this.dataset.kanji = kanji;
         if (info === undefined) return;
         // Adjust data and fill handlebars template
         info.kanji = kanji;
@@ -30,6 +31,11 @@ class KanjiSearchResultEntry extends Widget {
         const detailSpans =
             main.$("kanji-info-panel").getKanjiDetailSpans(kanji, info);
         detailSpans.forEach((span) => detailsBar.appendChild(span));
+    }
+
+    toggleAdded(added) {
+        this.$("added-label").toggleDisplay(added);
+        this.$("add-button").toggleDisplay(!added);
     }
 }
 

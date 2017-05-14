@@ -1,5 +1,10 @@
+- FIX: Items at end of vocab lists are not removed when removing them
+- Finish as much TODO-items for kanji-sections as possible
+- Extend search-sections by spinner and animate no-search-results-info
+- When searching again, somehow stop previous search in utility.js?
+
 ### Up next
-- Implement some settings for kanji section, dictionary and kanji-info-panel
+- Implement some settings for dictionary and kanji-info-panel
 - `text-align: center` impairs fadeIn function. How to work around?
   - Add `text-align` to solution divs again
 - Implement reverse testing (especially for Russian)
@@ -27,7 +32,6 @@
 - Use thin symbols for fa-times, fa-plus etc. where fitting
 
 ### Fixes
-- Make sure each mistake is only added once in test section
 - SRS level editing is not fully stable (Maybe remove ability to edit levels?)
   - Make sure levels are ordered after resolving invalid values in SRS schemes
   - Make sure empty levels get removed/highlighted without requiring user input
@@ -153,18 +157,6 @@ By category
 - Keep search history (viewable using a button in control bar?)
 
 ### Kanji section
-#### Overview
-- Overview customization:
-  - Display kanji by:
-    * [Radiobutton] grade [default]
-    * [Radiobutton] frequency
-    * [Radiobutton] JLPT level
-    * [Radiobutton] stroke count
-    * [Radiobutton] radical
-  - [Checkbox] Display Jinmeiyou kanji [default OFF]
-  - [Checkbox] Display hyougai kanji [default OFF]
-  - [Checkbox] Display added kanji [default ON]
-
 #### Search
 - Display search info when searching with empty bar (or list all added kanji?)
 - Display info messages as in dictionary section
@@ -178,6 +170,7 @@ By category
   - "Examples" button linking to dictionary section in each search result?
     Or rather expand search result entry?
   - Strokes being displayed in a single scrollable row
+- Implement different sorting criteria for kanji section overview
 
 ### Migrate-srs-overlay
 - Make migrating SRS items safer by applying changes to a copy of data and

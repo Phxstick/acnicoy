@@ -238,7 +238,7 @@ def parse_kanji_entry(line, cursor):
         elif field[0] == "G":
             data["grade"] = int(field[1:])
             if data["grade"] == 10:
-                data["grade"] == 9
+                data["grade"] = 9
         elif field[0] == "F":
             data["frequency"] = int(field[1:])
         elif any((0x30A1 <= ord(c) <= 0x30A1 + 89 for c in field)):

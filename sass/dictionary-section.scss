@@ -37,23 +37,30 @@ body {
   }
 }
 
-#results {
+#search-results {
   flex: 1;
   background-color: $view-background;
   color: $view-color;
   overflow-y: auto;
 }
 
-#info-frame, #no-search-results-info {
-  @include center-content;
-  flex: 1;
-  background-color: $background-color-dark;
+#meanings-filter-button, #words-filter-button {
+  .spinner { display: none; }
+  &.searching {
+    i { display: none; }
+    .spinner { display: block; }
+  }
 
-  > * {
-    line-height: 150%;
-    color: $color;
-    font-size: 150%;
-    font-family: $light-font;
-    text-align: center;
+  .spinner {
+    color: $button-light-icon-color;
+    > div {
+      pointer-events: none;
+    }
+    &:hover {
+      color: $button-light-icon-color-hover;
+      > div {
+        text-shadow: 0 0 1px $button-light-color;
+      }
+    }
   }
 }

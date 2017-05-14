@@ -59,7 +59,7 @@ class AddVocabSuggestionPane extends VocabSuggestionPane {
             }
             // Deselect meanings that are not valid for selected word
             for (const [tslGroup, words] of this.restrictedMeaningsToWords) {
-                if (!words.includes(node.textContent)) {
+                if (!words.has(node.textContent)) {
                     for (const translation of tslGroup.children) {
                         this.deselectSuggestionNode(translation, "translation");
                     }

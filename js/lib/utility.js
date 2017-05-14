@@ -541,22 +541,39 @@ function bindRadiobuttonGroup(container, initialValue, callback) {
     }
     currentlySelected.checked = true;
     container.addEventListener("click", (event) => {
-        if (event.target.tagName !== "CHECK-BOX") return;
-        const radiobutton = event.target;
-        const value = radiobutton.dataset.value;
-        if (radiobutton.checked === false) {
+        let radiobutton;
+        if (event.target.tagName === "CHECK-BOX") {
+            radiobutton = event.target;
+            if (radiobutton.checked === false) {
+                radiobutton.checked = true;
+                return;
+            }
+        } else if (event.target.classList.contains("labeled-radiobutton")) {
+            radiobutton = event.target.querySelector("check-box");
+            if (radiobutton.checked === true) {
+                return;
+            }
             radiobutton.checked = true;
+        } else if (event.target.parentNode.classList
+                   .contains("labeled-radiobutton")) {
+            radiobutton = event.target.parentNode.querySelector("check-box");
+            if (radiobutton.checked === true) {
+                return;
+            }
+            radiobutton.checked = true;
+        } else {
             return;
         }
         currentlySelected.checked = false;
         currentlySelected = radiobutton;
-        callback(value);
+        callback(radiobutton.dataset.value);
     });
 }
 
 
 function initializeView({ view, getData, createViewItem, uponResultLoaded,
-                          initialDisplayAmount, displayAmount,
+                          initialDisplayAmount, displayAmount, placeholder,
+                          noResultsPane,
                           sortingCriterion="", sortBackwards=false,
                           criticalScrollDistance=150 }={}) {
     const state = {
@@ -602,19 +619,36 @@ function initializeView({ view, getData, createViewItem, uponResultLoaded,
                 state.nextResultIndex < state.searchResult.length)
             displayMoreViewItems();
     });
-    state.search = async function(query) {
+    state.search = async function(query, ...args) {
+        if (placeholder !== undefined && query.length === 0) {
+            if (query.length === 0) {
+                placeholder.show();
+                state.view.hide();
+                if (noResultsPane !== undefined)
+                    noResultsPane.hide();
+                if (state.uponResultLoaded !== undefined)
+                    state.uponResultLoaded();
+                return;
+            }
+        }
         state.lastQuery = query;
         state.view.empty();
-        const searchResult = await state.getData(query);
+        const searchResult = await state.getData(query, ...args);
         state.view.empty();
         state.nextResultIndex = 0;
         state.searchResult = searchResult;
         state.view.scrollToTop();
         await displayMoreViewItems();
         state.resultLoaded = true;
-        if (state.uponResultLoaded !== undefined) {
-            state.uponResultLoaded(state.searchResult.length > 0);
+        if (placeholder !== undefined)
+            placeholder.hide();
+        if (noResultsPane !== undefined) {
+            const resultsFound = state.searchResult.length > 0;
+            state.view.toggleDisplay(resultsFound);
+            noResultsPane.toggleDisplay(!resultsFound);
         }
+        if (state.uponResultLoaded !== undefined)
+            state.uponResultLoaded();
     };
     return state;
 }

@@ -116,11 +116,13 @@ select {
 
 
 check-box {
-  &:focus {
-    box-shadow: 0 0 5px $highlight-background;
-    border: 1px solid $highlight-background;
-  }
-  &:hover {
-    border: 1px solid $highlight-background;
+  &:not(.light) {
+    &:focus {
+      box-shadow: 0 0 5px $highlight-background;
+      border: 1px solid $highlight-background;
+    }
+    &:hover {
+      border: 1px solid $highlight-background;
+    }
   }
 }

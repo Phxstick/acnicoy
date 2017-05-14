@@ -46,11 +46,11 @@ HTMLElement.prototype.show = function(value) {
  */
 HTMLElement.prototype.toggleDisplay = function(condition, displayValue) {
     if (condition === undefined) {
-        const display = getComputedStyle(this, null).getPropertyValue("display")
-        if (display !== "none" && display !== "")
+        if (this.isHidden()) {
+            this.show(displayValue);
+        } else {
             this.hide();
-        else
-            this.show();
+        }
     } else {
         if (condition) {
             this.show(displayValue);
