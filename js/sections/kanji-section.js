@@ -9,16 +9,22 @@ class KanjiSection extends Section {
         this.addedPerGroupCounters = {};
         this.totalAmountPerGroup = {};
         this.addedAmountPerGroup = {};
-        this.overviewSettings = {
-            splittingCriterion: "grade",
-            sortingCriterion: "alphabetical",
-            onlyMissing: false,
-            showJouyou: true,
-            showJinmeiyou: false,
-            showHyougai: false
-        };
+        this.overviewSettings = {};
+        this.searchSettings = {};
+        // this.overviewSettings = {
+        //     splittingCriterion: "grade",
+        //     sortingCriterion: "alphabetical",
+        //     onlyMissing: false,
+        //     showJouyou: true,
+        //     showJinmeiyou: false,
+        //     showHyougai: false
+        // };
+        // this.searchSettings = {
+        //     searchCriterion: "kanji"
+        // };
         this.$("search-results").hide();
         this.$("no-search-results-info").hide();
+        this.$("settings-popup").hide();
         // =================================================================
         // Control bar event listeners
         // =================================================================
@@ -86,19 +92,18 @@ class KanjiSection extends Section {
                 this.overviewSettings.splittingCriterion = value;
                 this.displayKanji();
         });
-        this.$("overview-settings").hide();
         window.addEventListener("click", (event) => {
-            if (!this.$("overview-settings").isHidden()
+            if (!this.$("settings-popup").isHidden()
                     && !this.settingsWindowClicked) {
-                this.$("overview-settings").hide();
+                this.$("settings-popup").hide();
             }
             this.settingsWindowClicked = false;
         });
-        this.$("overview-settings").addEventListener("click", (event) => {
+        this.$("settings-popup").addEventListener("click", (event) => {
             this.settingsWindowClicked = true;
         });
         this.$("settings-button").addEventListener("click", (event) => {
-            this.$("overview-settings").toggleDisplay();
+            this.$("settings-popup").toggleDisplay();
             event.stopPropagation();
         });
         const labeledCheckboxes = this.$$(".labeled-checkbox");
@@ -138,6 +143,20 @@ class KanjiSection extends Section {
             this.overviewSettings.onlyMissing = !value;
             this.displayKanji();
         };
+        this.searchSettings.searchCriterion =
+            dataManager.settings.kanjiSearch.searchCriterion;
+        const setSearchCriterion = (value) => {
+            dataManager.settings.kanjiSearch.searchCriterion = value;
+            this.searchSettings.searchCriterion = value;
+            this.$("search-entry").placeholder = `Search by ${value}`;
+            this.$("search-entry").toggleKanaInput(value === "yomi");
+        };
+        setSearchCriterion(this.searchSettings.searchCriterion);
+        utility.bindRadiobuttonGroup(
+            this.$("search-criterion"),
+            dataManager.settings.kanjiSearch.searchCriterion,
+            setSearchCriterion
+        );
     }
 
     registerCentralEventListeners() {

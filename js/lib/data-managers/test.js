@@ -9,7 +9,9 @@ module.exports = function (paths, modules) {
         WORDS: "WORDS",
         KANJI_MEANINGS: "KANJI_MEANINGS",
         KANJI_ON_YOMI: "KANJI_ON_YOMI",
-        KANJI_KUN_YOMI: "KANJI_KUN_YOMI"
+        KANJI_KUN_YOMI: "KANJI_KUN_YOMI",
+        HANZI_MEANINGS: "HANZI_MEANINGS",
+        HANZI_READINGS: "HANZI_READINGS"
     };
 
     test.modeToTable = function (mode) {
@@ -18,6 +20,8 @@ module.exports = function (paths, modules) {
             case test.mode.KANJI_MEANINGS: return "kanji_meanings";
             case test.mode.KANJI_ON_YOMI: return "kanji_on_yomi";
             case test.mode.KANJI_KUN_YOMI: return "kanji_kun_yomi";
+            case test.mode.HANZI_MEANINGS: return "hanzi_meanings";
+            case test.mode.HANZI_READINGS: return "hanzi_readings";
         }
     };
 
@@ -28,6 +32,9 @@ module.exports = function (paths, modules) {
             case test.mode.KANJI_ON_YOMI:
             case test.mode.KANJI_KUN_YOMI:
                 return "kanji";
+            case test.mode.HANZI_MEANINGS:
+            case test.mode.HANZI_READINGS:
+                return "hanzi";
         }
     };
 
@@ -44,6 +51,10 @@ module.exports = function (paths, modules) {
                 return modules.kanji.getOnYomi(item);
             case test.mode.KANJI_KUN_YOMI:
                 return modules.kanji.getKunYomi(item);
+            case test.mode.HANZI_MEANINGS:
+                return modules.hanzi.getMeanings(item);
+            case test.mode.HANZI_READINGS:
+                return modules.hanzi.getReadings(item);
         }
     };
 
@@ -60,6 +71,10 @@ module.exports = function (paths, modules) {
                 return modules.kanji.add(item, { "on_yomi": [newSolution] });
             case test.mode.KANJI_KUN_YOMI:
                 return modules.kanji.add(item, { "kun_yomi": [newSolution] });
+            case test.mode.HANZI_MEANINGS:
+                return modules.hanzi.add(item, { "meanings": [newSolution] });
+            case test.mode.HANZI_READINGS:
+                return modules.hanzi.add(item, { "readings": [newSolution] });
         }
     }
 
@@ -92,6 +107,9 @@ module.exports = function (paths, modules) {
         if (language === "Japanese") {
             return [test.mode.WORDS, test.mode.KANJI_MEANINGS,
                     test.mode.KANJI_ON_YOMI, test.mode.KANJI_KUN_YOMI];
+        } else if (language === "Chinese") {
+            return [test.mode.WORDS, test.mode.HANZI_MEANINGS,
+                    test.mode.HANZI_READINGS];
         } else {
             return [test.mode.WORDS];
         }

@@ -7,6 +7,7 @@ $header-font: Questrial;
 $button-font: $header-font;
 $small-font: Arial;
 $tooltip-font: $header-font;
+$pinyin-font: OpenSans-Regular;
 
 // =============================================================================
 // Base colors
@@ -168,8 +169,10 @@ $test-section-test-item-shadow-color: rgba(0, 0, 0, 0.1);
 $test-section-item-type-word-meaning: darkorchid;
 $test-section-item-type-word-reading: darkorchid;  //mediumvioletred;
 $test-section-item-type-kanji-meaning: indianred;
-$test-section-item-type-kanji-on-yomi: indianred;
-$test-section-item-type-kanji-kun-yomi: indianred;
+$test-section-item-type-kanji-on-yomi: darkslateblue;
+$test-section-item-type-kanji-kun-yomi: darkolivegreen;
+$test-section-item-type-hanzi-meaning: indianred;
+$test-section-item-type-hanzi-reading: darkslateblue;
 
 // Kanji stroke SVGs
 $kanji-strokes-color: #888;

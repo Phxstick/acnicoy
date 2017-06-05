@@ -110,6 +110,9 @@ class TestSection extends Section {
                 main.openPanel("edit-kanji", { entryName: item.entry });
             } else if (item.mode === dataManager.test.mode.WORDS) {
                 main.openPanel("edit-vocab", { entryName: item.entry });
+            } else if (item.mode === dataManager.test.mode.HANZI_MEANINGS ||
+                    item.mode === dataManager.test.mode.HANZI_READINGS) {
+                main.openPanel("edit-hanzi", { entryName: item.entry });
             }
         });
         // Create popup-menus
@@ -458,6 +461,11 @@ class TestSection extends Section {
     }
 
     _displaySolutions(solutions, animate) {
+        this.$("solutions").classList.toggle("pinyin",
+            dataManager.currentLanguage === "Chinese" &&
+            (this.testInfo.currentPart === "readings" ||
+             this.testInfo.currentItem.mode ===
+                 dataManager.test.mode.HANZI_READINGS));
         for (const solution of solutions) {
             const solutionLabel = document.createElement("div");
             solutionLabel.textContent = solution;
@@ -497,14 +505,23 @@ class TestSection extends Section {
         this.$("status").classList.remove("correct");
         this.$("status").classList.remove("incorrect");
         // Choose right input method (for translations or readings)
-        if (mode === dataManager.test.mode.KANJI_KUN_YOMI)
-            this.$("answer-entry").enableKanaInput("hira");
-        else if (mode === dataManager.test.mode.KANJI_ON_YOMI)
-            this.$("answer-entry").enableKanaInput("kata");
-        else if (part === "readings")
-            this.$("answer-entry").enableKanaInput("hira");
-        else
-            this.$("answer-entry").disableKanaInput();
+        if (dataManager.currentLanguage === "Japanese") {
+            if (mode === dataManager.test.mode.KANJI_KUN_YOMI)
+                this.$("answer-entry").enableKanaInput("hiragana");
+            else if (mode === dataManager.test.mode.KANJI_ON_YOMI)
+                this.$("answer-entry").enableKanaInput("katakana");
+            else if (part === "readings")
+                this.$("answer-entry").enableKanaInput("hiragana");
+            else
+                this.$("answer-entry").disableKanaInput();
+        } else if (dataManager.currentLanguage === "Chinese") {
+            const enablePinyin = part === "readings" ||
+                mode === dataManager.test.mode.HANZI_READINGS;
+            this.$("answer-entry").togglePinyinInput(enablePinyin);
+            this.$("answer-entry").classList.toggle("pinyin", enablePinyin);
+        } else {
+            this.$("answer-entry").disableInputConversion();
+        }
         // Choose the right status label
         if (part === "readings") {
             this.$("status").textContent = "How do you read this word?";
@@ -519,6 +536,10 @@ class TestSection extends Section {
                 text = `Name an ON-Yomi of the following kanji.`;
             else if (mode === dataManager.test.mode.KANJI_KUN_YOMI)
                 text = `Name a KUN-Yomi of the following kanji.`;
+            else if (mode === dataManager.test.mode.HANZI_MEANINGS)
+                text = `What could the following hanzi mean?`;
+            else if (mode === dataManager.test.mode.HANZI_READINGS)
+                text = `How do you read the following hanzi?`;
             this.$("status").textContent = text;
         }
         if (dataManager.settings.test.useBackgroundColors) {
@@ -538,6 +559,8 @@ class TestSection extends Section {
             case modes.KANJI_MEANINGS: className = "kanji-meaning"; break;
             case modes.KANJI_ON_YOMI: className = "kanji-on-yomi"; break;
             case modes.KANJI_KUN_YOMI: className = "kanji-kun-yomi"; break;
+            case modes.HANZI_MEANINGS: className = "hanzi-meaning"; break;
+            case modes.HANZI_READINGS: className = "hanzi-reading"; break;
         }
         this.$("top").className = className;
         if (dataManager.settings.test.animate) {
@@ -835,7 +858,21 @@ class TestSection extends Section {
                 }));
             }
         }
-        return Promise.all([vocabPart, ...kanjiParts]).then(() => {
+        // Assemble hanzi part of the testitem list if the language is Chinese
+        let hanziParts = [];
+        if (dataManager.currentLanguage === "Chinese") {
+            for (const mode of [dataManager.test.mode.HANZI_MEANINGS,
+                                dataManager.test.mode.HANZI_READINGS]) {
+                hanziParts.push(dataManager.srs.getDueHanzi(mode, since)
+                .then((hanziList) => {
+                    for (const hanzi of hanziList) {
+                        itemPromises.push(this._createTestItem(hanzi, mode));
+                    }
+                }));
+            }
+        }
+        return Promise.all([vocabPart, ...kanjiParts, ...hanziParts])
+        .then(() => {
             return Promise.all(itemPromises);
         });
     }

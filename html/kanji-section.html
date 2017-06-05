@@ -1,54 +1,78 @@
 <div id="kanji-container"></div>
 <div id="control-bar">
-  <input id="search-entry" placeholder="Search by kanji"></input>
+  <input id="search-entry"></input>
   <button id="search-button" tabindex="-1"><i class="fa fa-search"></i></button>
   <button id="show-overview-button"><i class="fa fa-th"></i></button>
   <button id="settings-button"><i class="fa fa-cog"></i></button>
-  <div id="overview-settings" class="popup-menu">
-    <div id="overview-split-criterion" class="group">
-      <div class="group-header">Split kanji by:</div>
-      <div class="labeled-radiobutton">
-        <check-box data-value="grade" class="radiobutton light">
-        </check-box>
-        <span>Grade</span>
+  <div id="settings-popup" class="popup-menu">
+    <div class="header">Overview settings</div>
+    <div id="overview-settings" class="group">
+      <div id="overview-split-criterion" class="group">
+        <div class="group-header">Split kanji by:</div>
+        <div class="labeled-radiobutton">
+          <check-box data-value="grade" class="radiobutton light">
+          </check-box>
+          <span>Grade</span>
+        </div>
+        <div class="labeled-radiobutton">
+          <check-box data-value="frequency" class="radiobutton light">
+          </check-box>
+          <span>Newspaper Frequency</span>
+        </div>
+        <div class="labeled-radiobutton">
+          <check-box data-value="jlpt-level" class="radiobutton light">
+          </check-box>
+          <span>JLPT level</span>
+        </div>
+        <div class="labeled-radiobutton">
+          <check-box data-value="stroke-count" class="radiobutton light">
+          </check-box>
+          <span>Stroke count</span>
+        </div>
+        <div class="labeled-radiobutton">
+          <check-box data-value="radical" class="radiobutton light">
+          </check-box>
+          <span>Radical</span>
+        </div>
       </div>
-      <div class="labeled-radiobutton">
-        <check-box data-value="frequency" class="radiobutton light">
-        </check-box>
-        <span>Newspaper Frequency</span>
+      <hr>
+      <div class="labeled-checkbox">
+        <check-box id="show-jouyou" class="light"></check-box>
+        <span>Display Jouyou kanji</span>
       </div>
-      <div class="labeled-radiobutton">
-        <check-box data-value="jlpt-level" class="radiobutton light">
-        </check-box>
-        <span>JLPT level</span>
+      <div class="labeled-checkbox">
+        <check-box id="show-jinmeiyou" class="light"></check-box>
+        <span>Display Jinmeiyou kanji</span>
       </div>
-      <div class="labeled-radiobutton">
-        <check-box data-value="stroke-count" class="radiobutton light">
-        </check-box>
-        <span>Stroke count</span>
+      <div class="labeled-checkbox">
+        <check-box id="show-hyougai" class="light"></check-box>
+        <span>Display Hyougai kanji</span>
       </div>
-      <div class="labeled-radiobutton">
-        <check-box data-value="radical" class="radiobutton light">
-        </check-box>
-        <span>Radical</span>
+      <div class="labeled-checkbox">
+        <check-box id="show-added" class="light"></check-box>
+        <span>Display Added kanji</span>
       </div>
     </div>
-    <hr>
-    <div class="labeled-checkbox">
-      <check-box id="show-jouyou" class="light"></check-box>
-      <span>Display Jouyou kanji</span>
-    </div>
-    <div class="labeled-checkbox">
-      <check-box id="show-jinmeiyou" class="light"></check-box>
-      <span>Display Jinmeiyou kanji</span>
-    </div>
-    <div class="labeled-checkbox">
-      <check-box id="show-hyougai" class="light"></check-box>
-      <span>Display Hyougai kanji</span>
-    </div>
-    <div class="labeled-checkbox">
-      <check-box id="show-added" class="light"></check-box>
-      <span>Display Added kanji</span>
+    <div class="header">Search settings</div>
+    <div id="search-settings" class="group">
+      <div id="search-criterion" class="group">
+        <div class="group-header">Search kanji by:</div>
+        <div class="labeled-radiobutton">
+          <check-box data-value="kanji" class="radiobutton light">
+          </check-box>
+          <span>Kanji</span>
+        </div>
+        <div class="labeled-radiobutton">
+          <check-box data-value="meaning" class="radiobutton light">
+          </check-box>
+          <span>Meanings</span>
+        </div>
+        <div class="labeled-radiobutton">
+          <check-box data-value="yomi" class="radiobutton light">
+          </check-box>
+          <span>Readings</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>

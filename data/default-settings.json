@@ -36,6 +36,9 @@
         "showJinmeiyou": false,
         "showHyougai": false
     },
+    "kanjiSearch": {
+        "searchCriterion": "kanji"
+    },
     "srs": {
         "intervalModifier": "4 hours"
     },

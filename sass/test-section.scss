@@ -51,6 +51,12 @@ $scroll-overflow-shadow-size: 25px;
   &.kanji-kun-yomi {
     --test-frame-background: $test-section-item-type-kanji-kun-yomi;
   }
+  &.hanzi-meaning {
+    --test-frame-background: $test-section-item-type-hanzi-meaning;
+  }
+  &.hanzi-reading {
+    --test-frame-background: $test-section-item-type-hanzi-reading;
+  }
   background-color: var(--test-frame-background);
 }
 
@@ -177,6 +183,10 @@ $scroll-overflow-shadow-size: 25px;
       }
     }
 
+    &.pinyin > * {
+      font-family: $pinyin-font;
+    }
+
     &::-webkit-scrollbar {
       width: 16px;
     }
@@ -270,6 +280,10 @@ $scroll-overflow-shadow-size: 25px;
   width: $answer-input-width;
   padding: $answer-input-padding;
   box-sizing: border-box;
+
+  &.pinyin {
+    font-family: $pinyin-font;
+  }
 }
 
 #continue-button, #show-solutions-button {

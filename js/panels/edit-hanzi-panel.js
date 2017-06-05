@@ -1,17 +1,17 @@
 "use strict";
 
 const menuItems = popupMenu.registerItems({
-    "copy-kanji": {
-        label: "Copy kanji",
+    "copy-hanzi": {
+        label: "Copy hanzi",
         click: ({ currentNode }) => {
-            const kanji = currentNode.textContent;
-            clipboard.writeText(kanji);
+            const hanzi = currentNode.textContent;
+            clipboard.writeText(hanzi);
         }
     },
-    "remove-kanji": {
-        label: "Remove kanji from SRS items",
+    "remove-hanzi": {
+        label: "Remove hanzi from SRS items",
         click: ({ data: {section} }) => {
-            section.deleteKanji();
+            section.deleteHanzi();
         }
     },
     "add-meaning": {
@@ -36,93 +36,63 @@ const menuItems = popupMenu.registerItems({
             currentNode.focus();
         }
     },
-    "add-on-yomi": {
-        label: "Add on-yomi",
+    "add-reading": {
+        label: "Add reading",
         click: ({ data: {section} }) => {
-            const item = section.createListItem("", "on-yomi");
-            section.$("on-yomi").scrollToBottom;
+            const item = section.createListItem("", "reading");
+            section.$("readings").scrollToBottom;
             item.focus();
         }
     },
-    "delete-on-yomi": {
-        label: "Remove on-yomi",
+    "delete-reading": {
+        label: "Remove reading",
         click: ({ currentNode, data: {section} }) => {
             currentNode.remove();
-            if (section.$("on-yomi").children.length === 0)
-                section.$("srs-level-on-yomi").disabled = true;
+            if (section.$("readings").children.length === 0)
+                section.$("srs-level-readings").disabled = true;
         }
     },
-    "modify-on-yomi": {
-        label: "Modify on-yomi",
-        click: ({ currentNode }) => {
-            currentNode.focus();
-        }
-    },
-    "add-kun-yomi": {
-        label: "Add kun-yomi",
-        click: ({ data: {section} }) => {
-            const item = section.createListItem("", "kun-yomi");
-            section.$("kun-yomi").scrollToBottom;
-            item.focus();
-        }
-    },
-    "delete-kun-yomi": {
-        label: "Remove kun-yomi",
-        click: ({ currentNode, data: {section} }) => {
-            currentNode.remove();
-            if (section.$("kun-yomi").children.length === 0)
-                section.$("srs-level-kun-yomi").disabled = true;
-        }
-    },
-    "modify-kun-yomi": {
-        label: "Modify kun-yomi",
+    "modify-reading": {
+        label: "Modify reading",
         click: ({ currentNode }) => {
             currentNode.focus();
         }
     }
 });
 
-class EditKanjiPanel extends Panel {
+class EditHanziPanel extends Panel {
     constructor() {
-        super("edit-kanji");
+        super("edit-hanzi");
         this.typeToPopup = {
             "meaning": this.$("srs-level-meanings"),
-            "on-yomi": this.$("srs-level-on-yomi"),
-            "kun-yomi": this.$("srs-level-kun-yomi")
+            "reading": this.$("srs-level-readings")
         };
         // Create callbacks for adding values
         this.$("add-meaning-button").addEventListener("click", () => {
             const item = this.createListItem("", "meaning");
             item.focus();
         });
-        this.$("add-on-yomi-button").addEventListener("click", () => {
-            const item = this.createListItem("", "on-yomi");
-            item.focus();
-        });
-        this.$("add-kun-yomi-button").addEventListener("click", () => {
-            const item = this.createListItem("", "kun-yomi");
+        this.$("add-reading-button").addEventListener("click", () => {
+            const item = this.createListItem("", "reading");
             item.focus();
         });
         // Configure popup-menu for static elements
-        this.$("kanji").popupMenu(menuItems,
-                ["copy-kanji", "remove-kanji"], { section: this });
+        this.$("hanzi").popupMenu(menuItems,
+                ["copy-hanzi", "remove-hanzi"], { section: this });
         this.$("meanings").popupMenu(
                 menuItems, ["add-meaning"], { section: this });
-        this.$("on-yomi").popupMenu(menuItems,
-                ["add-on-yomi"], { section: this });
-        this.$("kun-yomi").popupMenu(menuItems,
-                ["add-kun-yomi"], { section: this });
+        this.$("readings").popupMenu(menuItems,
+                ["add-reading"], { section: this });
         // Create closing and saving callbacks
         this.$("close-button").addEventListener(
-            "click", () => main.closePanel("edit-kanji"));
+            "click", () => main.closePanel("edit-hanzi"));
         this.$("cancel-button").addEventListener(
-            "click", () => main.closePanel("edit-kanji"));
+            "click", () => main.closePanel("edit-hanzi"));
         this.$("save-button").addEventListener(
-            "click", () => { this.save(); main.closePanel("edit-kanji"); });
+            "click", () => { this.save(); main.closePanel("edit-hanzi"); });
         this.$("all-srs-levels").callback = (label, value) => {
             this.$("srs-level-meanings").setByIndex(value - 1);
-            this.$("srs-level-on-yomi").setByIndex(value - 1);
-            this.$("srs-level-kun-yomi").setByIndex(value - 1);
+            this.$("srs-level-readings").setByIndex(value - 1);
         };
     }
 
@@ -133,7 +103,7 @@ class EditKanjiPanel extends Panel {
             const intervalTexts = dataManager.srs.currentScheme.intervalTexts;
             const popups = [
                 this.$("all-srs-levels"), this.$("srs-level-meanings"),
-                this.$("srs-level-kun-yomi"), this.$("srs-level-on-yomi")
+                this.$("srs-level-readings")
             ];
             for (const popup of popups) {
                 popup.empty();
@@ -147,35 +117,28 @@ class EditKanjiPanel extends Panel {
             const animate = dataManager.settings.design.animatePopupStacks;
             this.$("all-srs-levels").animate = animate;
             this.$("srs-level-meanings").animate = animate;
-            this.$("srs-level-on-yomi").animate = animate;
-            this.$("srs-level-kun-yomi").animate = animate;
+            this.$("srs-level-readings").animate = animate;
         });
     }
 
-    load(kanji) {
-        return dataManager.kanji.getInfo(kanji).then((info) => {
+    load(hanzi) {
+        return dataManager.hanzi.getInfo(hanzi).then((info) => {
             this.$("meanings").empty();
-            this.$("on-yomi").empty();
-            this.$("kun-yomi").empty();
-            this.$("kanji").textContent = kanji;
+            this.$("readings").empty();
+            this.$("hanzi").textContent = hanzi;
             for (const meaning of info.meanings) {
                 this.createListItem(meaning, "meaning");
             }
-            for (const onYomi of info.onYomi) {
-                this.createListItem(onYomi, "on-yomi");
-            }
-            for (const kunYomi of info.kunYomi) {
-                this.createListItem(kunYomi, "kun-yomi");
+            for (const reading of info.readings) {
+                this.createListItem(reading, "reading");
             }
             // Set level popup stacks
             this.$("all-srs-levels").setByIndex(0);
             this.$("srs-level-meanings").setByIndex(info.meaningsLevel - 1);
-            this.$("srs-level-on-yomi").setByIndex(info.onYomiLevel - 1);
-            this.$("srs-level-kun-yomi").setByIndex(info.kunYomiLevel - 1);
+            this.$("srs-level-readings").setByIndex(info.readingsLevel - 1);
             // Disable level popups if there's no list entry
             this.$("srs-level-meanings").disabled = info.meanings.length === 0;
-            this.$("srs-level-on-yomi").disabled = info.onYomi.length === 0;
-            this.$("srs-level-kun-yomi").disabled = info.kunYomi.length === 0;
+            this.$("srs-level-readings").disabled = info.readings.length === 0;
         });
     }
 
@@ -184,13 +147,10 @@ class EditKanjiPanel extends Panel {
         node.textContent = text;
         // Allow editing details on click
         node.contentEditable = "true";
-        // If it's a yomi, enable kana input
+        // If it's a reading, enable pinyin input
         node.addEventListener("focusin", () => {
-            if (node.parentNode === this.$("on-yomi")) {
-                node.enableKanaInput("katakana");
-            }
-            if (node.parentNode === this.$("kun-yomi")) {
-                node.enableKanaInput("hiragana");
+            if (node.parentNode === this.$("readings")) {
+                node.enablePinyinInput();
             }
         });
         // If the node is left empty, remove it upon losing focus
@@ -230,55 +190,48 @@ class EditKanjiPanel extends Panel {
             this.$("meanings").appendChild(node);
             node.popupMenu(menuItems, ["delete-meaning", "modify-meaning"],
                            { section: this });
-        } else if (type === "kun-yomi") {
-            this.$("kun-yomi").appendChild(node);
-            node.popupMenu(menuItems, ["delete-kun-yomi", "modify-kun-yomi"],
-                           { section: this });
-        } else if (type === "on-yomi") {
-            this.$("on-yomi").appendChild(node);
-            node.popupMenu(menuItems, ["delete-on-yomi", "modify-on-yomi"],
+        } else if (type === "reading") {
+            this.$("readings").appendChild(node);
+            node.popupMenu(menuItems, ["delete-reading", "modify-reading"],
                            { section: this });
         }
         return node;
     }
 
-    deleteKanji() {
-        const kanji = this.$("kanji").textContent;
+    deleteHanzi() {
+        const hanzi = this.$("hanzi").textContent;
         return dialogWindow.confirm(
-            `Are you sure you want to remove the kanji '${kanji}'?`)
+            `Are you sure you want to remove the hanzi '${hanzi}'?`)
         .then((confirmed) => {
             if (!confirmed) return;
-            dataManager.kanji.remove(kanji);
-            main.closePanel("edit-kanji");
-            events.emit("kanji-removed", kanji);
+            dataManager.hanzi.remove(hanzi);
+            main.closePanel("edit-hanzi");
+            events.emit("hanzi-removed", hanzi);
         });
     }
 
     save() {
-        const kanji = this.$("kanji").textContent;
+        const hanzi = this.$("hanzi").textContent;
         const levels = {
             meanings: parseInt(this.$("srs-level-meanings").value),
-            on_yomi: parseInt(this.$("srs-level-on-yomi").value),
-            kun_yomi: parseInt(this.$("srs-level-kun-yomi").value)
+            readings: parseInt(this.$("srs-level-readings").value)
         };
-        const values = { meanings: [], on_yomi: [], kun_yomi: [] };
+        const values = { meanings: [], readings: [] };
         for (const item of this.$("meanings").children)
             values.meanings.push(item.textContent);
-        for (const item of this.$("on-yomi").children)
-            values.on_yomi.push(item.textContent);
-        for (const item of this.$("kun-yomi").children)
-            values.kun_yomi.push(item.textContent);
-        return dataManager.kanji.edit(kanji, values, levels).then((result) => {
+        for (const item of this.$("readings").children)
+            values.readings.push(item.textContent);
+        return dataManager.hanzi.edit(hanzi, values, levels).then((result) => {
             if (result === "removed") {
-                main.updateStatus(`Kanji ${kanji} has been removed.`);
-                events.emit("kanji-removed", kanji);
+                main.updateStatus(`Hanzi ${hanzi} has been removed.`);
+                events.emit("hanzi-removed", hanzi);
             } else if (result === "updated") {
-                main.updateStatus(`Kanji ${kanji} has been updated.`);
-                events.emit("kanji-changed", kanji);
+                main.updateStatus(`Hanzi ${hanzi} has been updated.`);
+                events.emit("hanzi-changed", hanzi);
             }
         });
     }
 }
 
-customElements.define("edit-kanji-panel", EditKanjiPanel);
-module.exports = EditKanjiPanel;
+customElements.define("edit-hanzi-panel", EditHanziPanel);
+module.exports = EditHanziPanel;

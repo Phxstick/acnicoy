@@ -1,9 +1,22 @@
 "use strict";
 
-/**
-**  This module extends String, HTMLInputElement and HTMLTextAreaElement
-**  by methods to convert romaji to kana and the other way round.
-**/
+/*
+ *  This module extends String, HTMLInputElement and HTMLTextAreaElement and
+ *  HTMLElements.
+ */
+
+HTMLInputElement.prototype.disableInputConversion =
+HTMLTextAreaElement.prototype.disableInputConversion = function () {
+    if (this.currentInputHandler !== undefined) {
+        this.removeEventListener("keypress", this.currentInputHandler);
+        this.currentInputHandler = undefined;
+        this.currentInputMethod = undefined;
+    }
+}
+
+// ============================================================================
+//   Methods to convert between romaji and kana
+// ============================================================================
 
 const hiragana1 = [];
 for (let i = 12353; i < 12439; ++i) hiragana1.push(String.fromCharCode(i));
@@ -129,22 +142,22 @@ String.prototype.toRomaji = function() {
     return finalString.join("");
 }
 
-String.prototype.toKana = function(type, ignoreN) {
-    const dict1 = type === "hira" ? romajiHira1 : romajiKata1;
-    const dict2 = type === "hira" ? romajiHira2 : romajiKata2;
+String.prototype.toKana = function (type, ignoreN) {
+    const dict1 = type === "hiragana" ? romajiHira1 : romajiKata1;
+    const dict2 = type === "hiragana" ? romajiHira2 : romajiKata2;
     const string = this.toLowerCase().trim();
     const converted = [];
     let i = 0;
     while (i < string.length) {
         // Check whether there is an n with apostrophe
         if (i < string.length - 1 && string.slice(i, i + 2) === "n'") {
-            converted.push(type === "hira" ? "ん" : "ン");
+            converted.push(type === "hiragana" ? "ん" : "ン");
             ++i;
         }
         // Check if we have duplicate letters
         else if (i < string.length - 1 && string[i] !== "n" &&
                  string[i] === string[i + 1] && romajiChars.has(string[i])) {
-            converted.push(type === "hira" ? "っ" : "ッ");
+            converted.push(type === "hiragana" ? "っ" : "ッ");
         }
         // Check for 3-letter compounds
         else if (i < string.length - 2 &&
@@ -179,7 +192,8 @@ String.prototype.toKana = function(type, ignoreN) {
             converted.push(dict1[string[i]]);
         }
         // Replace minus or underscore with "ー" when writing katakana
-        else if (type === "kata" && (string[i] === "-" || string[i] === "_")) {
+        else if (type === "katakana" &&
+                (string[i] === "-" || string[i] === "_")) {
             converted.push("ー");
         }
         // Anything else simply gets appended
@@ -191,7 +205,8 @@ String.prototype.toKana = function(type, ignoreN) {
     return converted.join("");
 }
 
-function kanaInput(input, type, event) {
+function kanaInput(type, event) {
+    const input = event.target;
     const pos = input.selectionStart;
     const end = input.selectionEnd;
     // If there's a selection, delete selected text first
@@ -205,7 +220,7 @@ function kanaInput(input, type, event) {
     let replaced = false;
     if (key === "n" && pos > 0 && text[pos - 1] === "n") {
         text = text.slice(0, pos - 1) +
-               (type === "hira" ? "ん" : "ン") +
+               (type === "hiragana" ? "ん" : "ン") +
                text.slice(pos);
         replaced = true;
     } else if (romajiChars.has(key) || key === "-" || key === "_") {
@@ -220,33 +235,42 @@ function kanaInput(input, type, event) {
 }
 
 HTMLInputElement.prototype.enableKanaInput =
-HTMLTextAreaElement.prototype.enableKanaInput = function(type) {
-    if (this.currentInputMethod !== undefined)
-        this.disableKanaInput();
-    const otherType = type === "hira" ? "kata" : "hira";
-    this.currentInputMethod = (event) => {
-        kanaInput(this, event.shiftKey ? otherType : type, event);
-    };
-    this.addEventListener("keypress", this.currentInputMethod);
+HTMLTextAreaElement.prototype.enableKanaInput = function (type="hiragana") {
+    if (this.currentInputHandler !== undefined)
+        this.removeEventListener("keypress", this.currentInputHandler);
+    this.currentInputMethod = type;
+    const otherType = type === "hiragana" ? "katakana" : "hiragana";
+    this.currentInputHandler =
+        (event) => kanaInput(event.shiftKey ? otherType : type, event);
+    this.addEventListener("keypress", this.currentInputHandler);
 }
 
 HTMLInputElement.prototype.disableKanaInput =
-HTMLTextAreaElement.prototype.disableKanaInput = function() {
-    if (this.currentInputMethod !== undefined) {
-        this.removeEventListener("keypress", this.currentInputMethod);
+HTMLTextAreaElement.prototype.disableKanaInput = function () {
+    if (this.currentInputMethod === "hiragana" ||
+            this.currentInputMethod === "katakana") {
+        this.removeEventListener("keypress", this.currentInputHandler);
+        this.currentInputHandler = undefined;
         this.currentInputMethod = undefined;
     }
 }
 
+HTMLInputElement.prototype.toggleKanaInput =
+HTMLTextAreaElement.prototype.toggleKanaInput = function(bool, type="hiragana"){
+    if (bool) this.enableKanaInput(type);
+    else this.disableKanaInput();
+}
+
 // Function for converting text in HTMLElements with "contenteditable".
 // This requires the shadow root as parameter in order to get current selection.
-function kanaInputRoot(input, type, root, event) {
+function kanaInputRoot(type, root, event) {
+    const input = event.target;
     const { anchorOffset: pos, anchorNode: node } = root.getSelection();
     let text = input.textContent;
     let replaced = false;
     if (event.key === "n" && pos > 0 && text[pos - 1] === "n") {
         text = text.slice(0, pos - 1) +
-               (type === "hira" ? "ん" : "ン") +
+               (type === "hiragana" ? "ん" : "ン") +
                text.slice(pos);
         replaced = true;
     } else if (romajiChars.has(event.key)) {
@@ -267,16 +291,307 @@ function kanaInputRoot(input, type, root, event) {
     event.preventDefault();
 }
 
-HTMLElement.prototype.enableKanaInput = function(type, root) {
-    if (this.currentInputMethod !== undefined)
-        this.disableKanaInput();
-    this.currentInputMethod = (event) => kanaInputRoot(this, type, root, event);
-    this.addEventListener("keypress", this.currentInputMethod);
+HTMLElement.prototype.enableKanaInput = function (type="hiragana") {
+    if (this.currentInputHandler !== undefined)
+        this.removeEventListener("keypress", this.currentInputHandler);
+    this.currentInputMethod = type;
+    const otherType = type === "hiragana" ? "katakana" : "hiragana";
+    const root = this.getRoot();
+    this.currentInputHandler =
+        (event) => kanaInputRoot(event.shiftKey ? otherType : type, root, event)
+    this.addEventListener("keypress", this.currentInputHandler);
 }
 
-HTMLElement.prototype.disableKanaInput = function() {
-    if (this.currentInputMethod !== undefined) {
-        this.removeEventListener("keypress", this.currentInputMethod);
+HTMLElement.prototype.disableKanaInput = function () {
+    if (this.currentInputMethod === "hiragana" ||
+            this.currentInputMethod === "katakana") {
+        this.removeEventListener("keypress", this.currentInputHandler);
+        this.currentInputHandler = undefined;
         this.currentInputMethod = undefined;
     }
+}
+
+HTMLElement.prototype.toggleKanaInput = function (bool, type="hiragana") {
+    if (bool) this.enableKanaInput(type);
+    else this.disableKanaInput();
+}
+
+// ============================================================================
+//   Pinyin input methods
+// ============================================================================
+
+const charsForPinyin =
+    new Set("1234abcdefghijklmnopqrstuwxyzüABCDEFGHIJKLMNOPQRSTUWXYZÜ");
+
+const onlyVowelSyllables = new Set([
+    "a", "ai", "ao", "an", "ang", "e", "ei", "en", "eng", "er", "o", "ou", "yi",
+    "ya", "yao", "ye", "you", "yan", "yang", "yin", "ying", "yong", "wu", "wa",
+    "wai", "wei", "wo", "wan", "wang", "wen", "weng", "yu", "yue", "yuan", "yun"
+]);
+const pinyinInitials =
+    new Set(["sh", "ch", "za", ..."bpmfdtnlzcsrjqxgkh".split("")]);
+const pinyinFinals = new Set([
+    "iang", "iong", "uang",
+    "ang", "eng", "ong", "iao", "ian", "ing", "uai", "uan", "üan",
+    "ai", "ao", "an", "ou", "ei", "en", "ia", "ie", "iu", "in", "ua", "uo",
+    "ui", "un", "üe", "ün",
+    "a", "o", "e", "i", "u", "ü"
+]);
+const accentCodes = new Set(["1", "2", "3", "4"]);
+
+const accentedVowels = {
+    "a": { "1": "ā", "2": "á", "3": "ǎ", "4": "à" },
+    "e": { "1": "ē", "2": "é", "3": "ě", "4": "è" },
+    "i": { "1": "ī", "2": "í", "3": "ǐ", "4": "ì" },
+    "o": { "1": "ō", "2": "ó", "3": "ǒ", "4": "ò" },
+    "u": { "1": "ū", "2": "ú", "3": "ǔ", "4": "ù" },
+    "ü": { "1": "ǖ", "2": "ǘ", "3": "ǚ", "4": "ǜ" }, 
+
+    "A": { "1": "Ā", "2": "Á", "3": "Ǎ", "4": "À" },
+    "E": { "1": "Ē", "2": "É", "3": "Ě", "4": "È" },
+    "I": { "1": "Ī", "2": "Í", "3": "Ǐ", "4": "Ì" },
+    "O": { "1": "Ō", "2": "Ó", "3": "Ǒ", "4": "Ò" },
+    "U": { "1": "Ū", "2": "Ú", "3": "Ǔ", "4": "Ù" },
+    "Ü": { "1": "Ǖ", "2": "Ǘ", "3": "Ǚ", "4": "Ǜ" }
+};
+
+const accentPositions = {
+    "er": 0,
+    "yi": 1,
+    "ya": 1,
+    "yao": 1,
+    "ye": 1,
+    "you": 1,
+    "yan": 1,
+    "yang": 1,
+    "yin": 1,
+    "ying": 1,
+    "yong": 1,
+    "wu": 1,
+    "wa": 1,
+    "wai": 1,
+    "wei": 1,
+    "wo": 1,
+    "wan": 1,
+    "wang": 1,
+    "wen": 1,
+    "weng": 1,
+    "yu": 1,
+    "yue": 1,
+    "yuan": 2,
+    "yun": 1,
+
+    "a": 0,
+    "o": 0,
+    "e": 0,
+    "i": 0,
+    "u": 0,
+    "ü": 0,
+    "ai": 0,
+    "ao": 0,
+    "an": 0,
+    "ou": 0,
+    "ei": 0,
+    "en": 0,
+    "ia": 1,
+    "ie": 1,
+    "iu": 1,
+    "in": 0,
+    "ua": 1,
+    "uo": 1,
+    "ui": 1,
+    "un": 0,
+    "üe": 0,
+    "ün": 0,
+    "ang": 0,
+    "eng": 0,
+    "ong": 0,
+    "iao": 1,
+    "ian": 1,
+    "ing": 0,
+    "uai": 1,
+    "uan": 1,
+    "üan": 1,
+    "iang": 1,
+    "iong": 1,
+    "uang": 1
+};
+
+const syllableToAccentedSyllable = new Map();
+const accentedSyllables = new Set();
+
+// TODO: Don't convert non-existing combinations of initials and finals here
+for (const initial of pinyinInitials) {
+    for (const final of pinyinFinals) {
+        const syllable = initial + final;
+        syllableToAccentedSyllable.set(syllable, {});
+        for (const accentCode of accentCodes) {
+            const vowel = final[accentPositions[final]];
+            const accentedFinal =
+                final.replace(vowel, accentedVowels[vowel][accentCode]);
+            const accentedSyllable = initial + accentedFinal;
+            syllableToAccentedSyllable.get(syllable)[accentCode] =
+                accentedSyllable;
+            accentedSyllables.add(accentedSyllable);
+        }
+    }
+}
+for (const syllable of onlyVowelSyllables) {
+    syllableToAccentedSyllable.set(syllable, {});
+    for (const accentCode of accentCodes) {
+        const vowel = syllable[accentPositions[syllable]];
+        const accentedSyllable =
+            syllable.replace(vowel, accentedVowels[vowel][accentCode]);
+        syllableToAccentedSyllable.get(syllable)[accentCode] = accentedSyllable;
+        accentedSyllables.add(accentedSyllable);
+    }
+}
+// Allow some conversion from "ue" to "ü"
+syllableToAccentedSyllable.set("nue", {});
+syllableToAccentedSyllable.set("lue", {});
+syllableToAccentedSyllable.set("nuee", {});
+syllableToAccentedSyllable.set("luee", {});
+for (const accentCode of accentCodes) {
+    const accentedUe = accentedVowels["ü"][accentCode];
+    syllableToAccentedSyllable.get("nue")[accentCode] = "n" + accentedUe;
+    syllableToAccentedSyllable.get("lue")[accentCode] = "l" + accentedUe;
+    syllableToAccentedSyllable.get("nuee")[accentCode] = "n" + accentedUe + "e";
+    syllableToAccentedSyllable.get("luee")[accentCode] = "l" + accentedUe + "e";
+}
+
+String.prototype.toPinyin = function () {
+    const string = this.toLowerCase().trim();
+    const converted = [];
+    let i = 0;
+    while (i < string.length) {
+        let processed = false;
+        // Skip already converted syllables
+        for (let l = 6; l >= 1; --l) {
+            const syllable = string.slice(i, i + l);
+            if (accentedSyllables.has(syllable)) {
+                converted.push(syllable);
+                i += l;
+                processed = true;
+                break;
+            }
+        }
+        if (processed) continue;
+        // Convert maximal syllables
+        for (let l = 6; l >= 1; --l) {
+            const syllable = string.slice(i, i + l);
+            if (syllableToAccentedSyllable.has(syllable)) {
+                const accentCode = string.slice(i + l, i + l + 1);
+                if (accentCodes.has(accentCode)) {
+                    converted.push(
+                        syllableToAccentedSyllable.get(syllable)[accentCode]);
+                    ++i;
+                } else {
+                    // Convert "ue" to "ü" in valid syllables
+                    if (syllable === "nue" || syllable === "lue" ||
+                            syllable === "nuee" || syllable === "luee") {
+                        converted.push(syllable.replace("ue", "ü"));
+                    } else {
+                        converted.push(syllable);
+                    }
+                }
+                i += l;
+                processed = true;
+                break;
+            }
+        }
+        if (processed) continue;
+        // If no syllables have been matched, just append the next character
+        converted.push(string[i]);
+        ++i;
+    }
+    return converted.join("");
+}
+
+function pinyinInput(event) {
+    const input = event.target;
+    const pos = input.selectionStart;
+    const end = input.selectionEnd;
+    // If there's a selection, delete selected text first
+    if (pos !== end) {
+        const text = input.value;
+        input.value = text.slice(0, pos) + text.slice(end, text.length);
+    }
+    // Do conversion for the remaining text
+    const key = event.key.toLowerCase();
+    if (!charsForPinyin.has(key)) return;
+    let text = input.value.toLowerCase();
+    text = text.slice(0, pos) + key + text.slice(pos);
+    input.value = text.toPinyin();
+    const newPos = pos + 1 - (text.length - input.value.length);
+    event.preventDefault();
+    input.setSelectionRange(newPos, newPos);
+}
+
+HTMLInputElement.prototype.enablePinyinInput =
+HTMLTextAreaElement.prototype.enablePinyinInput = function () {
+    if (this.currentInputHandler !== undefined)
+        this.removeEventListener("keypress", this.currentInputHandler);
+    this.currentInputMethod = "pinyin";
+    this.currentInputHandler = pinyinInput;
+    this.addEventListener("keypress", this.currentInputHandler);
+}
+
+HTMLInputElement.prototype.disablePinyinInput =
+HTMLTextAreaElement.prototype.disablePinyinInput = function() {
+    if (this.currentInputMethod === "pinyin") {
+        this.removeEventListener("keypress", this.currentInputHandler);
+        this.currentInputHandler = undefined;
+        this.currentInputMethod = undefined;
+    }
+}
+
+HTMLInputElement.prototype.togglePinyinInput =
+HTMLTextAreaElement.prototype.togglePinyinInput = function(bool) {
+    if (bool) this.enablePinyinInput();
+    else this.disablePinyinInput();
+}
+
+
+// Function for converting text in HTMLElements with "contenteditable".
+// This requires the shadow root as parameter in order to get current selection.
+function pinyinInputRoot(root, event) {
+    const input = event.target;
+    const { anchorOffset: pos, anchorNode: node } = root.getSelection();
+    const key = event.key.toLowerCase();
+    if (!charsForPinyin.has(key)) return;
+    let text = input.textContent;
+    text = text.slice(0, pos) + key + text.slice(pos);
+    input.textContent = text.toPinyin();
+    const newPos =
+        pos + 1 - (text.length - input.textContent.length);
+    const newTextNode = input.firstChild;
+    const range = document.createRange();
+    range.setStart(newTextNode, newPos);
+    range.setEnd(newTextNode, newPos);
+    const selection = root.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    event.preventDefault();
+}
+
+HTMLElement.prototype.enablePinyinInput = function () {
+    if (this.currentInputHandler !== undefined)
+        this.removeEventListener("keypress", this.currentInputHandler);
+    this.currentInputMethod = "pinyin";
+    const root = this.getRoot();
+    this.currentInputHandler = (event) => pinyinInputRoot(root, event);
+    this.addEventListener("keypress", this.currentInputHandler);
+}
+
+HTMLElement.prototype.disablePinyinInput = function () {
+    if (this.currentInputMethod === "pinyin") {
+        this.removeEventListener("keypress", this.currentInputHandler);
+        this.currentInputHandler = undefined;
+        this.currentInputMethod = undefined;
+    }
+}
+
+HTMLElement.prototype.togglePinyinInput = function (bool) {
+    if (bool) this.enablePinyinInput();
+    else this.disablePinyinInput();
 }

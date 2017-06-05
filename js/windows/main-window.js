@@ -68,12 +68,16 @@ class MainWindow extends Window {
                 () => this.openPanel("add-vocab"));
         this.$("add-kanji-button").addEventListener("click",
                 () => this.openPanel("add-kanji"));
+        this.$("add-hanzi-button").addEventListener("click",
+                () => this.openPanel("add-hanzi"));
         this.$("test-button").addEventListener("click",
                 () => this.openTestSection());
         this.$("dictionary-button").addEventListener("click",
                 () => this.openSection("dictionary"));
         this.$("find-kanji-button").addEventListener("click",
                 () => this.openSection("kanji"));
+        this.$("about-button").addEventListener("click",
+                () => overlays.open("about"));
         // Language popup events
         this.$("language-popup").callback = (lang) => this.setLanguage(lang);
         this.$("language-popup").onOpen = () => {
@@ -276,7 +280,7 @@ class MainWindow extends Window {
 
     createSuggestionPanes () {
         const promises = [];
-        for (const name of components.panels) {
+        for (const name of components.suggestionPanes) {
             const suggestionPane = 
                 document.createElement(name + "-suggestion-pane");
             suggestionPane.classList.add("suggestion-pane");
@@ -369,7 +373,8 @@ class MainWindow extends Window {
             this.panels[name].style.left = "0";
         }
         let showSuggestions = false;
-        if (name === "edit-vocab" || name === "edit-kanji") {
+        if (name === "edit-vocab" || name === "edit-kanji" ||
+                name === "edit-hanzi") {
             if (entryName === undefined) {
                 throw new Error(
                     "A vocab entry to load must be provided for edit panels!");
@@ -526,6 +531,11 @@ class MainWindow extends Window {
                     this.currentSection === "dictionary") {
                 this.openSection("home");
             }
+        }
+        if (language === "Chinese") {
+            this.$("add-hanzi-button").show();
+        } else {
+            this.$("add-hanzi-button").hide();
         }
         // Register shortcuts for this language
         for (const shortcutName in this.shortcutMap) {

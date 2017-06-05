@@ -29,7 +29,7 @@ module.exports = function (basePath) {
         let prefix = fs.readFileSync(dataPathConfigFile, "utf8");
         if (prefix[prefix.length - 1] == "\n")
             prefix = prefix.slice(0, prefix.length - 1);
-        const dataPathBaseName = `${app.name}-data`;
+        const dataPathBaseName = `${app.name}Data`;
         const previousPath = dataPath;
         const newPath = path.resolve(prefix, dataPathBaseName);
         paths.dataPathBaseName = dataPathBaseName;

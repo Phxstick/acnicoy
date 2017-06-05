@@ -1,21 +1,19 @@
 "use strict";
 
-class AddKanjiPanel extends Panel {
+class AddHanziPanel extends Panel {
     constructor() {
-        super("add-kanji");
+        super("add-hanzi");
+        this.$("readings-entry").enablePinyinInput();
         // Attach event handlers
-        this.$("on-yomi-entry").enableKanaInput("katakana");
-        this.$("kun-yomi-entry").enableKanaInput("hiragana");
         this.$("close-button").addEventListener(
-            "click", () => main.closePanel("add-kanji"));
+            "click", () => main.closePanel("add-hanzi"));
         this.$("cancel-button").addEventListener(
-            "click", () => main.closePanel("add-kanji"));
+            "click", () => main.closePanel("add-hanzi"));
         this.$("save-button").addEventListener(
             "click", () => this.save());
         this.$("all-srs-levels").callback = (label, value) => {
             this.$("srs-level-meanings").setByIndex(value - 1);
-            this.$("srs-level-on-yomi").setByIndex(value - 1);
-            this.$("srs-level-kun-yomi").setByIndex(value - 1);
+            this.$("srs-level-readings").setByIndex(value - 1);
         };
     }
 
@@ -26,7 +24,7 @@ class AddKanjiPanel extends Panel {
             const intervalTexts = dataManager.srs.currentScheme.intervalTexts;
             const popups = [
                 this.$("all-srs-levels"), this.$("srs-level-meanings"),
-                this.$("srs-level-kun-yomi"), this.$("srs-level-on-yomi")
+                this.$("srs-level-readings")
             ];
             for (const popup of popups) {
                 popup.empty();
@@ -43,26 +41,23 @@ class AddKanjiPanel extends Panel {
             const animate = dataManager.settings.design.animatePopupStacks;
             this.$("all-srs-levels").animate = animate;
             this.$("srs-level-meanings").animate = animate;
-            this.$("srs-level-on-yomi").animate = animate;
-            this.$("srs-level-kun-yomi").animate = animate;
+            this.$("srs-level-readings").animate = animate;
         });
     }
 
     open() {
-        this.$("kanji-entry").style.width =
-            `${this.$("kanji-entry").offsetHeight}px`;
-        this.$("kanji-entry").focus();
+        this.$("hanzi-entry").style.width =
+            `${this.$("hanzi-entry").offsetHeight}px`;
+        this.$("hanzi-entry").focus();
     }
 
     close() {
-        this.$("kanji-entry").value = "";
+        this.$("hanzi-entry").value = "";
         this.$("meanings-entry").value = "";
-        this.$("on-yomi-entry").value = "";
-        this.$("kun-yomi-entry").value = "";
+        this.$("readings-entry").value = "";
         this.$("all-srs-levels").setByIndex(0);
         this.$("srs-level-meanings").setByIndex(0);
-        this.$("srs-level-kun-yomi").setByIndex(0);
-        this.$("srs-level-on-yomi").setByIndex(0);
+        this.$("srs-level-readings").setByIndex(0);
     }
 
     save() {
@@ -70,48 +65,44 @@ class AddKanjiPanel extends Panel {
         const trim = (val, index, array) => { array[index] = val.trim(); }
         const notEmpty = (element) => element.length > 0;
         // Read values
-        const kanji = this.$("kanji-entry").value.trim();
+        const hanzi = this.$("hanzi-entry").value.trim();
         const levels = {
             meanings: parseInt(this.$("srs-level-meanings").value),
-            on_yomi: parseInt(this.$("srs-level-on-yomi").value),
-            kun_yomi: parseInt(this.$("srs-level-kun-yomi").value)
+            readings: parseInt(this.$("srs-level-readings").value)
         };
         const values = {
             meanings: utility.parseEntries(
                 this.$("meanings-entry").value, separator),
-            on_yomi: utility.parseEntries(
-                this.$("on-yomi-entry").value, separator),
-            kun_yomi: utility.parseEntries(
-                this.$("kun-yomi-entry").value, separator)
+            readings: utility.parseEntries(
+                this.$("readings-entry").value, separator)
         };
         for (const attribute in values) {
             values[attribute].forEach(trim);
             values[attribute] = values[attribute].filter(notEmpty);
         }
         // Update status with error messages if something is missing
-        if (kanji.length === 0) {
-            dialogWindow.info("You need to enter a kanji to add.")
+        if (hanzi.length === 0) {
+            dialogWindow.info("You need to enter a hanzi to add.")
             return;
         }
-        if (values.meanings.length === 0 && values.on_yomi.length === 0 &&
-                values.kun_yomi.length === 0) {
-            dialogWindow.info("You need to enter more details to add a kanji.");
+        if (values.meanings.length === 0 && values.readings.length === 0) {
+            dialogWindow.info("You need to enter some details to add a hanzi.");
             return;
         }
-        return dataManager.kanji.add(kanji, values, levels).then((result) => {
+        return dataManager.hanzi.add(hanzi, values, levels).then((result) => {
             if (result === "added") {
-                main.updateStatus(`Kanji ${kanji} has been added.`);
-                events.emit("kanji-added", kanji);
+                main.updateStatus(`Hanzi ${hanzi} has been added.`);
+                events.emit("hanzi-added", hanzi);
             } else if (result === "updated") {
-                main.updateStatus(`Kanji ${kanji} has been updated.`);
-                events.emit("kanji-changed", kanji);
+                main.updateStatus(`Hanzi ${hanzi} has been updated.`);
+                events.emit("hanzi-changed", hanzi);
             } else if (result === "no-change") {
-                main.updateStatus(`Kanji ${kanji} has not been changed.`);
+                main.updateStatus(`Hanzi ${hanzi} has not been changed.`);
             }
-            main.closePanel("add-kanji");
+            main.closePanel("add-hanzi");
         });
     }
 }
 
-customElements.define("add-kanji-panel", AddKanjiPanel);
-module.exports = AddKanjiPanel;
+customElements.define("add-hanzi-panel", AddHanziPanel);
+module.exports = AddHanziPanel;

@@ -1,8 +1,9 @@
 {
   "name": "acnicoy",
   "version": "0.1.0",
-  "description": "A tool for learning Japanese and other languages",
+  "description": "A tool for learning Japanese and other languages.",
   "author": "Daniel Bindemann",
+  "license": "GPL-3.0",
   "keywords": [
     "electron",
     "languages",

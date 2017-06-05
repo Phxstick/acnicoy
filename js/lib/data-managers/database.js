@@ -110,6 +110,37 @@ module.exports = function (paths, modules) {
                                 ON DELETE CASCADE )
                     `);
                 }
+                if (language === "Chinese") {
+                    db.run(`
+                        CREATE TABLE hanzi (
+                            hanzi TEXT PRIMARY KEY,
+                            date_added INTEGER )
+                    `);
+                    db.run(`
+                        CREATE TABLE hanzi_meanings (
+                            hanzi TEXT PRIMARY KEY,
+                            meanings TEXT,
+                            level INTEGER,
+                            review_date INTEGER,
+                            correct_count INTEGER,
+                            mistake_count INTEGER,
+                            FOREIGN KEY (hanzi)
+                                REFERENCES hanzi (hanzi)
+                                ON DELETE CASCADE )
+                    `);
+                    db.run(`
+                        CREATE TABLE hanzi_readings (
+                            hanzi TEXT PRIMARY KEY,
+                            readings TEXT,
+                            level INTEGER,
+                            review_date INTEGER,
+                            correct_count INTEGER,
+                            mistake_count INTEGER,
+                            FOREIGN KEY (hanzi)
+                                REFERENCES hanzi (hanzi)
+                                ON DELETE CASCADE )
+                    `);
+                }
                 // Create indices
                 db.run(`CREATE INDEX vocabulary_date_added
                         ON vocabulary (date_added DESC)`);
@@ -126,6 +157,14 @@ module.exports = function (paths, modules) {
                             ON kanji_on_yomi (review_date ASC)`);
                     db.run(`CREATE INDEX kanji_kun_yomi_review_date
                             ON kanji_kun_yomi (review_date ASC)`);
+                }
+                if (language === "Chinese") {
+                    db.run(`CREATE INDEX hanzi_date_added
+                            ON hanzi (date_added DESC)`);
+                    db.run(`CREATE INDEX hanzi_meanings_review_date
+                            ON hanzi_meanings (review_date ASC)`);
+                    db.run(`CREATE INDEX hanzi_readings_review_date
+                            ON hanzi_readings (review_date ASC)`);
                 }
                 db.run("END", resolve);
             });

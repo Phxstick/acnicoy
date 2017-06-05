@@ -66,7 +66,7 @@ module.exports = function (paths, modules) {
                     OR readings LIKE ?
                     OR readings LIKE ?`,
                 matchString, matchString, matchString,
-                matchString.toKana("hira"))
+                matchString.toKana("hiragana"))
             .then((rows) => rows.map((row) => row.word));
         } else {
             // TODO

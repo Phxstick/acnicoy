@@ -80,14 +80,12 @@ class AddVocabPanel extends Panel {
         this.$("word-entry").placeholder = `Enter ${language} word here`;
         this.$("translations-entry").placeholder =
             `Enter ${secondary} translations here`;
-        // Adjust to Japanese language
-        if (language === "Japanese") {
-            this.$("word-entry").enableKanaInput("hira");
-            this.$("readings-entry").enableKanaInput("hira");
-        } else {
-            this.$("word-entry").disableKanaInput("hira");
-            this.$("readings-entry").disableKanaInput();
-        }
+        // Enable special input methods if necessary
+        this.$("word-entry").toggleKanaInput(language === "Japanese");
+        this.$("readings-entry").toggleKanaInput(language === "Japanese");
+        this.$("readings-entry").togglePinyinInput(language === "Chinese");
+        this.$("readings-entry").classList.toggle(
+            "pinyin", language === "Chinese");
     }
 
     setDictionaryId(dictionaryId) {

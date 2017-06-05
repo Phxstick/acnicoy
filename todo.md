@@ -1,13 +1,24 @@
+- Create credits-overlay:
+  - List and link to all used language recources (also in README.txt)
+- Implement kanji-search by meanings/yomi
 - FIX: Items at end of vocab lists are not removed when removing them
 - Finish as much TODO-items for kanji-sections as possible
+  - Finish kanji search criterion functionality
 - Extend search-sections by spinner and animate no-search-results-info
+- Extend test-complete-overlay by button to start test for next language
 - When searching again, somehow stop previous search in utility.js?
 
+- Implement label-checkbox widget?
+- Implment simple binding function for checkboxes and settings, or radiobuttons
+  and settings?
+
 ### Up next
+- Create shortcut for testing all languages in given order.
 - Implement some settings for dictionary and kanji-info-panel
 - `text-align: center` impairs fadeIn function. How to work around?
   - Add `text-align` to solution divs again
 - Implement reverse testing (especially for Russian)
+- Implement pinyin input field using numbers 1-4
 - Button to manually check for content updates (+ "last checked" label)
 - Further refactor Application framework
   - Implement quit-function of Application class, move controlled closing there
@@ -27,6 +38,7 @@
 - Register content-related shortcuts in adjustToLanguageContent instead
 - Write more sophisticated function to guess whether vocab contains a certain
   entry from the dictionary
+- Don't display mode in test-complete-overlay if there's only 1 mode available
 
 ### As soon as available
 - Use thin symbols for fa-times, fa-plus etc. where fitting
@@ -39,6 +51,7 @@
   - z-index is incorrect (Applied workaround)
   - can leave view
   - Memory hog when using on many elements
+- Tooltip of menu bar buttons are broken
 - Height of diagrams in stats section is slightly too large for some reason
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
 - Order of context menu items is not preserved
@@ -67,6 +80,8 @@ By category
 - Implement global stats somewhere
 - Add "all languages" option to SRS review schedule
 - Differentiate between standard gui-font and "content-font"
+- Make sure language content (especially dictionary) is already loaded into memory
+  at program start (to make first search immediate)
 
 ### Performance
 - Things got slower when reworking sass? Maybe because main window is flex now?
@@ -85,8 +100,6 @@ By category
   - Display on program start if not disabled
 - Highlight menu button whose corresponding section/panel is opened?
   Or otherwise indicate which section/panel is currently opened?
-- Create shortcut for testing all languages in given order.
-  - Order can then be changed by dragging languages around in settings
 
 ### Home section
 - Extend srs-status-bar
@@ -158,13 +171,7 @@ By category
 
 ### Kanji section
 #### Search
-- Display search info when searching with empty bar (or list all added kanji?)
-- Display info messages as in dictionary section
 - Search customization:
-  - Search by:
-    * [Radiobutton] kanji [default]
-    * [Radiobutton] meanings
-    * [Radiobutton] yomi (Also change to kana-input)
   - [Checkbox] Show only meanings for each entry (and allow expanding)
 - Display "Info"/"Strokes"/"Examples" buttons only on hover (Where? On right?)
   - "Examples" button linking to dictionary section in each search result?
@@ -209,10 +216,12 @@ By category
 - Use overlay widget
 - Use markdown and extend it
 - Create directory tree
+- Create help tree widget
+
 #### Help structure:
 - Introduction
 - Quick start
-- [Separator]
+- ---- Separator ---- [General]
 - SRS
   - Overview
   - Editing schemes
@@ -222,19 +231,13 @@ By category
   - Lists
 - Home section
 - Testing
-- [Separator]
+- ---- Separator ---- [Languages]
 - Japanese
+  - Overview (mention kana inputs, and language content)
   - Dictionary
   - Kanji section
-
-### About
-- Use overlay and include (hardcoded is fine I guess):
-  - Program version
-  - Tribute to base technologies (Electron and node.js)
-  - Name of author
-  - List of all used language recources as links
-  - Link to project on Github and link to feedback opportunity
-  - Specify used license
+- Chinese
+  - Pinyin Input
 
 List of settings
 --------------------------------------------------------------------------------
@@ -317,6 +320,7 @@ Future
   -> Make test-settings for handling these according to preferences
 - Add new database columns for non-outdated/non-rare on-/kun-yomi
 - Allow having different SRS schemes for each test-mode
+- Allow dragging around languages in settings to set testing order
 - Link to similar looking kanji in info-panel to disambiguate more easily,
   also link to additional information (e.g. history, meanings) if available.
 - Make a better dragging image in vocabulary section
@@ -386,6 +390,7 @@ once? --> Faster loading, centralized resource loading
 - svg-bar-diagram: Pass in length-parameters as options to draw-function
 - Make "events" and "main" globals attributes of "app" global
 - Implement dynamic adding of tabs in tabbed-frame using `slotchange`-event
+- Merge kanji and hanzi module into one, generalize with different readings
 
 ### Adaptions
 - Use `position: sticky` for kanji info panel in kanji section?

@@ -1,7 +1,7 @@
 {
     "modules": [
         "languages", "settings", "language-settings", "database", "vocab-lists",
-        "pinwall", "content", "vocab", "kanji", "srs", "stats", "test",
+        "pinwall", "content", "vocab", "kanji", "hanzi", "srs", "stats", "test",
         "history"
     ],
     "windows": [
@@ -9,7 +9,7 @@
     ],
     "overlays": [
         "add-lang", "info-dialog", "confirm-dialog", "srs-schemes",
-        "migrate-srs", "choose-shortcut", "test-complete"
+        "migrate-srs", "choose-shortcut", "test-complete", "about"
     ],
     "sections": [
         "home", "stats", "vocab", "settings", "test", "dictionary", "kanji"
@@ -18,6 +18,10 @@
         "general", "languages", "test", "design", "shortcuts"
     ],
     "panels": [
+        "add-kanji", "edit-kanji", "add-vocab", "edit-vocab",
+        "add-hanzi", "edit-hanzi"
+    ],
+    "suggestionPanes": [
         "add-kanji", "edit-kanji", "add-vocab", "edit-vocab"
     ],
     "widgets": [

@@ -8,6 +8,7 @@ button {
   color: inherit;
   font-size: inherit;
   cursor: $pointer-cursor;
+  display: inline-block;
 
   &:focus {
     outline: none !important;

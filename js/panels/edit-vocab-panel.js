@@ -170,11 +170,8 @@ class EditVocabPanel extends Panel {
                     this.createVocabListOption(listName));
         }
         // If language is Japanese, allow editing the word with kana
-        if (language === "Japanese") {
-            this.$("word").enableKanaInput("hira", this.root);
-        } else {
-            this.$("word").disableKanaInput();
-        }
+        this.$("word").toggleKanaInput(language === "Japanese");
+        this.$("readings").classList.toggle("pinyin", language === "Chinese");
     }
 
     load(word) {
@@ -215,13 +212,6 @@ class EditVocabPanel extends Panel {
         // Allow editing translations and readings on click
         if (type !== "list") {
             node.contentEditable = "true";
-            // If it's a Japanese reading, enable hiragana input
-            node.addEventListener("focusin", () => {
-                if (dataManager.currentLanguage === "Japanese" &&
-                        node.parentNode === this.$("readings")) {
-                    node.enableKanaInput("hira", this.root);
-                }
-            });
             node.addEventListener("focusout", () => {
                 this.root.getSelection().removeAllRanges();
                 const newText = node.textContent.trim();
@@ -261,6 +251,9 @@ class EditVocabPanel extends Panel {
             this.$("vocab-lists").appendChild(node);
             node.popupMenu(menuItems, ["remove-from-list"], { section: this });
         }
+        // Enable special input methods if necessary
+        node.toggleKanaInput(dataManager.currentLanguage === "Japanese");
+        node.togglePinyinInput(dataManager.currentLanguage === "Chinese");
         return node;
     }
 

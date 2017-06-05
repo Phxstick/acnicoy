@@ -1,0 +1,35 @@
+[
+  { "name": "Introduction" },
+  { "name": "Quick Start" },
+  { "name": "Components",
+    "children": [
+      { "name": "SRS",
+        "children": [
+          { "name": "Overview" },
+          { "name": "Editing schemes" },
+          { "name": "Migrating schemes" }
+        ]
+      },
+      { "name": "Vocabulary",
+        "children": [
+          { "name": "Editing" },
+          { "name": "Lists" }
+        ]
+      },
+      { "name": "Testing" },
+      { "name": "Home section" },
+    ]
+  }
+  { "name": "Languages",
+    "children": [
+      { "name": "Japanese",
+        "children": [
+          { "name": "Overview" },
+          { "name": "Dictionary" },
+          { "name": "Kanji section" }
+        ]
+      },
+      { "name": "Chinese" }
+    ]
+  }
+]

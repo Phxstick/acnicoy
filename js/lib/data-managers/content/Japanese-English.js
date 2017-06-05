@@ -413,6 +413,16 @@ module.exports = function (paths, contentPaths, modules) {
             dictionaryInfo.wordsAndReadings[0].word);
     }
 
+    /**
+     * Given a list of meanings and readings (on-yomi in katakana, kun-yomi
+     * in hiragana), return a list of matching kanji.
+     * @param {Array[String]} meanings
+     * @param {Array[String]} readings
+     */
+    async function searchForKanji(meanings, readings) {
+        data.query(`SELECT entry FROM kanji`);
+    }
+
     let query;
     return new Promise((resolve) => {
         // Load content database and attach trainer database to it,

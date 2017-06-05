@@ -130,9 +130,16 @@ module.exports = function (paths, modules) {
         const lastDate = data.data["daily"].last().date;
         while (lastDate[0] != currentDate[0] || lastDate[1] != currentDate[1] ||
                lastDate[2] != currentDate[2]) {
-            // TODO: Don't append kanji if not japanese
-            newItems.push({
-                date: currentDate, score: 0, words: 0, kanji: 0, tested: 0 });
+            const dailyStatsObject = {
+                date: currentDate, score: 0, words: 0, tested: 0
+            };
+            if (modules.currentLanguage === "Japanese") {
+                dailyStatsObject.kanji = 0;
+            }
+            if (modules.currentLanguage === "Chinese") {
+                dailyStatsObject.hanzi = 0;
+            }
+            newItems.push(dailyStatsObject);
             let [year, month, day] = currentDate;
             if (--day === 0) {
                 if (--month === 0) {
@@ -162,6 +169,11 @@ module.exports = function (paths, modules) {
     stats.incrementKanjiAddedToday = function () {
         registerPassedDays();
         data.data["daily"].last()["kanji"]++;
+    };
+
+    stats.incrementHanziAddedToday = function () {
+        registerPassedDays();
+        data.data["daily"].last()["hanzi"]++;
     };
 
     /**

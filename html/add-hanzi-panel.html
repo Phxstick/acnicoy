@@ -1,0 +1,28 @@
+<div id="partitioned-window">
+  <div id="header-frame">
+    <div id="header">Add hanzi</div>
+    <button id="close-button"><i class="fa fa-angle-double-left"></i></button>
+  </div>
+  <div id="main-frame">
+    <textarea id="hanzi-entry" rows="1" cols="1" spellcheck="false"
+     maxlength="1"></textarea>
+    <div class="detail-row">
+      <textarea id="meanings-entry"
+       placeholder="Meanings" spellcheck="false"></textarea>
+      <popup-stack id="srs-level-meanings"></popup-stack>
+    </div>
+    <div class="detail-row">
+      <textarea id="readings-entry"
+       placeholder="Readings" spellcheck="false"></textarea>
+      <popup-stack id="srs-level-readings"></popup-stack>
+    </div>
+    <div id="all-levels-div">
+      <span>Set all SRS levels at once:</span>
+      <popup-stack id="all-srs-levels"></popup-stack>
+    </div>
+  </div>
+  <div id="button-frame">
+    <button id="save-button">Save</button>
+    <button id="cancel-button">Cancel</button>
+  </div>
+</div>

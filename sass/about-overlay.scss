@@ -1,0 +1,21 @@
+@import "overlay";
+
+#main-frame > * {
+  font-family: OpenSans-Regular;
+  text-align: center;
+  &:not(:last-child) {
+    margin-bottom: 10px;
+  }
+}
+
+#app-name {
+  font-family: $light-font;
+  font-size: 200%;
+}
+#app-version {
+  font-family: $header-font;
+}
+
+#github-link-frame {
+  margin-top: 20px;
+}

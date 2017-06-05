@@ -89,11 +89,7 @@ class DictionarySection extends Section {
         } else {
             this.$("words-filter").placeholder = "Filter by words";
         }
-        if (language === "Japanese") {
-            this.$("words-filter").enableKanaInput("hira");
-        } else {
-            this.$("words-filter").disableKanaInput();
-        }
+        this.$("words-filter").toggleKanaInput(language === "Japanese");
     }
 
     open() {

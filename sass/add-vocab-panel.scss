@@ -9,6 +9,10 @@ textarea {
   }
 }
 
+#readings-entry.pinyin {
+  font-family: $pinyin-font;
+}
+
 #level-div {
   display: flex;
   flex-direction: row;

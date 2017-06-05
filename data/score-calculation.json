@@ -19,6 +19,8 @@
         "WORDS": 1,
         "KANJI_MEANINGS": 0.5,
         "KANJI_ON_YOMI": 0.5,
-        "KANJI_KUN_YOMI": 0.5
+        "KANJI_KUN_YOMI": 0.5,
+        "HANZI_MEANINGS": 0.5,
+        "HANZI_READINGS": 0.5
     }
 }

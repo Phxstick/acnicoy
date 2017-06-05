@@ -17,7 +17,7 @@ class StatsSection extends Section {
     registerCentralEventListeners() {
         events.onAll(
             ["word-added", "word-deleted", "kanji-added", "kanji-removed",
-             "current-srs-scheme-edited"],
+             "current-srs-scheme-edited", "hanzi-added", "hanzi-removed"],
         () => {
             if (this.isHidden()) return;
             this.updateStats();
@@ -31,21 +31,15 @@ class StatsSection extends Section {
     adjustToLanguage(language, secondary) {
         this.$("jouyou-kanji").hide();
         this.$("jlpt-kanji").hide();
-        if (language === "Japanese") {
-            this.$("kanji-added-frame").show();
-            this.$("kanji-diagrams").show();
-            if (secondary === "English" &&
-                    dataManager.content.isAvailable(language, secondary)) {
-                this.$("jouyou-kanji").show();
-                this.$("jlpt-kanji").show();
-            } else {
-                this.$("jouyou-kanji").hide();
-                this.$("jlpt-kanji").hide();
-            }
-        } else {
-            this.$("kanji-added-frame").hide();
-            this.$("kanji-diagrams").hide();
-        }
+        this.$("kanji-added-frame").toggleDisplay(language === "Japanese");
+        this.$("kanji-diagrams").toggleDisplay(language === "Japanese");
+        this.$("hanzi-added-frame").toggleDisplay(language === "Chinese");
+        // Content dependent
+        const japaneseContentAvailable =
+            language === "Japanese" && secondary === "English" &&
+            dataManager.content.isAvailable("Japanese", "English");
+        this.$("jouyou-kanji").toggleDisplay(japaneseContentAvailable);
+        this.$("jlpt-kanji").toggleDisplay(japaneseContentAvailable);
     }
 
     updateStats() {
@@ -108,6 +102,12 @@ class StatsSection extends Section {
                     });
                 });
             }
+        }
+        if (dataManager.currentLanguage === "Chinese") {
+            // Display number of kanji added
+            promises.push(dataManager.hanzi.getAmountAdded().then((amount) => {
+                this.$("hanzi-added").textContent = amount;
+            }));
         }
         return Promise.all(promises);
     }

@@ -26,7 +26,7 @@ For Japanese language learners, the program additionally offers:
 Features to be implemented:
 
 * Earn achievements for learning progress and unlock design settings
-* Many settings to customize design, kanji overview, SRS system, and more
+* Many settings to customize design, SRS system, and more
 * ... and other features (the [todo-list](./todo.md) is fairly large)
 
 Installation
@@ -49,8 +49,7 @@ You can then run the program using `make start`.
 License
 ----
 
-I'm not well versed with licensing. I'll just leave this empty for now.
-So I guess it's copyrighted until I decide on a proper open-source license.
+This work is licenced under the GNU GPLv3.
 
 Credits
 ----
@@ -60,7 +59,6 @@ Credits
 Contact
 ----
 
-In case anyone finds this repository:
 I'd be glad if you tried out the program and gave me some feedback.
 You can contact me at:  Phxsticks [at] gmail.com
 

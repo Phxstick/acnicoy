@@ -42,7 +42,8 @@ for (const name of components.sections) require(paths.js.section(name));
 for (const name of components.settingsSubsections)
     require(paths.js.settingsSubsection(name));
 for (const name of components.panels) require(paths.js.panel(name));
-for (const name of components.panels) require(paths.js.suggestionPane(name));
+for (const name of components.suggestionPanes)
+    require(paths.js.suggestionPane(name));
 for (const name of components.widgets) require(paths.js.widget(name));
 for (const name of components.extensions) require(paths.js.extension(name));
 
@@ -55,7 +56,8 @@ class Application {
         this.windows = {};
         this.currentWindow = null;
         const packageJson = require(paths.packageInfo);
-        this.name = packageJson.name;
+        this.name = packageJson.name[0].toUpperCase() +
+                    packageJson.name.slice(1);  // Capitalize name
         this.version = packageJson.version;
         this.description = packageJson.description;
         this.author = packageJson.author;

@@ -1,0 +1,45 @@
+<div id="partitioned-window">
+  <div id="header-frame">
+    <div id="header">Edit hanzi</div>
+    <button id="close-button"><i class="fa fa-angle-double-left"></i></button>
+  </div>
+  <div id="main-frame">
+    <div id="hanzi-frame">
+      <span id="hanzi"></span>
+    </div>
+    <div id="meanings-frame">
+      <div id="meanings-header">
+        <span class="header-text">Meanings</span>
+        <hr>
+        <button id="add-meaning-button">
+          <i class="fa fa-plus"></i>
+        </button>
+        <popup-stack id="srs-level-meanings"></popup-stack>
+      </div>
+      <div class="detail-row">
+        <div id="meanings"></div>
+      </div>
+    </div>
+    <div id="readings-frame">
+      <div id="readings-header">
+        <span class="header-text">Readings</span>
+        <hr>
+        <button id="add-reading-button">
+          <i class="fa fa-plus"></i>
+        </button>
+        <popup-stack id="srs-level-readings"></popup-stack>
+      </div>
+      <div class="detail-row">
+        <div id="readings"></div>
+      </div>
+    </div>
+    <div id="all-levels-div">
+      <span>Set all SRS levels at once:</span>
+      <popup-stack id="all-srs-levels"></popup-stack>
+    </div>
+  </div>
+  <div id="button-frame">
+    <button id="save-button">Save</button>
+    <button id="cancel-button">Cancel</button>
+  </div>
+</div>

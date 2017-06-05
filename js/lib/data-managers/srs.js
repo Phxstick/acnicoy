@@ -183,6 +183,15 @@ module.exports = function (paths, modules) {
         .then((rows) => rows.map((row) => row.kanji));
     };
 
+    srs.getDueHanzi = function (mode, startTime=0) {
+        const table = modules.test.modeToTable(mode);
+        return modules.database.query(
+            `SELECT hanzi FROM ${table}
+             WHERE review_date <= ? AND review_date > ? AND level > 0`,
+             utility.getTime(), startTime)
+        .then((rows) => rows.map((row) => row.hanzi));
+    };
+
     srs.getAmounts = function () {
         const time = utility.getTime();
         const amounts = {};
