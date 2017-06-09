@@ -38,6 +38,21 @@ module.exports = function (paths, modules) {
         }
     };
 
+    // Note: Returned value depends on current langauge
+    test.modeToParts = function (mode) {
+        switch (mode) {
+            case test.mode.WORDS:
+                if (!modules.languageSettings.readings) return ["meanings"];
+                else return ["meanings", "readings"];
+            case test.mode.KANJI_MEANINGS:
+            case test.mode.KANJI_ON_YOMI:
+            case test.mode.KANJI_KUN_YOMI:
+            case test.mode.HANZI_MEANINGS:
+            case test.mode.HANZI_READINGS:
+                return ["solutions"];
+        }
+    };
+
     test.getSolutions = function (item, mode, part) {
         switch (mode) {
             case test.mode.WORDS:

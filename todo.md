@@ -1,11 +1,9 @@
-- Create credits-overlay:
-  - List and link to all used language recources (also in README.txt)
 - Implement kanji-search by meanings/yomi
+
 - FIX: Items at end of vocab lists are not removed when removing them
 - Finish as much TODO-items for kanji-sections as possible
   - Finish kanji search criterion functionality
 - Extend search-sections by spinner and animate no-search-results-info
-- Extend test-complete-overlay by button to start test for next language
 - When searching again, somehow stop previous search in utility.js?
 
 - Implement label-checkbox widget?
@@ -13,12 +11,9 @@
   and settings?
 
 ### Up next
-- Create shortcut for testing all languages in given order.
 - Implement some settings for dictionary and kanji-info-panel
 - `text-align: center` impairs fadeIn function. How to work around?
   - Add `text-align` to solution divs again
-- Implement reverse testing (especially for Russian)
-- Implement pinyin input field using numbers 1-4
 - Button to manually check for content updates (+ "last checked" label)
 - Further refactor Application framework
   - Implement quit-function of Application class, move controlled closing there
@@ -38,7 +33,7 @@
 - Register content-related shortcuts in adjustToLanguageContent instead
 - Write more sophisticated function to guess whether vocab contains a certain
   entry from the dictionary
-- Don't display mode in test-complete-overlay if there's only 1 mode available
+- Display url of link element when hovering over it
 
 ### As soon as available
 - Use thin symbols for fa-times, fa-plus etc. where fitting
@@ -82,6 +77,7 @@ By category
 - Differentiate between standard gui-font and "content-font"
 - Make sure language content (especially dictionary) is already loaded into memory
   at program start (to make first search immediate)
+- Implement reverse testing?
 
 ### Performance
 - Things got slower when reworking sass? Maybe because main window is flex now?
@@ -403,12 +399,6 @@ once? --> Faster loading, centralized resource loading
   - Provide easy way create kanji-links (or just scan through markdown)
 - Identify SRS schemes by ID instead of name!
 - Use advanced CSS width values where possible (`width: fill`);
-
-Credits to add
---------------------------------------------------------------------------------
-- <https://subtlepatterns.com/>
-- [List of kokuji](http://www.sljfaq.org/afaq/kokuji-list.html)
-- [Spinners](https://tobiasahlin.com/spinkit/)
 
 Resources
 --------------------------------------------------------------------------------

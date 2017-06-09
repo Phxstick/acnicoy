@@ -49,12 +49,12 @@ You can then run the program using `make start`.
 License
 ----
 
-This work is licenced under the GNU GPLv3.
+This work is licenced under the [GNU GPLv3](GNU GPL).
 
 Credits
 ----
 
-**TODO:** List all used resources here. Will also be listed in the program.
+See the [list of resources](./data/resources.md).
 
 Contact
 ----
@@ -68,4 +68,5 @@ You can contact me at:  Phxsticks [at] gmail.com
    [Houhou SRS]: <http://houhou-srs.com/>
    [Node.js]: <https://nodejs.org/>
    [npm]: <https://www.npmjs.com/>
+   [GNU GPL]: <https://www.gnu.org/licenses/gpl-3.0.en.html>
 

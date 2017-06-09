@@ -357,13 +357,16 @@ class TestSection extends Section {
         return true;
     }
 
-    closeSession() {
-        if (this.testInfo.numFinished > 0) {
-            overlays.open("test-complete", this.testInfo);
-        }
-        const inVocabListMode = this.testInfo.vocabListMode;
+    async closeSession() {
+        const oldTestInfo = this.testInfo;
         this.testInfo = null;
-        main.openSection(inVocabListMode ? "vocab" : "home");
+        if (oldTestInfo.numFinished > 0) {
+            const keepGoing = await overlays.open("test-complete", oldTestInfo);
+            if (!keepGoing)
+                main.openSection(oldTestInfo.vocabListMode ? "vocab" : "home");
+        } else {
+            main.openSection(oldTestInfo.vocabListMode ? "vocab" : "home");
+        }
     }
 
     _evaluateAnswer() {

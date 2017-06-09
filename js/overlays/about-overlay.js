@@ -9,8 +9,8 @@ class AboutOverlay extends Overlay {
         this.$("close-button-2").addEventListener("click", () => {
             this.resolve(null);
         });
-        this.$("credits-link").addEventListener("click", () => {
-            overlays.open("credits");
+        this.$("resources-link").addEventListener("click", () => {
+            overlays.open("resources");
         });
     }
     
