@@ -49,7 +49,7 @@ You can then run the program using `make start`.
 License
 ----
 
-This work is licenced under the [GNU GPLv3](GNU GPL).
+This work is licenced under the [GNU GPLv3][GNU GPL].
 
 Credits
 ----

@@ -2,7 +2,7 @@
 
 const markdown = require("markdown").markdown;
 
-const menuItems = popupMenu.registerItems({
+const menuItems = contextMenu.registerItems({
     "edit-note": {
         label: "Edit note",
         click: ({ currentNode, data: {widget} }) => {
@@ -190,8 +190,8 @@ class PinwallNotes extends PinwallWidget {
                 this.controlButtons.hide();
             }
         });
-        note.popupMenu(menuItems, ["edit-note", "delete-note"],
-                       { widget: this });
+        note.contextMenu(menuItems, ["edit-note", "delete-note"],
+                         { widget: this });
         return note;
     }
 

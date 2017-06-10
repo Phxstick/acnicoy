@@ -1,6 +1,6 @@
 "use strict";
 
-const menuItems = popupMenu.registerItems({
+const menuItems = contextMenu.registerItems({
     "copy-kanji": {
         label: "Copy kanji",
         click: ({ currentNode }) => {
@@ -103,14 +103,14 @@ class EditKanjiPanel extends Panel {
             const item = this.createListItem("", "kun-yomi");
             item.focus();
         });
-        // Configure popup-menu for static elements
-        this.$("kanji").popupMenu(menuItems,
+        // Configure context menu for static elements
+        this.$("kanji").contextMenu(menuItems,
                 ["copy-kanji", "remove-kanji"], { section: this });
-        this.$("meanings").popupMenu(
+        this.$("meanings").contextMenu(
                 menuItems, ["add-meaning"], { section: this });
-        this.$("on-yomi").popupMenu(menuItems,
+        this.$("on-yomi").contextMenu(menuItems,
                 ["add-on-yomi"], { section: this });
-        this.$("kun-yomi").popupMenu(menuItems,
+        this.$("kun-yomi").contextMenu(menuItems,
                 ["add-kun-yomi"], { section: this });
         // Create closing and saving callbacks
         this.$("close-button").addEventListener(
@@ -228,16 +228,16 @@ class EditKanjiPanel extends Panel {
         // Insert item into DOM and attach a context-menu
         if (type === "meaning") {
             this.$("meanings").appendChild(node);
-            node.popupMenu(menuItems, ["delete-meaning", "modify-meaning"],
-                           { section: this });
+            node.contextMenu(menuItems, ["delete-meaning", "modify-meaning"],
+                             { section: this });
         } else if (type === "kun-yomi") {
             this.$("kun-yomi").appendChild(node);
-            node.popupMenu(menuItems, ["delete-kun-yomi", "modify-kun-yomi"],
-                           { section: this });
+            node.contextMenu(menuItems, ["delete-kun-yomi", "modify-kun-yomi"],
+                             { section: this });
         } else if (type === "on-yomi") {
             this.$("on-yomi").appendChild(node);
-            node.popupMenu(menuItems, ["delete-on-yomi", "modify-on-yomi"],
-                           { section: this });
+            node.contextMenu(menuItems, ["delete-on-yomi", "modify-on-yomi"],
+                             { section: this });
         }
         return node;
     }

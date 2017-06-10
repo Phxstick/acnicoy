@@ -1,6 +1,6 @@
 "use strict";
 
-const menuItems = popupMenu.registerItems({
+const menuItems = contextMenu.registerItems({
     "copy-word": {
         label: "Copy word",
         click: ({ currentNode }) => {
@@ -62,7 +62,7 @@ class DictionarySearchResultEntry extends Widget {
         if (this.dataset.mainWord.length === 0) {
             this.dataset.mainWord = info.wordsAndReadings[0].reading;
         }
-        this.popupMenu(menuItems, () => {
+        this.contextMenu(menuItems, () => {
             return dataManager.content.doesVocabularyContain(info.id, info)
             .then((isAdded) => isAdded? ["copy-word", "edit-word"] :
                                         ["copy-word", "add-word"]);

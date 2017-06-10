@@ -18,7 +18,7 @@ const layers = require(paths.js.lib("layer-manager"));
 const shortcuts = require(paths.js.lib("shortcut-manager"));
 const overlays = require(paths.js.lib("overlay-manager"));
 const templates = require(paths.js.lib("template-manager"));
-const popupMenu = require(paths.js.lib("popup-menu"));
+const contextMenu = require(paths.js.lib("context-menu"));
 const networkManager = require(paths.js.lib("network-manager"));
 
 // Load base classes

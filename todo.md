@@ -1,5 +1,4 @@
 - Implement kanji-search by meanings/yomi
-
 - FIX: Items at end of vocab lists are not removed when removing them
 - Finish as much TODO-items for kanji-sections as possible
   - Finish kanji search criterion functionality
@@ -49,14 +48,11 @@
 - Tooltip of menu bar buttons are broken
 - Height of diagrams in stats section is slightly too large for some reason
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
-- Order of context menu items is not preserved
 
 
 By category
 --------------------------------------------------------------------------------
 ### General
-- Use popupMenu separators when context changes? (see e.g. dictionary entry)
-  - Or rather split menu entries into groups to seperate by? (e.g. copy/paste)
 - Remove flickering when quickly dragging vocab item over list contents column
   - Not a bug in Acnicoy - Events are just fired incorrectly
 - Store user data path somewhere else (e.g. localStorage/`app.getPath(name)`)
@@ -68,7 +64,6 @@ By category
 - Improve policy for incorrectly answered SRS items
   - Don't always move down two levels, but one with adjusted review time instead
 - Use "srs-schemes-edited" event instead of "current-srs-scheme-edited"?
-- How to get undo/redo possibility for each item seperately?
 - Also make files for improved on/kun-yomi (or rather put in same file?)
 - Create stylable `<select>` alternative
 - Make dark deflt, Solarized (Light/Dark) and Ubuntu (Light/Dark) color schemes
@@ -357,7 +352,6 @@ Code
 --------------------------------------------------------------------------------
 ### Naming
 - Rename panels into "panes" or "sliding-panes"?
-- Call "popupMenu" "contextMenu" instead
 - Use folder "widgets" only for base widgets, put everything else directly into
   a folder called "gui-components"
   - Adjust pathManager and index.js

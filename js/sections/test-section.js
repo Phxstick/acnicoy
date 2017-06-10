@@ -17,7 +17,7 @@
 const Random = require("random-js");
 const random = new Random(Random.engines.browserCrypto);
 
-const menuItems = popupMenu.registerItems({
+const menuItems = contextMenu.registerItems({
     "copy-test-item": {
         label: "Copy",
         click: ({ currentNode }) => {
@@ -115,8 +115,8 @@ class TestSection extends Section {
                 main.openPanel("edit-hanzi", { entryName: item.entry });
             }
         });
-        // Create popup-menus
-        this.$("test-item").popupMenu(menuItems, ["copy-test-item"]);
+        // Create context menu
+        this.$("test-item").contextMenu(menuItems, ["copy-test-item"]);
     }
 
     /* =====================================================================
@@ -517,13 +517,17 @@ class TestSection extends Section {
                 this.$("answer-entry").enableKanaInput("hiragana");
             else
                 this.$("answer-entry").disableKanaInput();
-        } else if (dataManager.currentLanguage === "Chinese") {
+        } else {
+            this.$("answer-entry").disableKanaInput();
+        }
+        if (dataManager.currentLanguage === "Chinese") {
             const enablePinyin = part === "readings" ||
                 mode === dataManager.test.mode.HANZI_READINGS;
             this.$("answer-entry").togglePinyinInput(enablePinyin);
             this.$("answer-entry").classList.toggle("pinyin", enablePinyin);
         } else {
-            this.$("answer-entry").disableInputConversion();
+            this.$("answer-entry").classList.remove("pinyin");
+            this.$("answer-entry").disablePinyinInput();
         }
         // Choose the right status label
         if (part === "readings") {

@@ -267,7 +267,7 @@ HTMLElement.prototype.fadeIn = function(
 }
 
 /**
- *  When opening the context-menu for this element, display the given list
+ *  When opening the context menu for this element, display the given list
  *  of items.
  *  @param {Object} menuItems - Map item names to MenuItem-objects.
  *  @param {Array, function} itemNames - Either an array of item names or a
@@ -276,42 +276,46 @@ HTMLElement.prototype.fadeIn = function(
  *      a MenuItem-object which will be displayed.
  *  @param {Object} [data] - Optional data to pass to the menu items callback.
  */
-HTMLElement.prototype.popupMenu = function (menuItems, itemNames, data) {
+HTMLElement.prototype.contextMenu = function (menuItems, itemNames, data) {
     if (data === undefined) {
         data = {};
     }
-    if (this.popupMenuCallback !== undefined) {
-        this.removeEventListener("contextmenu", this.popupMenuCallback);
+    if (this.contextMenuCallback !== undefined) {
+        this.removeEventListener("contextmenu", this.contextMenuCallback);
     }
     // If itemNames is a function, evaluate items to be displayed right before
-    // opening the popupWindow
+    // opening the context menu
     if (typeof itemNames === "function") {
-        this.popupMenuCallback = (event) => {
-            popupMenu.itemsLoaded = Promise.resolve(itemNames())
+        this.contextMenuCallback = (event) => {
+            contextMenu.displayItems(Promise.resolve(itemNames())
             .then((names) => {
+                const items = [];
                 for (const name of names) {
                     const menuItem = menuItems[name];
                     menuItem.currentNode = this;
                     menuItem.data = data;
-                    popupMenu.visibleItems.add(menuItem);
+                    items.push(menuItem);
                 }
-            });
+                return items;
+            }));
         };
     // If itemNames is an Array, directly read the names
     } else if (Array.isArray(itemNames)) {
         if (itemNames.length === 0) return;
-        this.popupMenuCallback = (event) => {
+        this.contextMenuCallback = (event) => {
+            const items = [];
             for (const name of itemNames) {
                 const menuItem = menuItems[name];
                 menuItem.currentNode = this;
                 menuItem.data = data;
-                popupMenu.visibleItems.add(menuItem);
+                items.push(menuItem);
             }
+            contextMenu.displayItems(items);
         };
     } else {
         throw new Error("Parameter 'itemNames' must be an array or function!");
     }
-    this.addEventListener("contextmenu", () => this.popupMenuCallback());
+    this.addEventListener("contextmenu", () => this.contextMenuCallback());
 }
 
 /**

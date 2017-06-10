@@ -4,7 +4,7 @@ const { ipcRenderer, remote } = require("electron");
 const mainBrowserWindow = remote.getCurrentWindow();
 const AutoLaunch = require("auto-launch");
 
-const menuItems = popupMenu.registerItems({
+const menuItems = contextMenu.registerItems({
     "copy-kanji": {
         label: "Copy kanji",
         click: ({ currentNode }) => {
@@ -633,7 +633,7 @@ class MainWindow extends Window {
                     this.$("kanji-info-panel").open();
                 });
             }
-            element.popupMenu(menuItems, () => {
+            element.contextMenu(menuItems, () => {
                 return dataManager.kanji.isAdded(character)
                 .then((isAdded) => {
                     return ["copy-kanji", "view-kanji-info",

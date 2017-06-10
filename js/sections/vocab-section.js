@@ -1,6 +1,6 @@
 "use strict";
 
-const menuItems = popupMenu.registerItems({
+const menuItems = contextMenu.registerItems({
     "rename-list": {
         label: "Rename list",
         click: ({ currentNode }) => {
@@ -68,7 +68,7 @@ class VocabSection extends Section {
         this.listNameToAmountLabel = new Map();
         this.listNameToViewNode = new Map();
 
-        this.$("vocab-lists").popupMenu(
+        this.$("vocab-lists").contextMenu(
             menuItems, ["create-list"], { section: this });
         // =====================================================================
         // Add event listeners to vocab list control buttons
@@ -273,8 +273,8 @@ class VocabSection extends Section {
             this.draggedItem = item;
             event.dataTransfer.setData("text/plain", item.textContent);
         });
-        item.popupMenu(menuItems, ["edit-item", "remove-from-vocab"],
-                       { section: this });
+        item.contextMenu(menuItems, ["edit-item", "remove-from-vocab"],
+                         { section: this });
         return item;
     }
 
@@ -287,7 +287,7 @@ class VocabSection extends Section {
         // item.addEventListener("dragstart", (event) => {
         //     event.dataTransfer.setData("text", item.textContent);
         // });
-        item.popupMenu(menuItems,
+        item.contextMenu(menuItems,
                 ["edit-item", "remove-from-list", "remove-from-vocab"],
                 { section: this });
         return item;
@@ -423,7 +423,7 @@ class VocabSection extends Section {
                 }
             }
         });
-        node.popupMenu(menuItems,
+        node.contextMenu(menuItems,
                 ["test-on-list", "rename-list", "delete-list"],
                 { section: this });
         return node;

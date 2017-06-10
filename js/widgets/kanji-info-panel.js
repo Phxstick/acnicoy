@@ -1,6 +1,6 @@
 "use strict";
 
-const menuItems = popupMenu.registerItems({
+const menuItems = contextMenu.registerItems({
     "copy-kanji": {
         label: "Copy kanji",
         click: ({ currentNode }) => {
@@ -27,7 +27,7 @@ class KanjiInfoPanel extends Widget {
             "examples": this.root.getElementById("examples-frame")
         };
         // Attach event listeners
-        this.$("kanji").popupMenu(menuItems, ["copy-kanji"]);
+        this.$("kanji").contextMenu(menuItems, ["copy-kanji"]);
         for (const name in this.sectionButtons) {
             this.sectionButtons[name].addEventListener("click", () => {
                 this.openSection(name);

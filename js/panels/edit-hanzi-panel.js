@@ -1,6 +1,6 @@
 "use strict";
 
-const menuItems = popupMenu.registerItems({
+const menuItems = contextMenu.registerItems({
     "copy-hanzi": {
         label: "Copy hanzi",
         click: ({ currentNode }) => {
@@ -77,11 +77,11 @@ class EditHanziPanel extends Panel {
             item.focus();
         });
         // Configure popup-menu for static elements
-        this.$("hanzi").popupMenu(menuItems,
+        this.$("hanzi").contextMenu(menuItems,
                 ["copy-hanzi", "remove-hanzi"], { section: this });
-        this.$("meanings").popupMenu(
+        this.$("meanings").contextMenu(
                 menuItems, ["add-meaning"], { section: this });
-        this.$("readings").popupMenu(menuItems,
+        this.$("readings").contextMenu(menuItems,
                 ["add-reading"], { section: this });
         // Create closing and saving callbacks
         this.$("close-button").addEventListener(
@@ -188,12 +188,12 @@ class EditHanziPanel extends Panel {
         // Insert item into DOM and attach a context-menu
         if (type === "meaning") {
             this.$("meanings").appendChild(node);
-            node.popupMenu(menuItems, ["delete-meaning", "modify-meaning"],
-                           { section: this });
+            node.contextMenu(menuItems, ["delete-meaning", "modify-meaning"],
+                             { section: this });
         } else if (type === "reading") {
             this.$("readings").appendChild(node);
-            node.popupMenu(menuItems, ["delete-reading", "modify-reading"],
-                           { section: this });
+            node.contextMenu(menuItems, ["delete-reading", "modify-reading"],
+                             { section: this });
         }
         return node;
     }

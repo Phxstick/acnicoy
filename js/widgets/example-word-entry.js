@@ -1,6 +1,6 @@
 "use strict";
 
-const menuItems = popupMenu.registerItems({
+const menuItems = contextMenu.registerItems({
     "copy-word": {
         label: "Copy word",
         click: ({ currentNode }) => {
@@ -52,7 +52,7 @@ class ExampleWordEntry extends Widget {
         this.dataset.word = word;
         this.root.innerHTML += templates.get("example-word-entry")(data);
         main.convertTextToKanjiInfoLinks(this.$("word"));
-        this.popupMenu(menuItems, () => {
+        this.contextMenu(menuItems, () => {
             return dataManager.vocab.contains(word)
             .then((isAdded) => isAdded? ["copy-word", "edit-word"] :
                                         ["copy-word", "add-word"]);

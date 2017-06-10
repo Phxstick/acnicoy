@@ -1,6 +1,6 @@
 "use strict";
 
-const menuItems = popupMenu.registerItems({
+const menuItems = contextMenu.registerItems({
     "copy-word": {
         label: "Copy word",
         click: ({ currentNode }) => {
@@ -120,13 +120,13 @@ class EditVocabPanel extends Panel {
             "click", () => main.closePanel("edit-vocab"));
         this.$("save-button").addEventListener(
             "click", () => { this.save(); main.closePanel("edit-vocab"); });
-        // Create popup menus for static elements
-        this.$("word").popupMenu(menuItems,
+        // Create context menus for static elements
+        this.$("word").contextMenu(menuItems,
                 ["copy-word", "delete-word", "rename-word"],
                 { section: this });
-        this.$("translations").popupMenu(
+        this.$("translations").contextMenu(
                 menuItems, ["add-translation"], { section: this });
-        this.$("readings").popupMenu(
+        this.$("readings").contextMenu(
                 menuItems, ["add-reading"], { section: this });
     }
 
@@ -240,16 +240,16 @@ class EditVocabPanel extends Panel {
         // Insert item into DOM and attach a context-menu
         if (type === "reading") {
             this.$("readings").appendChild(node);
-            node.popupMenu(menuItems, ["delete-reading", "modify-reading"],
+            node.contextMenu(menuItems, ["delete-reading", "modify-reading"],
                     { section: this });
         } else if (type === "translation") {
             this.$("translations").appendChild(node);
-            node.popupMenu(menuItems,
+            node.contextMenu(menuItems,
                     ["delete-translation", "modify-translation"],
                     { section: this });
         } else if (type === "list") {
             this.$("vocab-lists").appendChild(node);
-            node.popupMenu(menuItems, ["remove-from-list"], { section: this });
+            node.contextMenu(menuItems, ["remove-from-list"], { section: this });
         }
         // Enable special input methods if necessary
         node.toggleKanaInput(dataManager.currentLanguage === "Japanese");
@@ -291,7 +291,7 @@ class EditVocabPanel extends Panel {
         node.textContent = listName;
         this.$("vocab-lists").appendChild(node);
         this.listNameToOption.get(listName).hide();
-        node.popupMenu(menuItems, ["remove-from-list"], { section: this });
+        node.contextMenu(menuItems, ["remove-from-list"], { section: this });
     }
 
     save() {

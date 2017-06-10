@@ -32,18 +32,9 @@ class Component extends HTMLElement {
         this.$ = (id) => this.root.getElementById(id);
         this.$$ = (query) => this.root.querySelectorAll(query);
         this.registerCentralEventListeners();
-        // Register relevant information for context-menu in this shadow tree
-        this.root.addEventListener("contextmenu", (event) => {
-            const target = event.target;
-            if (this.root.getSelection().toString().length > 0) {
-                popupMenu.selectionExists = true;
-            }
-            if (target !== null && (target.tagName === "TEXTAREA" ||
-                                    target.tagName === "INPUT" ||
-                                    target.contentEditable === "true")) {
-                popupMenu.editableElementActive = true;
-            }
-        });
+        // Allow context menu to gather invocation data in this shadow tree
+        this.root.addEventListener("contextmenu", (event) => 
+            contextMenu.onInvocation(event, this.root));
         // Open all http links associated with <a> tags in the default browser
         this.root.addEventListener("click", (event) => {
             if (event.target.tagName === "A") {
