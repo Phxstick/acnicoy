@@ -328,7 +328,9 @@ class KanjiSection extends Section {
         const numAdded = this.addedAmountPerGroup[groupValue];
         const numTotal = this.totalAmountPerGroup[groupValue];
         const counterNode = this.addedPerGroupCounters[groupValue];
-        counterNode.textContent = `( ${numAdded} / ${numTotal} )`;
+        if (counterNode !== undefined) {
+            counterNode.textContent = `( ${numAdded} / ${numTotal} )`;
+        }
     }
 
     searchByKanji() {

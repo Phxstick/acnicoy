@@ -36,3 +36,28 @@ body {
     padding-left: 25px;
   }
 }
+
+#link-location-display {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background-color: $background-color;
+  color: $color;
+  border-top: 1px solid $border-color-light;
+  border-right: 1px solid $border-color-light;
+  border-top-right-radius: 3px;
+  padding: 3px;
+  pointer-events: none;
+  z-index: var(--link-location-display-layer);
+  visibility: hidden;
+  opacity: 0;
+  transition-property: all;
+  transition-duration: .15s;
+  transition-delay: .3s;
+  transition-timing-function: ease;
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+}

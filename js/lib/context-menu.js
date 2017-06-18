@@ -66,7 +66,7 @@ function onContextMenuInvocation(event, root) {
         textManipulationItems.push(standardRoleToMenuItem["delete"]);
     displayItems(textManipulationItems);
     // If target is a link, allow copying the link location
-    if (target.tagName === "A") {
+    if (target.tagName === "A" && target.href.startsWith("http")) {
         displayItems([standardRoleToMenuItem["copy-link-location"]]);
         standardRoleToMenuItem["copy-link-location"].currentNode = target;
     }

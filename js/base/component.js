@@ -44,6 +44,23 @@ class Component extends HTMLElement {
                 event.preventDefault();
             }
         }, true);
+        const linkDisplay = document.getElementById("link-location-display");
+        // Show link location in bottom left corner when hovering over link
+        this.root.addEventListener("mouseover", (event) => {
+            if (event.target.tagName === "A") {
+                if (event.target.href.startsWith("http")) {
+                    linkDisplay.textContent = event.target.href;
+                    linkDisplay.classList.add("visible");
+                }
+            }
+        });
+        this.root.addEventListener("mouseout", (event) => {
+            if (event.target.tagName === "A") {
+                if (event.target.href.startsWith("http")) {
+                    linkDisplay.classList.remove("visible");
+                }
+            }
+        });
     }
 
     connectedCallback() {

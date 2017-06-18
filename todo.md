@@ -1,9 +1,8 @@
 - Implement kanji-search by meanings/yomi
-- FIX: Items at end of vocab lists are not removed when removing them
+- Implement tree for help-overlay
 - Finish as much TODO-items for kanji-sections as possible
   - Finish kanji search criterion functionality
 - Extend search-sections by spinner and animate no-search-results-info
-- When searching again, somehow stop previous search in utility.js?
 
 - Implement label-checkbox widget?
 - Implment simple binding function for checkboxes and settings, or radiobuttons
@@ -32,7 +31,6 @@
 - Register content-related shortcuts in adjustToLanguageContent instead
 - Write more sophisticated function to guess whether vocab contains a certain
   entry from the dictionary
-- Display url of link element when hovering over it
 
 ### As soon as available
 - Use thin symbols for fa-times, fa-plus etc. where fitting
@@ -48,6 +46,8 @@
 - Tooltip of menu bar buttons are broken
 - Height of diagrams in stats section is slightly too large for some reason
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
+- Items at end of vocab lists are not removed when removing them
+- Stroke graphics for "兎" cannot be read completely
 
 
 By category
@@ -73,6 +73,7 @@ By category
 - Make sure language content (especially dictionary) is already loaded into memory
   at program start (to make first search immediate)
 - Implement reverse testing?
+- utility.js: When searching, somehow stop previous search?
 
 ### Performance
 - Things got slower when reworking sass? Maybe because main window is flex now?
