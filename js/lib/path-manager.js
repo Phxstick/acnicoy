@@ -76,6 +76,11 @@ module.exports = function (basePath) {
     paths.defaultSrsSchemes = path.resolve(basePath, "data",
                                            "default-srs-schemes.json");
     paths.resourcesList = path.resolve(basePath, "data", "resources.md");
+    paths.helpStructure = path.resolve(basePath, "data", "help-structure.json");
+    paths.helpSection = (nodes) =>
+        path.resolve(basePath, "data", "help", ...nodes) + ".md";
+    paths.helpSubdir = (nodes) =>
+        path.resolve(basePath, "data", "help", ...nodes);
     paths.componentRegister = path.resolve(basePath, "component-register.json");
     paths.styleClasses = path.resolve(basePath, "data", "style-classes.json");
     paths.img = {

@@ -109,13 +109,18 @@ body {
   cursor: $pointer-cursor;
 }
 
-a {
+a[href] {
   text-decoration: none;
   color: $http-link-color;
   &:hover {
     text-decoration: underline;
     color: $http-link-color-hover;
   }
+}
+
+a:not([href]) {
+  @extend button;
+  @extend button.link;
 }
 
 .info {

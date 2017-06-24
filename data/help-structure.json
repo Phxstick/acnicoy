@@ -1,11 +1,11 @@
 [
-  { "name": "Introduction" },
+  { "name": "Overview" },
   { "name": "Quick Start" },
   { "name": "Components",
+    "open": true,
     "children": [
       { "name": "SRS",
         "children": [
-          { "name": "Overview" },
           { "name": "Editing schemes" },
           { "name": "Migrating schemes" }
         ]
@@ -18,13 +18,22 @@
       },
       { "name": "Testing" },
       { "name": "Home section" },
+      { "name": "Settings",
+        "children": [
+            { "name": "General" },
+            { "name": "Languages" },
+            { "name": "Testing" },
+            { "name": "Design" },
+            { "name": "Shortcuts" }
+        ]
+      }
     ]
-  }
+  },
   { "name": "Languages",
+    "open": true,
     "children": [
       { "name": "Japanese",
         "children": [
-          { "name": "Overview" },
           { "name": "Dictionary" },
           { "name": "Kanji section" }
         ]

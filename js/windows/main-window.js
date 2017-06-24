@@ -1,4 +1,4 @@
-"use strict";
+"use strict";
 
 const { ipcRenderer, remote } = require("electron");
 const mainBrowserWindow = remote.getCurrentWindow();
@@ -78,6 +78,8 @@ class MainWindow extends Window {
                 () => this.openSection("kanji"));
         this.$("about-button").addEventListener("click",
                 () => overlays.open("about"));
+        this.$("help-button").addEventListener("click",
+                () => overlays.open("help"));
         // Language popup events
         this.$("language-popup").callback = (lang) => this.setLanguage(lang);
         this.$("language-popup").onOpen = () => {
@@ -114,8 +116,7 @@ class MainWindow extends Window {
             "open-stats-section": () => this.openSection("stats"),
             "open-vocab-section": () => this.openSection("vocab"),
             "open-settings": () => this.openSection("settings"),
-            // TODO Change this as soon as help section is done
-            "open-help": () => this.updateStatus("Not yet implemented."),
+            "open-help": () => overlays.open("help"),
             "quit": () => ipcRenderer.send("quit"),
             "force-quit": () => ipcRenderer.send("close-now"),
             "close-sliding-panels": () => {
@@ -212,8 +213,7 @@ class MainWindow extends Window {
     async open() {
         app.openWindow("loading", "Initializing...");
         // Load info about incomplete downloads
-        // TODO: Move this
-        networkManager.load();
+        networkManager.load();  // TODO: Move this
         // Initialize all subcomponents
         const results = [];
         for (const name in this.sections) {

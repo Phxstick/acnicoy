@@ -1,14 +1,11 @@
+### Up next
 - Implement kanji-search by meanings/yomi
-- Implement tree for help-overlay
 - Finish as much TODO-items for kanji-sections as possible
   - Finish kanji search criterion functionality
 - Extend search-sections by spinner and animate no-search-results-info
-
 - Implement label-checkbox widget?
 - Implment simple binding function for checkboxes and settings, or radiobuttons
   and settings?
-
-### Up next
 - Implement some settings for dictionary and kanji-info-panel
 - `text-align: center` impairs fadeIn function. How to work around?
   - Add `text-align` to solution divs again
@@ -74,6 +71,9 @@ By category
   at program start (to make first search immediate)
 - Implement reverse testing?
 - utility.js: When searching, somehow stop previous search?
+- Adjust kanji-section (and create hanzi-section) to be available as limited
+  version even when no language content is installed (and display notice that
+  language content can be installed to see more).
 
 ### Performance
 - Things got slower when reworking sass? Maybe because main window is flex now?
@@ -203,33 +203,6 @@ By category
   - Allow displaying both daily and cumulative progress for each diagram
   - Also color each bar in two colors according to kanji and vocab progress
 - Possibly use D3.js for diagrams?
-
-### Help
-- Use overlay widget
-- Use markdown and extend it
-- Create directory tree
-- Create help tree widget
-
-#### Help structure:
-- Introduction
-- Quick start
-- ---- Separator ---- [General]
-- SRS
-  - Overview
-  - Editing schemes
-  - Migrating items
-- Vocabulary
-  - Editing
-  - Lists
-- Home section
-- Testing
-- ---- Separator ---- [Languages]
-- Japanese
-  - Overview (mention kana inputs, and language content)
-  - Dictionary
-  - Kanji section
-- Chinese
-  - Pinyin Input
 
 List of settings
 --------------------------------------------------------------------------------
@@ -384,6 +357,7 @@ once? --> Faster loading, centralized resource loading
 - Merge kanji and hanzi module into one, generalize with different readings
 
 ### Adaptions
+- Don't assign font family for every element and let it be inherited instead
 - Use `position: sticky` for kanji info panel in kanji section?
 - use split function from sqlite instead of JS version?
 - Use ruby annotations for furigana

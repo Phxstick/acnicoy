@@ -1,0 +1,107 @@
+"use strict";
+
+const fs = require("fs");
+const markdown = require("markdown").markdown;
+
+class HelpOverlay extends Overlay {
+    constructor() {
+        super("help");
+        this.$("close-button").addEventListener("click", () => {
+            this.resolve();
+        });
+        this.$("tree").build(require(paths.helpStructure));
+        this.loadedTreePath = [];
+        this.$("tree").onSelect = (treePath, children) => {
+            const treeSubpath = treePath.slice(0, -1);
+            const helpSubdirPath = paths.helpSubdir(treePath);
+            const helpSectionPath = paths.helpSection(treePath);
+            const helpSectionSubpath = paths.helpSection(treeSubpath);
+            this.$("content").classList.remove("no-data");
+            let newSectionLoaded = false;
+            // If there's a markdown file for given path, render it to html
+            if (fs.existsSync(helpSectionPath)) {
+                if (!this.loadedTreePath.equals(treePath)) {
+                    this.$("content").innerHTML = markdown.toHTML(
+                        fs.readFileSync(helpSectionPath, "utf8"));
+                    this.loadedTreePath = treePath;
+                    newSectionLoaded = true;
+                }
+                this.$("content").scrollToTop();
+            // If there's no markdown file for given path but a subdirectory of
+            // the help tree, display a listing of its children
+            } else if (fs.existsSync(helpSubdirPath)) {
+                if (!this.loadedTreePath.equals(treePath)) {
+                    let html = `<h2>${treePath.last()}</h2><ul class="large">`;
+                    for (const childName of children) {
+                        const lPath = "#" + [...treePath, childName].join("#");
+                        html += `<li><a href="${lPath}">${childName}</a></li>`;
+                    }
+                    html += "</ul>"
+                    this.$("content").innerHTML = html;
+                    this.loadedTreePath = treePath;
+                    newSectionLoaded = true;
+                }
+                this.$("content").scrollToTop();
+            // If there's no markdown file for given path, but for its subpath
+            // with length - 1, render that file and scroll the header into view
+            // whose textContent is equal to the last element in the path
+            } else if (fs.existsSync(helpSectionSubpath)) {
+                if (!this.loadedTreePath.equals(treeSubpath)) {
+                    this.$("content").innerHTML = markdown.toHTML(
+                        fs.readFileSync(helpSectionSubpath, "utf8"));
+                    this.loadedTreePath = treeSubpath;
+                    newSectionLoaded = true;
+                }
+                const headerName = treePath.last();
+                const headers = this.$("content").querySelectorAll("h3");
+                for (const header of headers) {
+                    if (header.textContent === headerName) {
+                        header.scrollIntoView();
+                        break;
+                    }
+                }
+                treePath = treeSubpath;
+            // If neither of the above cases applied, there's no data available
+            } else {
+                this.$("content").classList.add("no-data");
+                this.$("content").innerHTML = `<div>No help data found.</div>`;
+                this.loadedTreePath = [];
+            }
+            // Display the path of the currently opened help section
+            // and allow clicking segments of the path to jump there
+            this.$("content-path").empty();
+            for (let i = 1; i <= treePath.length; ++i) {
+                const subPath = treePath.slice(0, i);
+                const linkNode = document.createElement("button");
+                linkNode.classList.add("link");
+                linkNode.textContent = subPath.last();
+                linkNode.addEventListener("click", () => {
+                    this.$("tree").select(subPath);
+                });
+                this.$("content-path").appendChild(linkNode);
+                if (i !== treePath.length) {
+                    const separator = document.createElement("span");
+                    separator.classList.add("separator");
+                    this.$("content-path").appendChild(separator);
+                }
+            }
+            // Turn every <a> element whose href-attribute value contains "#"
+            // into a local link pointing to other help sections
+            if (newSectionLoaded) {
+                const links = this.$("content").querySelectorAll("a");
+                for (const link of links) {
+                    const linkPath = link.href.split("#").slice(1);
+                    if (linkPath.length === 0) continue;
+                    link.addEventListener("click", () => {
+                        this.$("tree").select(linkPath);
+                    });
+                    link.removeAttribute("href");
+                }
+            }
+        };
+        this.$("tree").select(["Overview"]);
+    }
+}
+
+customElements.define("help-overlay", HelpOverlay);
+module.exports = HelpOverlay;

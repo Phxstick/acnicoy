@@ -9,7 +9,8 @@
     ],
     "overlays": [
         "add-lang", "info-dialog", "confirm-dialog", "srs-schemes",
-        "migrate-srs", "choose-shortcut", "test-complete", "about", "resources"
+        "migrate-srs", "choose-shortcut", "test-complete", "about", "resources",
+        "help"
     ],
     "sections": [
         "home", "stats", "vocab", "settings", "test", "dictionary", "kanji"
@@ -29,7 +30,8 @@
         "svg-bar-diagram", "kanji-info-panel", "srs-status-bar",
         "kanji-search-result-entry", "dictionary-search-result-entry",
         "pinwall-notes", "srs-status-table", "language-table", "language-popup",
-        "check-box", "example-word-entry", "tabbed-frame", "srs-review-schedule"
+        "check-box", "example-word-entry", "tabbed-frame",
+        "srs-review-schedule", "tree-view"
     ],
     "extensions": [
         "converter", "array-extensions", "html-element-extensions",
