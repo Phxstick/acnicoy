@@ -1,7 +1,6 @@
 "use strict";
 
-const fs = require("fs");
-const { ncp } = require("ncp");
+const fs = require("fs-extra");
 
 module.exports = function (paths) {
     const modules = { };
@@ -65,26 +64,17 @@ module.exports = function (paths) {
      * Backup user data for all languages.
      * @param {Object} info - Information about this backup (stored as JSON).
      *     Should contain at least an "event" field specifiying the occasion.
-     * @returns {Promise}
      */
-    modules.createBackup = function (info) {
+    modules.createBackup = async function (info) {
         // Save any unsaved changes to data first
-        return modules.save().then(() => {
-            return new Promise((resolve, reject) => {
-                const languageDataPath = paths.languages;
-                const newBackupPath = paths.newBackup();
-                info.time = utility.getTime();
-                // Copy all data to new backup location and create info file
-                ncp(languageDataPath, newBackupPath.directory, (error) => {
-                    if (error) {
-                        reject(error);
-                    }
-                    fs.writeFileSync(newBackupPath.infoFile,
-                        JSON.stringify(info, null, 4));
-                    resolve();
-                });
-            });
-        });
+        await modules.save();
+        const newBackupPath = paths.newBackup();
+        info.time = utility.getTime();
+        info.languages = modules.languages.all;
+        // Copy all data to new backup location and create info file
+        await fs.copy(paths.languages, newBackupPath.directory);
+        await fs.copy(paths.achievementsUnlocked, newBackupPath.achievements);
+        fs.writeFileSync(newBackupPath.infoFile, JSON.stringify(info, null, 4));
     };
 
     /**

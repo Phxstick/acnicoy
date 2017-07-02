@@ -37,5 +37,5 @@ queries into the search bar at the top to find the kanji you're looking for.
 
 You can open the customization panel or switch between the overview and search
 results using the buttons on the right of the search bar. You can also switch
-using shortcuts, by default `Ctrl+K` for the search and `Ctrl+O` for the
+using shortcuts, by default `Ctrl+Shift+F` for the search and `Ctrl+O` for the
 overview.

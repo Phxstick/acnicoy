@@ -40,6 +40,7 @@ class LanguageTable extends Widget {
                 await dataManager.languages.add(
                     config.language, config.settings);
                 await dataManager.load(config.language);
+                events.emit("language-added", config.language);
                 config.default = false;
             }
             config.interactiveMode = this.interactiveMode;

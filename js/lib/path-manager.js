@@ -41,6 +41,7 @@ module.exports = function (basePath) {
         paths.backups = backupsPath = path.resolve(dataPath, "Backups");
         paths.globalSettings = path.resolve(dataPath, "settings.json");
         paths.srsSchemes = path.resolve(dataPath, "srs-schemes.json")
+        paths.achievementsUnlocked = path.resolve(dataPath, "achievements.json")
         contentPath = path.resolve(dataPath, "Content");
         if (previousPath === null) {
             // Create folders if they do not exist yet
@@ -76,6 +77,7 @@ module.exports = function (basePath) {
     paths.defaultSrsSchemes = path.resolve(basePath, "data",
                                            "default-srs-schemes.json");
     paths.resourcesList = path.resolve(basePath, "data", "resources.md");
+    paths.achievements = path.resolve(basePath, "data", "achievements.json");
     paths.helpStructure = path.resolve(basePath, "data", "help-structure.json");
     paths.helpSection = (nodes) =>
         path.resolve(basePath, "data", "help", ...nodes) + ".md";
@@ -166,8 +168,11 @@ module.exports = function (basePath) {
             month.toString().padStart(2, "0"),
             day.toString().padStart(2, "0")
         ].join("-"));
-        return { directory: backupDir,
-                 infoFile: path.resolve(backupDir, "info.json") };
+        return {
+            directory: backupDir,
+            infoFile: path.resolve(backupDir, "info.json"),
+            achievements: path.resolve(backupDir, "achievements.json")
+        };
     };
     paths.backupInfo = (backupName) => {
         return path.resolve(

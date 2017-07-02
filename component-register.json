@@ -2,7 +2,7 @@
     "modules": [
         "languages", "settings", "language-settings", "database", "vocab-lists",
         "pinwall", "content", "vocab", "kanji", "hanzi", "srs", "stats", "test",
-        "history"
+        "history", "achievements"
     ],
     "windows": [
         "init-path", "init-lang", "init-default-lang", "loading", "main"

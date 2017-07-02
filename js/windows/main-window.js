@@ -241,6 +241,12 @@ class MainWindow extends Window {
         window.setInterval(() => events.emit("update-content-status"),
             1000 * 60 * 60 * 3);  // 3 hours
         ipcRenderer.send("activate-controlled-closing");
+        // Link achievements module to event emitter and do an initial check
+        dataManager.achievements.setEventEmitter(events);
+        events.on("achievement-unlocked", (achievementId, achievementName) => {
+            this.updateStatus(`Unlocked achievement '${achievementName}'!`);
+        });
+        await dataManager.achievements.checkAll();
         await utility.finishEventQueue();
         app.closeWindow("loading");
     }

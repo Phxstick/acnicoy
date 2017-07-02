@@ -1,0 +1,93 @@
+{
+    "global": [
+        "srs-items-reviewed",
+        "languages-registered"
+    ],
+    "languageLocal": [
+        "vocab-items-registered"
+    ],
+    "languageSpecific": {
+        "Japanese": [
+        ],
+        "Chinese": [
+        ]
+    },
+    "colors": [
+        "#A67D3D",
+        "silver",
+        "gold",
+        "#E5E4E2",
+        "cornsilk",
+        "lightcyan"
+    ],
+    "definitions": {
+        "srs-items-reviewed": {
+            "description": "At least {X} SRS item reviews completed.",
+            "levels": [
+                { "name": "Eager I", "value": 300 },
+                { "name": "Eager II", "value": 1500 },
+                { "name": "Eager III", "value": 3000 },
+                { "name": "Eager IV", "value": 6000 },
+
+                { "name": "Diligent I", "value": 10000 },
+                { "name": "Diligent II", "value": 15000 },
+                { "name": "Diligent III", "value": 20000 },
+                { "name": "Diligent IV", "value": 25000 },
+
+                { "name": "Zealous I", "value": 30000 },
+                { "name": "Zealous II", "value": 40000 },
+                { "name": "Zealous III", "value": 50000 },
+                { "name": "Zealous IV", "value": 60000 },
+
+                { "name": "Unstoppable I", "value": 70000 },
+                { "name": "Unstoppable II", "value": 80000 },
+                { "name": "Unstoppable III", "value": 90000 },
+                { "name": "Unstoppable IV", "value": 100000 },
+
+                { "name": "Plus Ultra I", "value": 110000 },
+                { "name": "Plus Ultra II", "value": 120000 },
+                { "name": "Plus Ultra III", "value": 130000 },
+                { "name": "Plus Ultra IV", "value": 140000 },
+                { "name": "Plus Ultra V", "value": 150000 }
+            ]
+        },
+        "languages-registered": {
+            "description": "At least {X} languages registered.",
+            "levels": [
+                { "name": "Multicultural", "value": 3 },
+
+                { "name": "Diversity", "value": 5 },
+
+                { "name": "Philomath", "value": 7 }
+            ]
+        },
+        "vocab-items-registered": {
+            "description": "At least {X} vocabulary items registered.",
+            "levels": [
+                { "name": "Beginner I", "value": 50 },
+                { "name": "Beginner II", "value": 200 },
+                { "name": "Beginner III", "value": 500 },
+
+                { "name": "Intermediate I", "value": 1000 },
+                { "name": "Intermediate II", "value": 2000 },
+                { "name": "Intermediate III", "value": 3000 },
+
+                { "name": "Advanced I", "value": 4000 },
+                { "name": "Advanced II", "value": 5000 },
+                { "name": "Advanced III", "value": 6000 },
+
+                { "name": "Master I", "value": 7000 },
+                { "name": "Master II", "value": 8000 },
+                { "name": "Master III", "value": 9000 },
+
+                { "name": "Grand Master I", "value": 10000 },
+                { "name": "Grand Master II", "value": 11000 },
+                { "name": "Grand Master III", "value": 12000 },
+
+                { "name": "Deity I", "value": 13000 },
+                { "name": "Deity II", "value": 14000 },
+                { "name": "Deity III", "value": 15000 }
+            ]
+        }
+    }
+}

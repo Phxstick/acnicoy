@@ -1,4 +1,6 @@
 ### Up next
+- Somehow add level groups to achievement level definitions
+- Use subtle background pattern for achievements (shiny if possible)
 - Implement kanji-search by meanings/yomi
 - Finish as much TODO-items for kanji-sections as possible
   - Finish kanji search criterion functionality
@@ -24,7 +26,6 @@
 - Allow selecting popup-stack item with arrow keys and number keys!
 - Test on new data instance whether deleting kanji also deletes kanji data
   (are constraints really applied to database now?)
-- New setting: [Checkbox] Automatically update language content if available
 - Register content-related shortcuts in adjustToLanguageContent instead
 - Write more sophisticated function to guess whether vocab contains a certain
   entry from the dictionary
@@ -197,7 +198,7 @@ By category
 
 ### Stats/Achievements
 - Use single-bar diagram for kanji progress to display relative to total!
-- Display earned achievement in status bar and make it glow to highlight
+- Display earned achievement in status bar and make it glow to highlight?
 - Daily stats diagrams below the general stats (next to each other?)
   - One for mastery points, one for new vocab/kanji added
   - Allow displaying both daily and cumulative progress for each diagram
@@ -209,37 +210,11 @@ List of settings
 #### General settings
 - [Button] Check for program updates (Check automatically every ~1 hour)
   - [Button] Update program (Do so safely)
-
-#### TODO: Categorize these
 - [Radiobuttons] Choose separator for separating translations/readings
-- [Checkbutton/Entry] Choose interval-modifier for SRS-levels
+#### Language settings
+- [Checkbox] Automatically update language content if available
 - [Button] Edit SRS schemes
-
-List of achievements
---------------------------------------------------------------------------------
-#### Global achievements (Count for all languages)
-- [Diversity] At least 3 languages registered.
-- [Multicultural] At least 6 languages registered.
-- [Hyperpolyglot] At least 9 languages registered.
-- [Eager I] At least 1000 SRS items tested.
-- [Eager II] At least 3500 SRS items tested.
-- [Eager III] At least 6000 SRS items tested.
-- [Diligent I] At least 10000 SRS items tested.
-- [Diligent II] At least 20000 SRS items tested.
-- [Diligent III] At least 30000 SRS items tested.
-- [Zealous] At least 50000 SRS items tested.
-
-#### Local achievements (Can be earned for each language)
-- [Beginner I] At least 200 vocabulary items registered.
-- [Beginner II] At least 500 vocabulary items registered.
-- [Intermediate I] At least 1000 vocabulary items registered.
-- [Intermediate II] At least 2000 vocabulary items registered.
-- [Advanced I] At least 4000 vocabulary items registered.
-- [Advanced II] At least 6000 vocabulary items registered.
-- [Advanced III] At least 8000 vocabulary items registered.
-- [Master I] At least 10000 vocabulary items registered.
-- [Master II] At least 15000 vocabulary items registered.
-- [Grand Master] At least 20000 vocabulary items registered.
+  - [Checkbutton/Entry] Choose interval-modifier for SRS-levels
 
 Future
 --------------------------------------------------------------------------------
@@ -293,6 +268,8 @@ Future
 - Allow user to customize pinwall (button in settings + overlay side-bar)?
 - Implement changelog-widget (for changelogs saved in local storage somewhere)?
 - Create a custom menu bar?
+- Find open dictionaries for English, Spanish, Chinese and Russian
+- Add icons to achievements 
 
 ### In-program notifications
 - Notifications on following events:

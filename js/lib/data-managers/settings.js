@@ -24,6 +24,7 @@ module.exports = function (paths, modules) {
         }
         shortcuts.initialize();
         modules.srs.loadSchemes();
+        modules.achievements.loadUserData();
     };
 
     settings.save = function() {
