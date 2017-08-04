@@ -8,18 +8,19 @@
   #data-path {
     flex: 1;
     padding: 8px;
-    background-color: $background-color-dark;
     color: $view-color;
     margin-left: 10px;
     margin-right: 10px;
     border-radius: 6px;
+    border: 1px solid $border-color-medium;
+    background-color: $view-background-dark;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 
     &:hover {
-      background-color: $view-hover-background;
-      color: $view-hover-color;
+      background-color: $view-background;
+      border-color: $border-color-dark;
     }
   }
 }

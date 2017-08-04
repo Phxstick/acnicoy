@@ -1,5 +1,7 @@
 "use strict";
 
+const dateFormat = require("dateformat");
+
 class StatsSection extends Section {
     constructor() {
         super("stats");
@@ -12,6 +14,50 @@ class StatsSection extends Section {
         this.$("jlpt-kanji").topLineWidth = 1;
         this.$("jlpt-kanji").margin =
             { top: 0, bottom: 30, left: 20, right: 20 };
+        this.achievementIdToNode = new Map();
+
+        const globalAchievements = dataManager.achievements.getUnlockedGlobal();
+
+        const fragment = document.createDocumentFragment();
+        for (const { achievementId, levels } of globalAchievements) {
+            levels.reverse();
+            const achievementNode = document.createElement("div");
+            const achievementFragment = document.createDocumentFragment();
+            for (const { name, tier, description, unlockDate } of levels) {
+                const unlockDateString = "Unlocked on " +
+                    dateFormat(unlockDate, "mmmm dS, yyyy");
+                const levelNode = utility.fragmentFromString(`
+                  <div class="tier-${tier}">
+                    <div class="achievement-info">
+                      <div class="name">${name}</div>
+                      <div class="description">${description}</div>
+                    </div>
+                  </div>
+                `).firstElementChild;
+                levelNode.tooltip(
+                    description + "<br><div style='height:10px'></div>"
+                    + unlockDateString, 500, 250);
+                achievementFragment.appendChild(levelNode);
+            }
+            achievementNode.appendChild(achievementFragment);
+            achievementNode.style.counterReset = `level ${levels.length + 1}`;
+            this.achievementIdToNode.set(achievementId, achievementNode);
+            fragment.appendChild(achievementNode);
+        }
+        this.$("global-achievements").appendChild(fragment);
+
+        
+        // const globalAchievements = dataManager.achievements.getGlobal();
+        // for (const { name, tier, description, unlocked } of globalAchievements){
+        //     const node = document.createElement("div");
+        //     const nameNode = document.createElement("div");
+        //     nameNode.textContent = name;
+        //     nameNode.classList.add("name-node");
+        //     node.appendChild(nameNode);
+        //     node.classList.add(`tier-${tier}`);
+        //     node.classList.toggle("locked", !unlocked);
+        //     this.$("global-achievements").appendChild(node);
+        // }
     }
 
     registerCentralEventListeners() {
@@ -21,6 +67,10 @@ class StatsSection extends Section {
         () => {
             if (this.isHidden()) return;
             this.updateStats();
+        });
+        events.on("achievement-unlocked", (achievementId) => {
+            // TODO
+            // TODO: Adjust counter-increment as well
         });
     }
 

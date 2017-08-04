@@ -1,9 +1,14 @@
-/** 
-* CSS Variables:
-* --tooltip-font-size  (Default: 1rem)
-* --tooltip-speed      (Default: 0.4s)
-* --tooltip-delay      (Default: 0s)
-*/
+/*
+ * CSS Variables:
+ * --tooltip-font-size  (Default: 1rem)
+ * --tooltip-speed      (Default: 0.4s)
+ * --tooltip-delay      (Default: 0s)
+ *
+ * A pure CSS tooltip is not always a good choice because:
+ * - It can become a memory hog and pollute DOM when used on many elements
+ * - It's bound to the z-index of the element it is attached to
+ * - It can leave the window
+ */
 
 // SASS parameters
 $spacing: 1px;  // Distance between element and tooltip arrow

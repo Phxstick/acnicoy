@@ -208,6 +208,20 @@ module.exports = function (paths, modules) {
     };
 
     /**
+     * Return total number of items tested for all languages.
+     * @returns {Number}
+     */
+    stats.getNumberOfItemsTestedForAllLanguages = function () {
+        let total = 0;
+        for (const language in dataMap) {
+            for (const mode in dataMap[language].data.testedPerMode) {
+                total += dataMap[language].data.testedPerMode[mode];
+            }
+        }
+        return total;
+    };
+
+    /**
      * Return total score for given testmode.
      * @returns {Number}
      */

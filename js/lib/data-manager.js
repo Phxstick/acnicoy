@@ -72,9 +72,10 @@ module.exports = function (paths) {
         info.time = utility.getTime();
         info.languages = modules.languages.all;
         // Copy all data to new backup location and create info file
-        await fs.copy(paths.languages, newBackupPath.directory);
-        await fs.copy(paths.achievementsUnlocked, newBackupPath.achievements);
-        fs.writeFileSync(newBackupPath.infoFile, JSON.stringify(info, null, 4));
+        fs.copy(paths.languages, newBackupPath.directory, async () => {
+            await fs.copy(paths.achievementsUnlocked, newBackupPath.achievements);
+            fs.writeFileSync(newBackupPath.infoFile, JSON.stringify(info, null, 4));
+        });
     };
 
     /**

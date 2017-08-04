@@ -6,7 +6,7 @@ $light-font: OpenSans-Light;
 $header-font: Questrial;
 $button-font: $header-font;
 $small-font: Arial;
-$tooltip-font: $header-font;
+$tooltip-font: Arial;  // $header-font;
 $pinyin-font: OpenSans-Regular;
 
 // =============================================================================
@@ -16,6 +16,7 @@ $pinyin-font: OpenSans-Regular;
 // General
 $background-color: whitesmoke;
 $background-color-dark: gainsboro;
+$background-color-medium: mix(whitesmoke, gainsboro, 50%);
 $color: #303030;
 $color-light: dimgray;
 $color-lightest: grey;
@@ -29,6 +30,8 @@ $highlight-color: white;
 $border-color-light: darken($background-color, 20%);
 $border-color-medium: darkgrey;
 $border-color-dark: grey;
+$border-color-darkest: dimgray;
+$border-color-highlight: $highlight-background;
 $contrast-font-color: black;
 $contrast-text-shadow-color: white;
 $code-background: rgba(27, 31, 35, 0.05);
@@ -53,8 +56,9 @@ $tooltip-shadow-color: white;
 // Views
 $view-color: $color;
 $view-color-greyed-out: darkgrey;
-$view-background: #fff;
-$view-background-dark: darken($view-background, 6%);
+$view-background: darken(white, 2%);
+$view-background-medium: darken(white, 3.5%);
+$view-background-dark: darken(white, 5%);
 $view-hover-color: black;
 $view-hover-background: peachpuff;
 $view-hover-background-light: lighten(peachpuff, 6%);
@@ -68,14 +72,15 @@ $view-header-color: $color-light;
 $view-header-background: darken($view-background, 10%);
 
 // Inputs
-$input-background: darken(white, 5%);
+$input-background: $view-background-dark;
 $input-background-focus: white;
-$input-background-hover: darken(white, 2%);
+$input-background-hover: $view-background;
 $input-color: $color;
 $input-color-focus: $input-color;
 $input-color-hover: $input-color;
 $input-color-placeholder: darken($input-background, 40%);
-$input-border-color: $border-color-dark;
+$input-border-color: $border-color-medium;
+$input-border-color-hover: $border-color-dark;
 
 // Styled button
 $button-color: whitesmoke;
@@ -212,6 +217,8 @@ $vertical-fading-border: linear-gradient(
 
 // Shadows
 $wide-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+$wide-shadow-centered: 0 4px 8px 0 rgba(0, 0, 0, 0.2),
+                       0 0px 20px 0 rgba(0, 0, 0, 0.19);
 $slim-shadow-bottom: 0 1px 3px #333;
 $slim-shadow-top: 0 -1px 3px #333;
 $slim-frame-shadow: 0 0 2px darkred;

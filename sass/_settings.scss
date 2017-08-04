@@ -22,10 +22,11 @@
 .keyboard-shortcut {
   padding: 6px;
   border-radius: 6px;
-  background-color: $background-color-dark;
+  border: 1px solid $border-color-medium;
+  background-color: $input-background;
 
   &:hover {
-    background-color: $view-hover-background;
-    color: $view-hover-color;
+    background-color: $input-background-hover;
+    border-color: $border-color-dark;
   }
 }

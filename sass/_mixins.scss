@@ -34,3 +34,54 @@
   top: $top;
   left: $left;
 }
+
+@mixin x-shape($size: 90%, $thickness: 3px, $roundness: 2px, $color: inherit) {
+  position: relative;
+  display: inline-block;
+
+  &::before, &::after {
+    display: block;
+    position: absolute;
+    content: "";
+    top: 50%;
+    left: 50%;
+    transform-origin: center center;
+    transform: translateX(-50%) translateY(-50%) rotate(45deg);
+    background-color: $color;
+    border-radius: $roundness;
+  }
+  &::before {
+    height: $size;
+    width: $thickness;
+  }
+  &::after {
+    height: $thickness;
+    width: $size;
+  }
+}
+
+@mixin plus-shape(
+    $size: 90%, $thickness: 3px, $roundness: 2px, $color: inherit) {
+  position: relative;
+  display: inline-block;
+
+  &::before, &::after {
+    display: block;
+    position: absolute;
+    content: "";
+    top: 50%;
+    left: 50%;
+    transform-origin: center center;
+    transform: translateX(-50%) translateY(-50%);
+    background-color: $color;
+    border-radius: $roundness;
+  }
+  &::before {
+    height: $size;
+    width: $thickness;
+  }
+  &::after {
+    height: $thickness;
+    width: $size;
+  }
+}

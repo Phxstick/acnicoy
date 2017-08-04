@@ -5,6 +5,8 @@
   position: fixed;
   width: 500px;
   background-color: $background-color;
+  overflow: hidden;
+  border-radius: 5px;
 }
 
 :host(:focus) {

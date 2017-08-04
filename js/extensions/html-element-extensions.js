@@ -319,6 +319,106 @@ HTMLElement.prototype.contextMenu = function (menuItems, itemNames, data) {
 }
 
 /**
+ * Display tooltip with given content when hovering over this element.
+ * @param {String|function[String]} content - HTML to display in the tooltip.
+ *     Can also be an asynchronous function returning the content.
+ * @param {Integer} [delay=0] - Delay before tooltip appears (in milliseconds).
+ * @param {Integer} [width] - Width of the tooltip in pixels. By default it is
+ *     as wide as its content.
+ */
+HTMLElement.prototype.tooltip = function (content, delay=0, width) {
+    this.removeTooltip();
+    const tooltip = document.getElementById("tooltip");
+    const positionTooltip = (event) => {
+        const tooltipWidth = tooltip.offsetWidth;
+        const tooltipHeight = tooltip.offsetHeight;
+        if (tooltipWidth === null) return;
+        // Make sure tooltip doesn't leave the window on the right side
+        if (event.pageX + tooltipWidth > window.innerWidth) {
+            tooltip.style.left = `${window.innerWidth - tooltipWidth}px`;
+        } else {
+            tooltip.style.left = `${event.pageX}px`;
+        }
+        // Make sure tooltip doesn't leave the window on the left side
+        if (event.pageY - tooltipHeight < 0) {
+            tooltip.style.bottom = `${window.innerHeight - tooltipHeight}px`;
+        } else {
+            tooltip.style.bottom = `${window.innerHeight - event.pageY}px`;
+        }
+    };
+    let lastMouseEvent;
+    this.addEventListener("mouseenter", (event) => {
+        if (window.currentTooltipTimeoutId !== null) {
+            window.clearTimeout(window.currentTooltipTimeoutId);
+        }
+        lastMouseEvent = event;
+        positionTooltip(event);
+        // Wait specified delay before displaying the tooltip
+        window.currentTooltipTimeoutId = window.setTimeout(async () => {
+            // Make tooltip as wide as the content by default
+            if (width === undefined) {
+                tooltip.style.whiteSpace = "nowrap";
+                tooltip.style.width = "auto";
+            // If width is specified, resize tooltip
+            } else {
+                tooltip.style.whiteSpace = "normal";
+                tooltip.style.width = `${width}px`;
+            }
+            // Set content to display
+            let finalContent = content;
+            if (typeof content === "function") {
+                finalContent = await content();
+            }
+            tooltip.innerHTML = finalContent;
+            // Position and display tooltip
+            await utility.finishEventQueue();
+            positionTooltip(lastMouseEvent);
+            tooltip.style.visibility = "visible";
+            window.currentTooltipTimeoutId = null;
+        }, delay);
+    });
+    this.addEventListener("mouseleave", (event) => {
+        if (window.currentTooltipTimeoutId !== null) {
+            window.clearTimeout(window.currentTooltipTimeoutId);
+            window.currentTooltipTimeoutId = null;
+        }
+        tooltip.style.visibility = "hidden";
+    });
+    this.addEventListener("mousemove", (event) => {
+        lastMouseEvent = event;
+        positionTooltip(event);
+    });
+}
+
+/**
+ * Remove any callbacks related to displaying a tooltip from this element.
+ * @returns {Boolean} - Whether the element had tooltip callbacks attached.
+ */
+HTMLElement.prototype.removeTooltip = function () {
+    let removed = false;
+    if (this.tooltipEnterCallback !== undefined) {
+        this.removeEventListener("mouseenter", this.tooltipEnterCallback);
+        removed = true;
+    }
+    if (this.tooltipLeaveCallback !== undefined) {
+        this.removeEventListener("mouseleave", this.tooltipLeaveCallback);
+        removed = true;
+    }
+    if (this.tooltipMoveCallback !== undefined) {
+        this.removeEventListener("mousemove", this.tooltipMoveCallback);
+        removed = true;
+    }
+    if (window.currentTooltipTimeoutId !== null) {
+        window.clearTimeout(window.currentTooltipTimeoutId);
+        window.currentTooltipTimeoutId = null;
+    }
+    this.tooltipEnterCallback = undefined;
+    this.tooltipLeaveCallback = undefined;
+    this.tooltipMoveCallback = undefined;
+    return removed;
+}
+
+/**
  * When the top/bottom of the scrollable content in this element is not reached,
  * fade out borders at the top/bottom of the scrollable content.
  * This function only sets two CSS variables --top-shadow-height and 

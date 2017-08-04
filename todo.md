@@ -1,6 +1,7 @@
 ### Up next
-- Somehow add level groups to achievement level definitions
-- Use subtle background pattern for achievements (shiny if possible)
+- Use font-family "Trajan" for roman numerals?
+- Separate stats and achievements? Or overkill?
+- Add more achievements and property display them in a column layout
 - Implement kanji-search by meanings/yomi
 - Finish as much TODO-items for kanji-sections as possible
   - Finish kanji search criterion functionality
@@ -37,15 +38,12 @@
 - SRS level editing is not fully stable (Maybe remove ability to edit levels?)
   - Make sure levels are ordered after resolving invalid values in SRS schemes
   - Make sure empty levels get removed/highlighted without requiring user input
-- CSS Tooltip Issues (Need to make a widget I guess):
-  - z-index is incorrect (Applied workaround)
-  - can leave view
-  - Memory hog when using on many elements
 - Tooltip of menu bar buttons are broken
 - Height of diagrams in stats section is slightly too large for some reason
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
 - Items at end of vocab lists are not removed when removing them
 - Stroke graphics for "兎" cannot be read completely
+- Promise returned by "fs.copy" from "fs-extra" doesn't work. Report it?
 
 
 By category

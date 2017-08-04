@@ -4,9 +4,11 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
   
   #bottom {
     flex: 1;
+    // height: calc(100% - #{$menu-bar-height});
     display: flex;
     flex-direction: row;
 

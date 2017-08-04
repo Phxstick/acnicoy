@@ -76,6 +76,10 @@ body {
       @extend button.red-icon;
       font-size: 160%;
       margin-right: 5px;
+      
+      &.x-shape {
+        margin-right: 0;
+      }
     }
   }
 
@@ -193,6 +197,19 @@ hr {
 .pulsating-triple-dots {
   > div {
     background-color: $color;
+  }
+}
+
+.x-shape {
+  @include x-shape($size: 75%,
+                   $thickness: 3px,
+                   $roundness: 2px,
+                   $color: $border-color-dark);
+  height: 28px;
+  width: 28px;
+  opacity: 0.6;
+  &:hover {
+    opacity: 1;
   }
 }
 

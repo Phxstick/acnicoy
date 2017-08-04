@@ -12,17 +12,10 @@
         "Chinese": [
         ]
     },
-    "colors": [
-        "#A67D3D",
-        "silver",
-        "gold",
-        "#E5E4E2",
-        "cornsilk",
-        "lightcyan"
-    ],
     "definitions": {
         "srs-items-reviewed": {
             "description": "At least {X} SRS item reviews completed.",
+            "tiers": [4, 4, 4, 4, 5],
             "levels": [
                 { "name": "Eager I", "value": 300 },
                 { "name": "Eager II", "value": 1500 },
@@ -53,6 +46,7 @@
         },
         "languages-registered": {
             "description": "At least {X} languages registered.",
+            "tiers": [1, 1, 1],
             "levels": [
                 { "name": "Multicultural", "value": 3 },
 
@@ -63,6 +57,7 @@
         },
         "vocab-items-registered": {
             "description": "At least {X} vocabulary items registered.",
+            "tiers": [3, 3, 3, 3, 3, 3],
             "levels": [
                 { "name": "Beginner I", "value": 50 },
                 { "name": "Beginner II", "value": 200 },

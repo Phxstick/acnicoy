@@ -15,7 +15,8 @@ module.exports = function (paths, modules) {
     // These functions return true if achievement is unlocked for given value
     const achievementToCheckFunction = {
         "srs-items-reviewed": (value) => {
-            return false;
+            return dataManager.stats.getNumberOfItemsTestedForAllLanguages()
+                >= value;
         },
         "languages-registered": (value) => {
             return modules.languages.all.length >= value;
@@ -87,7 +88,7 @@ module.exports = function (paths, modules) {
     /**
      * Check whether new levels for any of given achievements have been
      * unlocked. If that's the case, emit events and save user data.
-     * @param {Array} achievementList
+     * @param {Array[String]} achievementList
      */
     async function checkAchievements(achievementList) {
         const promises = [];
@@ -111,6 +112,50 @@ module.exports = function (paths, modules) {
             }
         }
         if (anyUnlocked) saveUserData();
+    }
+
+    /**
+     * Return a list of information about unlocked achievements.
+     * @param {Array[String]} achievementIds
+     * @param {Object} unlockData
+     * @returns {Array[Object]}
+     */
+    function getUnlockedAchievements(achievementIds, unlockData) {
+        const list = [];
+        for (const achievement of achievementIds) {
+            if (!unlockData.hasOwnProperty(achievement)) {
+                list.push({ id: achievement, levels: [] });
+                continue;
+            }
+            const { description, levels, tiers } =
+                achievements.definitions[achievement];
+            const tierLevels = tiers.reduce((arr, tierSize) => {
+                if (arr.length > 0) arr.push(arr.last() + tierSize);
+                else arr.push(tierSize);
+                return arr;
+            }, []);
+            const unlockedLevels = [];
+            const levelsUnlocked = unlockData[achievement].length;
+            for (let level = 0; level < levelsUnlocked; ++level) {
+                const { name, value } = levels[level];
+                let tier = 0;
+                for (const tierLevel of tierLevels) {
+                    if (level < tierLevel) break;
+                    ++tier;
+                }
+                unlockedLevels.push({
+                    name,
+                    tier,
+                    description: description.replace("{X}", value),
+                    unlockDate: new Date(unlockData[achievement][level] * 1000)
+                });
+            }
+            list.push({
+                id: achievement,
+                levels: unlockedLevels
+            });
+        }
+        return list;
     }
 
     // ========================================================================
@@ -141,10 +186,45 @@ module.exports = function (paths, modules) {
     };
 
     achievementInterface.getUnlockedGlobal = function () {
+        return getUnlockedAchievements(achievements.global, userData.global);
     };
-    
+
     achievementInterface.getUnlockedForLanguage = function (language) {
+        if (!userData.local.hasOwnProperty(language))
+            return getUnlockedAchievements(achievementIds, {});
+        let achievementIds = achievements.languageLocal;
+        if (achievements.languageSpecific.hasOwnProperty(language)) {
+            achievementIds =
+                achievementIds.concat(achievements.languageSpecific[language]);
+        }
+        return getUnlockedAchievements(achievementIds, userData.local[language])
     };
+
+        // const list = [];
+        // for (const achievement of achievements.global) {
+        //     const { description, levels, tiers } =
+        //         achievements.definitions[achievement];
+        //     const tierLevels = tiers.reduce((arr, tierSize) => {
+        //         if (arr.length > 0) arr.push(arr.last() + tierSize);
+        //         else arr.push(tierSize);
+        //         return arr;
+        //     }, [0]);
+        //     for (let level = 0; level < levels.length; ++level) {
+        //         const { name, value } = levels[level];
+        //         let tier = 0;
+        //         for (const tierLevel of tierLevels) {
+        //             if (level >= tierLevel) ++tier;
+        //         }
+        //         list.push({
+        //             name,
+        //             tier,
+        //             description: description.replace("{X}", value),
+        //             unlocked: userData.global.hasOwnProperty(achievement) ?
+        //                 userData.global[achievement][level] : undefined
+        //         });
+        //     }
+        // }
+        // return list;
 
     return achievementInterface;
 }

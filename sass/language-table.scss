@@ -129,9 +129,14 @@ tbody tr {
 }
 
 #add-language-button {
+  display: flex;
+  flex-direction: row;
   font-size: 120%;
-  i {
+
+  .icon {
+    @include plus-shape($color: $color-light);
+    width: 22px;
+    height: 22px;
     margin-right: 10px;
-    font-size: 140%;
   }
 }

@@ -634,18 +634,27 @@ class MainWindow extends Window {
         .isKnownKanji(character).then((isKanji) => {
             if (isKanji) {
                 element.classList.add("kanji-info-link");
+                // Open kanji info panel upon clicking kanji
                 element.addEventListener("click", () => {
                     this.$("kanji-info-panel").load(character);
                     this.$("kanji-info-panel").open();
                 });
-            }
-            element.contextMenu(menuItems, () => {
-                return dataManager.kanji.isAdded(character)
-                .then((isAdded) => {
-                    return ["copy-kanji", "view-kanji-info",
-                            isAdded ? "edit-kanji" : "add-kanji"];
+                // Display tooltip with kanji meanings after a short delay
+                element.tooltip(async () => {
+                    const meanings =
+                        await dataManager.content.get("Japanese", "English")
+                        .getKanjiMeanings(character);
+                    return meanings.join(", ");
+                }, 400);
+                // Attach context menu
+                element.contextMenu(menuItems, () => {
+                    return dataManager.kanji.isAdded(character)
+                    .then((isAdded) => {
+                        return ["copy-kanji", "view-kanji-info",
+                                isAdded ? "edit-kanji" : "add-kanji"];
+                    });
                 });
-            });
+            }
         });
     }
 

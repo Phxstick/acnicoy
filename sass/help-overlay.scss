@@ -34,6 +34,8 @@
   #content-path-frame {
     display: flex;
     flex-direction: row;
+    border-bottom: 1px solid $border-color-medium;
+    margin-right: 5px;
 
     #content-path {
       flex: 1;
@@ -43,7 +45,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
       padding-bottom: 8px;
-      border-bottom: 1px solid $border-color-medium;
       margin-right: 4px;
 
       > * {
@@ -108,7 +109,6 @@
 }
 
 #close-button {
-  @extend button.red-icon;
-  font-size: 160%;
-  margin-right: 6px;
+  align-self: center;
+  margin-right: -2px;
 }
