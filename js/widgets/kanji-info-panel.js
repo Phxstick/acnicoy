@@ -53,15 +53,11 @@ class KanjiInfoPanel extends Widget {
         // =================================================================
         // Example words view functionality
         // =================================================================
-        const getExampleWordsDataForSmallEntries = async (kanji) => {
-            return dataManager.content.getExampleWordsDataForKanji(kanji);
-        };
-        const createSmallExampleWordViewItem = (dataRow) => {
+        const createSmallExampleWordViewItem = async (entryId) => {
             const ExampleWordEntry = customElements.get("example-word-entry");
-            return new ExampleWordEntry(dataRow);
-        };
-        const getExampleWordsDataForDetailedEntries = async (kanji) => {
-            return dataManager.content.getExampleWordIdsForKanji(kanji);
+            const info = await
+                dataManager.content.getExampleWordsDataForEntryId(entryId);
+            return new ExampleWordEntry(info);
         };
         const createDetailedExampleWordViewItem = async (entryId) => {
             const info = await
@@ -76,8 +72,8 @@ class KanjiInfoPanel extends Widget {
         this.$("example-words").classList.add("small-entries");
         this.exampleWordsViewState = utility.initializeView({
             view: this.$("example-words"),
-            getData: getExampleWordsDataForSmallEntries,
-            createViewItem: createSmallExampleWordViewItem,
+            getData: (kanji) => dataManager.content.exampleWordIds[kanji],
+            createViewItem: createDetailedExampleWordViewItem,
             initialDisplayAmount: 10,
             displayAmount: 15
         });

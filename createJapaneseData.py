@@ -191,7 +191,13 @@ def parse_dictionary_entry(ID, entry, cursor, text_to_code):
         for gloss_element in sense_element.findall("gloss"):
             if gloss_element.attrib[
                     "{http://www.w3.org/XML/1998/namespace}lang"] == "eng":
-                translations.append(gloss_element.text)
+                translation = gloss_element.text
+                # # Remove any non-ASCII characters
+                # if len(translation) != len(translation.encode()):
+                #     translation = \
+                #         "".join(filter(lambda c: ord(c) < 128, translation))
+                # assert(all(ord(c) < 128 for c in translation))
+                translations.append(translation)
         meanings.append(translations)
     # Insert entry into the database
     meaning_strings = [",".join(meaning) for meaning in meanings]
@@ -338,12 +344,17 @@ def parse_dictionary(filename, cursor, code_to_text_output_path):
     print("Creating index on words... Done")
     print("Creating index on translations...", end="\r")
     cursor.execute(
-        "CREATE INDEX translations_translation ON translations(translation)")
+        "CREATE INDEX translations_translation ON translations(translation "
+        "COLLATE NOCASE)")
     print("Creating index on translations... Done")
     print("Creating index on readings...", end="\r")
     cursor.execute(
-        "CREATE INDEX readings_reading ON readings(reading)")
+        "CREATE INDEX readings_reading ON readings(reading COLLATE NOCASE)")
     print("Creating index on readings... Done")
+    print("Creating index on entry ids for words...", end="\r")
+    cursor.execute(
+        "CREATE INDEX words_id ON words(id)")
+    print("Creating index on entry ids for words... Done")
     print("Creating index on entry ids for meanings...", end="\r")
     cursor.execute(
         "CREATE INDEX meanings_id ON meanings(id)")
@@ -352,15 +363,6 @@ def parse_dictionary(filename, cursor, code_to_text_output_path):
     cursor.execute(
         "CREATE INDEX readings_id ON readings(id)")
     print("Creating index on entry ids for readings... Done")
-    # TODO: Which indices are needed most? Select carefully
-    # print("Creating index on word news frequencies...", end="\r")
-    # cursor.execute(
-    #     "CREATE INDEX words_news_freq ON words(news_freq)")
-    # print("Creating index on word news frequencies... Done")
-    print("Creating index on words + word news frequencies...", end="\r")
-    cursor.execute(
-        "CREATE INDEX words_word_news_freq ON words(word, news_freq)")
-    print("Creating index on words + word news frequencies... Done")
 
     print("Creating json file containing code-to-text mapping...", end="\r")
     code_to_text = dict()
@@ -544,6 +546,38 @@ def parse_kanji_strokes(filename, output_filepath):
     print("Storing json object to file '%s'... Done." % output_filepath)
 
 
+def create_example_words_index(cursor, output_path):
+    cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND "
+                   "(name = 'kanji' OR name = 'dictionary')")
+    if len(cursor.fetchall()) != 2:
+        print("Dictionary and kanji must be parsed into the database before "
+              "creating a reversed index on example words for kanji!")
+        return
+    kanji_to_word_ids = dict()
+    print("Creating index for kanji example words... 0%", end="\r")
+    cursor.execute("SELECT entry FROM kanji")
+    kanji_list = cursor.fetchall()
+    for i, (kanji,) in enumerate(kanji_list):
+        pattern = "%%%s%%" % kanji
+        cursor.execute(
+            """WITH frequent_words AS
+               (SELECT w1.id, w1.word, w1.news_freq
+                FROM words w1
+                WHERE w1.word LIKE ?
+                  AND w1.news_freq = (SELECT MAX(w2.news_freq)
+                                      FROM words w2
+                                      WHERE w2.word = w1.word))
+               SELECT f.id
+               FROM frequent_words f
+               ORDER BY f.news_freq DESC""", (pattern,))
+        kanji_to_word_ids[kanji] = [entry for (entry,) in cursor.fetchall()]
+        print("Creating index for kanji example words... %d%%"
+              % (((i + 1) / len(kanji_list)) * 100), end="\r")
+    with open(output_path, "w") as output_file:
+        output_file.write(json.dumps(kanji_to_word_ids, ensure_ascii=False))
+    print("Creating index for kanji example words... 100%")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Parse dictionary for language-pair 'Japanese'->'English'.")
@@ -573,18 +607,24 @@ if __name__ == "__main__":
     parser.add_argument("--kanji-jlpt", "--kjlpt", "-j",
             metavar="FILENAME", dest="new_jlpt_n3_kanji",
             help="Filename of the file containing new JLPT N3 kanji.")
-    parser.add_argument("--output", "--out", "-o", metavar="FILENAME",
-            dest="output_path", help="Directory path for output files.")
     parser.add_argument("--dictionary-texts", "--texts", "--tex", "-t",
             metavar="FILENAME", dest="improved_dictionary_texts_filename",
             help="Name of the json file mapping info entity texts in the "
                  "dictionary to improved versions.")
+    parser.add_argument("--example-words-index", "--example-words", "-e",
+            dest="example_words_index", action="store_true",
+            help="Create a reversed index for getting example words for kanji."
+                 " Dictionary and kanji must be in the database already.")
+    parser.add_argument("--output", "--out", "-o", metavar="FILENAME",
+            dest="output_path", help="Directory path for output files.")
     args = parser.parse_args()
     output_path = args.output_path if args.output_path is not None else "data"
     # Define filenames and paths for output files
     database_path = os.path.join(output_path, "Japanese-English.sqlite3")
     kanji_strokes_path = os.path.join(output_path, "kanji-strokes.json")
     code_to_text_path = os.path.join(output_path, "dict-code-to-text.json")
+    example_words_index_path = os.path.join(
+            output_path, "example-words-index.json")
     # Open database connection
     connection = sqlite3.connect(database_path)
     cursor = connection.cursor()
@@ -633,10 +673,14 @@ if __name__ == "__main__":
                 args.kanji_parts_filename)
         parse_kanji_parts(args.kanji_parts_filename, cursor)
     # Update JLPT levels (now 5 instead of previously 4 levels)
-    if args.new_jlpt_n3_kanji:
+    if args.new_jlpt_n3_kanji is not None:
         print()
         print("Updating JLPT levels using file '%s':" % args.new_jlpt_n3_kanji)
         update_jlpt_levels(args.new_jlpt_n3_kanji, cursor)
+    # Create reversed index for example words containing certain kanji
+    if args.example_words_index:
+        print()
+        create_example_words_index(cursor, example_words_index_path)
     connection.commit()
     connection.close()
     # Parse kanji stroke info

@@ -49,29 +49,13 @@ module.exports = function (paths, contentPaths, modules) {
         });
     };
 
-    function getExampleWordIdsForKanji(kanji) {
-        const pattern = `%${kanji}%`;
-        const start = performance.now();
-        return data.query(
-            `SELECT id FROM dictionary WHERE words LIKE ?
-             ORDER BY news_freq DESC`, pattern)
-        .then((rows) => {
-            const totalTime = performance.now() - start;
-            console.log("Received example word rows after %f ms", totalTime);
-            return rows.map((row) => row.id);
-        });
-    }
-
-    function getExampleWordsDataForKanji(kanji) {
-        // TODO: Try doing much less in SQL to increase performance
-        const pattern = `%${kanji}%`;
-        const start = performance.now();
+    function getExampleWordsDataForEntryId(entryId) {
         return data.query(
             `WITH frequent_words AS
              (SELECT w1.id, w1.word, w1.news_freq
               FROM words w1
-              WHERE w1.word LIKE ?
-                AND w1.news_freq = (SELECT MAX(w2.news_freq)
+              WHERE w1.id = ? AND
+                    w1.news_freq = (SELECT MAX(w2.news_freq)
                                     FROM words w2
                                     WHERE w2.word = w1.word))
              SELECT f.id AS id,
@@ -80,12 +64,8 @@ module.exports = function (paths, contentPaths, modules) {
                     d.readings AS readings,
                     f.news_freq AS newsFreq
              FROM frequent_words f JOIN dictionary d ON f.id = d.id
-             ORDER BY f.news_freq DESC `, pattern)
-        .then((rows) => {
-            const totalTime = performance.now() - start;
-            console.log("Received example word rows after %f ms", totalTime);
-            return rows;
-        });
+             ORDER BY f.news_freq DESC `, entryId)
+        .then(([row]) => row);
     };
 
     async function getKanjiLists({
@@ -466,13 +446,13 @@ module.exports = function (paths, contentPaths, modules) {
             codeToText: Object.freeze(require(contentPaths.dictCodeToText)),
             kokujiList: Object.freeze(
                 new Set(fs.readFileSync(contentPaths.kokujiList, "utf8"))),
+            exampleWordIds: Object.freeze(require(contentPaths.exampleWordIds)),
             isKnownKanji,
             getKanjiInfo,
             getKanjiMeanings,
-            getExampleWordIdsForKanji,
-            getExampleWordsDataForKanji,
             getKanjiLists,
             getDictionaryEntryInfo,
+            getExampleWordsDataForEntryId,
             getEntryIdsForTranslationQuery,
             getEntryIdsForReadingQuery,
             guessDictionaryId,

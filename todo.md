@@ -42,7 +42,7 @@
 - Height of diagrams in stats section is slightly too large for some reason
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
 - Items at end of vocab lists are not removed when removing them
-- Stroke graphics for "兎" cannot be read completely
+- Stroke graphics for "兎煉" cannot be read completely
 - Promise returned by "fs.copy" from "fs-extra" doesn't work. Report it?
 
 
@@ -77,6 +77,10 @@ By category
 ### Performance
 - Things got slower when reworking sass? Maybe because main window is flex now?
   Replace with `calc(100% - x)` or `width: fill`?
+- Cut down on event listeners (kanji/vocab section,
+  tooltips/context-menu/kanji-info-links)
+- Why the significant performance degradation after opening kanji examples
+  for the first time in kanji-section
 
 ### Init window
 - Make init section feel more welcoming and less plain. Consider:
@@ -111,7 +115,6 @@ By category
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)
-- Use mapping to quickly load kanji examples (Store in file)? (Memory?)
 - Possibly make mapping from kanji parts to actual parts in SVG drawing
   to make sure all parts are properly highlighted
 - Show info for kanji which are part of the Chinese zodiac

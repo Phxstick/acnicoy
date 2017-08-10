@@ -1,7 +1,7 @@
 PYTHON = python3
 DATA_SCRIPT_PATH = ./createJapaneseData.py
 RESOURCE_PATH = ~/Dropbox/AcnicoyResources
-OUTPUT_PATH = ~/Documents/acnicoy-data/Content/Japanese-English
+OUTPUT_PATH = ~/Documents/AcnicoyData/Content/Japanese-English
 ELECTRON_PATH = ./node_modules/.bin/electron
 
 DICTIONARY_PATH = $(RESOURCE_PATH)/JMdict.xml

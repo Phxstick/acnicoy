@@ -169,6 +169,7 @@
   right: 0;
   bottom: 0;
   z-index: var(--section-layer);
+  contain: strict;
 }
 
 .sliding-pane {

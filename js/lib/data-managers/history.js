@@ -3,6 +3,12 @@
 module.exports = function (paths, modules) {
     const history = {};
 
+    history.create = function(name) {
+    }
+
+    history.addEntry = function(historyName, entryName) {
+    }
+
     // history.get = function (newerThan=0) {
     //     return modules.database.query(
     //         "SELECT * FROM edit_history WHERE id > ? ORDER BY time DESC",

@@ -628,7 +628,16 @@ class MainWindow extends Window {
         return true;
     }
 
-    makeKanjiInfoLink(element, character) {
+    // async catchKanjiInfoLinks(element) {
+    //     element.addEventListener("click", (event) => {
+    //         if (event.target.classList.contains("kanji-info-link")) {
+    //             this.$("kanji-info-panel").load(event.target.textContent);
+    //             this.$("kanji-info-panel").open();
+    //         }
+    //     });
+    // }
+
+    async makeKanjiInfoLink(element, character) {
         // TODO: Don't check if kanji is in database here (Do elsewhere)
         return dataManager.content.get("Japanese", "English")
         .isKnownKanji(character).then((isKanji) => {
@@ -661,7 +670,7 @@ class MainWindow extends Window {
     /**
      * Given a node with no children other than a text-node, turn every
      * kanji in the text into a kanji link (each character in a single span).
-     * @param {HTMLElement} element - A node with textcontent.
+     * @param {HTMLElement} element - A node with textContent.
      * @returns {Promise}
      */
     convertTextToKanjiInfoLinks(element) {
