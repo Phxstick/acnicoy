@@ -5,26 +5,13 @@ class KanjiSection extends Section {
         super("kanji");
         this.selectedKanji = null;
         this.contentAvailable = false;
-        this.settingsWindowClicked = false;
         this.addedPerGroupCounters = {};
         this.totalAmountPerGroup = {};
         this.addedAmountPerGroup = {};
         this.overviewSettings = {};
         this.searchSettings = {};
-        // this.overviewSettings = {
-        //     splittingCriterion: "grade",
-        //     sortingCriterion: "alphabetical",
-        //     onlyMissing: false,
-        //     showJouyou: true,
-        //     showJinmeiyou: false,
-        //     showHyougai: false
-        // };
-        // this.searchSettings = {
-        //     searchCriterion: "kanji"
-        // };
         this.$("search-results").hide();
         this.$("no-search-results-info").hide();
-        this.$("settings-popup").hide();
         // =================================================================
         // Control bar event listeners
         // =================================================================
@@ -92,16 +79,7 @@ class KanjiSection extends Section {
                 this.overviewSettings.splittingCriterion = value;
                 this.displayKanji();
         });
-        window.addEventListener("click", (event) => {
-            if (!this.$("settings-popup").isHidden()
-                    && !this.settingsWindowClicked) {
-                this.$("settings-popup").hide();
-            }
-            this.settingsWindowClicked = false;
-        });
-        this.$("settings-popup").addEventListener("click", (event) => {
-            this.settingsWindowClicked = true;
-        });
+        utility.makePopupWindow(this.$("settings-popup"));
         this.$("settings-button").addEventListener("click", (event) => {
             this.$("settings-popup").toggleDisplay();
             event.stopPropagation();

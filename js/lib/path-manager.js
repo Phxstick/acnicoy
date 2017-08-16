@@ -144,7 +144,8 @@ module.exports = function (basePath) {
         vocabLists: path.resolve(langPath, language, "lists.json"),
         stats: path.resolve(langPath, language, "stats.json"),
         pinwall: path.resolve(langPath, language, "pinwall.json"),
-        settings: path.resolve(langPath, language, "settings.json")
+        settings: path.resolve(langPath, language, "settings.json"),
+        history: path.resolve(langPath, language, "history.sqlite")
     });
 
     // Language data backup

@@ -17,6 +17,7 @@ body {
   box-shadow: $slim-shadow-bottom;
   flex-shrink: 0;
   z-index: var(--dictionary-control-bar-layer);
+  position: relative;
 
   #words-filter-frame, #meanings-filter-frame {
     flex: 1;
@@ -63,4 +64,24 @@ body {
       }
     }
   }
+}
+
+#history-popup {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 300px;
+  min-width: 200px;
+  max-width: 300px;
+}
+
+#history {
+  flex: 1;
+  font-size: 1.1rem;
+}
+
+#history-header {
+  border-bottom: 1px solid $border-color-medium;
 }

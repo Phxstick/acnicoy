@@ -39,6 +39,9 @@
     "kanjiSearch": {
         "searchCriterion": "kanji"
     },
+    "kanjiInfo": {
+        "maximized": false
+    },
     "srs": {
         "intervalModifier": "4 hours"
     },

@@ -1,4 +1,5 @@
 ### Up next
+- Make history view loading more efficient
 - Use font-family "Trajan" for roman numerals?
 - Separate stats and achievements? Or overkill?
 - Add more achievements and property display them in a column layout
@@ -79,8 +80,7 @@ By category
   Replace with `calc(100% - x)` or `width: fill`?
 - Cut down on event listeners (kanji/vocab section,
   tooltips/context-menu/kanji-info-links)
-- Why the significant performance degradation after opening kanji examples
-  for the first time in kanji-section
+- Why the significant performance degradation after doing something?
 
 ### Init window
 - Make init section feel more welcoming and less plain. Consider:
@@ -122,15 +122,11 @@ By category
 - Have separate table for searching kanji, extend readings by ones without
   a ".", keep all meanings for each kanji
 - Have link to kanji disambiguation if there are kanji with similar meanings
-- Add new icons below close-button
-  - Maximize panel (then display all info in one frame)
-  - Settings
-    - [Checkbox] Display commonly used nanori
-    - [Checkbox] Show stroke animation instead of pictures
-    - [Checkbox] Show detailed example word entries (as in dictionary)
-    - [Checkbox] Hide outdated/rare yomi (also adjust for search results)
-  - Forward and backward buttons (to browse kanji info history)
-  - Open kanji info history
+- Implement settings
+  - [Checkbox] Display commonly used nanori
+  - [Checkbox] Show stroke animation instead of pictures
+  - [Checkbox] Show detailed example word entries (as in dictionary)
+  - [Checkbox] Hide outdated/rare yomi (also adjust for search results)
 
 ### Suggestion panes
 - Consider suggesting vocabulary lists when adding/editing words as well
@@ -161,7 +157,6 @@ By category
   - [Checkbox] Only show a single combined search entry (like Jisho)
   - [Checkbox] Search for names instead of words
 - Implement better sorting algorithm including word-length
-- Keep search history (viewable using a button in control bar?)
 
 ### Kanji section
 #### Search

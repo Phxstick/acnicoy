@@ -232,7 +232,8 @@ class MainWindow extends Window {
         // Load any character in kanji info panel to render stuff there
         // (Prevents buggy animation when first opening the panel)
         if (dataManager.content.isAvailable("Japanese", "English")) {
-            this.$("kanji-info-panel").load("字");
+            this.$("kanji-info-panel").load("字", true);
+            this.$("kanji-info-panel").loadHistory();
         }
         // Regularly update displayed SRS info
         this.srsStatusCallbackId = window.setInterval(
@@ -654,7 +655,7 @@ class MainWindow extends Window {
                         await dataManager.content.get("Japanese", "English")
                         .getKanjiMeanings(character);
                     return meanings.join(", ");
-                }, 400);
+                });
                 // Attach context menu
                 element.contextMenu(menuItems, () => {
                     return dataManager.kanji.isAdded(character)

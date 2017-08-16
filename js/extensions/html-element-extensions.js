@@ -322,11 +322,11 @@ HTMLElement.prototype.contextMenu = function (menuItems, itemNames, data) {
  * Display tooltip with given content when hovering over this element.
  * @param {String|function[String]} content - HTML to display in the tooltip.
  *     Can also be an asynchronous function returning the content.
- * @param {Integer} [delay=0] - Delay before tooltip appears (in milliseconds).
+ * @param {Integer} [delay=500] - Delay before tooltip appears (in milliseconds)
  * @param {Integer} [width] - Width of the tooltip in pixels. By default it is
  *     as wide as its content.
  */
-HTMLElement.prototype.tooltip = function (content, delay=0, width) {
+HTMLElement.prototype.tooltip = function (content, delay=500, width) {
     this.removeTooltip();
     const tooltip = document.getElementById("tooltip");
     const positionTooltip = (event) => {

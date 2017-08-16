@@ -653,6 +653,24 @@ function initializeView({ view, getData, createViewItem, uponResultLoaded,
     return state;
 }
 
+/**
+ * Make given node behave like a popup-window, i.e. it gets closed when clicking
+ * somewhere outside of it.
+ * @param {HTMLElement} node
+ */
+function makePopupWindow(node) {
+    let nodeClicked = false;
+    node.addEventListener("click", (event) => {
+        nodeClicked = true;
+    });
+    window.addEventListener("click", (event) => {
+        if (!node.isHidden() && !nodeClicked) {
+            node.hide();
+        }
+        nodeClicked = false;
+    });
+    node.hide();
+}
 
 // Non DOM-related functions
 module.exports.getTime = getTime;
@@ -682,3 +700,4 @@ module.exports.calculateHeaderCellWidths = calculateHeaderCellWidths;
 module.exports.enableQuickSelect = enableQuickSelect;
 module.exports.bindRadiobuttonGroup = bindRadiobuttonGroup;
 module.exports.initializeView = initializeView;
+module.exports.makePopupWindow = makePopupWindow;

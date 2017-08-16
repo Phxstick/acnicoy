@@ -5,8 +5,16 @@
   position: fixed;
   width: 500px;
   background-color: $background-color;
-  overflow: hidden;
-  border-radius: 5px;
+
+  border-radius: 8px;
+  > *:first-child, > *:first-child > *:first-child {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+  > *:last-child, > *:last-child > *:last-child {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
 }
 
 :host(:focus) {

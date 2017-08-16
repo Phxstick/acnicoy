@@ -11,25 +11,25 @@ class DictionarySection extends Section {
         // Bind callbacks
         this.$("words-filter").addEventListener("keypress", (event) => {
             if (event.key !== "Enter") return;
-            this.searchResultsViewState.search(
-                this.$("words-filter").value.trim(), "reading");
+            this.search(this.$("words-filter").value.trim(), "reading");
         });
         this.$("meanings-filter").addEventListener("keypress", (event) => {
             if (event.key !== "Enter") return;
-            this.searchResultsViewState.search(
-                this.$("meanings-filter").value.trim(), "meaning");
+            this.search(this.$("meanings-filter").value.trim(), "meaning");
         });
         this.$("words-filter-button").addEventListener("click", () => {
-            this.searchResultsViewState.search(
-                this.$("words-filter").value.trim(), "reading");
+            this.search(this.$("words-filter").value.trim(), "reading");
         });
         this.$("meanings-filter-button").addEventListener("click", () => {
-            this.searchResultsViewState.search(
-                this.$("meanings-filter").value.trim(), "meaning");
-        })
+            this.search(this.$("meanings-filter").value.trim(), "meaning");
+        });
+        this.$("history-button").addEventListener("click", () => {
+            this.$("history-popup").toggleDisplay();
+            event.stopPropagation();
+        });
         this.$("settings-button").addEventListener("click", () => {
             main.updateStatus("Not yet implemented!");
-        })
+        });
         // If the user scrolls almost to table bottom, load more search results
         this.searchResultsViewState = utility.initializeView({
             view: this.$("search-results"),
@@ -61,6 +61,22 @@ class DictionarySection extends Section {
             placeholder: this.$("search-info"),
             noResultsPane: this.$("no-search-results-info")
         });
+        // =================================================================
+        // Search history
+        // =================================================================
+        utility.makePopupWindow(this.$("history-popup"));
+        this.historyViewState = utility.initializeView({
+            view: this.$("history"),
+            getData: async () => await dataManager.history.get("dictionary"),
+            createViewItem:
+                ({ name, type }) => this.createHistoryViewItem(name, type),
+            initialDisplayAmount: 20,
+            displayAmount: 20
+        });
+        this.$("history").addEventListener("click", (event) => {
+            if (event.target.parentNode !== this.$("history")) return;
+            this.search(event.target.textContent, event.target.dataset.type);
+        });
     }
 
     registerCentralEventListeners() {
@@ -90,10 +106,37 @@ class DictionarySection extends Section {
             this.$("words-filter").placeholder = "Filter by words";
         }
         this.$("words-filter").toggleKanaInput(language === "Japanese");
+        // Load search history
+        this.historyViewState.search();
     }
 
     open() {
         this.$("words-filter").focus();
+    }
+
+    search(query, type) {
+        if (query.length > 0) {
+            // Delete any entry with the same name from the history view items
+            for (const entry of this.$("history").children) {
+                if (entry.textContent === query) {
+                    this.$("history").removeChild(entry);
+                    break;
+                }
+            }
+            // Add entry to the history and insert it into the history view
+            dataManager.history.addEntry("dictionary", { name: query, type });
+            this.$("history").insertBefore(
+                this.createHistoryViewItem(query, type),
+                this.$("history").firstChild);
+        }
+        this.searchResultsViewState.search(query, type);
+    }
+
+    createHistoryViewItem(query, type) {
+        const item = document.createElement("div");
+        item.textContent = query;
+        item.dataset.type = type;
+        return item;
     }
 }
 

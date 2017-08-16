@@ -1,34 +1,78 @@
 "use strict";
 
+const sqlite3 = require("sqlite3");
+const promisifyDatabase = require("sqlite3-promises");
+
 module.exports = function (paths, modules) {
     const history = {};
+    const dataMap = {};
+    let data;
 
-    history.create = function(name) {
-    }
+    history.create = async function (language, settings) {
+        const db = promisifyDatabase(
+            new sqlite3.Database(paths.languageData(language).history));
+        await db.run("BEGIN TRANSACTION");
+        await db.run(`CREATE TABLE dictionary (
+            id INTEGER PRIMARY KEY,
+            time INTEGER,
+            name TEXT,
+            type TEXT
+        )`);
+        await db.run(`CREATE INDEX dictionary_name ON dictionary(name)`);
+        if (language === "Japanese") {
+            await db.run(`CREATE TABLE kanji_info (
+                id INTEGER PRIMARY KEY,
+                time INTEGER,
+                name TEXT
+            )`);
+            await db.run(`CREATE INDEX kanji_info_name ON kanji_info(name)`);
+            await db.run(`CREATE TABLE kanji_search (
+                id INTEGER PRIMARY KEY,
+                time INTEGER,
+                name TEXT
+            )`);
+            await db.run(`CREATE INDEX kanji_search_name ON kanji_search(name)`)
+        }
+        await db.run("END");
+    };
 
-    history.addEntry = function(historyName, entryName) {
-    }
+    history.load = async function (language) {
+        const path = paths.languageData(language).history;
+        dataMap[language] = promisifyDatabase(new sqlite3.Database(path));
+    };
 
-    // history.get = function (newerThan=0) {
-    //     return modules.database.query(
-    //         "SELECT * FROM edit_history WHERE id > ? ORDER BY time DESC",
-    //         newerThan);
-    // };
+    history.unload = function (language) {
+        delete dataMap[language];
+    };
 
-    // history.log = function (info) {
-    //     info.time = utility.getTime();
-    //     const keys = [];
-    //     const qMarks = [];
-    //     const values = [];
-    //     for (let key in info) {
-    //         keys.push(key);
-    //         qMarks.push("?");
-    //         values.push(info[key]);
-    //     }
-    //     return modules.database.run(
-    //         `INSERT INTO edit_history (${keys.join(", ")})
-    //          VALUES (${qMarks.join(", ")})`, ...values);
-    // };
+    history.setLanguage = function (language) {
+        data = dataMap[language];
+    };
+
+    history.addEntry = async function (table, entry) {
+        entry.time = utility.getTime();
+        const keys = [];
+        const qMarks = [];
+        const values = [];
+        for (const key in entry) {
+            keys.push(key);
+            qMarks.push("?");
+            values.push(entry[key]);
+        }
+        // Delete old entry with same name if there is one
+        await data.run(`DELETE FROM ${table} WHERE name = ?`, entry.name);
+        await data.run(`INSERT INTO ${table} (${keys.join(", ")})
+                        VALUES (${qMarks.join(", ")})`, ...values);
+    };
+
+    history.get = async function (table) {
+        return await data.all(`SELECT * FROM ${table} ORDER BY id DESC`);
+    };
+
+    history.getForLanguage = async function (language, table) {
+        return await
+            dataMap[language].all(`SELECT * FROM ${table} ORDER BY id DESC`);
+    };
 
     return history;
 };

@@ -1,5 +1,75 @@
 @import "base";
 
+:host(.maximized) {
+  top: 0;
+
+  #window {
+    height: 100%;
+  }
+
+  #controls-frame {
+    border-right: 1px solid $border-color-dark;
+
+    #kanji, #complete-kanji-svg {
+      border-right: 0;
+    }
+
+    #added-label, #add-button {
+      flex: 0;
+      border-right: 0;
+    }
+
+    #info-button, #strokes-button, #examples-button {
+      display: none;
+    }
+  }
+
+  #content-frame {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    > div {
+      display: block;
+      position: static;
+      &:not(#info-frame) {
+        margin-right: 15px;
+      }
+    }
+    
+    #strokes-frame {
+      // max-width: calc(100% - 15px);
+
+      #stroke-graphics-frame {
+        border-bottom: 0;
+      }
+      #stroke-graphics-frame > #stroke-graphics {
+        white-space: nowrap;
+      }
+      #strokes-info-bar {
+        .strokes-info-block {
+          #stroke-count, #radical {
+            font-size: 1.1rem;
+          }
+          #kanji-parts span {
+            font-size: 1.1rem;
+          }
+        }
+      }
+    }
+
+    #examples-frame {
+      flex: 1;
+      margin-top: 5px;
+      margin-bottom: 5px;
+    }
+  }
+  #icon-sidebar > #history-navigation-buttons {
+    left: 2px;
+  }
+}
+
 #window {
   display: flex;
   flex-direction: row;
@@ -60,6 +130,8 @@
     &:hover {
       text-shadow: 0 0 1px $add-button-shadow-color;
       background: $view-hover-background;
+      border-top: 1px solid darken($view-hover-background, 10%);
+      border-bottom: 1px solid darken($view-hover-background, 10%);
     }
     &:active {
       background-color: $add-button-background-active;
@@ -261,14 +333,59 @@
   }
 }
 
-#close-button {
+#icon-sidebar {
   position: absolute;
   top: 8px;
   right: 12px;
-  color: $close-button-color;
-  font-size: 250%;
-  opacity: 0.4;
-  &:hover {
-    opacity: 1;
+  display: flex;
+  flex-direction: column;
+  font-size: 1.5rem;
+
+  button {
+    opacity: 0.4;
+    &:hover:not(:disabled) {
+      opacity: 0.8;
+    }
+    &:disabled {
+      opacity: 0.15;
+    }
+    margin-bottom: 15px;
+  }
+
+  #close-button {
+    color: $close-button-color;
+    font-size: 2.5rem;
+    &:hover {
+      opacity: 1;
+    }
+    margin-bottom: 0px;
+  }
+
+  #history-button {
+    margin-bottom: 8px;
+  }
+
+  > #history-navigation-buttons {
+    > button {
+      display: inline-block;
+    }
+    position: relative;
+    left: 1px;
+    bottom: 10px;
+  }
+}
+
+#history {
+  font-size: 1.2rem;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  z-index: 10;
+
+  > * {
+    text-align: center;
+    padding: 5px;
   }
 }

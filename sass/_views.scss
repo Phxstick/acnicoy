@@ -7,6 +7,7 @@
 .list-view {
   @extend .view;
   overflow: auto;
+  padding: 3px;
 
   > * {
     padding: 3px;
@@ -34,11 +35,10 @@
 }
 
 .list-view-header {
-  background-color: $view-header-background;
-  color: $view-header-color;
+  color: $color-light;
   font-family: $header-font;
+  padding: 8px;
   font-size: 110%;
-  padding: 4px;
   text-align: center;
 }
 

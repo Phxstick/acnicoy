@@ -228,6 +228,63 @@ hr {
   }
 }
 
+.popup-window {
+  background-color: $view-background-dark;
+  color: $view-color;
+  box-shadow: $popup-menu-shadow;
+}
+ 
+.menu {
+  check-box {
+    background-color: transparent;
+  }
+
+  .header {
+    font-size: 120%;
+    background-color: $background-color-dark;
+    font-family: $header-font;
+    padding: 7px;
+    text-align: center;
+    border-bottom: 1px solid $border-color-medium;
+    margin-bottom: 2px;
+    &:not(:first-child) {
+      margin-top: 7px;
+      border-top: 1px solid $border-color-medium;
+    }
+  }
+
+  .group {
+    $group-indent: 5px;
+    > .group-header {
+      padding: 5px;
+      padding-left: $group-indent + 3px;
+      font-family: $header-font;
+    }
+    > *:not(.group-header, .group, hr) {
+      padding: 3px;
+      padding-left: $group-indent;
+    }
+  }
+
+  > *:not(.group, hr) {
+    padding: 5px;
+  }
+
+  *:not(.header, .group, .group-header, hr) {
+    &:hover {
+      background-color: $view-hover-background;
+      color: $view-hover-color;
+    }
+  }
+
+  hr {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+}
+
 // =============================================================================
 // Font awesome icon position adjustment
 // =============================================================================

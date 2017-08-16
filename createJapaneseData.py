@@ -340,7 +340,7 @@ def parse_dictionary(filename, cursor, code_to_text_output_path):
     print("Inserting dict entries into database... 100%")
 
     print("Creating index on words...", end="\r")
-    cursor.execute("CREATE INDEX words_word ON words(word)")
+    cursor.execute("CREATE INDEX words_word ON words(word COLLATE NOCASE)")
     print("Creating index on words... Done")
     print("Creating index on translations...", end="\r")
     cursor.execute(
