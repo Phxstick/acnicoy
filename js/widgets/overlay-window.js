@@ -18,6 +18,12 @@ class OverlayWindow extends Widget {
     open(overlay, args) {
         if (this.overlays.length === 0)
             this.show();
+        // Prevent previously opened overlay from capturing focus
+        if (this.overlays.length > 0) {
+            this.overlays.last().lastFocussedElement =
+                this.overlays.last().root.activeElement;
+            this.overlays.last().captureFocus = false;
+        }
         // Create a filter to dim the overlay below
         const filter = document.createElement("div");
         filter.classList.add("filter");
@@ -38,6 +44,7 @@ class OverlayWindow extends Widget {
             };
         });
         overlay.open(...args);
+        overlay.captureFocus = true;
         // Display the new overlay according to its display options
         const { mode, speed, distance } = overlay.displayOptions;
         switch (mode) {
@@ -73,6 +80,12 @@ class OverlayWindow extends Widget {
         const overlay = this.overlays.pop();
         const filter = this.filters.pop();
         overlay.style.pointerEvents = "none";
+        overlay.captureFocus = false;
+        // Move focus back to previous overlay
+        if (this.overlays.length > 0) {
+            this.overlays.last().captureFocus = true;
+            this.overlays.last().lastFocussedElement.focus();
+        }
         Promise.resolve().then(() => {
             // Undisplay the filter and overlay according to its display mode
             const { mode, speed, distance } = overlay.displayOptions;
@@ -102,7 +115,9 @@ class OverlayWindow extends Widget {
             overlay.style.pointerEvents = "auto";
             this.wrapper.removeChild(overlay);
             this.wrapper.removeChild(filter);
-            if (this.overlays.length === 0) this.hide();
+            if (this.overlays.length === 0) {
+                this.hide();
+            }
         });
     }
 }

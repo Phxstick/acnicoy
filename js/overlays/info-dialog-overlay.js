@@ -9,7 +9,7 @@ class InfoDialogOverlay extends Overlay {
     }
 
     open(message) {
-        this.$("message").textContent = message;
+        this.$("message").innerHTML = message;
     }
 }
 

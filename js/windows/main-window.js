@@ -428,6 +428,8 @@ class MainWindow extends Window {
             }
 
         }
+        // Display loaded suggestion panel (unless panel is already closed)
+        if (this.currentPanel === null) return;
         this.$("filter").classList.toggle("dark", showSuggestions);
         if (showSuggestions) {
             this.suggestionsShown = true;

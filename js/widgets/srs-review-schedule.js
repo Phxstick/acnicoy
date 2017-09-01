@@ -7,17 +7,16 @@ class SrsReviewSchedule extends PinwallWidget {
         this.$("diagram").barWidth = 20;
         this.$("diagram").barSpacing = 10;
         this.$("diagram").textMarginTop = 6;
-        this.selectedIntervalButton = this.$("hours-button");
+        this.selectedUnit = "hours";
         this.$("hours-button").classList.add("selected");
-        const buttonIds = ["hours-button", "days-button", "months-button"];
-        for (const buttonId of buttonIds) {
-            const button = this.$(buttonId);
+        const units = ["hours", "days", "months"];
+        for (const unit of units) {
+            const button = this.$(`${unit}-button`);
             button.addEventListener("click", () => {
-                if (this.selectedIntervalButton !== null) {
-                    this.selectedIntervalButton.classList.remove("selected");
-                }
-                this.selectedIntervalButton = button;
+                const selectedUnitButton = this.$(`${this.selectedUnit}-button`)
+                selectedUnitButton.classList.remove("selected");
                 button.classList.add("selected");
+                this.selectedUnit = unit;
                 this.update();
             });
         }
@@ -36,11 +35,11 @@ class SrsReviewSchedule extends PinwallWidget {
 
     update() {
         if (this.$("diagram").isHidden()) return;
-        const unit = this.selectedIntervalButton.textContent.toLowerCase();
+        const unit = this.selectedUnit;
         let numSteps;
         if (unit === "hours") numSteps = 48;
         else if (unit === "days") numSteps = 61;
-        else if (unit === "months") numSteps = 20;
+        else if (unit === "months") numSteps = 24;
         dataManager.srs.getSchedule(unit, numSteps).then((schedule) => {
             const amounts = []
             const descriptions = [];
@@ -54,6 +53,7 @@ class SrsReviewSchedule extends PinwallWidget {
                 amounts.push(amount);
                 if (unit === "hours") {
                     const hour = date.getHours();
+                    // Display hour if divisible by 3
                     if (hour % 3 === 0) {
                         descriptions.push(`${hour}:00`);
                     } else {
@@ -64,19 +64,21 @@ class SrsReviewSchedule extends PinwallWidget {
                             { month: "short", day: "2-digit" });
                     }
                 } else if (unit === "days") {
-                    if (date.getDay() === 2) {
-                        date.setDate(date.getDate() - 1);
+                    date.setDate(date.getDate() - 1);
+                    // Display date if first day of a week
+                    if (date.getDay() === 1) {
                         descriptions.push(
                            `${utility.getOrdinalNumberString(date.getDate())}`);
                     } else {
                         descriptions.push("");
                     }
-                    if (date.getDate() === 2) {
+                    if (date.getDate() === 1) {
                         separators[index] = date.toLocaleString("en-us",
                             { month: "long" });
                     }
                 } else if (unit === "months") {
-                    date.setMonth(date.getMonth() - 1, 1); // Previous month
+                    date.setMonth(date.getMonth() - 1, 1);
+                    // Display month if divisible by 3 (Jan, Apr, Jul, Oct)
                     if (date.getMonth() % 3 === 0) {
                         descriptions.push(
                             date.toLocaleString("en-us", { month: "short" }));

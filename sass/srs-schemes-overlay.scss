@@ -94,7 +94,6 @@
             @extend button.light;
             @extend button.no-shadow;
             font-size: 150%;
-            display: inline-block;
           }
           flex-shrink: 0;
         }
@@ -131,8 +130,10 @@
           position: relative;
           flex-direction: row;
 
-          > .level {
+          counter-increment: level;
+          &::before {
             @include center-content;
+            content: counter(level);
             width: 60px;
             font-size: 150%;
             font-family: $light-font;
@@ -144,53 +145,55 @@
             flex-grow: 1;
             padding-left: 15px;
           }
-          > .interval-input {
-            @extend input.styled;
-            font-size: 100%;
-            background-color: $input-background-focus;
-            flex-grow: 1;
-            padding-left: 15px;
-            border: none;
-            display: none;
+        }
+      }
+    }
+  }
 
-            &.invalid {
-              outline: 1px solid red;
-            }
-          }
-          > .remove-level-button {
-            font-size: 150%;
-            display: none;
-            position: absolute;
-            right: 15px;
-            // Workaround for vertical centering
-            top: 0px;
-            bottom: 0px;
-            height: 26px;
-            margin: auto;
-          }
-        }
-        #scheme-levels.edit-mode {
-          > div {
-            > .interval-input {
-              display: block;
-            }
-            > .interval {
-              display: none;
-            }
-            &:hover {
-              > .remove-level-button {
-                display: block;
-              }
-            }
-          }
-        }
-        #add-level-button {
-          padding: 8px;
-          font-size: 140%;
-          > i {
-            padding-right: 8px;
-          }
-        }
+
+  .remove-level-button {
+    font-size: 150%;
+    display: none;
+    position: absolute;
+    right: 15px;
+    // Workaround for vertical centering
+    top: 0px;
+    bottom: 0px;
+    height: 26px;
+    margin: auto;
+    padding: 0;
+  }
+
+  #add-level-frame {
+    display: none;
+    margin-top: 10px;
+  }
+
+  #save-scheme-button, #cancel-edit-button,
+  #scheme-name-input, #scheme-description-input {
+    display: none;
+  }
+
+  #scheme-frame.edit-mode {
+
+    #save-scheme-button, #cancel-edit-button {
+      display: inline-block;
+    }
+    #scheme-name-input, #scheme-description-input {
+      display: block;
+    }
+    #edit-scheme-button, #copy-scheme-button, #remove-scheme-button,
+    #scheme-name, #scheme-description {
+      display: none;
+    }
+    .remove-level-button {
+      display: block;
+    }
+    #add-level-frame {
+      display: flex;
+      flex-direction: row;
+      #add-level-input {
+        flex: 1;
       }
     }
   }

@@ -385,9 +385,7 @@ class KanjiInfoPanel extends Widget {
             }
             const lastStroke = strokes[i].stroke;
             // Display a red dot where the current stroke begins
-            const dotPos = lastStroke.match(/^M\s?([-\d.]+),([-\d.]+)/);
-            // TODO: Still sometimes throws error
-            //       (Cannot read property 1 of null)
+            const dotPos = lastStroke.match(/^M\s*([-\d.]+),([-\d.]+)/);
             const brushStart = utility.createSvgNode("circle",
                 { cx: dotPos[1], cy: dotPos[2], r: "5" });
             brushStart.classList.add("brush-start");

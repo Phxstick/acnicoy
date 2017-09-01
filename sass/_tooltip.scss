@@ -70,9 +70,9 @@ $offset-arrow: calc(100% + #{$spacing});
     display: none;
     position: absolute;
     opacity: 0;
+    pointer-events: none;
   }
   &:after {
-    pointer-events: none;
     content: attr(data-tooltip);
     font-family: $tooltip-font;
     font-size: var(--tooltip-font-size, 1rem);
@@ -86,7 +86,6 @@ $offset-arrow: calc(100% + #{$spacing});
   }
 
   &:before {
-    pointer-events: none;
     content: "";
     width: 0;
     height: 0;
@@ -113,6 +112,7 @@ $offset-arrow: calc(100% + #{$spacing});
   }
   &[data-tooltip-pos="bottom"]:hover:after {
     animation-name: fade, slide-tooltip-up;
+    transform: translateX(-60%);
   }
   &[data-tooltip-pos="left"]:hover:after {
     animation-name: fade, slide-tooltip-to-right;

@@ -6,13 +6,8 @@ class SrsSchemesOverlay extends Overlay {
         this.editModeActive = false;
         this.levelItemToSeconds = new WeakMap();
         this.schemeItemToOptions = new WeakMap();
-        this.invalidTimeSpans = new Set();
-        // Initially hide some elements
-        this.$("save-scheme-button").hide();
-        this.$("cancel-edit-button").hide();
-        this.$("scheme-name-input").hide();
-        this.$("scheme-description-input").hide();
-        this.$("add-level-button").hide();
+        this.selectedScheme = null;
+        this.selectedSchemeItem = null;
         this.hideSchemeDetails();
         // Add all event listeners
         this.$("done-button").addEventListener("click", async () => {
@@ -47,6 +42,9 @@ class SrsSchemesOverlay extends Overlay {
         });
         this.$("cancel-edit-button").addEventListener("click", () => {
             this.exitEditMode();
+            if (this.selectedScheme !== null) {
+                this.showSchemeDetails(this.selectedScheme);
+            }
         });
         this.$("copy-scheme-button").addEventListener("click", () => {
             this.selectedSchemeItem.classList.remove("selected");
@@ -79,28 +77,6 @@ class SrsSchemesOverlay extends Overlay {
             events.emit("srs-scheme-deleted", schemeName);
             this.hideSchemeDetails();
         });
-        // Remove SRS level if cross next to it was clicked
-        this.$("scheme-levels").addEventListener("click", (event) => {
-            if (!event.target.classList.contains("remove-level-button")) return;
-            const levels = this.$("scheme-levels").childrenArray();
-            const startIndex = levels.indexOf(event.target.parentNode);
-            this.$("scheme-levels").removeChild(event.target.parentNode);
-            for (let i = startIndex; i < levels.length; ++i) {
-                levels[i].children[0].textContent = i;
-            }
-        });
-        this.$("add-level-button").addEventListener("click", (event) => {
-            const level = this.$("scheme-levels").children.length + 1;
-            this.$("scheme-levels").appendChild(utility.fragmentFromString(`
-              <div>
-                <div class="level">${level}</div>
-                <div class="interval"></div>
-                <input class="interval-input">
-                <i class="fa fa-remove remove-level-button"></i>
-              </div>
-            `));
-            this.$("scheme-levels").lastElementChild.children[2].focus();
-        });
         // Show scheme details when scheme has been selected
         this.$("schemes-list").addEventListener("click", async (event) => {
             if (event.target.parentNode !== this.$("schemes-list")) return;
@@ -120,58 +96,18 @@ class SrsSchemesOverlay extends Overlay {
             this.selectedSchemeItem.classList.add("selected");
             this.showSchemeDetails(this.schemeItemToOptions.get(item));
         });
-        // Show validity of entered timespans and sort level items upon typing
-        this.$("scheme-levels").addEventListener("keydown", (event) => {
-            if (!event.target.classList.contains("interval-input")) return;
-            const key = event.key;
-            const input = event.target;
-            const levelItem = input.parentNode;
-            utility.finishEventQueue().then(() => {
-                const text = input.value;
-                let seconds;
-                try {
-                    seconds = utility.timeSpanStringToSeconds(text);
-                } catch (e) {
-                    input.classList.add("invalid");
-                    this.levelItemToSeconds.set(levelItem, null);
-                    this.invalidTimeSpans.add(levelItem);
-                    return;
-                } 
-                this.levelItemToSeconds.set(levelItem, seconds);
-                this.invalidTimeSpans.delete(levelItem);
-                input.classList.remove("invalid");
-                const levelItemList = this.$("scheme-levels");
-                // Move level item if there's no invalid input around
-                if (this.invalidTimeSpans.size > 0) return;
-                let moved = false;
-                for (const other of levelItemList.children) {
-                    if (other === levelItem) continue;
-                    if (this.levelItemToSeconds.get(other) === null) continue;
-                    if (seconds <= this.levelItemToSeconds.get(other)) {
-                        if (other.previousElementSibling !== levelItem) {
-                            levelItemList.insertBefore(levelItem, other);
-                            moved = true;
-                        }
-                        break;
-                    }
-                }
-                const last = levelItemList.lastElementChild;
-                if (!moved && seconds > this.levelItemToSeconds.get(last)) {
-                    levelItemList.appendChild(levelItem);
-                    moved = true;
-                }
-                // Focus the entry again if user didn't tab away
-                if (moved && key !== "\t") {
-                    const { selectionStart, selectionEnd } = input;
-                    input.focus();
-                    input.selectionStart = selectionStart;
-                    input.selectionEnd = selectionEnd;
-                }
-                // Adjust the level numbers again
-                for (let i = 0; i < levelItemList.children.length; ++i) {
-                    levelItemList.children[i].children[0].textContent = i + 1;
-                }
-            });
+        this.$("add-level-input").addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                this.addLevel();
+            }
+        });
+        this.$("add-level-button").addEventListener("click", (event) => {
+            this.addLevel();
+        });
+        // Remove SRS level if cross next to it was clicked
+        this.$("scheme-levels").addEventListener("click", (event) => {
+            if (!event.target.classList.contains("remove-level-button")) return;
+            this.$("scheme-levels").removeChild(event.target.parentNode);
         });
     }
 
@@ -193,36 +129,19 @@ class SrsSchemesOverlay extends Overlay {
     }
 
     showSchemeDetails(scheme) {
-        this.invalidTimeSpans.clear();
         this.$("choose-scheme-info").hide();
         this.$("scheme-details-frame").show();
         this.$("scheme-name").textContent = scheme.name;
         this.$("scheme-description").textContent = scheme.description;
         this.selectedScheme = scheme;
         this.$("scheme-levels").empty();
-        // Create level nodes
-        for (let i = 0; i < scheme.intervals.length; ++i) {
-            const interval = scheme.intervals[i];
-            this.$("scheme-levels").innerHTML += `
-              <div>
-                <div class="level">${i + 1}</div>
-                <div class="interval">${interval}</div>
-                <input class="interval-input">
-                <i class="fa fa-remove remove-level-button"></i>
-              </div>
-            `;
+        // Display levels
+        const fragment = document.createDocumentFragment();
+        for (const intervalText of scheme.intervals) {
+            const seconds = utility.timeSpanStringToSeconds(intervalText);
+            fragment.appendChild(this.createLevelItem(intervalText, seconds));
         }
-        // Map level node to its corresponding interval in seconds
-        for (let i = 0; i < scheme.intervals.length; ++i) {
-            const interval = scheme.intervals[i];
-            const item = this.$("scheme-levels").children[i];
-            const seconds = utility.timeSpanStringToSeconds(interval);
-            this.levelItemToSeconds.set(item, seconds);
-        }
-    }
-
-    createSrsLevelItem(level, interval) {
-        this.$("scheme-levels").empty()
+        this.$("scheme-levels").appendChild(fragment);
     }
 
     hideSchemeDetails(scheme) {
@@ -235,57 +154,17 @@ class SrsSchemesOverlay extends Overlay {
     openEditMode() {
         if (this.editModeActive) return;
         this.editModeActive = true;
-        this.$("scheme-levels").classList.add("edit-mode");
-        // Swap buttons
-        this.$("save-scheme-button").show();
-        this.$("cancel-edit-button").show();
-        this.$("edit-scheme-button").hide();
-        this.$("copy-scheme-button").hide();
-        this.$("remove-scheme-button").hide();
-        // Replace scheme name with input
-        this.$("scheme-name").hide();
-        this.$("scheme-name-input").show();
+        this.$("scheme-frame").classList.add("edit-mode");
         this.$("scheme-name-input").value =
             this.$("scheme-name").textContent;
-        // Replace scheme description with input
-        this.$("scheme-description").hide();
-        this.$("scheme-description-input").show();
         this.$("scheme-description-input").value =
             this.$("scheme-description").textContent;
-        // Replace intervals with inputs
-        const levelItems = this.$("scheme-levels").children;
-        for (const { children: [, interval, intervalInput] } of levelItems) {
-            intervalInput.value = interval.textContent;
-            // interval.hide();
-            // intervalInput.show();
-        }
-        // Show button to add levels
-        this.$("add-level-button").show();
     }
 
     exitEditMode() {
         if (!this.editModeActive) return;
         this.editModeActive = false;
-        this.$("scheme-levels").classList.remove("edit-mode");
-        // Swap buttons
-        this.$("save-scheme-button").hide();
-        this.$("cancel-edit-button").hide();
-        this.$("edit-scheme-button").show();
-        this.$("copy-scheme-button").show();
-        this.$("remove-scheme-button").show();
-        // Restore name and description labels
-        this.$("scheme-name").show();
-        this.$("scheme-name-input").hide();
-        this.$("scheme-description").show();
-        this.$("scheme-description-input").hide();
-        // Restore interval labels
-        const levelItems = this.$("scheme-levels").children;
-        for (const { children: [, interval, intervalInput] } of levelItems) {
-            interval.show();
-            intervalInput.hide();
-        }
-        this.$("add-level-button").hide();
-        // If the edited scheme does not exist
+        this.$("scheme-frame").classList.remove("edit-mode");
         if (this.selectedSchemeItem === null) {
             this.hideSchemeDetails();
         }
@@ -302,12 +181,6 @@ class SrsSchemesOverlay extends Overlay {
         }
         if (this.$("scheme-name-input").value.trim().length === 0) {
             dialogWindow.info("Scheme name cannot be empty.");
-            return false;
-        }
-        if (this.invalidTimeSpans.size > 0) {
-            // TODO: Link to open help
-            dialogWindow.info("Some of the entered time spans are invalid."
-                + " See [TODO] for information on correct formatting.");
             return false;
         }
         if (this.$("scheme-levels").children.length === 0) {
@@ -338,22 +211,18 @@ class SrsSchemesOverlay extends Overlay {
                 if (!migrated) return false;
             }
         }
-        // Save changed name
-        this.$("scheme-name").textContent = newName;
-        this.selectedSchemeItem.textContent = newName;
-        // Save changed description
+        // Gather new scheme data
         const newDescription = this.$("scheme-description-input").value;
-        this.$("scheme-description").textContent = newDescription;
-        // Save intervals (also transform to standard notation)
         const newIntervals = [];
-        const levelItems = this.$("scheme-levels").children;
-        for (const { children: [,intervalLabel,intervalInput] } of levelItems) {
-            const input = intervalInput.value.trim();
-            const timeSpanObject = utility.timeSpanStringToObject(input);
-            const intervalText = utility.timeSpanObjectToString(timeSpanObject);
-            intervalLabel.textContent = intervalText;
+        const intervalLabels =
+            this.$("scheme-levels").querySelectorAll(".interval");
+        for (const { textContent: intervalText } of intervalLabels) {
             newIntervals.push(intervalText);
         }
+        // Update view
+        this.selectedSchemeItem.textContent = newName;
+        this.$("scheme-name").textContent = newName;
+        this.$("scheme-description").textContent = newDescription;
         // Apply changes to data
         this.selectedScheme = dataManager.srs.editScheme(
             oldName, newName, newDescription, newIntervals);
@@ -366,6 +235,55 @@ class SrsSchemesOverlay extends Overlay {
         }
         dataManager.srs.saveSchemes();
         return true;
+    }
+
+    createLevelItem(intervalText, intervalSeconds) {
+        const node = utility.fragmentFromString(`
+          <div>
+            <div class="interval">${intervalText}</div>
+            <button class="remove-level-button light no-shadow">
+              <i class="fa fa-remove"></i>
+            </button>
+          </div>
+        `).children[0];
+        this.levelItemToSeconds.set(node, intervalSeconds);
+        return node;
+    }
+
+    addLevel() {
+        let intervalText = this.$("add-level-input").value.trim();
+        let seconds;
+        // If interval is not valid, display info window
+        let invalid = intervalText.length === 0;
+        try {
+            seconds = utility.timeSpanStringToSeconds(intervalText);
+        } catch (e) {
+            invalid = true;
+        } 
+        if (invalid) {
+            dialogWindow.info(
+                `Valid interval units are: hours, days, weeks, months.
+                 Multiple units can be seperated by comma. Example:<br><br>
+                 1 month, 2 weeks, 12 hours`);
+            return;
+        }
+        // Convert interval text to standard notation
+        const timeSpanObject = utility.timeSpanStringToObject(intervalText);
+        intervalText = utility.timeSpanObjectToString(timeSpanObject);
+        // Insert view item at correct position
+        const newLevelItem = this.createLevelItem(intervalText, seconds);
+        for (const otherLevel of this.$("scheme-levels").children) {
+            if (seconds < this.levelItemToSeconds.get(otherLevel)) {
+                this.$("scheme-levels").insertBefore(newLevelItem, otherLevel);
+                break;
+            }
+        }
+        const lastLevelItem = this.$("scheme-levels").lastChild;
+        if (seconds > this.levelItemToSeconds.get(lastLevelItem) ||
+                this.$("scheme-levels").children.length === 0) {
+            this.$("scheme-levels").appendChild(newLevelItem);
+        }
+        this.$("add-level-input").value = "";
     }
 }
 

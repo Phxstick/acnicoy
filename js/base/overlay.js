@@ -7,6 +7,7 @@ class Overlay extends Component {
             distance = 60 } = {}) {
         super(name + "-overlay", false, true);
         this.name = name;
+        this.displayOptions = { mode, speed, distance };
         // Create a sentinel which is always the last child in the tree
         const sentinel = document.createElement("div");
         sentinel.tabIndex = "0";
@@ -16,9 +17,11 @@ class Overlay extends Component {
             return node;
         };
         this.elementFocussedByDefault = sentinel;
+        this.lastFocussedElement = sentinel;
         // Keep focus within the element using the sentinel and delegatesFocus
-        this.displayOptions = { mode, speed, distance };
+        this.captureFocus = false;
         this.root.addEventListener("focusout", (event) => {
+            if (!this.captureFocus) return;
             if (event.target === sentinel && (event.relatedTarget === null ||
                     !this.root.contains(event.relatedTarget))) { 
                 this.focus();

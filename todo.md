@@ -1,4 +1,5 @@
 ### Up next
+- Implement sorting of test items by SRS level
 - Make history view loading more efficient
 - Use font-family "Trajan" for roman numerals?
 - Separate stats and achievements? Or overkill?
@@ -11,14 +12,13 @@
 - Implment simple binding function for checkboxes and settings, or radiobuttons
   and settings?
 - Implement some settings for dictionary and kanji-info-panel
-- `text-align: center` impairs fadeIn function. How to work around?
-  - Add `text-align` to solution divs again
-- Button to manually check for content updates (+ "last checked" label)
-- Further refactor Application framework
+- `text-align: center` impaoirs fadeIn function. How to work around?
+  - Add `text-align` to sol&ution divs again
+- Button to manually check  for content updates (+ "last checked" label)
+- Further refactor Applicat}ion framework
   - Implement quit-function of Application class, move controlled closing there
 - Make status update message fade out after a short while if not updated
 - Make sure entry content in dictionaries is always selected on focus!
-- Fix: Focusing inputs in srs-schemes-overlay does not work anymore!
 - Make kana input not only react to shift, but also caps-lock and caps letters
 - Implement program updating
   - Add update button to settings
@@ -32,18 +32,8 @@
 - Write more sophisticated function to guess whether vocab contains a certain
   entry from the dictionary
 
-### As soon as available
-- Use thin symbols for fa-times, fa-plus etc. where fitting
-
 ### Fixes
-- SRS level editing is not fully stable (Maybe remove ability to edit levels?)
-  - Make sure levels are ordered after resolving invalid values in SRS schemes
-  - Make sure empty levels get removed/highlighted without requiring user input
-- Tooltip of menu bar buttons are broken
-- Height of diagrams in stats section is slightly too large for some reason
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
-- Items at end of vocab lists are not removed when removing them
-- Stroke graphics for "兎煉" cannot be read completely
 - Promise returned by "fs.copy" from "fs-extra" doesn't work. Report it?
 
 
@@ -62,13 +52,10 @@ By category
   - Don't always move down two levels, but one with adjusted review time instead
 - Use "srs-schemes-edited" event instead of "current-srs-scheme-edited"?
 - Also make files for improved on/kun-yomi (or rather put in same file?)
-- Create stylable `<select>` alternative
 - Make dark deflt, Solarized (Light/Dark) and Ubuntu (Light/Dark) color schemes
 - Implement global stats somewhere
 - Add "all languages" option to SRS review schedule
 - Differentiate between standard gui-font and "content-font"
-- Make sure language content (especially dictionary) is already loaded into memory
-  at program start (to make first search immediate)
 - Implement reverse testing?
 - utility.js: When searching, somehow stop previous search?
 - Adjust kanji-section (and create hanzi-section) to be available as limited
@@ -266,6 +253,7 @@ Future
 - Create a custom menu bar?
 - Find open dictionaries for English, Spanish, Chinese and Russian
 - Add icons to achievements 
+- Create stylable `<select>` alternative
 
 ### In-program notifications
 - Notifications on following events:
@@ -341,6 +329,7 @@ once? --> Faster loading, centralized resource loading
   - Provide easy way create kanji-links (or just scan through markdown)
 - Identify SRS schemes by ID instead of name!
 - Use advanced CSS width values where possible (`width: fill`);
+- Replace inputs in srs-schemes-overlay with content-editable attribute
 
 Resources
 --------------------------------------------------------------------------------

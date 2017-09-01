@@ -639,10 +639,12 @@ class VocabSection extends Section {
     }
 
     async removeEntryFromSortedView(fieldName, content) {
+        const nodeKey = this.getNodeKeyForSorting(fieldName);
         const stringKey = await this.getStringKeyForSorting(fieldName);
+        const key = (node) => stringKey(nodeKey(node));
         const sortBackwards = this.viewStates[fieldName].sortBackwards;
         await utility.removeEntryFromSortedList(
-            this.$(fieldName), content, stringKey, sortBackwards);
+            this.$(fieldName), content, key, sortBackwards);
     }
 }
 

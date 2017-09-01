@@ -300,12 +300,22 @@ module.exports = function (paths, modules) {
         });
     };
 
-    srs.getSchedule = function (unit, amount) {
+    /**
+     * Return an list containing numbers of SRS items scheduled for intervals
+     * in the near future, starting from the current date.
+     * @param {String} unit - Can be "hours", "days" or "months".
+     * @param {String} numUnits - Number of intervals to get schedule for.
+     * @returns {Array} - Array with entries of the form { amount, endDate }.
+     *     Each entry contains the number of SRS items scheduled for the i-th
+     *     hour/day/month (starting to count from the current hour/day/month),
+     *     and the end date of the interval (exclusive).
+     */
+    srs.getSchedule = function (unit, numUnits) {
         const promises = [];
         const currentDate = new Date();
         let intervalStartDate = new Date(currentDate);
         let intervalEndDate = new Date(currentDate);
-        // Set first interval end to start of next hour/day/month
+        // Set end of first interval to start of next hour/day/month
         if (unit === "hours") {
             intervalEndDate.setHours(currentDate.getHours() + 1, 0, 0, 0);
         } else if (unit === "days") {
@@ -316,12 +326,10 @@ module.exports = function (paths, modules) {
             intervalEndDate.setDate(1);
             intervalEndDate.setMonth(currentDate.getMonth() + 1);
         }
-        // intervalEndDate.setTime(intervalEndDate.getTime() - 1);
-        for (let i = 0; i < amount; ++i) {
+        for (let i = 0; i < numUnits; ++i) {
             const intervalStart = parseInt(intervalStartDate.getTime() / 1000);
             const intervalEnd = parseInt(intervalEndDate.getTime() / 1000);
-            // Create object for current interval, containing the amount of
-            // SRS items in this interval and the date at the end of interval
+            // Create object containing the amount of SRS items in this interval
             const modePromises = [];
             for (const mode of modules.test.modes) {
                 const table = modules.test.modeToTable(mode);
@@ -334,9 +342,8 @@ module.exports = function (paths, modules) {
             promises.push(Promise.all(modePromises).then((amounts) => ({
                 amount: amounts.sum(), date: endDate
             })));
-            // Shift interval
-            intervalStartDate = new Date(intervalEndDate.getTime());
-            intervalEndDate = new Date(intervalStartDate);
+            // Shift interval by 1 unit
+            intervalStartDate = new Date(intervalEndDate);
             if (unit === "hours") {
                 intervalEndDate.setHours(intervalStartDate.getHours() + 1);
             } else if (unit === "days") {
