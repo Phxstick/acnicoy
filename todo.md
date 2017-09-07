@@ -1,5 +1,4 @@
 ### Up next
-- Implement sorting of test items by SRS level
 - Make history view loading more efficient
 - Use font-family "Trajan" for roman numerals?
 - Separate stats and achievements? Or overkill?

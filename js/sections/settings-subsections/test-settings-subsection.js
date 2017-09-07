@@ -6,7 +6,7 @@ class TestSettingsSubsection extends SettingsSubsection {
         this.globalSettingsList = [
             "use-flashcard-mode", "make-continuous", "show-progress",
             "show-score", "animate", "enable-ignore-shortcut",
-            "font-style", "font-size", "use-serif-font",
+            "font-style", "font-size", "use-serif-font", "sort-by-level",
             "use-background-colors", "skip-evaluation-on-correct"
         ];
         this.$("show-progress").addEventListener("click", (event) => {
@@ -20,6 +20,10 @@ class TestSettingsSubsection extends SettingsSubsection {
         this.$("make-continuous").addEventListener("click", (event) => {
             dataManager.settings.test.makeContinuous = event.target.checked;
             this.broadcastGlobalSetting("make-continuous");
+        });
+        this.$("sort-by-level").addEventListener("click", (event) => {
+            dataManager.settings.test.sortByLevel = event.target.checked;
+            this.broadcastGlobalSetting("sort-by-level")
         });
         this.$("animate").addEventListener("click", (event) => {
             dataManager.settings.test.animate = event.target.checked;
@@ -76,6 +80,10 @@ class TestSettingsSubsection extends SettingsSubsection {
         events.on("settings-test-make-continuous", () => {
             this.$("make-continuous").checked =
                 dataManager.settings.test.makeContinuous;
+        });
+        events.on("settings-test-sort-by-level", () => {
+            this.$("sort-by-level").checked =
+                dataManager.settings.test.sortByLevel;
         });
         events.on("settings-test-animate", () => {
             this.$("animate").checked = dataManager.settings.test.animate;

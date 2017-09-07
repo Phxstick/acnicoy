@@ -19,7 +19,8 @@
         "animate": true,
         "useSerifFont": false,
         "useBackgroundColors": false,
-        "fontSize": "normal"
+        "fontSize": "normal",
+        "sortByLevel": false
     },
     "design": {
         "animateSlidingPanels": true,

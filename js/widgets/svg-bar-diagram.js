@@ -61,6 +61,10 @@ class SvgBarDiagram extends Widget {
     draw(values, { maxValues=null, descriptions=null, separators=null,
                    showValueLabels=false, showSmallSeparators=false }) {
         const numValues = values.length;
+
+        // =====================================================================
+        //    Check values and descriptions
+        // =====================================================================
         // If maxValues is just an integer, use that as maximum for all values
         // If no maximum values are given, use the maximum of the values array
         if (typeof maxValues === "number") {
@@ -86,7 +90,10 @@ class SvgBarDiagram extends Widget {
         for (let i = 0; i < numValues; ++i) {
             percentages.push(maxValues[i] === 0 ? 0 : values[i] / maxValues[i]);
         }
-        // === Calculate size of the diagram ===
+
+        // =====================================================================
+        //    Calculate size of the diagram
+        // =====================================================================
         // Unless both spacing and barWidth are given, the diagram width will be
         // the view-width. Otherwise it will take up as much space as needed to
         // draw everything.
@@ -114,7 +121,10 @@ class SvgBarDiagram extends Widget {
         const width = totalWidth - this.margin.left - this.margin.right;
         const height = totalHeight - this.margin.bottom - this.margin.top
                        - this.topLineWidth - this.bottomLineWidth;
-        // === Calculate parameters for drawing the bars ===
+
+        // =====================================================================
+        //    Calculate parameters for drawing bars
+        // =====================================================================
         let barSpacing = this.barSpacing;
         let barWidth = this.barWidth;
         // If neither barSpacing not barWidth is given, calculate those values
@@ -138,7 +148,11 @@ class SvgBarDiagram extends Widget {
             }
             barSpacing = (width - numValues * barWidth) / (numValues - 1);
         }
-        // Draw the top line
+
+        // =====================================================================
+        //    Draw top/bottom line
+        // =====================================================================
+        // Draw top line
         const topLine = utility.createSvgNode("line",
             { x1: 0, y1: this.margin.top + this.topLineWidth / 2,
              x2: totalWidth, y2: this.margin.top + this.topLineWidth / 2,
@@ -154,7 +168,10 @@ class SvgBarDiagram extends Widget {
               "stroke-width": this.bottomLineWidth });
         bottomLine.id = "bottom-line";
         this.svg.appendChild(bottomLine);
-        // Draw the bars
+
+        // =====================================================================
+        //    Draw bars
+        // =====================================================================
         const pos = { x: this.margin.left };
         for (let i = 0; i < numValues; ++i) {
             pos.y = this.margin.top + this.topLineWidth
@@ -175,9 +192,12 @@ class SvgBarDiagram extends Widget {
             }
             pos.x += barWidth + barSpacing;
         }
-        // Draw the descriptions if given. If numValues descriptions are given,
-        // draw them right below the bars. If there are numValues + 1, then
-        // draw them below the gaps between the bars.
+
+        // =====================================================================
+        //    Draw descriptions (if given)
+        // =====================================================================
+        // If numValues descriptions are given, draw them right below the bars.
+        // If there are numValues + 1, draw them below the gaps between the bars.
         let firstDescriptionLabel;
         if (descriptions !== null) {
             const linePos = { x: this.margin.left - barSpacing / 2,
@@ -225,7 +245,9 @@ class SvgBarDiagram extends Widget {
                 }
             }
         }
-        // Draw large separators (if given)
+        // =====================================================================
+        //    Draw large separators (if given)
+        // =====================================================================
         if (separators !== null) {
             const startPosX = this.margin.left - barSpacing / 2;
             const y = totalHeight - this.margin.bottom;

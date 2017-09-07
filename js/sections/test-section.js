@@ -80,7 +80,8 @@ class TestSection extends Section {
             this.closeSession();
         });
         this.$("wrap-up").addEventListener("click", () => {
-            this.testInfo.items.length = 0;
+            this.testInfo.wrappingUp = true;
+            this.testInfo.items.clear();
             this.testInfo.numTotal = this.testInfo.numFinished
                                      + this.testInfo.pickedItems.length + 1;
             this.$("progress").max = this.testInfo.numTotal;
@@ -319,7 +320,8 @@ class TestSection extends Section {
             numIncorrect: 0,
             numFinished: 0,
             inEvalStep: false,
-            skipNextEvaluation: false
+            skipNextEvaluation: false,
+            wrappingUp: false
         };
         let items;
         let vocabListMode;
@@ -348,9 +350,15 @@ class TestSection extends Section {
             vocabListMode = true;
             additionalTestInfo = {};
         }
+        const itemMap = new Map();
+        for (const item of items) {
+            if (!itemMap.has(item.level))
+                itemMap.set(item.level, []);
+            itemMap.get(item.level).push(item);
+        }
         this.$("wrap-up").show();
         this.testInfo = Object.assign(testInfo, additionalTestInfo, {
-            items, numTotal: items.length, vocabListMode
+            items: itemMap, numTotal: items.length, vocabListMode
         });
         await utility.finishEventQueue();
         this._createQuestion();
@@ -575,7 +583,7 @@ class TestSection extends Section {
         }
     }
 
-    _createQuestion(newLevel) {
+    async _createQuestion(newLevel) {
         if (dataManager.settings.test.enableIgnoreShortcut) {
             shortcuts.unregister("ignore-answer");
         }
@@ -665,153 +673,173 @@ class TestSection extends Section {
             main.updateTestButton();
         }
         // If "continuous" flag is set, add new items ready for review
-        let promise = Promise.resolve();
         if (dataManager.settings.test.makeContinuous &&
-                !this.testInfo.vocabListMode) {
+                !this.testInfo.vocabListMode && !this.testInfo.wrappingUp) {
             const lastUpdateTime = this.testInfo.lastUpdateTime;
             this.testInfo.lastUpdateTime = utility.getTime();
-            promise = this._getTestItems(lastUpdateTime).then((newItems) => {
-                this.testInfo.items.push(...newItems);
-                this.testInfo.numTotal += newItems.length;
-            });
+            const newItems = await this._getTestItems(lastUpdateTime);
+            for (const item of newItems) {
+                if (!this.testInfo.items.has(item.level))
+                    this.testInfo.items.set(item.level, []);
+                this.testInfo.items.get(item.level).push(item);
+            }
+            this.testInfo.numTotal += newItems.length;
         }
-        return promise.then(() => {
-            // Randomly pick new items until threshold amount
-            while (this.testInfo.pickedItems.length < this.pickedItemsLimit &&
-                    this.testInfo.items.length > 0) {
-                const index = random.integer(0, this.testInfo.items.length - 1);
-                this.testInfo.pickedItems.push(this.testInfo.items[index]);
-                this.testInfo.items.quickRemoveAt(index);
-            }
-            // Check if test is completed (no items left)
-            if (this.testInfo.pickedItems.length === 0) {
-                if (!this.testInfo.vocabListMode) {
-                    dataManager.database.run("END TRANSACTION");
-                }
-                this.closeSession();
-                return;
-            }
-            // Randomly choose one of the picked items for reviewing
-            const index = random.integer(0, this.testInfo.pickedItems.length-1);
-            const newItem = this.testInfo.pickedItems[index];
-            const previousItem = this.testInfo.currentItem;
-            this.testInfo.pickedItems.quickRemoveAt(index);
-            // Randomly choose a part of the item (e.g. meaning or reading)
-            const partIndex = random.integer(0, newItem.parts.length - 1);
-            const part = newItem.parts[partIndex];
-            newItem.parts.splice(partIndex, 1);
-            // Check if new item has solutions (if not, remove and skip it)
-            dataManager.test.getSolutions(newItem.entry, newItem.mode, part)
-            .then((solutions) => {
-                if (solutions.length === 0) {
-                    if (newItem.parts.length === 0) {
-                        this.testInfo.numTotal--;
-                    } else {
-                        this.testInfo.pickedItems.push(newItem);
+        // Pick new items until threshold amount
+        let level = -1;
+        while (this.testInfo.pickedItems.length < this.pickedItemsLimit &&
+                this.testInfo.items.size > 0) {
+            // Choose an SRS level according to settings
+            if (!dataManager.settings.test.sortByLevel) {
+                let number = random.integer(0, this.testInfo.numTotal
+                    - this.testInfo.numFinished
+                    - this.testInfo.pickedItems.length - 1);
+                const levels = this.testInfo.items.keys();
+                for (const l of levels) {
+                    number -= this.testInfo.items.get(l).length;
+                    if (number < 0) {
+                        level = l;
+                        break;
                     }
-                    this.testInfo.skipNextEvaluation = true;
-                    return this._createQuestion();
                 }
-                // If item has solutions, finally assign it as current item
-                this.testInfo.currentItem = newItem;
-                this.testInfo.currentPart = part;
+            } else if (level < 0) {
+                level = Math.min(...this.testInfo.items.keys());
+            }
+            const itemsForLevel = this.testInfo.items.get(level);
+            // Randomly choose an item with this SRS level
+            const index = random.integer(0, itemsForLevel.length - 1);
+            this.testInfo.pickedItems.push(itemsForLevel[index]);
+            itemsForLevel.quickRemoveAt(index);
+            if (itemsForLevel.length === 0) {
+                this.testInfo.items.delete(level);
+                level = -1;
+            }
+        }
+        // Check if test is completed (no items left)
+        if (this.testInfo.pickedItems.length === 0) {
+            if (!this.testInfo.vocabListMode) {
                 dataManager.database.run("END TRANSACTION");
-                // == Update view ==
-                // If animate flag is set, fade away previous item and solutions
-                if (dataManager.settings.test.animate && previousItem !== null){
-                    const solutionNodes = [];
-                    for (const solutionNode of this.$("solutions").children) {
-                        solutionNodes.push(solutionNode);
-                    }
-                    const { top: solutionFrameTop, bottom: solutionFrameBottom,
-                            left: solutionFrameLeft, right: solutionFrameRight }
-                        = this.$("solutions").getBoundingClientRect();
-                    // Animate all solution nodes which are visible
-                    for (const solutionNode of solutionNodes) {
-                        const { top: solutionNodeTop,
-                                bottom: solutionNodeBottom } =
-                            solutionNode.getBoundingClientRect();
-                        if (solutionNodeBottom >= solutionFrameTop &&
-                                solutionNodeTop < solutionFrameBottom) {
-                            solutionNode.fadeOut({
-                                duration: this.itemFadeDuration, zIndex: "-1" })
-                        }
-                    }
-                    // Animate test item
-                    this.$("test-item").fadeOut({
-                        duration: this.itemFadeDuration
-                    }).then(() => {
-                        // Reset test item and solution containers afterwards
-                        this.$("test-item").style.visibility = "visible";
-                        this.$("solutions").classList.remove("stretch-shadows");
-                        this.$("solutions").style.width = "auto";
-                        this.$("solutions").style.height = "auto";
-                        this.$("solutions").style.left = "0";
-                        this.$("solutions").style.top = "0";
-                        this.$("solutions").style.position = "static";
-                        this.$("solutions-wrapper").style.width = "auto";
-                        this.$("solutions-wrapper").style.height = "auto";
-                        this.$("solutions-wrapper").style.left = "0";
-                        this.$("solutions-wrapper").style.top = "0";
-                        this.$("solutions-wrapper").style.position = "relative";
-                    });
-                    // Keep shape of solution containers and stretch shadows
-                    const rootOffsets = this.$("solutions").getRoot().host
-                                        .getBoundingClientRect();
-                    const solutionsWidth = this.$("solutions").offsetWidth;
-                    const solutionsHeight = this.$("solutions").offsetHeight;
-                    this.$("solutions").classList.add("stretch-shadows");
-                    this.$("solutions").style.left =
-                        `${solutionFrameLeft - rootOffsets.left}px`;
-                    this.$("solutions").style.top =
-                        `${solutionFrameTop - rootOffsets.top}px`;
-                    this.$("solutions").style.width = `${solutionsWidth}px`;
-                    this.$("solutions").style.height = `${solutionsHeight}px`;
-                    this.$("solutions").style.position = "fixed";
-                    this.$("solutions-wrapper").style.left =
-                        `${solutionFrameLeft - rootOffsets.left}px`;
-                    this.$("solutions-wrapper").style.top =
-                        `${solutionFrameTop - rootOffsets.top}px`;
-                    this.$("solutions-wrapper").style.width =
-                        `${solutionsWidth}px`;
-                    this.$("solutions-wrapper").style.height =
-                        `${solutionsHeight}px`;
-                    this.$("solutions-wrapper").style.position = "fixed";
-                    // Empty solution container
-                    for (const solutionNode of solutionNodes) {
-                        this.$("solutions").removeChild(solutionNode);
-                    }
-                } else {
-                    this.$("solutions").innerHTML = "";
+            }
+            this.closeSession();
+            return;
+        }
+        // Randomly choose one of the picked items for reviewing
+        const index = random.integer(0, this.testInfo.pickedItems.length - 1);
+        const newItem = this.testInfo.pickedItems[index];
+        const previousItem = this.testInfo.currentItem;
+        this.testInfo.pickedItems.quickRemoveAt(index);
+        // Randomly choose a part of the item (e.g. meaning or reading)
+        const partIndex = random.integer(0, newItem.parts.length - 1);
+        const part = newItem.parts[partIndex];
+        newItem.parts.splice(partIndex, 1);
+        // Check if new item has solutions (if not, remove and skip it)
+        const solutions = await
+            dataManager.test.getSolutions(newItem.entry, newItem.mode, part);
+        if (solutions.length === 0) {
+            if (newItem.parts.length === 0) {
+                this.testInfo.numTotal--;
+            } else {
+                this.testInfo.pickedItems.push(newItem);
+            }
+            this.testInfo.skipNextEvaluation = true;
+            await this._createQuestion();
+            return;
+        }
+        // If item has solutions, finally assign it as current item
+        this.testInfo.currentItem = newItem;
+        this.testInfo.currentPart = part;
+        dataManager.database.run("END TRANSACTION");
+        // == Update view ==
+        // If animate flag is set, fade away previous item and solutions
+        if (dataManager.settings.test.animate && previousItem !== null) {
+            const solutionNodes = [];
+            for (const solutionNode of this.$("solutions").children) {
+                solutionNodes.push(solutionNode);
+            }
+            const { top: solutionFrameTop, bottom: solutionFrameBottom,
+                    left: solutionFrameLeft, right: solutionFrameRight }
+                = this.$("solutions").getBoundingClientRect();
+            // Animate all solution nodes which are visible
+            for (const solutionNode of solutionNodes) {
+                const { top: solutionNodeTop,
+                        bottom: solutionNodeBottom } =
+                    solutionNode.getBoundingClientRect();
+                if (solutionNodeBottom >= solutionFrameTop &&
+                        solutionNodeTop < solutionFrameBottom) {
+                    solutionNode.fadeOut({
+                        duration: this.itemFadeDuration, zIndex: "-1" })
                 }
-                this.$("test-item").textContent = newItem.entry;
-                // If animation flag is set, fade in new item
-                if (dataManager.settings.test.animate && previousItem !== null){
-                    this.$("test-item").fadeIn({
-                        duration: this.itemFadeDuration });
-                }
-                this._prepareMode(newItem.mode, part);
-                this.$("ignore-answer").setAttribute("disabled", "");
-                this.$("add-answer").setAttribute("disabled", "");
-                this.$("modify-item").setAttribute("disabled", "");
-                if (dataManager.settings.test.animate && previousItem !== null){
-                  Velocity(this.$("levels-frame"), "fadeOut",
-                           { duration: this.itemFadeDuration });
-                } else {
-                  this.$("levels-frame").hide();
-                }
-                this.$("continue-button").hide();
-                this.$("evaluation-buttons").hide();
-                if (dataManager.settings.test.useFlashcardMode) {
-                    this.$("show-solutions-button").show();
-                    this.$("show-solutions-button").focus();
-                } else {
-                    this.$("answer-entry").value = "";
-                    this.$("answer-entry").show();
-                    this.$("answer-entry").focus();
-                }
+            }
+            // Animate test item
+            this.$("test-item").fadeOut({
+                duration: this.itemFadeDuration
+            }).then(() => {
+                // Reset test item and solution containers afterwards
+                this.$("test-item").style.visibility = "visible";
+                this.$("solutions").classList.remove("stretch-shadows");
+                this.$("solutions").style.width = "auto";
+                this.$("solutions").style.height = "auto";
+                this.$("solutions").style.left = "0";
+                this.$("solutions").style.top = "0";
+                this.$("solutions").style.position = "static";
+                this.$("solutions-wrapper").style.width = "auto";
+                this.$("solutions-wrapper").style.height = "auto";
+                this.$("solutions-wrapper").style.left = "0";
+                this.$("solutions-wrapper").style.top = "0";
+                this.$("solutions-wrapper").style.position = "relative";
             });
-        });
+            // Keep shape of solution containers and stretch shadows
+            const rootOffsets = this.$("solutions").getRoot().host
+                                .getBoundingClientRect();
+            const solutionsWidth = this.$("solutions").offsetWidth;
+            const solutionsHeight = this.$("solutions").offsetHeight;
+            this.$("solutions").classList.add("stretch-shadows");
+            this.$("solutions").style.left =
+                `${solutionFrameLeft - rootOffsets.left}px`;
+            this.$("solutions").style.top =
+                `${solutionFrameTop - rootOffsets.top}px`;
+            this.$("solutions").style.width = `${solutionsWidth}px`;
+            this.$("solutions").style.height = `${solutionsHeight}px`;
+            this.$("solutions").style.position = "fixed";
+            this.$("solutions-wrapper").style.left =
+                `${solutionFrameLeft - rootOffsets.left}px`;
+            this.$("solutions-wrapper").style.top =
+                `${solutionFrameTop - rootOffsets.top}px`;
+            this.$("solutions-wrapper").style.width = `${solutionsWidth}px`;
+            this.$("solutions-wrapper").style.height = `${solutionsHeight}px`;
+            this.$("solutions-wrapper").style.position = "fixed";
+            // Empty solution container
+            for (const solutionNode of solutionNodes) {
+                this.$("solutions").removeChild(solutionNode);
+            }
+        } else {
+            this.$("solutions").innerHTML = "";
+        }
+        this.$("test-item").textContent = newItem.entry;
+        // If animation flag is set, fade in new item
+        if (dataManager.settings.test.animate && previousItem !== null) {
+            this.$("test-item").fadeIn({ duration: this.itemFadeDuration });
+        }
+        this._prepareMode(newItem.mode, part);
+        this.$("ignore-answer").setAttribute("disabled", "");
+        this.$("add-answer").setAttribute("disabled", "");
+        this.$("modify-item").setAttribute("disabled", "");
+        if (dataManager.settings.test.animate && previousItem !== null) {
+          Velocity(this.$("levels-frame"), "fadeOut",
+                   { duration: this.itemFadeDuration });
+        } else {
+          this.$("levels-frame").hide();
+        }
+        this.$("continue-button").hide();
+        this.$("evaluation-buttons").hide();
+        if (dataManager.settings.test.useFlashcardMode) {
+            this.$("show-solutions-button").show();
+            this.$("show-solutions-button").focus();
+        } else {
+            this.$("answer-entry").value = "";
+            this.$("answer-entry").show();
+            this.$("answer-entry").focus();
+        }
     }
 
     _ignoreAnswer() {
@@ -821,7 +849,7 @@ class TestSection extends Section {
         this._createQuestion();
     }
 
-    _createTestItem(entry, mode) {
+    async _createTestItem(entry, mode) {
         const newItem = {
             entry: entry,
             marked: false,
@@ -830,16 +858,12 @@ class TestSection extends Section {
             parts: [
                 mode === dataManager.test.mode.WORDS ? "meanings" : "solutions"]
         };
-        return dataManager.srs.getLevel(entry, mode).then((level) => {
-            newItem.level = level;
-            if (mode === dataManager.test.mode.WORDS) {
-                return dataManager.vocab.getReadings(entry).then((readings) => {
-                    if (readings.length > 0) newItem.parts.push("readings");
-                    return newItem;
-                });
-            }
-            return newItem;
-        });
+        newItem.level = await dataManager.srs.getLevel(entry, mode);
+        if (mode === dataManager.test.mode.WORDS) {
+            const readings = await dataManager.vocab.getReadings(entry);
+            if (readings.length > 0) newItem.parts.push("readings");
+        }
+        return newItem;
     }
 
     _getTestItems(since=0) {
@@ -879,9 +903,7 @@ class TestSection extends Section {
             }
         }
         return Promise.all([vocabPart, ...kanjiParts, ...hanziParts])
-        .then(() => {
-            return Promise.all(itemPromises);
-        });
+        .then(() => Promise.all(itemPromises));
     }
 }
 
