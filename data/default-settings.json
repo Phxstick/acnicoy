@@ -38,7 +38,6 @@
         "showHyougai": false
     },
     "kanjiSearch": {
-        "searchCriterion": "kanji"
     },
     "kanjiInfo": {
         "maximized": false

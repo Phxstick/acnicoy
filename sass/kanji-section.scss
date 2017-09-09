@@ -1,8 +1,6 @@
 @import "base";
 
 body {
-  display: flex;
-  flex-direction: column;
   color: $section-color;
 }
 
@@ -19,30 +17,45 @@ body {
   z-index: var(--kanji-control-bar-layer);
   position: relative;
 
-  #search-button, #show-overview-button, #settings-button {
+  > button {
     @extend button.light;
     padding-left: 10px;
     padding-right: 10px;
     font-size: 140%;
   }
-  #show-overview-button, #settings-button {
-    border-left: 1px solid $border-color-light;
-  }
 
-  #search-entry {
+  > input {
     @extend input.light;
     font-size: 120%;
     padding-left: 10px;
     flex: 1;
   }
+
+  #show-overview-button, #settings-button, #search-by-details-input {
+    border-left: 1px solid $border-color-light;
+  }
+  #kana-input-button, #romaji-input-button {
+    padding: 0;
+    width: 30px;
+    font-size: 1.1rem;
+  }
+  #kana-input-button {
+    padding-bottom: 3px;
+  }
+  #search-by-kanji-button, #search-by-details-button,
+  #kana-input-button, #romaji-input-button {
+    @extend button.no-shadow;
+  }
 }
 
 #bottom-frame {
   flex: 1;
-  overflow-y: auto;
+  height: 100%;
 
   #overview-pane {
     overflow-x: hidden;
+    height: 100%;
+    overflow-y: auto;
   }
 
   #search-pane {
@@ -73,6 +86,8 @@ body {
 #search-results {
   background-color: $view-background;
   color: $view-color;
+  height: 100%;
+  overflow: auto;
 }
 
 dt {

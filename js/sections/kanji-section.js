@@ -12,44 +12,52 @@ class KanjiSection extends Section {
         this.searchSettings = {};
         this.$("search-results").hide();
         this.$("no-search-results-info").hide();
+        this.$("kana-input-button").hide();
         // =================================================================
         // Control bar event listeners
         // =================================================================
         this.$("show-overview-button").addEventListener("click", () => {
             this.showOverview();
         });
-        this.$("search-button").addEventListener("click", () => {
-            this.searchByKanji();
+        this.$("search-by-kanji-button").addEventListener("click", () => {
+            const query = this.$("search-by-kanji-input").value.trim();
+            this.kanjiSearchViewState.search(query, "by-kanji");
         });
-        this.$("search-entry").addEventListener("keypress", (event) => {
-            if (event.key !== "Enter") return;
-            this.searchByKanji();
+        this.$("search-by-kanji-input").addEventListener("keypress", (e) => {
+            if (e.key !== "Enter") return;
+            const query = this.$("search-by-kanji-input").value.trim();
+            this.kanjiSearchViewState.search(query, "by-kanji");
+        });
+        this.$("search-by-details-button").addEventListener("click", () => {
+            const query = this.$("search-by-details-input").value.trim();
+            this.kanjiSearchViewState.search(query, "by-details");
+        });
+        this.$("search-by-details-input").addEventListener("keypress", (e) => {
+            if (e.key !== "Enter") return;
+            const query = this.$("search-by-details-input").value.trim();
+            this.kanjiSearchViewState.search(query, "by-details");
+        });
+        this.$("romaji-input-button").addEventListener("click", (event) => {
+            this.$("romaji-input-button").hide();
+            this.$("kana-input-button").show();
+            this.$("search-by-details-input").enableKanaInput();
+        });
+        this.$("kana-input-button").addEventListener("click", (event) => {
+            this.$("romaji-input-button").show();
+            this.$("kana-input-button").hide();
+            this.$("search-by-details-input").disableKanaInput();
         });
         // =================================================================
         // Kanji search functionality
         // =================================================================
         this.kanjiSearchViewState = utility.initializeView({
             view: this.$("search-results"),
-            getData: async (query) => {
-                // Check which characters are known kanji (i.e. in the database)
-                const knownKanjiPromises = [];
-                for (const character of query) {
-                    knownKanjiPromises.push(
-                        dataManager.content.isKnownKanji(character));
+            getData: async (query, method) => {
+                if (method === "by-kanji") {
+                    return await this.searchByKanji(query);
+                } else if (method === "by-details") {
+                    return await this.searchByDetails(query);
                 }
-                // Display kanji in given order into the input field
-                const kanjiKnown = await Promise.all(knownKanjiPromises);
-                const querySet = new Set();
-                const queriedKanji = [];
-                for (let i = 0; i < query.length; ++i) {
-                    const character = query[i];
-                    const isKnownKanji = kanjiKnown[i];
-                    if (isKnownKanji && !querySet.has(character)) {
-                        querySet.add(character);
-                        queriedKanji.push(character);
-                    }
-                }
-                return queriedKanji;
             },
             createViewItem: async (kanji) => {
                 const info = await dataManager.content.getKanjiInfo(kanji);
@@ -57,10 +65,7 @@ class KanjiSection extends Section {
                     customElements.get("kanji-search-result-entry");
                 return new ResultEntry(kanji, info);
             },
-            uponResultLoaded: (resultsFound) => {
-                this.$("overview-pane").hide();
-                this.$("search-pane").show();
-            },
+            uponResultLoaded: (resultsFound) => this.showSearchResults(),
             initialDisplayAmount: 10,
             displayAmount: 10,
             placeholder: this.$("search-info"),
@@ -121,20 +126,6 @@ class KanjiSection extends Section {
             this.overviewSettings.onlyMissing = !value;
             this.displayKanji();
         };
-        this.searchSettings.searchCriterion =
-            dataManager.settings.kanjiSearch.searchCriterion;
-        const setSearchCriterion = (value) => {
-            dataManager.settings.kanjiSearch.searchCriterion = value;
-            this.searchSettings.searchCriterion = value;
-            this.$("search-entry").placeholder = `Search by ${value}`;
-            this.$("search-entry").toggleKanaInput(value === "yomi");
-        };
-        setSearchCriterion(this.searchSettings.searchCriterion);
-        utility.bindRadiobuttonGroup(
-            this.$("search-criterion"),
-            dataManager.settings.kanjiSearch.searchCriterion,
-            setSearchCriterion
-        );
     }
 
     registerCentralEventListeners() {
@@ -169,7 +160,7 @@ class KanjiSection extends Section {
     }
 
     open() {
-        this.$("search-entry").focus();
+        this.$("search-by-kanji-input").focus();
     }
 
     processLanguageContent(language, secondaryLanguage) {
@@ -311,14 +302,47 @@ class KanjiSection extends Section {
         }
     }
 
-    searchByKanji() {
-        const query = this.$("search-entry").value.trim();
-        // If query is same as the last, just display search-section again
-        if (this.kanjiSearchViewState.lastQuery === query) {
-            this.showSearchResults();
-            return;
+    async searchByKanji(query) {
+        // Check which characters are known kanji (i.e. in the database)
+        const knownKanjiPromises = [];
+        for (const character of query) {
+            knownKanjiPromises.push(dataManager.content.isKnownKanji(character))
         }
-        this.kanjiSearchViewState.search(query);
+        // Display kanji in given order into the input field
+        const kanjiKnown = await Promise.all(knownKanjiPromises);
+        const querySet = new Set();
+        const queriedKanji = [];
+        for (let i = 0; i < query.length; ++i) {
+            const character = query[i];
+            const isKnownKanji = kanjiKnown[i];
+            if (isKnownKanji && !querySet.has(character)) {
+                querySet.add(character);
+                queriedKanji.push(character);
+            }
+        }
+        return queriedKanji;
+    }
+
+    async searchByDetails(query) {
+        const queryObject = { meanings: [], onYomi: [], kunYomi: [] };
+        const fields = query.split(",");
+        for (const field of fields) {
+            // If field consists only of katakana or dots, regard as on-yomi
+            if (field.trim().split("").every((c) => c === "." ||
+                    (12449 <= c.charCodeAt(0) && c.charCodeAt(0) < 12543))) {
+                queryObject.onYomi.push(field.trim());
+            }
+            // If field consists only of hiragana or dots, regard as kun-yomi
+            else if (field.trim().split("").every((c) => c === "." ||
+                    (12353 <= c.charCodeAt(0) && c.charCodeAt(0) < 12439))) {
+                queryObject.kunYomi.push(field.trim());
+            }
+            // In all other cases, regard the field as a kanji meaning
+            else {
+                queryObject.meanings.push(field.trim().replace("*", "%"));
+            }
+        }
+        return await dataManager.content.searchForKanji(queryObject);
     }
 }
 

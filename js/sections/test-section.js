@@ -377,7 +377,7 @@ class TestSection extends Section {
         }
     }
 
-    _evaluateAnswer() {
+    async _evaluateAnswer() {
         const answer = this.$("answer-entry").value.trim();
         const item = this.testInfo.currentItem;
         const part = this.testInfo.currentPart;
@@ -386,71 +386,69 @@ class TestSection extends Section {
             item.marked = true;
         }
         this.testInfo.inEvalStep = true;
-        Promise.all([
+        const [solutions, extendedSolutions] = await Promise.all([
             dataManager.test.getSolutions(entry, item.mode, part),
             dataManager.test.getExtendedSolutions(entry, item.mode, part)
-        ]).then(([solutions, extendedSolutions]) => {
-            let answerCorrect = true;
-            if (!extendedSolutions.has(answer)) {
-                let match = false;
-                for (const solution of extendedSolutions) {
-                    if (part !== "readings" && 
-                            utility.calculateED(answer, solution)
-                            < solution.length / 4)
-                        match = true;
-                }
-                if (!match) {
-                    item.parts.push(part);
-                    answerCorrect = false;
-                }
+        ]);
+        let answerCorrect = true;
+        if (!extendedSolutions.has(answer)) {
+            let match = false;
+            for (const solution of extendedSolutions) {
+                if (part !== "readings" && 
+                        utility.calculateED(answer, solution)
+                        < solution.length / 4)
+                    match = true;
             }
-            item.lastAnswerIncorrect = !answerCorrect;
-            const itemCorrect = !item.marked && !item.lastAnswerIncorrect;
-            // If item is finished, determine new level for this item
-            let newLevel;
-            if (item.parts.length === 0) {
-                newLevel = dataManager.test.getNewLevel(item.level,itemCorrect);
+            if (!match) {
+                item.parts.push(part);
+                answerCorrect = false;
             }
-            // Update status label, unless evaluations for correct answers are
-            // skipped without animation and a correct answer was given
-            if (!dataManager.settings.test.skipEvaluationOnCorrect ||
-                    dataManager.settings.test.animate || !answerCorrect) {
-                this.$("status").textContent = answerCorrect ?
-                    "Correct answer!" : "Wrong answer!";
-                this.$("status").classList.toggle("correct", answerCorrect);
-                this.$("status").classList.toggle("incorrect", !answerCorrect);
+        }
+        item.lastAnswerIncorrect = !answerCorrect;
+        const itemCorrect = !item.marked && !item.lastAnswerIncorrect;
+        // If item is finished, determine new level for this item
+        let newLevel;
+        if (item.parts.length === 0) {
+            newLevel = dataManager.test.getNewLevel(item.level,itemCorrect);
+        }
+        // Update status label, unless evaluations for correct answers are
+        // skipped without animation and a correct answer was given
+        if (!dataManager.settings.test.skipEvaluationOnCorrect ||
+                dataManager.settings.test.animate || !answerCorrect) {
+            this.$("status").textContent = answerCorrect ?
+                "Correct answer!" : "Wrong answer!";
+            this.$("status").classList.toggle("correct", answerCorrect);
+            this.$("status").classList.toggle("incorrect", !answerCorrect);
+        }
+        // Skip evaluation for correct answer if corresponding flag is set
+        if (dataManager.settings.test.skipEvaluationOnCorrect &&
+                answerCorrect) {
+            this._createQuestion(newLevel);
+        } else {
+            this._displaySolutions(
+                solutions, dataManager.settings.test.animate);
+            // Update rest of view
+            if (item.parts.length === 0 && !this.testInfo.vocabListMode) {
+                this.$("levels-frame").show();
+                this.$("levels-frame").style.opacity = "1";
+                this.$("new-level").setByIndex(newLevel - 1);
+                this.$("old-level").textContent = item.level;
+                this.$("level-arrow").classList.toggle("correct",
+                                                       itemCorrect);
+                this.$("level-arrow").classList.toggle("incorrect",
+                                                       !itemCorrect);
             }
-            // Skip evaluation for correct answer if corresponding flag is set
-            if (dataManager.settings.test.skipEvaluationOnCorrect &&
-                    answerCorrect) {
-                this._createQuestion(newLevel);
-            } else {
-                this._displaySolutions(
-                    solutions, dataManager.settings.test.animate);
-                // Update rest of view
-                if (item.parts.length === 0 && !this.testInfo.vocabListMode) {
-                    this.$("levels-frame").show();
-                    this.$("levels-frame").style.opacity = "1";
-                    this.$("new-level").setByIndex(newLevel - 1);
-                    this.$("old-level").textContent = item.level;
-                    this.$("level-arrow").classList.toggle("correct",
-                                                           itemCorrect);
-                    this.$("level-arrow").classList.toggle("incorrect",
-                                                           !itemCorrect);
-                }
-                this.$("answer-entry").hide();
-                this.$("continue-button").show();
-                this.$("continue-button").focus();
-                if (dataManager.settings.test.enableIgnoreShortcut) {
-                    shortcuts.register(
-                        "ignore-answer", () => this._ignoreAnswer());
-                }
-                this.$("ignore-answer").removeAttribute("disabled");
-                if (!answerCorrect)
-                    this.$("add-answer").removeAttribute("disabled");
-                this.$("modify-item").removeAttribute("disabled");
+            this.$("answer-entry").hide();
+            this.$("continue-button").show();
+            this.$("continue-button").focus();
+            if (dataManager.settings.test.enableIgnoreShortcut) {
+                shortcuts.register("ignore-answer", () => this._ignoreAnswer());
             }
-        });
+            this.$("ignore-answer").removeAttribute("disabled");
+            if (!answerCorrect)
+                this.$("add-answer").removeAttribute("disabled");
+            this.$("modify-item").removeAttribute("disabled");
+        }
     }
 
     _showEvaluationButtons() {

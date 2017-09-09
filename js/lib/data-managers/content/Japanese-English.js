@@ -18,8 +18,8 @@ module.exports = function (paths, contentPaths, modules) {
             `SELECT k.grade AS grade,
                     k.strokes AS strokes,
                     k.frequency AS frequency,
-                    k.on_readings AS onYomi,
-                    k.kun_readings AS kunYomi,
+                    k.on_yomi AS onYomi,
+                    k.kun_yomi AS kunYomi,
                     k.meanings AS meanings,
                     k.parts AS parts,
                     k.jlpt AS jlptLevel,
@@ -394,13 +394,53 @@ module.exports = function (paths, contentPaths, modules) {
     }
 
     /**
-     * Given a list of meanings and readings (on-yomi in katakana, kun-yomi
-     * in hiragana), return a list of matching kanji.
-     * @param {Array[String]} meanings
-     * @param {Array[String]} readings
+     * Given an object with query information, return a list of matching kanji.
+     * Kanji are primarily sorted by how many fields in the query they match.
+     * @param {Object} query - Object of form { meanings, onYomi, kunYomi }.
+     *     On-yomi and kun-yomi must be in katakana/hiragana respectively.
+     * @returns {Array}
      */
-    async function searchForKanji(meanings, readings) {
-        data.query(`SELECT entry FROM kanji`);
+    async function searchForKanji(query) {
+        const promises = [];
+        // Find matching kanji for each detail in the query
+        for (const meaning of query.meanings) {
+            promises.push(data.query(`SELECT entry, frequency FROM kanji
+                                      WHERE meanings LIKE '%${meaning}%' 
+                                      OR meanings_search LIKE '%${meaning}%'`));
+        }
+        for (const onYomi of query.onYomi) {
+            promises.push(data.query(`SELECT entry, frequency FROM kanji
+                                      WHERE on_yomi LIKE '%${onYomi}%'
+                                      OR on_yomi_search LIKE '%${onYomi}%'`));
+        }
+        for (const kunYomi of query.kunYomi) {
+            promises.push(data.query(`SELECT entry, frequency FROM kanji
+                                      WHERE kun_yomi LIKE '%${kunYomi}%'
+                                      OR kun_yomi_search LIKE '%${kunYomi}%'`));
+        }
+        const subMatches = await Promise.all(promises);
+        // Map each matched kanji to frequency and number of matches
+        const matches = new Map();
+        for (const subMatch of subMatches) {
+            for (const { entry, frequency } of subMatch) {
+                if (!matches.has(entry)) {
+                    matches.set(entry, { frequency, matchCount: 0 });
+                }
+                matches.get(entry).matchCount++;
+            }
+        }
+        const matchList = [...matches];
+        // Sort kanji by match count, or by frequency if match count is equal
+        matchList.sort((match1, match2) => {
+            if (match1[1].matchCount !== match2[1].matchCount) {
+                return match2[1].matchCount - match1[1].matchCount;
+            } else {
+                if (match1[1].frequency === null) return 1;
+                if (match2[1].frequency === null) return -1;
+                return match1[1].frequency - match2[1].frequency;
+            }
+        });
+        return matchList.map((match) => match[0]);
     }
 
     let query;
@@ -451,6 +491,7 @@ module.exports = function (paths, contentPaths, modules) {
             getKanjiInfo,
             getKanjiMeanings,
             getKanjiLists,
+            searchForKanji,
             getDictionaryEntryInfo,
             getExampleWordsDataForEntryId,
             getEntryIdsForTranslationQuery,

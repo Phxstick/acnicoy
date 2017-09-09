@@ -86,9 +86,12 @@ def create_kanji_tables(cursor):
                 radical_id INTEGER,
                 strokes INTEGER,
                 frequency INTEGER,
-                on_readings TEXT,
-                kun_readings TEXT,
+                on_yomi TEXT,
+                kun_yomi TEXT,
                 meanings TEXT,
+                on_yomi_search TEXT,
+                kun_yomi_search TEXT,
+                meanings_search TEXT,
                 parts TEXT)""");
 
 
@@ -230,9 +233,10 @@ def parse_kanji_entry(line, cursor):
     """
     fields = line.split() 
     # Parse line
-    data = {"kanji": fields[0], "on-yomi": [], "kun-yomi": [], "frequency": None,
-            "strokes": None, "radical_id": None, "grade": 0, "jlpt": None,
-            "meanings": re.findall(r"\{(.*?)\}", line)}
+    data = {"kanji": fields[0], "on-yomi": [], "kun-yomi": [],
+            "frequency": None, "strokes": None, "radical_id": None, "grade": 0,
+            "jlpt": None, "meanings": re.findall(r"\{(.*?)\}", line),
+            "on-yomi-search": [], "kun-yomi-search": [], "meanings-search": []}
     # data["jis_code"] = fields[1]
     for field in fields:
         if field[0] == "J":
@@ -249,15 +253,25 @@ def parse_kanji_entry(line, cursor):
             data["frequency"] = int(field[1:])
         elif any((0x30A1 <= ord(c) <= 0x30A1 + 89 for c in field)):
             data["on-yomi"].append(field)
+            if "." in field:
+                data["on-yomi-search"].append(field.replace(".", ""));
         elif any((0x3042 <= ord(c) <= 0x3042 + 86 for c in field)):
             data["kun-yomi"].append(field)
+            if "." in field:
+                data["kun-yomi-search"].append(field.replace(".", ""));
         elif field == "T1" or field[0] == "{":
             break
     # Insert entry into database
-    cursor.execute("INSERT INTO kanji VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    cursor.execute("""
+            INSERT INTO kanji (entry, grade, jlpt, radical_id, strokes,
+            frequency, on_yomi, kun_yomi, meanings, on_yomi_search,
+            kun_yomi_search, meanings_search, parts)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (data["kanji"], data["grade"], data["jlpt"], data["radical_id"],
          data["strokes"], data["frequency"], ";".join(data["on-yomi"]),
-         ";".join(data["kun-yomi"]), ";".join(data["meanings"]), ""))
+         ";".join(data["kun-yomi"]), ";".join(data["meanings"]),
+         ";".join(data["on-yomi-search"]), ";".join(data["kun-yomi-search"]),
+         ";".join(data["meanings-search"]), ""))
 
 
 def parse_radical_entry(line, cursor):
@@ -474,6 +488,11 @@ def parse_improved_kanji_meanings(filename, cursor):
     with open(filename) as f:
         newMeanings = json.load(f)
         for kanji in newMeanings:
+            # Old meanings are kept as data in another column for searching
+            cursor.execute(
+                """UPDATE kanji SET meanings_search = (SELECT meanings FROM kanji
+                WHERE entry = ?) WHERE entry = ?""", (kanji, kanji))
+            # Old meanings are replaced with new ones
             cursor.execute("UPDATE kanji SET meanings = ? WHERE entry = ?",
                     (";".join(newMeanings[kanji]), kanji))
     print("Applying improved kanji meanings... Done.")

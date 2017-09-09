@@ -621,15 +621,18 @@ function initializeView({ view, getData, createViewItem, uponResultLoaded,
     });
     state.search = async function(query, ...args) {
         if (placeholder !== undefined && query.length === 0) {
-            if (query.length === 0) {
-                placeholder.show();
-                state.view.hide();
-                if (noResultsPane !== undefined)
-                    noResultsPane.hide();
-                if (state.uponResultLoaded !== undefined)
-                    state.uponResultLoaded();
-                return;
-            }
+            placeholder.show();
+            state.view.hide();
+            if (noResultsPane !== undefined)
+                noResultsPane.hide();
+            if (state.uponResultLoaded !== undefined)
+                state.uponResultLoaded();
+            return;
+        }
+        if (query === state.lastQuery) {
+            if (state.uponResultLoaded !== undefined)
+                state.uponResultLoaded();
+            return;
         }
         state.lastQuery = query;
         state.view.empty();

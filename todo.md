@@ -1,11 +1,13 @@
 ### Up next
+- Write short help with examples into dictionary and kanji section
+- Make sure entry content in dictionaries is always selected on focus!
+- Make status update message fade out after a short while if not updated
+- Allow using Ctrl+Enter for saving notes and submitting new vocab/kanji
+- Allow selecting popup-stack item with arrow keys and number keys!
 - Make history view loading more efficient
 - Use font-family "Trajan" for roman numerals?
 - Separate stats and achievements? Or overkill?
 - Add more achievements and property display them in a column layout
-- Implement kanji-search by meanings/yomi
-- Finish as much TODO-items for kanji-sections as possible
-  - Finish kanji search criterion functionality
 - Extend search-sections by spinner and animate no-search-results-info
 - Implement label-checkbox widget?
 - Implment simple binding function for checkboxes and settings, or radiobuttons
@@ -16,15 +18,11 @@
 - Button to manually check  for content updates (+ "last checked" label)
 - Further refactor Applicat}ion framework
   - Implement quit-function of Application class, move controlled closing there
-- Make status update message fade out after a short while if not updated
-- Make sure entry content in dictionaries is always selected on focus!
 - Make kana input not only react to shift, but also caps-lock and caps letters
 - Implement program updating
   - Add update button to settings
   - Make sure user data is saved before an update
   - Button to check for program updates (+ "last checked" label)
-- Allow using Ctrl+Enter for saving notes and submitting new vocab/kanji
-- Allow selecting popup-stack item with arrow keys and number keys!
 - Test on new data instance whether deleting kanji also deletes kanji data
   (are constraints really applied to database now?)
 - Register content-related shortcuts in adjustToLanguageContent instead
@@ -34,6 +32,7 @@
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
 - Promise returned by "fs.copy" from "fs-extra" doesn't work. Report it?
+- When adding word to a vocab list it is entered twice in the view
 
 
 By category
@@ -145,7 +144,6 @@ By category
 - Implement better sorting algorithm including word-length
 
 ### Kanji section
-#### Search
 - Search customization:
   - [Checkbox] Show only meanings for each entry (and allow expanding)
 - Display "Info"/"Strokes"/"Examples" buttons only on hover (Where? On right?)

@@ -1,7 +1,13 @@
 <div id="kanji-container"></div>
 <div id="control-bar">
-  <input id="search-entry"></input>
-  <button id="search-button" tabindex="-1"><i class="fa fa-search"></i></button>
+  <input id="search-by-kanji-input" placeholder="Search by kanji"></input>
+  <button id="search-by-kanji-button" tabindex="-1">
+    <i class="fa fa-search"></i></button>
+  <input id="search-by-details-input" placeholder="Search by details"></input>
+  <button id="romaji-input-button">Aa</button>
+  <button id="kana-input-button">あ</button>
+  <button id="search-by-details-button" tabindex="-1">
+    <i class="fa fa-search"></i></button>
   <button id="show-overview-button"><i class="fa fa-th"></i></button>
   <button id="settings-button"><i class="fa fa-cog"></i></button>
   <div id="settings-popup" class="popup-window menu">
@@ -51,27 +57,6 @@
       <div class="labeled-checkbox">
         <check-box id="show-added" class="light"></check-box>
         <span>Display Added kanji</span>
-      </div>
-    </div>
-    <div class="header">Search settings</div>
-    <div id="search-settings" class="group">
-      <div id="search-criterion" class="group">
-        <div class="group-header">Search kanji by:</div>
-        <div class="labeled-radiobutton">
-          <check-box data-value="kanji" class="radiobutton light">
-          </check-box>
-          <span>Kanji</span>
-        </div>
-        <div class="labeled-radiobutton">
-          <check-box data-value="meaning" class="radiobutton light">
-          </check-box>
-          <span>Meanings</span>
-        </div>
-        <div class="labeled-radiobutton">
-          <check-box data-value="yomi" class="radiobutton light">
-          </check-box>
-          <span>Readings</span>
-        </div>
       </div>
     </div>
   </div>
