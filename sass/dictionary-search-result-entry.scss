@@ -16,10 +16,38 @@
     background-color: $dictionary-frequent-words-background;
     border-bottom: 1px solid $dictionary-frequent-words-border-color;
   }
-
   &.semi-frequent {
     background-color: $dictionary-semi-frequent-words-background;
     border-bottom: 1px solid $dictionary-semi-frequent-words-border-color;
+  }
+
+  &.tag-p {
+    background-color: $dictionary-place-name-background;
+    border-bottom: 1px solid darken($dictionary-place-name-background, 10%);
+  }
+  &.tag-f {
+    background-color: $dictionary-female-name-background;
+    border-bottom: 1px solid darken($dictionary-female-name-background, 10%);
+  }
+  &.tag-m {
+    background-color: $dictionary-male-name-background;
+    border-bottom: 1px solid darken($dictionary-male-name-background, 10%);
+  }
+  // Diagonal stripes of male and female color if name has unspecified gender
+  &.tag-g {
+    $stripe-size: 30px;
+    background: repeating-linear-gradient(45deg,
+      $dictionary-male-name-background,
+      $dictionary-male-name-background $stripe-size,
+      $dictionary-female-name-background $stripe-size,
+      $dictionary-female-name-background ($stripe-size * 2));
+    border-bottom: 1px solid;
+    border-image: repeating-linear-gradient(45deg,
+      darken($dictionary-male-name-background, 10%),
+      darken($dictionary-male-name-background, 10%) $stripe-size,
+      darken($dictionary-female-name-background, 10%) $stripe-size,
+      darken($dictionary-female-name-background, 10%) ($stripe-size * 2)) 1;
+    border-image-slice: 1;
   }
 
   // #added-label, #add-button {

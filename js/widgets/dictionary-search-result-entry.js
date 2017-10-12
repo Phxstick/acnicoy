@@ -33,12 +33,19 @@ class DictionarySearchResultEntry extends Widget {
     }
 
     setInfo(info) {
-        // Adjust data and fill handlebars template
-        if (info.newsFreq > 0 && info.newsFreq < 25) {
-            info.frequency = "semi-frequent";
-        } else if (info.newsFreq >= 25) {
-            info.frequency = "frequent";
+        // Set entry class (determines background color)
+        if (!info.properName) {
+            if (info.newsFreq > 0 && info.newsFreq < 25) {
+                info.entryClass = "semi-frequent";
+            } else if (info.newsFreq >= 25) {
+                info.entryClass = "frequent";
+            }
+        } else {
+            if (info.tags.length === 1) {
+                info.entryClass = `tag-${info.tags[0]}`;
+            }
         }
+        // Instantiate handlebars template
         this.root.innerHTML +=
             templates.get("dictionary-search-result-entry")(info);
         // Open kanji info panel upon clicking a kanji in the words

@@ -21,7 +21,11 @@ popup-stack {
   --tooltip-speed: 0s;
 
   &[disabled] > option:checked {
-      color: transparent;
+    color: transparent;
+  }
+  &:focus {
+    box-shadow: $button-focus-shadow;
+    outline: none !important;
   }
   > option {
     color: whitesmoke;

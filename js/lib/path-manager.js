@@ -189,6 +189,7 @@ module.exports = function (basePath) {
                 numbers: "numeric-kanji.json",
                 counters: "counter-kanji.json",
                 dictCodeToText: "dict-code-to-text.json",
+                nameTagToText: "name-tag-to-text.json",
                 kokujiList: "kokuji.txt",
                 exampleWordIds: "example-words-index.json"
             }

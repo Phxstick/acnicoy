@@ -21,14 +21,22 @@ module.exports = function (paths, modules) {
     };
 
     database.query = function (query, ...params) {
+        // return new Promise((resolve, reject) => {
+        //     data.all(query, ...params, (error, rows) => resolve(rows));
+        // });
         return new Promise((resolve, reject) => {
-            data.all(query, ...params, (error, rows) => resolve(rows));
+            data.all(query, ...params, (error, rows) =>
+                error ? reject(error) : resolve(rows));
         });
     };
 
     database.run = function (statement, ...params) {
+        // return new Promise((resolve, reject) => {
+        //     data.run(statement, ...params, resolve);
+        // });
         return new Promise((resolve, reject) => {
-            data.run(statement, ...params, resolve);
+            data.run(statement, ...params, (error) =>
+                error ? reject(error) : resolve());
         });
     };
 
@@ -63,8 +71,8 @@ module.exports = function (paths, modules) {
                         readings TEXT,
                         level INTEGER,
                         review_date INTEGER,
-                        correct_count INTEGER,
-                        mistake_count INTEGER,
+                        correct_count INTEGER DEFAULT 0,
+                        mistake_count INTEGER DEFAULT 0,
                         dictionary_id INTEGER )
                 `);
                 if (language === "Japanese") {
@@ -79,8 +87,8 @@ module.exports = function (paths, modules) {
                             meanings TEXT,
                             level INTEGER,
                             review_date INTEGER,
-                            correct_count INTEGER,
-                            mistake_count INTEGER,
+                            correct_count INTEGER DEFAULT 0,
+                            mistake_count INTEGER DEFAULT 0,
                             FOREIGN KEY (kanji)
                                 REFERENCES kanji (kanji)
                                 ON DELETE CASCADE )
@@ -91,8 +99,8 @@ module.exports = function (paths, modules) {
                             on_yomi TEXT,
                             level INTEGER,
                             review_date INTEGER,
-                            correct_count INTEGER,
-                            mistake_count INTEGER,
+                            correct_count INTEGER DEFAULT 0,
+                            mistake_count INTEGER DEFAULT 0,
                             FOREIGN KEY (kanji)
                                 REFERENCES kanji (kanji)
                                 ON DELETE CASCADE )
@@ -103,8 +111,8 @@ module.exports = function (paths, modules) {
                             kun_yomi TEXT,
                             level INTEGER,
                             review_date INTEGER,
-                            correct_count INTEGER,
-                            mistake_count INTEGER,
+                            correct_count INTEGER DEFAULT 0,
+                            mistake_count INTEGER DEFAULT 0,
                             FOREIGN KEY (kanji)
                                 REFERENCES kanji (kanji)
                                 ON DELETE CASCADE )
@@ -122,8 +130,8 @@ module.exports = function (paths, modules) {
                             meanings TEXT,
                             level INTEGER,
                             review_date INTEGER,
-                            correct_count INTEGER,
-                            mistake_count INTEGER,
+                            correct_count INTEGER DEFAULT 0,
+                            mistake_count INTEGER DEFAULT 0,
                             FOREIGN KEY (hanzi)
                                 REFERENCES hanzi (hanzi)
                                 ON DELETE CASCADE )
@@ -134,8 +142,8 @@ module.exports = function (paths, modules) {
                             readings TEXT,
                             level INTEGER,
                             review_date INTEGER,
-                            correct_count INTEGER,
-                            mistake_count INTEGER,
+                            correct_count INTEGER DEFAULT 0,
+                            mistake_count INTEGER DEFAULT 0,
                             FOREIGN KEY (hanzi)
                                 REFERENCES hanzi (hanzi)
                                 ON DELETE CASCADE )

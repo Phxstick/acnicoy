@@ -10,14 +10,14 @@ class ShortcutsSettingsSubsection extends SettingsSubsection {
             "open-help",
             "quit", "force-quit", "close-sliding-panels", "toggle-fullscreen",
             "refresh",
-            "ignore-answer"
+            "ignore-answer", "save-input"
         ];
         const shortcutLabels = this.$$("#shortcuts-list .keyboard-shortcut");
         for (const label of shortcutLabels) {
             label.addEventListener("click", () => {
-                overlays.open("choose-shortcut").then((newShortcut) => {
-                    if (newShortcut === null) return;
-                    shortcuts.setBindingFor(label.id, newShortcut);
+                overlays.open("choose-shortcut").then((newKeyCombination) => {
+                    if (newKeyCombination === null) return;
+                    shortcuts.bindKeyCombination(label.id, newKeyCombination);
                     this.broadcastGlobalSetting(label.id);
                 });
             });
@@ -28,7 +28,7 @@ class ShortcutsSettingsSubsection extends SettingsSubsection {
         const shortcutLabels = this.$$("#shortcuts-list .keyboard-shortcut");
         for (const label of shortcutLabels) {
             events.on(`settings-shortcuts-${label.id}`, () => {
-                label.textContent = shortcuts.getBindingFor(label.id);
+                label.textContent = shortcuts.getBoundKeyCombination(label.id);
             });
         }
     }

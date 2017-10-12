@@ -1,9 +1,10 @@
 "use strict";
 
 const sqlite3 = require("sqlite3");
+const promisifyDatabase = require("sqlite3-promises");
 const fs = require("fs");
 
-module.exports = function (paths, contentPaths, modules) {
+module.exports = async function (paths, contentPaths, modules) {
     let data;
 
     function isKnownKanji(character) {
@@ -30,9 +31,9 @@ module.exports = function (paths, contentPaths, modules) {
              FROM kanji k JOIN radicals r ON k.radical_id = r.id
              WHERE k.entry = ?`, kanji)
         .then(([row]) => {
-            row.meanings = row.meanings ? row.meanings.split(";") : [];
-            row.onYomi = row.onYomi ? row.onYomi.split(";") : [];
-            row.kunYomi = row.kunYomi ? row.kunYomi.split(";") : [];
+            row.meanings = row.meanings.length ? row.meanings.split(";") : [];
+            row.onYomi = row.onYomi.length ? row.onYomi.split(";") : [];
+            row.kunYomi = row.kunYomi.length ? row.kunYomi.split(";") : [];
             row.kanji = kanji;
             return row;
         });
@@ -45,27 +46,8 @@ module.exports = function (paths, contentPaths, modules) {
              FROM kanji k
              WHERE k.entry = ?`, kanji)
         .then(([row]) => {
-            return row.meanings ? row.meanings.split(";") : [];
+            return row.meanings.length ? row.meanings.split(";") : [];
         });
-    };
-
-    function getExampleWordsDataForEntryId(entryId) {
-        return data.query(
-            `WITH frequent_words AS
-             (SELECT w1.id, w1.word, w1.news_freq
-              FROM words w1
-              WHERE w1.id = ? AND
-                    w1.news_freq = (SELECT MAX(w2.news_freq)
-                                    FROM words w2
-                                    WHERE w2.word = w1.word))
-             SELECT f.id AS id,
-                    f.word AS word,
-                    d.translations AS translations,
-                    d.readings AS readings,
-                    f.news_freq AS newsFreq
-             FROM frequent_words f JOIN dictionary d ON f.id = d.id
-             ORDER BY f.news_freq DESC `, entryId)
-        .then(([row]) => row);
     };
 
     async function getKanjiLists({
@@ -237,8 +219,9 @@ module.exports = function (paths, contentPaths, modules) {
     // Convert a string of ";"-separated codes to an array of infos
     function parseCodes(codes) {
         codes = codes.split(";").withoutEmptyStrings();
-        // TODO: Use settings here to choose language for mapping
-        const codeMap = data.codeToText["English"];
+        const language = modules.settings.dictionary.partOfSpeechInJapanese ?
+            "Japanese" : "English";
+        const codeMap = data.codeToText[language];
         return codes.map((code) => codeMap[code]);
     };
 
@@ -293,28 +276,6 @@ module.exports = function (paths, contentPaths, modules) {
         });
     };
 
-    function getEntryIdsForTranslationQuery(query) {
-        return data.query(
-            `WITH matched_ids AS
-               (SELECT DISTINCT id FROM translations WHERE translation LIKE ?)
-             SELECT d.id
-             FROM matched_ids m JOIN dictionary d ON m.id = d.id
-             ORDER BY d.news_freq DESC`, query + "%")
-        .then((rows) => rows.map((row) => row.id));
-    };
-
-    function getEntryIdsForReadingQuery(query) {
-        return data.query(
-            `WITH matched_ids AS
-                 (SELECT id FROM words WHERE word LIKE ?
-                  UNION
-                  SELECT id FROM readings WHERE reading LIKE ?)
-             SELECT d.id
-             FROM matched_ids m JOIN dictionary d ON m.id = d.id
-             ORDER BY d.news_freq DESC`, query + "%", query + "%")
-        .then((rows) => rows.map((row) => row.id));
-    };
-
     /**
      * Given a word from the vocabulary, try to guess ID of the dictionary entry
      * corresponding to this word by comparing information from the vocabulary
@@ -324,7 +285,7 @@ module.exports = function (paths, contentPaths, modules) {
      */
     async function guessDictionaryId(word) {
         let candidateIds =
-            await data.query(`SELECT id FROM words WHERE word = ?`, word)
+            await data.query(`SELECT id FROM words WHERE word LIKE ?`, word)
             .then((rows) => rows.map((row) => row.id));
         if (candidateIds.length === 1) {
             return candidateIds[0];
@@ -332,7 +293,7 @@ module.exports = function (paths, contentPaths, modules) {
         // Try entries which have only readings associated next
         if (candidateIds.length === 0) {
             candidateIds = await
-                data.query(`SELECT id FROM readings WHERE reading = ?`, word)
+                data.query(`SELECT id FROM readings WHERE reading LIKE ?`, word)
                 .then((rows) => rows.map((row) => row.id));
             // TODO: Only take entries which have no words associated here!
             if (candidateIds.length === 0) {
@@ -383,14 +344,30 @@ module.exports = function (paths, contentPaths, modules) {
      * @param {Integer} dictionaryId
      * @param {Object} [dictionaryInfo] If info for this entry has already been
      *     extracted from the dictionary, pass it in here (Performance boost)
-     * @returns {Promise[Boolean]}
+     * @returns {Boolean}
      */
     async function doesVocabularyContain(dictionaryId, dictionaryInfo) {
         if (dictionaryInfo === undefined) {
             dictionaryInfo = await getDictionaryEntryInfo(dictionaryId);
         }
-        return modules.vocab.contains(
+        const isInDatabase = await data.query(
+            "SELECT COUNT(*) AS amount FROM trainer.vocabulary " +
+            "WHERE dictionary_id = ?", dictionaryId);
+        // Match dictionary ID
+        if (isInDatabase[0].amount === 1)
+            return true;
+        // Match main word
+        const mainWordMatch = await modules.vocab.contains(
             dictionaryInfo.wordsAndReadings[0].word);
+        if (mainWordMatch)
+            return true;
+        // Match main reading
+        const mainReadingMatch = await modules.vocab.contains(
+            dictionaryInfo.wordsAndReadings[0].reading);
+        if (mainReadingMatch)
+            return true;
+        // TODO: Try to do some further matching here? Or too slow?
+        return false;
     }
 
     /**
@@ -400,23 +377,39 @@ module.exports = function (paths, contentPaths, modules) {
      *     On-yomi and kun-yomi must be in katakana/hiragana respectively.
      * @returns {Array}
      */
-    async function searchForKanji(query) {
+    async function searchKanji(query) {
         const promises = [];
+        // If query is empty, return an empty list
+        if (Object.keys(query).length === 0)
+            return [];
+        // Convert wildcards * and ? to % and _ for SQL pattern matching
+        const replace = (f) => f.replace(/[*]/g, "%").replace(/[?]/g, "_");
+        for (const field in query) {
+            query[field] = query[field].map(replace);
+        }
+        // Add wildcards for meaning search
+        if (query.meanings !== undefined) {
+            query.meanings = query.meanings.map(
+              (m) => (m.startsWith("%")?"":"%") + m + (m.endsWith("%")?"":"%"));
+        }
         // Find matching kanji for each detail in the query
         for (const meaning of query.meanings) {
-            promises.push(data.query(`SELECT entry, frequency FROM kanji
-                                      WHERE meanings LIKE '%${meaning}%' 
-                                      OR meanings_search LIKE '%${meaning}%'`));
+            promises.push(data.query(
+                `SELECT entry, frequency FROM kanji
+                 WHERE (';' || meanings || ';') LIKE '%;${meaning};%' 
+                 OR (';' || meanings_search || ';') LIKE '%;${meaning};%'`));
         }
         for (const onYomi of query.onYomi) {
-            promises.push(data.query(`SELECT entry, frequency FROM kanji
-                                      WHERE on_yomi LIKE '%${onYomi}%'
-                                      OR on_yomi_search LIKE '%${onYomi}%'`));
+            promises.push(data.query(
+                `SELECT entry, frequency FROM kanji
+                 WHERE (';' || on_yomi || ';') LIKE '%;${onYomi};%'
+                 OR (';' || on_yomi_search || ';') LIKE '%;${onYomi};%'`));
         }
         for (const kunYomi of query.kunYomi) {
-            promises.push(data.query(`SELECT entry, frequency FROM kanji
-                                      WHERE kun_yomi LIKE '%${kunYomi}%'
-                                      OR kun_yomi_search LIKE '%${kunYomi}%'`));
+            promises.push(data.query(
+                `SELECT entry, frequency FROM kanji
+                 WHERE (';' || kun_yomi || ';') LIKE '%;${kunYomi};%'
+                 OR (';' || kun_yomi_search || ';') LIKE '%;${kunYomi};%'`));
         }
         const subMatches = await Promise.all(promises);
         // Map each matched kanji to frequency and number of matches
@@ -443,62 +436,346 @@ module.exports = function (paths, contentPaths, modules) {
         return matchList.map((match) => match[0]);
     }
 
-    let query;
-    return new Promise((resolve) => {
-        // Load content database and attach trainer database to it,
-        // also define function for querying the content database
-        const db = new sqlite3.Database(contentPaths.database, () => {
-            query = function(query, ...params) {
-                return new Promise((resolve, reject) => {
-                    db.all(query, ...params, (e, rows)=> resolve(rows));
-                });
-            };
-            const attachStmt = db.prepare("ATTACH DATABASE ? AS ?");
-            attachStmt.run(paths.languageData("Japanese").database,
-                           "trainer", resolve);
-        });
-    }).then(() => Promise.all([
+    /**
+     * Given an object with query information, return a list of ids of matching
+     * dictionary entries. Exact matches are prioritized.
+     * @param {Object} query - Object of form { translations, readings }.
+     *     If readings are written using romaji, matches for both hiragana and
+     *     katakana are considered.
+     * @param {Object} options - Object of the form { searchProperNames }.
+     * @returns {Array}
+     */
+    async function searchDictionary(query, options={}) {
+        // Choose an implementation of the core search function
+        let searchFunction;
+        if (options.searchProperNames) {
+            searchFunction = searchProperNames;
+        } else {
+            searchFunction = searchDictionaryVariant1;
+        }
+        // If query is empty, return an empty list
+        if (Object.keys(query).length === 0)
+            return [];
+        // Add missing query fields (to make following code simpler)
+        if (query.translations === undefined)
+            query.translations = [];
+        if (query.readings === undefined)
+            query.readings = [];
+        // Convert wildcards * and ? to % and _ for SQL pattern matching
+        const replace = (t) => t.replace(/[*]/g, "%").replace(/[?]/g, "_");
+        query.translations = query.translations.map(replace);
+        query.readings = query.readings.map(replace);
+        // If any query field contains a wildcard at the start or end
+        // (or both sides), do not prioritize exact matches for that field.
+        const exactMatchesQuery = { readings: [], translations: [] };
+        for (const reading of query.readings) {
+            if (!reading.startsWith("%") && !reading.endsWith("%")) {
+                exactMatchesQuery.readings.push(reading.replace(/[%_]/g, ""));
+            }
+        }
+        for (const translation of query.translations) {
+            if (!translation.startsWith("%") && !translation.endsWith("%")) {
+                exactMatchesQuery.translations.push(
+                    translation.replace(/[%_]/g, ""));
+            }
+        }
+        // Search for exact matches (using query without any wildcards).
+        let exactMatches = await searchFunction(exactMatchesQuery, options);
+        const originalQuery = {
+            translations: query.translations,
+            readings: query.readings
+        };
+        // Add wildcard to both sides of each translation
+        query.translations = query.translations.map(
+            (t) => (t.startsWith("%")?"":"%") + t + (t.endsWith("%")?"":"%"));
+        // Add wildcard to end of words/readings if there's none at beginning
+        query.readings = query.readings.map(
+            (r) => r.startsWith("%") ? r : r + (r.endsWith("%")?"":"%"));
+        // Search for all matches
+        let allMatches = await searchFunction(query, options);
+        const matchIds = Array(allMatches.length);
+        // Exact matches are at the beginning of the search results
+        for (let i = 0; i < exactMatches.length; ++i) {
+            matchIds[i] = exactMatches[i].id;
+        }
+        // Prioritize matches where any translation query matches whole words.
+        // Only match word boundaries if there is no wild card at that side
+        // of the string in the original query.
+        if (query.translations.length) {
+            const wholeWordMatches = [];
+            const nonWholeWordMatches = [];
+            const queryRegexes = []
+            for (const translation of originalQuery.translations) {
+                if (translation.startsWith("%") && translation.endsWith("%"))
+                    continue;
+                let regex = translation.replace(/^%+/, "").replace(/%+$/, "");
+                if (!translation.startsWith("%")) {
+                    regex = "\\b" + regex; 
+                }
+                if (!translation.endsWith("%")) {
+                    regex = regex + "\\b";
+                }
+                regex.replace(/%+/g, "\\B*?");
+                queryRegexes.push(new RegExp(regex, 'i'));
+            }
+            for (const match of allMatches) {
+                let matched = false;
+                for (const regex of queryRegexes) {
+                    if (regex.test(match.translations)) {
+                        matched = true;
+                        break;
+                    }
+                }
+                if (matched) {
+                    wholeWordMatches.push(match);
+                } else {
+                    nonWholeWordMatches.push(match);
+                }
+            }
+            allMatches = [...wholeWordMatches, ...nonWholeWordMatches];
+        }
+        // Add all non-exact matches to the result array
+        let i = 0;
+        let j = 0;
+        while (j < allMatches.length) {
+            if (i < exactMatches.length &&
+                    exactMatches[i].id === allMatches[j].id) {
+                ++i;
+            } else {
+                matchIds[exactMatches.length + j - i] = allMatches[j].id;
+            }
+            ++j;
+        }
+        return matchIds;
+    }
+
+    async function searchDictionaryVariant1(query, options) {
+        if (query.readings.length === 0 && query.translations.length === 0)
+            return [];
+        const selectClauses = [];
+        const queryArguments = [];
+        // Matching words and readings (if reading contains romaji,
+        // search for both hiragana and katakana versions)
+        if (query.readings.length > 0) {
+            const whereClausesYomi = [];
+            for (const reading of query.readings) {
+                const hiraVariant = reading.toKana("hiragana");
+                const kataVariant = reading.toKana("katakana");
+                if (hiraVariant !== reading && kataVariant !== reading) {
+                    whereClausesYomi.push("(reading LIKE ? OR reading LIKE ?)");
+                    queryArguments.push(hiraVariant, kataVariant);
+                } else {
+                    whereClausesYomi.push("reading LIKE ?");
+                    queryArguments.push(reading);
+                }
+            }
+            queryArguments.push(...query.readings);
+            selectClauses.push(
+                "(SELECT DISTINCT id FROM readings WHERE "
+                + whereClausesYomi.join(" AND ") + " UNION "
+                + "SELECT DISTINCT id FROM words WHERE "
+                + Array(query.readings.length).fill("word LIKE ?")
+                  .join(" AND ") + ")");
+        }
+        // Matching translations
+        if (query.translations.length > 0) {
+            selectClauses.push(
+                "(SELECT DISTINCT id FROM translations WHERE "
+                + Array(query.translations.length).fill("translation LIKE ?")
+                  .join(" AND ") + ")");
+            queryArguments.push(...query.translations);
+        }
+        const rows = await data.query(
+            `WITH matched_ids AS ${selectClauses.join(" INTERSECT ")}
+             SELECT d.id, d.translations
+             FROM matched_ids m JOIN dictionary d ON m.id = d.id
+             ORDER BY d.news_freq DESC`, ...queryArguments);
+        return rows;
+    }
+
+    async function searchDictionaryVariant2(query, options) {
+        if (query.readings.length === 0 && query.translations.length === 0)
+            return [];
+        const whereClauses = [];
+        const queryArguments = [];
+        // Matching words and readings (if reading contains romaji,
+        // search for both hiragana and katakana versions)
+        if (query.readings.length) {
+            for (const reading of query.readings) {
+                const hiraVariant = reading.toKana("hiragana");
+                const kataVariant = reading.toKana("katakana");
+                if (hiraVariant !== reading && kataVariant !== reading) {
+                    whereClauses.push(
+                        "((';' || readings || ';' || words || ';') LIKE ? OR " +
+                        " (';' || readings || ';' || words || ';') LIKE ?)")
+                    queryArguments.push(
+                        `%;${hiraVariant};%`, `%;${kataVariant};%`);
+                } else {
+                    whereClauses.push(
+                        "(';' || readings || ';' || words || ';') LIKE ?");
+                    queryArguments.push(`%;${reading};%`);
+                }
+            }
+        }
+        // Matching translations
+        if (query.translations.length) {
+            for (const translation of query.translations) {
+                whereClauses.push("(';' || translations || ';') LIKE ?");
+                queryArguments.push(`%;${translation};%`);
+            }
+        }
+        const rows = await data.query(`
+             SELECT id, translations FROM dictionary
+             WHERE ${whereClauses.join(" AND ")}
+             ORDER BY news_freq DESC`, ...queryArguments);
+        return rows;
+    }
+
+    async function searchProperNames(query, options) {
+        if (query.readings.length === 0 && query.translations.length === 0)
+            return [];
+        const whereClauses = [];
+        const queryArguments = [];
+        // Matching words and readings (if reading contains romaji,
+        // search for both hiragana and katakana versions)
+        if (query.readings.length) {
+            for (const reading of query.readings) {
+                const hiraVariant = reading.toKana("hiragana");
+                const kataVariant = reading.toKana("katakana");
+                if (hiraVariant !== reading && kataVariant !== reading) {
+                    whereClauses.push(
+                        "(reading LIKE ? OR reading LIKE ? OR" +
+                        " name LIKE ? OR name LIKE ?)")
+                    queryArguments.push(
+                        hiraVariant, hiraVariant, kataVariant, kataVariant);
+                } else {
+                    whereClauses.push("reading LIKE ? OR name LIKE ?");
+                    queryArguments.push(reading, reading);
+                }
+            }
+        }
+        // Matching translations
+        if (query.translations.length) {
+            for (const translation of query.translations) {
+                whereClauses.push("(';' || translations || ';') LIKE ?");
+                queryArguments.push(`%;${translation};%`);
+            }
+        }
+        const rows = await data.query(
+            `SELECT id, translations FROM proper_names
+             WHERE ${whereClauses.join(" AND ")}`, ...queryArguments);
+        return rows;
+    }
+
+    async function getProperNameEntryInfo(id) {
+        let [{ name, tags, reading, translations }] = await data.query(`
+            SELECT name, tags, reading, translations FROM proper_names
+            WHERE id = ?`, id);
+        const tagToText = data.nameTagToText[
+            modules.settings.dictionary.partOfSpeechInJapanese ?
+            "Japanese" : "English"];
+        const tagList = tags.split(";").filter((tag) => tag !== "abbr");
+        return {
+            id,
+            wordsAndReadings: [{ 
+                word: reading === null ? "" : name,
+                reading: reading === null ? name : reading
+            }],
+            meanings: [{
+                translations: translations.split(";"),
+                partsOfSpeech: tagList.map((tag) => tagToText[tag]),
+                miscInfo: tags.includes("abbr") ? [tagToText["abbr"]] : []
+            }],
+            tags: tagList
+        };
+    }
+
+    /**
+     * Load content from database into an in-memory database.
+     * @returns {Function} - Function to query the in-memory database.
+     */
+    async function loadDatabaseIntoMemory() {
+        const db = promisifyDatabase(new sqlite3.Database(":memory:"));
+        // Define function for querying database
+        const query = (query, ...params) => db.all(query, ...params);
+        // Attach content and user data database to in-memory one
+        await query("ATTACH DATABASE ? AS ?",
+            contentPaths.database, "content");
+        await query("ATTACH DATABASE ? AS ?",
+            paths.languageData("Japanese").database, "trainer");
+        // Create tables of content database in in-memory database and
+        // copy over all data
+        const tablesInfo = await query(
+            "SELECT name, sql FROM content.sqlite_master WHERE type='table'");
+        for (const { name, sql } of tablesInfo) {
+            console.log(`Creating table ${name}...`);
+            await db.exec(sql);
+            await query(`INSERT INTO ${name} SELECT * FROM content.${name}`);
+        }
+        // Create indices of content database in in-memory database
+        const indicesInfo = await query(
+            "SELECT name, sql FROM content.sqlite_master WHERE type='index'");
+        for (const { name, sql } of indicesInfo) {
+            if (name.startsWith("sqlite_autoindex"))
+                continue;
+            console.log(`Creating index ${name}...`);
+            await db.exec(sql);
+        }
+        // Detach content database again
+        await query("DETACH DATABASE ?", "content");
+        return query;
+    }
+
+    const queryFunction = await loadDatabaseIntoMemory();
+    const [amountPerGrade, amountPerLevel] = await Promise.all([
         // Get information about kanji grades and jlpt levels
-        query(`SELECT grade, COUNT(*) AS amount FROM kanji
-                GROUP BY grade`),
-        query(`SELECT jlpt AS level, COUNT(*) AS amount
-               FROM kanji WHERE jlpt IS NOT NULL
-               GROUP BY jlpt`)
-    ])).then(([amountPerGrade, amountPerLevel]) => {
-        // Create mapping from jouyou grade to amount
-        const kanjiPerGrade = {};
-        for (const { grade, amount } of amountPerGrade) {
-            kanjiPerGrade[grade] = amount;
-        }
-        // Create mapping from jlpt level to amount
-        const kanjiPerJlpt = {};
-        for (const { level, amount } of amountPerLevel) {
-            kanjiPerJlpt[level] = amount;
-        }
-        // Gather all the content into a frozen object
-        data = Object.freeze({
-            query: query,
-            numKanjiPerGrade: Object.freeze(kanjiPerGrade),
-            numKanjiPerJlptLevel: Object.freeze(kanjiPerJlpt),
-            kanjiStrokes: Object.freeze(require(contentPaths.kanjiStrokes)),
-            numericKanji: Object.freeze(require(contentPaths.numbers)),
-            counterKanji: Object.freeze(require(contentPaths.counters)),
-            codeToText: Object.freeze(require(contentPaths.dictCodeToText)),
-            kokujiList: Object.freeze(
-                new Set(fs.readFileSync(contentPaths.kokujiList, "utf8"))),
-            exampleWordIds: Object.freeze(require(contentPaths.exampleWordIds)),
-            isKnownKanji,
-            getKanjiInfo,
-            getKanjiMeanings,
-            getKanjiLists,
-            searchForKanji,
-            getDictionaryEntryInfo,
-            getExampleWordsDataForEntryId,
-            getEntryIdsForTranslationQuery,
-            getEntryIdsForReadingQuery,
-            guessDictionaryId,
-            doesVocabularyContain
-        });
-        return data;
+        queryFunction(`SELECT grade, COUNT(*) AS amount FROM kanji
+                       GROUP BY grade`),
+        queryFunction(`SELECT jlpt AS level, COUNT(*) AS amount
+                       FROM kanji WHERE jlpt IS NOT NULL
+                       GROUP BY jlpt`)
+    ]);
+    // Create mapping from jouyou grade to amount
+    const kanjiPerGrade = {};
+    for (const { grade, amount } of amountPerGrade) {
+        kanjiPerGrade[grade] = amount;
+    }
+    // Create mapping from jlpt level to amount
+    const kanjiPerJlpt = {};
+    for (const { level, amount } of amountPerLevel) {
+        kanjiPerJlpt[level] = amount;
+    }
+    // Gather all the content into a frozen object
+    data = Object.freeze({
+        query: queryFunction,
+
+        // Data objects
+        numKanjiPerGrade: Object.freeze(kanjiPerGrade),
+        numKanjiPerJlptLevel: Object.freeze(kanjiPerJlpt),
+        kanjiStrokes: Object.freeze(require(contentPaths.kanjiStrokes)),
+        numericKanji: Object.freeze(require(contentPaths.numbers)),
+        counterKanji: Object.freeze(require(contentPaths.counters)),
+        codeToText: Object.freeze(require(contentPaths.dictCodeToText)),
+        nameTagToText: Object.freeze(require(contentPaths.nameTagToText)),
+        kokujiList: Object.freeze(
+            new Set(fs.readFileSync(contentPaths.kokujiList, "utf8"))),
+        exampleWordIds: Object.freeze(require(contentPaths.exampleWordIds)),
+
+        // Kanji related
+        isKnownKanji,
+        getKanjiInfo,
+        getKanjiMeanings,
+        getKanjiLists,
+        searchKanji,
+
+        // Dictionary related
+        getDictionaryEntryInfo,
+        guessDictionaryId,
+        doesVocabularyContain,
+        searchDictionary,
+
+        // Proper names
+        getProperNameEntryInfo
     });
+    return data;
 };

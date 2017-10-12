@@ -29,6 +29,16 @@
         "cursor": "default",
         "colorScheme": "default"
     },
+    "dictionary": {
+        "partOfSpeechInJapanese": false,
+        "showFrequencyValues": false,
+        "includeProperNameSearch": false,
+        "frequencyWeights": {
+            "news": 1,
+            "book": 0,
+            "net": 0
+        }
+    },
     "kanjiOverview": {
         "splittingCriterion": "grade",
         "sortingCriterion": "alphabetical",
@@ -67,6 +77,7 @@
         "open-settings": "CmdOrCtrl+S",
         "open-help": "F1",
 
-        "ignore-answer": "CmdOrCtrl+I"
+        "ignore-answer": "CmdOrCtrl+I",
+        "save-input": "CmdOrCtrl+Enter"
     }
 }

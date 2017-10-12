@@ -37,7 +37,7 @@ class TestSettingsSubsection extends SettingsSubsection {
         this.$("ignore-shortcut").addEventListener("click", () => {
             overlays.open("choose-shortcut").then((newShortcut) => {
                 if (newShortcut === null) return;
-                shortcuts.setBindingFor("ignore-answer", newShortcut);
+                shortcuts.bindKeyCombination("ignore-answer", newShortcut);
                 events.emit("settings-shortcuts-ignore-answer");
             });
         });
@@ -95,7 +95,7 @@ class TestSettingsSubsection extends SettingsSubsection {
         });
         events.on("settings-shortcuts-ignore-answer", () => {
             this.$("ignore-shortcut").textContent =
-                shortcuts.getBindingFor("ignore-answer");
+                shortcuts.getBoundKeyCombination("ignore-answer");
         });
         events.on("settings-test-use-serif-font", () => {
             this.$("use-serif-font").checked =

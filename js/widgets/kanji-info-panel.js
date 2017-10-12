@@ -90,12 +90,6 @@ class KanjiInfoPanel extends Widget {
         // =================================================================
         // Example words view functionality
         // =================================================================
-        const createSmallExampleWordViewItem = async (entryId) => {
-            const ExampleWordEntry = customElements.get("example-word-entry");
-            const info = await
-                dataManager.content.getExampleWordsDataForEntryId(entryId);
-            return new ExampleWordEntry(info);
-        };
         const createDetailedExampleWordViewItem = async (entryId) => {
             const info = await
                 dataManager.content.getDictionaryEntryInfo(entryId);
@@ -146,6 +140,21 @@ class KanjiInfoPanel extends Widget {
             if (this.currentKanji !== kanji) return;
             this.$("added-label").hide();
             this.$("add-button").show();
+        });
+        const updateWordStatus = (word, dictionaryId, isAdded) => {
+            for (const searchResultEntry of this.$("example-words").children) {
+                if (searchResultEntry.dataset.id === dictionaryId ||
+                        searchResultEntry.dataset.mainWord === word) {
+                    searchResultEntry.toggleAdded(isAdded);
+                    break;
+                }
+            }
+        };
+        events.on("word-added", (word, dictionaryId) => {
+            updateWordStatus(word, dictionaryId, true);
+        });
+        events.on("word-deleted", (word, dictionaryId) => {
+            updateWordStatus(word, dictionaryId, false);
         });
     }
 

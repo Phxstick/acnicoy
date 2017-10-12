@@ -28,16 +28,16 @@ def create_dictionary_tables(cursor):
             words TEXT,
             readings TEXT,
             translations TEXT,
-            news_freq INTEGER
+            news_freq INTEGER,
+            net_freq INTEGER,
+            book_freq INTEGER
         )
         """)
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS words (
             id INTEGER,
-            word TEXT,
-            news_freq INTEGER,
-            net_freq INTEGER
+            word TEXT
         )
         """)
     cursor.execute(
@@ -45,8 +45,6 @@ def create_dictionary_tables(cursor):
         CREATE TABLE IF NOT EXISTS readings (
             id INTEGER,
             reading TEXT,
-            news_freq INTEGER,
-            net_freq INTEGER,
             restricted_to TEXT
         )
         """)
@@ -63,7 +61,8 @@ def create_dictionary_tables(cursor):
             readings_restricted_to TEXT
         )
         """)
-    # TODO: Is translations table needed?
+    # Translations table is only used for searching. consider deleting it,
+    # since indices are of no use for matching whole words (requires wildcards)
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS translations (
@@ -71,6 +70,23 @@ def create_dictionary_tables(cursor):
             translation TEXT
         )
         """)
+
+
+def create_proper_names_table(cursor):
+    """Create table for proper names in the database referenced by given cursor.
+    Drop table first if it already exists.
+    """
+    cursor.execute("DROP TABLE IF EXISTS proper_names")
+    cursor.execute(
+       """
+       CREATE TABLE IF NOT EXISTS proper_names (
+           id INTEGER PRIMARY KEY,
+           name TEXT,
+           tags TEXT,
+           reading TEXT,
+           translations TEXT
+       )
+       """)
 
 
 def create_kanji_tables(cursor):
@@ -159,7 +175,8 @@ def parse_dictionary_entry(ID, entry, cursor, text_to_code):
         for freq_element in reading_element.findall("re_pri"):
             if freq_element.text.startswith("nf"):
                 reading_news_freq[reading] = 49 - int(freq_element.text[2:])
-                entry_news_freq = max(reading_news_freq[reading], entry_news_freq)
+                entry_news_freq = max(reading_news_freq[reading],
+                                      entry_news_freq)
         # Get kanji elements which this reading is restricted to
         reading_restricted_to[reading] = []
         for restr_element in reading_element.findall("re_restr"):
@@ -189,7 +206,8 @@ def parse_dictionary_entry(ID, entry, cursor, text_to_code):
             meaning_restricted_to[-1]["words"].append(word_restr_element.text)
         # Get reading elements this meaning is restricted to
         for reading_restr_element in sense_element.findall("stagr"):
-            meaning_restricted_to[-1]["readings"].append(reading_restr_element.text)
+            meaning_restricted_to[-1]["readings"].append(
+                    reading_restr_element.text)
         # Get translations corresponding to this meaning
         for gloss_element in sense_element.findall("gloss"):
             if gloss_element.attrib[
@@ -203,17 +221,15 @@ def parse_dictionary_entry(ID, entry, cursor, text_to_code):
                 translations.append(translation)
         meanings.append(translations)
     # Insert entry into the database
-    meaning_strings = [",".join(meaning) for meaning in meanings]
-    cursor.execute("INSERT INTO dictionary VALUES (?, ?, ?, ?, ?)",
+    meaning_strings = [";".join(meaning) for meaning in meanings]
+    cursor.execute("INSERT INTO dictionary VALUES (?, ?, ?, ?, ?, ?, ?)",
         (ID, ";".join(words), ";".join(readings), ";".join(meaning_strings),
-         entry_news_freq))
+         entry_news_freq, 0, 0))
     for word in words:
-        cursor.execute("INSERT INTO words VALUES (?, ?, ?, ?)",
-                (ID, word, word_news_freq[word], 0))
+        cursor.execute("INSERT INTO words (id, word) VALUES (?, ?)", (ID, word))
     for reading in readings:
-        cursor.execute("INSERT INTO readings VALUES (?, ?, ?, ?, ?)",
-                (ID, reading, reading_news_freq[reading], 0,
-                 ";".join(reading_restricted_to[reading])))
+        cursor.execute("INSERT INTO readings VALUES (?, ?, ?)",
+                (ID, reading, ";".join(reading_restricted_to[reading])))
     for translations, pos, field, misc, dial, restricted_to in zip(
             meanings, part_of_speech, field_of_application, misc_info,
             dialect, meaning_restricted_to):
@@ -236,7 +252,7 @@ def parse_kanji_entry(line, cursor):
     data = {"kanji": fields[0], "on-yomi": [], "kun-yomi": [],
             "frequency": None, "strokes": None, "radical_id": None, "grade": 0,
             "jlpt": None, "meanings": re.findall(r"\{(.*?)\}", line),
-            "on-yomi-search": [], "kun-yomi-search": [], "meanings-search": []}
+            "meanings-search": [], "on-yomi-search": [], "kun-yomi-search": []}
     # data["jis_code"] = fields[1]
     for field in fields:
         if field[0] == "J":
@@ -268,9 +284,12 @@ def parse_kanji_entry(line, cursor):
             kun_yomi_search, meanings_search, parts)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (data["kanji"], data["grade"], data["jlpt"], data["radical_id"],
-         data["strokes"], data["frequency"], ";".join(data["on-yomi"]),
-         ";".join(data["kun-yomi"]), ";".join(data["meanings"]),
-         ";".join(data["on-yomi-search"]), ";".join(data["kun-yomi-search"]),
+         data["strokes"], data["frequency"],
+         ";".join(data["on-yomi"]),
+         ";".join(data["kun-yomi"]),
+         ";".join(data["meanings"]),
+         ";".join(data["on-yomi-search"]),
+         ";".join(data["kun-yomi-search"]),
          ";".join(data["meanings-search"]), ""))
 
 
@@ -407,8 +426,97 @@ def parse_improved_dictionary_texts(code_to_text_path, improved_texts_path):
     print("Done.")
 
 
+def parse_proper_names(filename, cursor):
+    """ Parse proper name dictionary file with given filename (should be
+    'enamdict') into database referenced by given cursor.
+    """
+    create_proper_names_table(cursor)
+    known_tags = {
+        "s": "surname",
+        "u": "person name, as-yet unclassified",
+        "g": "given name, as-yet not classified by sex",
+        "f": "female given name",
+        "m": "male given name",
+        "h": "full (family plus given) name of a particular person",
+
+        "c": "company name",
+        "o": "association name",
+
+        "p": "place-name",
+        "st": "station name",
+
+        "pr": "product name",
+        "wk": "name of a work (literature, movie, composition, ...)"
+    }
+    with open(filename, encoding="euc_jp") as f:
+        next(f)
+        for count, line in enumerate(f):
+            matches = re.findall(
+                r"^(\S+) (?:\[(.*)\] )?/(.*)/$", line)
+            if len(matches) != 1:
+                print("ERROR: Could not parse line %d:  '%s'", (count, line))
+                continue
+            name, reading, translations_string = matches[0]
+            if len(reading) == 0:
+                reading = None
+            tags = []
+            translations = []
+            for translation_string in translations_string.split("/"):
+                info_in_parentheses = re.findall(r"\((.*?)\)",
+                                                 translation_string)
+                for info_string in info_in_parentheses:
+                    infos = list(map(lambda s: s.strip(), info_string.split(",")))
+                    contains_only_tags = True
+                    for info in infos:
+                        if info in known_tags:
+                            tags.append(info)
+                        else:
+                            contains_only_tags = False
+                    if contains_only_tags:
+                        translation_string = \
+                            translation_string.replace(
+                                    "(%s) " % info_string, "")
+                    if "abbr" in infos:
+                        tags.append("abbr")
+                        translation_string = \
+                                translation_string.replace(" (abbr)", "")
+                        translation_string = \
+                                translation_string.replace("(abbr) ", "")
+                        translation_string = \
+                                translation_string.replace("abbr, ", "")
+                        translation_string = \
+                                translation_string.replace(", abbr", "")
+                    translations.append(translation_string.strip())
+            cursor.execute("""
+                INSERT INTO proper_names (id, name, tags, reading, translations)
+                VALUES (?, ?, ?, ?, ?) """, 
+                (count, name, ";".join(tags), reading, ";".join(translations)))
+            print(count + 1, "proper names parsed...\r", end="")
+        print("Finished parsing", count + 1, "proper names.")
+
+    print("Creating index on name...", end="\r")
+    cursor.execute("CREATE INDEX proper_names_name " +
+                   "ON proper_names(name COLLATE NOCASE)")
+    print("Creating index on name... Done")
+
+    print("Creating index on reading...", end="\r")
+    cursor.execute("CREATE INDEX proper_names_reading "
+                   "ON proper_names(reading COLLATE NOCASE)")
+    print("Creating index on reading... Done")
+
+
+def match_word_to_dictionary_entry(word, cursor):
+    """Return the ids of the dictionary entries which match given word in
+    the database referenced by given cursor.
+    """
+    cursor.execute("""SELECT id FROM words WHERE word LIKE '%s' UNION
+                      SELECT id FROM readings WHERE reading LIKE '%s'"""
+                      % (word, word))
+    return cursor.fetchall()
+
+
 def parse_word_web_frequencies(filename, cursor):
-    print("PARSING WEB FREQUENCIES IS NOT YET IMPLEMENTED")
+    pass
 
 
 def parse_word_news_frequencies(filename, cursor):
@@ -417,20 +525,26 @@ def parse_word_news_frequencies(filename, cursor):
     referenced by given cursor.
     """
     with open(filename, encoding="euc_jp") as f:
-        next(f)
+        total_count = int(re.findall(r"\d+", f.readline())[0])
         for count, line in enumerate(f):
-            parts = line.split("+")
-            if len(parts) > 3 or len(parts) < 2:
-                print("Skipping string at line %d:  %s" % (count, line))
+            line_matches = re.findall(r"([^+]+)\+(\d+)\t(\d+)$", line)
+            if len(line_matches) == 0:
+                print("ERROR: Cannot parse line %d:  '%s'" % (count, line))
                 continue
-            word = parts[-2]
-            frequency = int(parts[-1].split("\t")[1])
-            if frequency <= 3:
+            word, pos_id, frequency = line_matches[0]
+            frequency = int(frequency)
+            pos_id = int(pos_id)
+            if frequency <= 5:
                 break
-            cursor.execute("UPDATE words SET news_freq = ? WHERE word = ?",
-                           (frequency, word))
-            print(count + 1, " newspaper word frequencies parsed...\r", end="")
-        print("Finished parsing", count + 1, " newspaper word frequencies.")
+            entry_matches = match_word_to_dictionary_entry(word, cursor)
+            # cursor.execute("UPDATE words SET news_freq = ? WHERE word = ?",
+            #                (frequency, word))
+            print(count + 1, "newspaper word frequencies parsed...\r", end="")
+        print("Finished parsing", count + 1, "newspaper word frequencies.")
+
+
+def parse_word_bccwj_frequencies(filename, cursor):
+    pass
 
 
 def parse_kanji(filename, cursor):
@@ -486,15 +600,23 @@ def parse_improved_kanji_meanings(filename, cursor):
     """
     print("Applying improved kanji meanings...", end="\r")
     with open(filename) as f:
-        newMeanings = json.load(f)
-        for kanji in newMeanings:
+        new_meanings = json.load(f)
+        for kanji in new_meanings:
             # Old meanings are kept as data in another column for searching
+            # (Only those which are not also part of the new meanings)
+            cursor.execute("SELECT meanings FROM kanji WHERE entry = ?", kanji)
+            old_meanings = cursor.fetchone()[0].split(";")
+            new_meanings_set = set(new_meanings[kanji])
+            only_old_meanings = []
+            for old_meaning in old_meanings:
+                if old_meaning not in new_meanings_set:
+                    only_old_meanings.append(old_meaning)
             cursor.execute(
-                """UPDATE kanji SET meanings_search = (SELECT meanings FROM kanji
-                WHERE entry = ?) WHERE entry = ?""", (kanji, kanji))
+                "UPDATE kanji SET meanings_search = ? WHERE entry = ?",
+                (";".join(only_old_meanings), kanji))
             # Old meanings are replaced with new ones
             cursor.execute("UPDATE kanji SET meanings = ? WHERE entry = ?",
-                    (";".join(newMeanings[kanji]), kanji))
+                (";".join(new_meanings[kanji]), kanji))
     print("Applying improved kanji meanings... Done.")
 
 
@@ -614,12 +736,15 @@ if __name__ == "__main__":
     parser.add_argument("--kanji-strokes", "--strokes", "--str", "-s",
             metavar="FILENAME", dest="kanji_strokes_filename",
             help="Filename of the xml file containing kanji stroke info.")
-    parser.add_argument("--web-frequencies", "--web", "-w", metavar="FILENAME",
-            dest="word_web_freq_filename",
-            help="Filename of the file containing internet word frequencies.")
     parser.add_argument("--news-frequencies", "--news", "-n",
             metavar="FILENAME", dest="word_news_freq_filename",
             help="Filename of the file containing newspaper word frequencies.")
+    parser.add_argument("--web-frequencies", "--web", "-w", metavar="FILENAME",
+            dest="word_web_freq_filename",
+            help="Filename of the file containing internet word frequencies.")
+    parser.add_argument("--bccwj-frequencies", "--bccwj", "-b",
+            metavar="FILENAME", dest="word_bccwj_freq_filename",
+            help="Filename of the file containing BCCWJ word frequencies.")
     parser.add_argument("--kanji-parts", "--part", "-p",
             metavar="FILENAME", dest="kanji_parts_filename",
             help="Filename of the file containing kanji part compositions.")
@@ -634,6 +759,9 @@ if __name__ == "__main__":
             dest="example_words_index", action="store_true",
             help="Create a reversed index for getting example words for kanji."
                  " Dictionary and kanji must be in the database already.")
+    parser.add_argument("--proper-names", "--names", metavar="FILENAME",
+            dest="proper_names_filename",
+            help="Filename with proper names dictionary data.")
     parser.add_argument("--output", "--out", "-o", metavar="FILENAME",
             dest="output_path", help="Directory path for output files.")
     args = parser.parse_args()
@@ -658,17 +786,30 @@ if __name__ == "__main__":
             args.improved_dictionary_texts_filename)
         parse_improved_dictionary_texts(
                 code_to_text_path, args.improved_dictionary_texts_filename)
-    # # Parse word frequencies
-    # if args.word_web_freq_filename is not None:
-    #     print()
-    #     print("Parsing frequencies of words in the internet from file '%s':"
-    #           % args.word_web_freq_filename)
-    #     parse_word_web_frequencies(args.word_web_freq_filename, cursor)
+    # Parse proper names
+    if args.proper_names_filename is not None:
+        print()
+        print("Parsing proper names from file '%s':" %
+            args.proper_names_filename)
+        parse_proper_names(args.proper_names_filename, cursor)
+    # Parse internet word frequencies
+    if args.word_web_freq_filename is not None:
+        print()
+        print("Parsing frequencies of words in the internet from file '%s':"
+              % args.word_web_freq_filename)
+        parse_word_web_frequencies(args.word_web_freq_filename, cursor)
+    # Parse news word frequencies
     if args.word_news_freq_filename is not None:
         print()
         print("Parsing frequencies of words in newspapers from file '%s':"
               % args.word_news_freq_filename)
         parse_word_news_frequencies(args.word_news_freq_filename, cursor)
+    # Parse word frequencies in the BCCWJ dataset (including printed media)
+    if args.word_bccwj_freq_filename is not None:
+        print()
+        print("Parsing frequencies of words in BCCWF dataset from file '%s':"
+               % args.word_bccwj_freq_filename)
+        parse_word_bccwj_frequencies(args.word_bccwj_freq_filename, cursor)
     # Parse kanji
     if args.kanji_filename is not None:
         print()

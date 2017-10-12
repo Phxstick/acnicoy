@@ -44,13 +44,18 @@ class PinwallNotes extends PinwallWidget {
             this.addButtonHovered = false;
             this.$("add-button").classList.remove("highlight-top");
         });
-        // Leave edit mode when focusing out of note or pressing escape
+        // Leave edit mode when focussing out of note, pressing escape or
+        // save-shortcut
         this.$("notes").addEventListener("focusout", (event) => {
             if (event.target.parentNode !== this.$("notes")) return;
             this.saveNote(event.target);
         });
         window.addEventListener("keydown", (event) => {
             if (event.key !== "Escape") return;
+            if (this.noteBeingEdited === null) return;
+            this.noteBeingEdited.blur();
+        });
+        shortcuts.bindCallback("save-input", () => {
             if (this.noteBeingEdited === null) return;
             this.noteBeingEdited.blur();
         });

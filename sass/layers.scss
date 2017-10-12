@@ -15,12 +15,13 @@
   --side-bar-layer: 50;
 
   // Panels and sections
-  --panel-layer: 6;
-  --suggestion-pane-layer: 5;
-  --closing-panel-layer: 4;
-  --section-overlay-layer: 3;
-  --kanji-info-panel-layer: 2;
-  --dictionary-control-bar-layer: 1;
-  --kanji-control-bar-layer: 1;
+  --panel-layer: 40;
+  --suggestion-pane-layer: 36;
+  --closing-panel-layer: 32;
+  --section-overlay-layer: 28;
+  --kanji-info-panel-layer: 24;
+  --dictionary-control-bar-layer: 20;
+  --dictionary-search-info-bar-layer: 16;
+  --kanji-control-bar-layer: 12;
   --section-layer: 0;
 }

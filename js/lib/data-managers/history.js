@@ -29,7 +29,8 @@ module.exports = function (paths, modules) {
             await db.run(`CREATE TABLE kanji_search (
                 id INTEGER PRIMARY KEY,
                 time INTEGER,
-                name TEXT
+                name TEXT,
+                type TEXT
             )`);
             await db.run(`CREATE INDEX kanji_search_name ON kanji_search(name)`)
         }

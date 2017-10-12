@@ -1,4 +1,4 @@
-"use strict";
+"use strict";
 
 const { ipcRenderer, remote } = require("electron");
 const mainBrowserWindow = remote.getCurrentWindow();
@@ -102,11 +102,12 @@ class MainWindow extends Window {
             "open-dictionary": () => {
                 this.openSection("dictionary");
                 this.sections["dictionary"].$("words-filter").focus();
+
             },
             "open-kanji-search": () => {
                 this.sections["kanji"].showSearchResults();
                 this.openSection("kanji");
-                this.sections["kanji"].$("search-entry").focus();
+                this.sections["kanji"].$("search-by-kanji-input").focus();
             },
             "open-kanji-overview": () => {
                 this.sections["kanji"].showOverview();
@@ -132,13 +133,23 @@ class MainWindow extends Window {
             "toggle-fullscreen": () =>
                 mainBrowserWindow.setFullScreen(
                     !mainBrowserWindow.isFullScreen()),
-            "refresh": () => events.emit("update-srs-status")
+            "refresh": () => events.emit("update-srs-status"),
+            "save-input": () => {
+                if (this.currentPanel !== null) {
+                    this.panels[this.currentPanel].save();
+                }
+            }
         };
         this.shortcutsForLanguage = {
             "Japanese":
                 ["add-kanji", "open-kanji-search", "open-kanji-overview",
                  "open-dictionary"]
         };
+        // Register all shortcut callbacks
+        for (const shortcutName in this.shortcutMap) {
+            shortcuts.bindCallback(
+                shortcutName, this.shortcutMap[shortcutName]);
+        }
         // Confirm on closing and save data before exiting the application
         ipcRenderer.on("closing-window", () => {
             this.attemptToQuit().then((confirmed) => {
@@ -220,6 +231,10 @@ class MainWindow extends Window {
             results.push(this.sections[name].initialize());
         }
         await Promise.all(results);
+        // Enable all shortcuts
+        for (const shortcutName in this.shortcutMap) {
+            shortcuts.enable(shortcutName);
+        }
         // Set language and adjust to global settings
         await this.setLanguage(dataManager.settings.languages.default);
         this.sections["settings"].broadcastGlobalSettings();
@@ -255,7 +270,7 @@ class MainWindow extends Window {
     async close() {
         window.clearInterval(this.srsStatusCallbackId);
         for (const shortcutName in this.shortcutMap) {
-            shortcuts.unregister(shortcutName);
+            shortcuts.disable(shortcutName);
         }
         ipcRenderer.send("deactivate-controlled-closing");
     }
@@ -546,14 +561,14 @@ class MainWindow extends Window {
         } else {
             this.$("add-hanzi-button").hide();
         }
-        // Register shortcuts for this language
-        for (const shortcutName in this.shortcutMap) {
-            shortcuts.register(shortcutName, this.shortcutMap[shortcutName]);
-        }
         for (const l in this.shortcutsForLanguage) {
             if (language !== l) {
                 for (const shortcutName of this.shortcutsForLanguage[l]) {
-                    shortcuts.unregister(shortcutName);
+                    shortcuts.disable(shortcutName);
+                }
+            } else {
+                for (const shortcutName of this.shortcutsForLanguage[l]) {
+                    shortcuts.enable(shortcutName);
                 }
             }
         }

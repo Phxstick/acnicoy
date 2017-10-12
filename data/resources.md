@@ -9,15 +9,21 @@ from subtlepatterns.com
 
 ### Japanese language data
 
-[Dictionary data (JMdict.xml)](http://www.edrdg.org/jmdict/edict_doc.html) and
-[Kanji data (kanjidic.txt)](http://www.edrdg.org/kanjidic/kanjidic.html)
+[Dictionary data (JMdict.xml)](http://www.edrdg.org/jmdict/edict_doc.html),  
+[Kanji data (kanjidic.txt)](http://www.edrdg.org/kanjidic/kanjidic.html),  
+[Kanji decomposition data (kradfile)](http://nihongo.monash.edu/kradinf.html),  
+[Japanese Proper Name Dictionary File (enamdict)](http://ftp.monash.edu.au/pub/nihongo/enamdict.gz),  
+[Newspaper word frequency list (wordfreq)](http://ftp.monash.edu.au/pub/nihongo/wordfreq.zip)  
 from The Electronic Dictionary Research and Development Group
+
+[Word frequency list based on the Balanced Corpus of Contemporary Written Japanese (BCCWJ)](http://pj.ninjal.ac.jp/corpus_center/bccwj/data-files/frequency-list/BCCWJ_frequencylist_suw_ver1_0.zip)
+from the Center for Corpus Development, NINJAL
+
+[Internet corpus word frequency list (internet-jp.num)](http://corpus.leeds.ac.uk/frqc/internet-jp.num)
+from the Centre for Translation Studies of the University of Leeds
 
 [Kanji radicals data (radical.utf8.txt)](https://github.com/Pomax/nihongoresources.com/blob/master/radical.utf8.txt)
 from nihongoresources.com
-
-[Kanji decomposition data (kradfile)](http://nihongo.monash.edu/kradinf.html)
-from Jim Breen
 
 [Kanji stroke data (kanjivg.xml)](http://kanjivg.tagaini.net/)
 from Ulrich Apel

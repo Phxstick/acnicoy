@@ -19,6 +19,10 @@ body {
   z-index: var(--dictionary-control-bar-layer);
   position: relative;
 
+  &.no-shadow {
+    box-shadow: none;
+  }
+
   #words-filter-frame, #meanings-filter-frame {
     flex: 1;
     display: flex;
@@ -36,13 +40,6 @@ body {
     padding-right: 10px;
     font-size: 140%;
   }
-}
-
-#search-results {
-  flex: 1;
-  background-color: $view-background;
-  color: $view-color;
-  overflow-y: auto;
 }
 
 #meanings-filter-button, #words-filter-button {
@@ -66,6 +63,73 @@ body {
   }
 }
 
+#search-results-info-bar {
+  display: flex;
+  flex-direction: row;
+  background-color: $background-color;
+  color: $color;
+  border-top: 1px solid $border-color-medium;
+  box-shadow: $slim-shadow-bottom;
+  z-index: var(--dictionary-search-info-bar-layer);
+  flex-shrink: 0;
+
+  > div {
+    flex: 1;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    display: flex;
+    flex-direction: row;
+    background-color: $background-color-dark;
+    
+    &:not(:first-child) {
+      border-left: 1px solid $border-color-light;
+    }
+
+    // &.disabled {
+    //   .search-results-info-header {
+    //     color: $color-light;
+    //   }
+    // }
+
+    &.selected {
+      background-color: $background-color;
+      // .search-results-info-header {
+      //   color: $highlight-background-dark;
+      //   text-shadow: 0 0 1px $highlight-background;
+      // }
+      .search-results-info-header {
+        color: $button-light-color-hover;
+        text-shadow: 0 0 1px $button-light-color;
+      }
+    }
+
+    &:not(.selected):hover {
+      background-color: $background-color-medium;
+    }
+  }
+
+  .search-results-info-header {
+    font-family: $header-font;
+    font-size: 1rem;
+    padding-left: 10px;
+    padding-right: 10px;
+    color: $button-light-color;
+  }
+
+  .search-results-info-details {
+    font-family: $small-font;
+    font-size: 0.8rem;
+    color: $color-light;
+  }
+}
+
+.search-results {
+  flex: 1;
+  background-color: $view-background;
+  color: $view-color;
+  overflow-y: auto;
+}
+
 #history-popup {
   position: absolute;
   right: 0;
@@ -84,4 +148,11 @@ body {
 
 #history-header {
   border-bottom: 1px solid $border-color-medium;
+}
+
+#settings-popup {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  width: 240px;
 }

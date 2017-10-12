@@ -96,10 +96,10 @@ for (let i = 0; i < kataRomaji2.length; ++i)
 
 const romajiChars = new Set("abcdefghijkmnoprstuwyzABCDEFGHIJKMNOPRSTUWYZ");
 const smallKana = new Set(["ゃ", "ゅ", "ょ", "ャ", "ュ", "ョ"]);
+const kanaVowels = new Set("あえいおう");
 const singleRomaji = new Set("aeioun");
 
 
-// TODO: Can this create strings like "hon'i"?
 String.prototype.toRomaji = function() {
     const string = this.toLowerCase();
     let converted = [];
@@ -112,6 +112,11 @@ String.prototype.toRomaji = function() {
             else if (kataRepl2.hasOwnProperty(composition))
                 converted.push(kataRepl2[composition]);
         }
+        // Insert 'n' + apostrophe when encountering "ん" + vowel
+        else if (string[i] === "ん" && i !== string.length - 1 &&
+                kanaVowels.has(string[i + 1])) {
+            converted.push("n", "'");
+        }
         // Convert single kana
         else if ((hiraRepl1.hasOwnProperty(string[i]) ||
                   kataRepl1.hasOwnProperty(string[i])) &&
@@ -120,6 +125,10 @@ String.prototype.toRomaji = function() {
                 converted.push(hiraRepl1[string[i]]);
             else if (kataRepl1.hasOwnProperty(string[i]))
                 converted.push(kataRepl1[string[i]]);
+        }
+        // Convert "ー" to hyphen when writing katakana
+        else if (string[i] === "ー") {
+            converted.push("-");
         }
         // Also allow dots and characters used for romaji
         else if (string[i] === "." || romajiChars.has(string[i])) {
@@ -154,9 +163,9 @@ String.prototype.toKana = function (type, ignoreN) {
             converted.push(type === "hiragana" ? "ん" : "ン");
             ++i;
         }
-        // Check if we have duplicate letters
-        else if (i < string.length - 1 && string[i] !== "n" &&
-                 string[i] === string[i + 1] && romajiChars.has(string[i])) {
+        // Check if we have duplicate letters (which can't stand alone)
+        else if (i < string.length - 1 && string[i] === string[i + 1] &&
+                romajiChars.has(string[i]) && !singleRomaji.has(string[i])) {
             converted.push(type === "hiragana" ? "っ" : "ッ");
         }
         // Check for 3-letter compounds

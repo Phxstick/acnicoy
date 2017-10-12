@@ -503,19 +503,12 @@ function calculateHeaderCellWidths(tableBody, tableHead) {
 }
 
 /**
- * If given input is unfocused, select all the content upon click, otherwise
- * use the standard event handler (cursor is moved to clicked position).
+ * Select all the content in given node upon focussing in.
  * @param {HTMLInputElement} inputNode
  */
-function enableQuickSelect(inputNode) {
-    const root = inputNode.getRoot();
-    inputNode.addEventListener("mousedown", (event) => {
-        // If input didn't have focus, select all text in it
-        if (root.activeElement !== inputNode) {
-            inputNode.focus();
-            inputNode.setSelectionRange(0, inputNode.value.length);
-            event.preventDefault();
-        }
+function selectAllOnFocus(inputNode) {
+    inputNode.addEventListener("focusin", (event) => {
+        inputNode.setSelectionRange(0, inputNode.value.length);
     });
 }
 
@@ -571,25 +564,49 @@ function bindRadiobuttonGroup(container, initialValue, callback) {
 }
 
 
-function initializeView({ view, getData, createViewItem, uponResultLoaded,
-                          initialDisplayAmount, displayAmount, placeholder,
-                          noResultsPane,
-                          sortingCriterion="", sortBackwards=false,
+/**
+ * Make given node a data view, which displays search results upon searching
+ * for some data provided by given function. Scrolling almost to the bottom of
+ * the view will cause more search results to be displayed.
+ * @param {HTMLElement} view - Node which will contain the search results.
+ * @param {Function} getData - Async function returning a list of data items.
+ *     First argument must be the query (a string or undefined).
+ * @param {Function} createViewItem - Function which takes a data item (returned
+ *     by 'getdata') as argument and returns an HTMLElement representing a
+ *     search result to be inserted into the view.
+ * @param {Integer} initialDisplayAmount - Amount of items to display initially
+ *     after a search.
+ * @param {Integer} displayAmount - Amount of items to be displayed upon
+ *     scrolling almost to the bottom of the search results view.
+ *
+ * @param {HTMLElement} [placeholder] - Node to be displayed if query searched
+ *     for is empty.
+ * @param {HTMLElement} [noResultsPane] - Node to be displayed if there are no
+ *     search results after searching.
+ * @param {Boolean} [deterministicSearch=true] - If set to true, querying the
+ *     same thing as the previous time will not trigger a new search (as the
+ *     search results are expected to be completely determined by the query).
+ * @param {Boolean} [criticalScrollDistance=150] - Distance from the bottom of
+ *     the view in number of pixels which determines how far to the bottom
+ *     the view has to be scrolled for the next search results to be displayed.
+ */
+function initializeView({ view, getData, createViewItem, initialDisplayAmount,
+                          displayAmount, placeholder, noResultsPane,
+                          deterministicSearch=true,
                           criticalScrollDistance=150 }={}) {
     const state = {
         view,
         getData,
         createViewItem,
-        uponResultLoaded,
         lastQuery: null,
+        lastArgs: null,
         searchResult: null,
         nextResultIndex: null,
         resultLoaded: false,
         viewItemsLoaded: true,
-        sortingCriterion,
-        sortBackwards,
         initialDisplayAmount,
-        displayAmount
+        displayAmount,
+        deterministicSearch
     };
     function displayMoreViewItems() {
         state.viewItemsLoaded = false;
@@ -625,19 +642,18 @@ function initializeView({ view, getData, createViewItem, uponResultLoaded,
             state.view.hide();
             if (noResultsPane !== undefined)
                 noResultsPane.hide();
-            if (state.uponResultLoaded !== undefined)
-                state.uponResultLoaded();
             return;
         }
-        if (query === state.lastQuery) {
-            if (state.uponResultLoaded !== undefined)
-                state.uponResultLoaded();
+        if (state.deterministicSearch && query !== undefined
+                && query.length > 0
+                && query === state.lastQuery && args.equals(state.lastArgs)) {
             return;
         }
         state.lastQuery = query;
+        state.lastArgs = args;
+        state.resultLoaded = false;
         state.view.empty();
         const searchResult = await state.getData(query, ...args);
-        state.view.empty();
         state.nextResultIndex = 0;
         state.searchResult = searchResult;
         state.view.scrollToTop();
@@ -650,8 +666,7 @@ function initializeView({ view, getData, createViewItem, uponResultLoaded,
             state.view.toggleDisplay(resultsFound);
             noResultsPane.toggleDisplay(!resultsFound);
         }
-        if (state.uponResultLoaded !== undefined)
-            state.uponResultLoaded();
+        return state.searchResult;
     };
     return state;
 }
@@ -700,7 +715,7 @@ module.exports.findIndex = findIndex;
 module.exports.insertNodeIntoSortedList = insertNodeIntoSortedList;
 module.exports.removeEntryFromSortedList = removeEntryFromSortedList;
 module.exports.calculateHeaderCellWidths = calculateHeaderCellWidths;
-module.exports.enableQuickSelect = enableQuickSelect;
+module.exports.selectAllOnFocus = selectAllOnFocus;
 module.exports.bindRadiobuttonGroup = bindRadiobuttonGroup;
 module.exports.initializeView = initializeView;
 module.exports.makePopupWindow = makePopupWindow;

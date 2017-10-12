@@ -13,15 +13,16 @@ class ChooseShortcutOverlay extends Overlay {
         });
         this.callback = (event) => {
             event.stopPropagation();
-            const accelerator = shortcuts.extractBinding(event);
-            if (accelerator === null) return;
-            if (shortcuts.isBindingUsed(accelerator)) {
-                const keys = shortcuts.bindingToReadableForm(accelerator);
+            const keyCombination = shortcuts.extractKeyCombination(event);
+            if (keyCombination === null) return;
+            if (shortcuts.isKeyCombinationUsed(keyCombination)) {
+                const keyCombString =
+                    shortcuts.keyCombinationToReadableForm(keyCombination);
                 dialogWindow.info(
-                    `Key combination '${keys}' is already in use.`);
+                    `Key combination '${keyCombString}' is already in use.`);
                 return;
             }
-            this.resolve(accelerator);
+            this.resolve(keyCombination);
         };
     }
 

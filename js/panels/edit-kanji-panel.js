@@ -117,8 +117,7 @@ class EditKanjiPanel extends Panel {
             "click", () => main.closePanel("edit-kanji"));
         this.$("cancel-button").addEventListener(
             "click", () => main.closePanel("edit-kanji"));
-        this.$("save-button").addEventListener(
-            "click", () => { this.save(); main.closePanel("edit-kanji"); });
+        this.$("save-button").addEventListener("click", () => this.save());
         this.$("all-srs-levels").callback = (label, value) => {
             this.$("srs-level-meanings").setByIndex(value - 1);
             this.$("srs-level-on-yomi").setByIndex(value - 1);
@@ -276,6 +275,7 @@ class EditKanjiPanel extends Panel {
                 main.updateStatus(`Kanji ${kanji} has been updated.`);
                 events.emit("kanji-changed", kanji);
             }
+            main.closePanel("edit-kanji");
         });
     }
 }

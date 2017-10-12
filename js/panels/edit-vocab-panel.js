@@ -118,8 +118,7 @@ class EditVocabPanel extends Panel {
             "click", () => main.closePanel("edit-vocab"));
         this.$("cancel-button").addEventListener(
             "click", () => main.closePanel("edit-vocab"));
-        this.$("save-button").addEventListener(
-            "click", () => { this.save(); main.closePanel("edit-vocab"); });
+        this.$("save-button").addEventListener("click", () => this.save());
         // Create context menus for static elements
         this.$("word").contextMenu(menuItems,
                 ["copy-word", "delete-word", "rename-word"],
@@ -343,6 +342,7 @@ class EditVocabPanel extends Panel {
             } else if (listsChanged) {
                 main.updateStatus("Vocabulary lists have been updated.")
             }
+            main.closePanel("edit-vocab");
         });
     }
 }

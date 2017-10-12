@@ -146,10 +146,10 @@ class VocabSection extends Section {
                 createViewItem: (text) => this.createViewItem(fieldName, text),
                 initialDisplayAmount: displayAmounts[fieldName].initial,
                 displayAmount: displayAmounts[fieldName].onScroll,
-                criticalScrollDistance: 150,
-                sortingCriterion: "alphabetical",
-                sortBackwards: false
+                criticalScrollDistance: 150
             });
+            this.viewStates[fieldName].sortingCriterion = "alphabetical";
+            this.viewStates[fieldName].sortBackwards = false;
             // Attach event listener to search entry
             const searchEntry = this.$(`search-${fieldName}-entry`)
             searchEntry.addEventListener("keypress", (event) => {

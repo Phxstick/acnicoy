@@ -23,7 +23,7 @@ module.exports = function (paths) {
         modules.languageSettings.load(language);  // Always load settings first
         const results = [];
         for (const name in modules) {
-            if (modules[name].hasOwnProperty("load")) {
+            if (modules[name].hasOwnProperty("load") && name !== "settings") {
                 results.push(modules[name].load(language));
             }
         }

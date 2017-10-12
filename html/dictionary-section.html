@@ -39,6 +39,7 @@
       </div>
     </button>
   </div>
+
   <button id="history-button" class="light">
     <i class="fa fa-history"></i>
   </button>
@@ -46,20 +47,105 @@
     <div id="history-header" class="list-view-header">Search history</div>
     <div id="history" class="list-view"></div>
   </div>
+
   <button id="settings-button" class="light">
     <i class="fa fa-cog"></i>
   </button>
-</div>
-<div id="search-results"></div>
-<div id="search-info">
-  <div>
-    You can search the dictionary using the search bar above.<br>
-    Customize your search settings by clicking the <i class="fa fa-cog"></i>
-    icon.
+  <div id="settings-popup" class="popup-window menu">
+    <div class="labeled-checkbox">
+      <check-box id="part-of-speech-in-japanese" class="light"></check-box>
+      <span>Use Japanese terminology for 'part of speech' info</span>
+    </div>
+    <div class="labeled-checkbox">
+      <check-box id="show-word-frequencies" class="light"></check-box>
+      <span>Show word frequencies</span>
+    </div>
+    <div class="labeled-checkbox">
+      <check-box id="include-proper-name-search" class="light"></check-box>
+      <span>Also search proper names</span>
+    </div>
   </div>
 </div>
-<div id="no-search-results-info">
+
+<div id="search-results-info-bar">
+  <div id="search-results-info-words" data-category="words">
+    <div class="search-results-info-header">Words</div>
+    <div class="search-results-info-details"
+         id="search-results-info-words-details"></div>
+  </div>
+  <div id="search-results-info-names" data-category="names">
+    <div class="search-results-info-header">Names</div>
+    <div class="search-results-info-details"
+         id="search-results-info-names-details"></div>
+  </div>
+</div>
+
+<div id="search-info" class="info-container">
+  <ul>
+    <li>
+      Use the wildcard <span class="search-example" data-type="reading">*</span>
+      to match an arbitrary number of characters.
+    </li>
+    <li>
+      Search by words or readings using the entry on the left, e.g.:
+      <ul>
+        <li>
+          Words starting with 例:
+          <span class="search-example" data-type="reading">例</span> or
+          <span class="search-example" data-type="reading">例*</span>
+        </li>
+        <li>
+          Words ending with 例:
+          <span class="search-example" data-type="reading">*例</span>
+        </li>
+        <li>
+          Words containing 例:
+          <span class="search-example" data-type="reading">*例*</span>
+        </li>
+        <li>
+          Words which are read as "れい...":
+          <span class="search-example" data-type="reading">rei</span> or
+          <span class="search-example" data-type="reading">rei*</span>
+        </li>
+      </ul>
+    </li>
+    <li>
+      Search by translations using the entry on the right, e.g.:
+      <ul>
+        <li>
+          Words with a translation containing the word "example":
+          <span class="search-example" data-type="meaning">example</span>
+        </li>
+        <li>
+          Words with a translation containing a word
+          starting with "exam":
+          <span class="search-example" data-type="meaning">exam*</span>
+        </li>
+      </ul>
+    </li>
+    <li>
+      Customize search settings by clicking the
+      <i class="fa fa-cog"></i> icon.
+    </li>
+    <li>
+      View previous searches by clicking the
+      <i class="fa fa-history"></i> icon.
+    </li>
+  </ul>
+</div>
+<div id="search-in-progress" class="info-container">
+  <div>
+    <div class="pulsating-triple-dots">
+      <div class="bounce1"></div>
+      <div class="bounce2"></div>
+      <div class="bounce3"></div>
+    </div>
+  </div>
+</div>
+<div id="no-search-results-info" class="info-container">
   <div>
     No search results found.
   </div>
 </div>
+<div class="search-results" id="search-results-words"></div>
+<div class="search-results" id="search-results-names"></div>

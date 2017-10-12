@@ -1,22 +1,56 @@
 ### Up next
-- Write short help with examples into dictionary and kanji section
-- Make sure entry content in dictionaries is always selected on focus!
+- Add some more achievements and find a better way to display them
+- Finish dictionary search:
+  - Somehow handle multiple concurrent searches (maybe in utility.js)
+  - Implement tags like #words, #names, #jlpt:x, etc.
+  - Implement adding names (-> new testmode? Handle like words?)
+  - Implement option for displaying word frequencies
+    - Include explanations for each word frequency (corpus size, age, etc.)
+  - Implement sorting by a combination of different word frequencies
+  - Also prioritize common words not part of the frequency lists?
+    (marked with "spec1/2" in JMdict.xml)
+  - Devise a ranking for name search result (or give tags/options to customize)
+  - In content/database-module, switch query/run-method to one ignoring errors?
+  - Use seperate where-clause for each (space-seperated?) word in the query
+  - Refined okurigana mapping, such that e.g. searching "作hin" gives "作品"
+  - Write help for dictionary/kanji search
+- Finish first version of Japanese content:
+  - Complete dictionary tag descriptions in Japanese
+  - Make sure all necessary content files are on the server
+  - Make sure content can be downloaded correctly
+  - Remove all indices from content-database, provide as SQL statements only
+  - Remove a bunch of content database indices?
+  - Also parse the remaining fields from the JMdict.xml file
+  - Remove example words index?
+  - Use newest version of all files at the end
+- Refactoring:
+  - Decide whether kanji search should be additive. If so, merge it into the
+    dictionary search function
+  - Switching between additive and non-additive kanji/word/name search
+  - Move Japanese-only stuff in settings to language-settings? Just mark name?
+  - Use JS for exact match search (-> translations table can be deleted)
+  - As soon as everything search-related is generalized, the objects passed to
+    `utility.initializeView` in the dictionary can be a single parameterized obj
+  - Switch to "better-sqlite3" to increase performance and code style?
+- Implement some settings for kanji-info-panel?
+- Also let font-family be inherited, and remove all workarounds (and test!)
+- Finish first version of the stats
+
+
+### Others
+- Completely remove example-word-entry widget/template?
 - Make status update message fade out after a short while if not updated
-- Allow using Ctrl+Enter for saving notes and submitting new vocab/kanji
-- Allow selecting popup-stack item with arrow keys and number keys!
 - Make history view loading more efficient
+- Add functionality for clearing histories
 - Use font-family "Trajan" for roman numerals?
-- Separate stats and achievements? Or overkill?
-- Add more achievements and property display them in a column layout
-- Extend search-sections by spinner and animate no-search-results-info
+- Separate stats and achievements?
 - Implement label-checkbox widget?
 - Implment simple binding function for checkboxes and settings, or radiobuttons
   and settings?
-- Implement some settings for dictionary and kanji-info-panel
 - `text-align: center` impaoirs fadeIn function. How to work around?
-  - Add `text-align` to sol&ution divs again
+  - Add `text-align` to solution divs again
 - Button to manually check  for content updates (+ "last checked" label)
-- Further refactor Applicat}ion framework
+- Further refactor Application framework
   - Implement quit-function of Application class, move controlled closing there
 - Make kana input not only react to shift, but also caps-lock and caps letters
 - Implement program updating
@@ -55,7 +89,6 @@ By category
 - Add "all languages" option to SRS review schedule
 - Differentiate between standard gui-font and "content-font"
 - Implement reverse testing?
-- utility.js: When searching, somehow stop previous search?
 - Adjust kanji-section (and create hanzi-section) to be available as limited
   version even when no language content is installed (and display notice that
   language content can be installed to see more).
@@ -136,12 +169,7 @@ By category
   - Use this.root.activeElement?
 
 ### Dictionary
-- Display link to dictionary section help in info-frame
-- Search settings:
-  - [Checkbox] Display part-of-speech in Japanese
-  - [Checkbox] Only show a single combined search entry (like Jisho)
-  - [Checkbox] Search for names instead of words
-- Implement better sorting algorithm including word-length
+- Have option to only show a single combined search entry (like in Jisho.org)
 
 ### Kanji section
 - Search customization:
@@ -221,6 +249,8 @@ Future
   - Would allow more stylish and compact mode presentation
   - Would allow easier importing from Houhou SRS
 - Find monolingual dictionary for Japanese
+- Integrate example sentences from the
+  [Tanaka Corpus](http://www.edrdg.org/wiki/index.php/Tanaka_Corpus)
 - Add additional field to kanjiData database for "hidden acceptable meanings",
   containg synonyms or words with very similar meaning?
   - Show option in test settings to turn hidden meanings on or off
@@ -251,6 +281,7 @@ Future
 - Find open dictionaries for English, Spanish, Chinese and Russian
 - Add icons to achievements 
 - Create stylable `<select>` alternative
+- Somehow display frequencies for specific words and readings in dictionary?
 
 ### In-program notifications
 - Notifications on following events:
@@ -334,7 +365,6 @@ Resources
 - [New JLPT stuff](http://www.tanos.co.uk/jlpt/skills/vocab/)
   - Get JLPT lists for words too
 - [Unicode ranges](http://www.rikai.com/library/kanjitables/kanji_codes.unicode.shtml)
-- [Word freq](http://pj.ninjal.ac.jp/corpus_center/bccwj/en/freq-list.html)
 - [Counters](http://hiramatu-hifuka.com/onyak/onyak2/josu-ta.html)
 - Kanji textbook/Internet frequencies?
 - [Honorific language](http://www.levelup99.net/businessmanner/cate3post24.html)

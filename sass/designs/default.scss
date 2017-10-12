@@ -15,8 +15,8 @@ $pinyin-font: OpenSans-Regular;
 
 // General
 $background-color: whitesmoke;
-$background-color-dark: gainsboro;
 $background-color-medium: mix(whitesmoke, gainsboro, 50%);
+$background-color-dark: gainsboro;
 $color: #303030;
 $color-light: dimgray;
 $color-lightest: grey;
@@ -147,6 +147,8 @@ $added-label-shadow-color: lawngreen;
 $add-button-color: darkred;
 $add-button-shadow-color: coral;
 $add-button-background-active: darken($view-hover-background, 10%);
+
+// Dictionary 
 $dictionary-frequent-words-background: #e0ffb3;
 $dictionary-frequent-words-border-color:
   darken($dictionary-frequent-words-background, 45%);
@@ -154,6 +156,12 @@ $dictionary-semi-frequent-words-background:
   lighten($dictionary-frequent-words-background, 8%);
 $dictionary-semi-frequent-words-border-color:
   $dictionary-frequent-words-border-color;
+$dictionary-male-name-background: #E1F3FE;  // shade of 'lightskyblue'
+$dictionary-female-name-background: #FFF0F3;  // shade of 'lightpink'
+$dictionary-place-name-background: #EDE1D1;  // shade of 'tan'
+$dictionary-surname-name-background: #F0E0F7;  // shade of 'darkorchid'
+
+// Kanji info
 $kanji-search-results-rare-color: dimgray;
 $kanji-search-results-rare-shadow-color: grey;
 $kanji-search-results-yomi-background: #EEE;

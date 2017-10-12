@@ -2,14 +2,55 @@
 <div id="control-bar">
   <input id="search-by-kanji-input" placeholder="Search by kanji"></input>
   <button id="search-by-kanji-button" tabindex="-1">
-    <i class="fa fa-search"></i></button>
+    <i class="fa fa-search"></i>
+    <div class="spinner fading-dotted-circle-spinner">
+      <div class="sk-circle1 sk-circle"></div>
+      <div class="sk-circle2 sk-circle"></div>
+      <div class="sk-circle3 sk-circle"></div>
+      <div class="sk-circle4 sk-circle"></div>
+      <div class="sk-circle5 sk-circle"></div>
+      <div class="sk-circle6 sk-circle"></div>
+      <div class="sk-circle7 sk-circle"></div>
+      <div class="sk-circle8 sk-circle"></div>
+      <div class="sk-circle9 sk-circle"></div>
+      <div class="sk-circle10 sk-circle"></div>
+      <div class="sk-circle11 sk-circle"></div>
+      <div class="sk-circle12 sk-circle"></div>
+    </div>
+  </button>
   <input id="search-by-details-input" placeholder="Search by details"></input>
   <button id="romaji-input-button">Aa</button>
   <button id="kana-input-button">あ</button>
   <button id="search-by-details-button" tabindex="-1">
-    <i class="fa fa-search"></i></button>
-  <button id="show-overview-button"><i class="fa fa-th"></i></button>
+    <i class="fa fa-search"></i>
+    <div class="spinner fading-dotted-circle-spinner">
+      <div class="sk-circle1 sk-circle"></div>
+      <div class="sk-circle2 sk-circle"></div>
+      <div class="sk-circle3 sk-circle"></div>
+      <div class="sk-circle4 sk-circle"></div>
+      <div class="sk-circle5 sk-circle"></div>
+      <div class="sk-circle6 sk-circle"></div>
+      <div class="sk-circle7 sk-circle"></div>
+      <div class="sk-circle8 sk-circle"></div>
+      <div class="sk-circle9 sk-circle"></div>
+      <div class="sk-circle10 sk-circle"></div>
+      <div class="sk-circle11 sk-circle"></div>
+      <div class="sk-circle12 sk-circle"></div>
+    </div>
+  </button>
+  <button id="show-overview-button">
+    <i class="fa fa-th"></i>
+  </button>
+
+  <button id="history-button">
+    <i class="fa fa-history"></i>
+  </button>
+  <div id="history-popup" class="popup-window">
+    <div id="history-header" class="list-view-header">Search history</div>
+    <div id="history" class="list-view"></div>
+  </div>
   <button id="settings-button"><i class="fa fa-cog"></i></button>
+
   <div id="settings-popup" class="popup-window menu">
     <div class="header">Overview settings</div>
     <div id="overview-settings" class="group">
@@ -67,14 +108,75 @@
   </div>
   <div id="search-pane">
     <div id="search-results"></div>
-    <div id="search-info">
-      <div>
-        You can search the kanji dictionary using the search bar above.<br>
-        Customize your search settings by clicking the <i class="fa fa-cog"></i>
-        icon.
-      </div>
+    <div id="search-info" class="info-container">
+      <ul>
+        <li>
+          Search kanji by directly entering them into the entry on the left,
+          e.g.:
+          <ul>
+            <li>
+              Entering
+              <span class="search-example" data-type="by-kanji">
+                これは漢字を含む文章だ
+              </span>
+              will find the kanji 漢, 字, 含, 文, 章.
+            </li>
+          </ul>
+        </li>
+        <li>
+          Search kanji by details using the entry on the right, e.g.:
+          <ul>
+            <li>
+              Kanji which have a meaning "search": 
+              <span class="search-example" data-type="by-details">search</span>
+            </li>
+            <li>
+              Kanji which have a kun-yomi "さがす":
+              <span class="search-example" data-type="by-details">さがす</span>
+            </li>
+            <li>
+              Kanji which have an on-yomi "ソウ":
+              <span class="search-example" data-type="by-details">ソウ</span>
+            </li>
+            <li>
+              Use the wildcard
+              <span class="search-example" data-type="by-details">*</span>
+              to match an arbitrary number of characters, e.g.:
+              <div>
+                Kanji with a kun-yomi starting with "さが":
+                <span class="search-example" data-type="by-details">さが*</span>
+              </div>
+            </li>
+            <li>
+              Multiple details can be separated by space/comma/semicolon, e.g.:
+              <div>
+                Kanji with both a kun-yomi "さがす" and on-yomi "ソウ":
+                <span class="search-example" data-type="by-details">
+                  さがす, ソウ
+                </span>
+              </div>
+            </li>
+            <li>
+              Switch between kana- and romaji-input by pressing the 
+              <span class="kana-input-button">あ/Aa</span>
+              icon.
+              <div>
+                Press shift while typing to input katakana instead of hiragana.
+              </div>
+            </li>
+          </ul>
+        </li>
+        <li>
+          View previous searches by clicking the
+          <i class="fa fa-history"></i> icon.
+        </li>
+        <!--li>
+          Go back to the kanji overview by clicking the
+          <i class="fa fa-th"></i> icon.
+        </li-->
+      </ul>
     </div>
-    <div id="no-search-results-info">
+    <div id="no-search-results-info" class="info-container">
       <div>
         No search results found.
       </div>

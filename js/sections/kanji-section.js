@@ -10,32 +10,43 @@ class KanjiSection extends Section {
         this.addedAmountPerGroup = {};
         this.overviewSettings = {};
         this.searchSettings = {};
+        // Initially hide some elements
         this.$("search-results").hide();
         this.$("no-search-results-info").hide();
         this.$("kana-input-button").hide();
         // =================================================================
+        // Start search when clicking a search example
+        // =================================================================
+        this.$("search-info").addEventListener("click", (event) => {
+            if (event.target.classList.contains("search-example")) {
+                this.search(event.target.textContent, event.target.dataset.type)
+            }
+        });
+        // =================================================================
         // Control bar event listeners
         // =================================================================
+        utility.selectAllOnFocus(this.$("search-by-kanji-input"));
+        utility.selectAllOnFocus(this.$("search-by-details-input"));
         this.$("show-overview-button").addEventListener("click", () => {
             this.showOverview();
         });
         this.$("search-by-kanji-button").addEventListener("click", () => {
             const query = this.$("search-by-kanji-input").value.trim();
-            this.kanjiSearchViewState.search(query, "by-kanji");
+            this.search(query, "by-kanji");
         });
         this.$("search-by-kanji-input").addEventListener("keypress", (e) => {
             if (e.key !== "Enter") return;
             const query = this.$("search-by-kanji-input").value.trim();
-            this.kanjiSearchViewState.search(query, "by-kanji");
+            this.search(query, "by-kanji");
         });
         this.$("search-by-details-button").addEventListener("click", () => {
             const query = this.$("search-by-details-input").value.trim();
-            this.kanjiSearchViewState.search(query, "by-details");
+            this.search(query, "by-details");
         });
         this.$("search-by-details-input").addEventListener("keypress", (e) => {
             if (e.key !== "Enter") return;
             const query = this.$("search-by-details-input").value.trim();
-            this.kanjiSearchViewState.search(query, "by-details");
+            this.search(query, "by-details");
         });
         this.$("romaji-input-button").addEventListener("click", (event) => {
             this.$("romaji-input-button").hide();
@@ -65,7 +76,6 @@ class KanjiSection extends Section {
                     customElements.get("kanji-search-result-entry");
                 return new ResultEntry(kanji, info);
             },
-            uponResultLoaded: (resultsFound) => this.showSearchResults(),
             initialDisplayAmount: 10,
             displayAmount: 10,
             placeholder: this.$("search-info"),
@@ -126,6 +136,27 @@ class KanjiSection extends Section {
             this.overviewSettings.onlyMissing = !value;
             this.displayKanji();
         };
+        // =================================================================
+        // Search history
+        // =================================================================
+        this.$("history-button").addEventListener("click", () => {
+            this.$("history-popup").toggleDisplay();
+            event.stopPropagation();
+        });
+        utility.makePopupWindow(this.$("history-popup"));
+        this.historyViewState = utility.initializeView({
+            view: this.$("history"),
+            getData: async () => await dataManager.history.get("kanji_search"),
+            createViewItem:
+                ({ name, type }) => this.createHistoryViewItem(name, type),
+            initialDisplayAmount: 20,
+            displayAmount: 20
+        });
+        this.$("history").addEventListener("click", (event) => {
+            if (event.target.parentNode !== this.$("history")) return;
+            this.kanjiSearchViewState.search(
+                event.target.textContent, event.target.dataset.type);
+        });
     }
 
     registerCentralEventListeners() {
@@ -161,6 +192,13 @@ class KanjiSection extends Section {
 
     open() {
         this.$("search-by-kanji-input").focus();
+    }
+
+    adjustToLanguage(language, secondary) {
+        // Load search history
+        if (language === "Japanese") {
+            this.historyViewState.search("");
+        }
     }
 
     processLanguageContent(language, secondaryLanguage) {
@@ -302,6 +340,41 @@ class KanjiSection extends Section {
         }
     }
 
+    createHistoryViewItem(query, type) {
+        const item = document.createElement("div");
+        item.textContent = query;
+        item.dataset.type = type;
+        return item;
+    }
+
+    async search(query, method) {
+        if (query.length > 0) {
+            // Delete any entry with the same name from the history view items
+            for (const entry of this.$("history").children) {
+                if (entry.textContent === query) {
+                    this.$("history").removeChild(entry);
+                    break;
+                }
+            }
+            // Add entry to the history and insert it into the history view
+            dataManager.history.addEntry(
+                "kanji_search", { name: query, type: method });
+            this.$("history").insertBefore(
+                this.createHistoryViewItem(query, method),
+                this.$("history").firstChild);
+            if (method === "by-kanji") {
+                this.$("search-by-kanji-button").classList.add("searching");
+            } else if (method === "by-details") {
+                this.$("search-by-details-button").classList.add("searching");
+            }
+        }
+        await this.kanjiSearchViewState.search(query, method);
+        await utility.finishEventQueue();
+        this.showSearchResults();
+        this.$("search-by-kanji-button").classList.remove("searching");
+        this.$("search-by-details-button").classList.remove("searching");
+    }
+
     async searchByKanji(query) {
         // Check which characters are known kanji (i.e. in the database)
         const knownKanjiPromises = [];
@@ -325,24 +398,24 @@ class KanjiSection extends Section {
 
     async searchByDetails(query) {
         const queryObject = { meanings: [], onYomi: [], kunYomi: [] };
-        const fields = query.split(",");
+        const fields = query.split(/[\s,;|]+/g).map((f) => f.replace("*", "%"));
         for (const field of fields) {
-            // If field consists only of katakana or dots, regard as on-yomi
-            if (field.trim().split("").every((c) => c === "." ||
+            // If field consists only of katakana or dot/star, regard as on-yomi
+            if (field.split("").every((c) => c === "." || c === "%" ||
                     (12449 <= c.charCodeAt(0) && c.charCodeAt(0) < 12543))) {
-                queryObject.onYomi.push(field.trim());
+                queryObject.onYomi.push(field);
             }
-            // If field consists only of hiragana or dots, regard as kun-yomi
-            else if (field.trim().split("").every((c) => c === "." ||
+            // If field consists only of hiragana or dot/star, regard as kunYomi
+            else if (field.split("").every((c) => c == "." || c == "%" ||
                     (12353 <= c.charCodeAt(0) && c.charCodeAt(0) < 12439))) {
-                queryObject.kunYomi.push(field.trim());
+                queryObject.kunYomi.push(field);
             }
             // In all other cases, regard the field as a kanji meaning
             else {
-                queryObject.meanings.push(field.trim().replace("*", "%"));
+                queryObject.meanings.push(field);
             }
         }
-        return await dataManager.content.searchForKanji(queryObject);
+        return await dataManager.content.searchKanji(queryObject);
     }
 }
 

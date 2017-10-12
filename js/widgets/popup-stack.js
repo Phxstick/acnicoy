@@ -21,6 +21,7 @@ class PopupStack extends Widget {
         this.isOpen = false;
         this.closing = false;
         this.topItem = null;
+        this.topItemIndex = -1;
         this.usedEvents = new Set();
         window.addEventListener("click", (event) => {
             if (this.usedEvents.has(event)) {
@@ -43,6 +44,83 @@ class PopupStack extends Widget {
             }
             this.usedEvents.add(event);
         });
+        // Make element selectable with the keyboard
+        this.setAttribute("tabindex", "0");
+        this.addEventListener("keypress", (event) => {
+            // If enter is pressed, close the stack (if it's open)
+            if (event.key === "Enter") {
+                this.close();
+                return;
+            }
+            // If n between 1 and 9 was pressed, select field with index n - 1
+            const number = parseInt(event.key);
+            if (number !== NaN && number > 0 && number < 10) {
+                this.setByIndex(number - 1);
+                this.close();
+            }
+        });
+        // If an arrow key was pressed, select next item (depending on
+        // unfolding direction of the stack).
+        const arrowKeyDelayInitial = 600;
+        const arrowKeyDelay = 80;
+        let lastArrowKeyPressTime = -1;
+        let pressingLong = false;
+        this.addEventListener("keyup", (event) => {
+            lastArrowKeyPressTime = -1;
+            let pressingLong = false;
+        });
+        this.addEventListener("keydown", (event) => {
+            if (!event.key.startsWith("Arrow")) return;
+            const time = new Date().getTime();
+            if (lastArrowKeyPressTime > 0) {
+                let delay = pressingLong ? arrowKeyDelay : arrowKeyDelayInitial;
+                if (time - lastArrowKeyPressTime <= delay) {
+                    return;
+                }
+                pressingLong = true;
+            }
+            lastArrowKeyPressTime = time;
+            if (event.key === "ArrowDown") {
+                if (this._attributes["direction"] === "up" &&
+                        this.topItemIndex > 0) {
+                    this.setByIndex(this.topItemIndex - 1);
+                }
+                else if (this._attributes["direction"] === "down" &&
+                        this.topItemIndex < this.children.length - 1) {
+                    this.setByIndex(this.topItemIndex + 1);
+                }
+            }
+            else if (event.key === "ArrowUp") {
+                if (this._attributes["direction"] === "down" &&
+                        this.topItemIndex > 0) {
+                    this.setByIndex(this.topItemIndex - 1);
+                }
+                else if (this._attributes["direction"] === "up" &&
+                        this.topItemIndex < this.children.length - 1) {
+                    this.setByIndex(this.topItemIndex + 1);
+                }
+            }
+            else if (event.key === "ArrowRight") {
+                if (this._attributes["direction"] === "right" &&
+                        this.topItemIndex < this.children.length - 1) {
+                    this.setByIndex(this.topItemIndex + 1);
+                }
+                else if (this._attributes["direction"] === "left" &&
+                        this.topItemIndex > 0) {
+                    this.setByIndex(this.topItemIndex - 1);
+                }
+            }
+            else if (event.key === "ArrowLeft") {
+                if (this._attributes["direction"] === "left" &&
+                        this.topItemIndex < this.children.length - 1) {
+                    this.setByIndex(this.topItemIndex + 1);
+                }
+                else if (this._attributes["direction"] === "right" &&
+                        this.topItemIndex > 0) {
+                    this.setByIndex(this.topItemIndex - 1);
+                }
+            }
+        });
     }
 
     addOption(label, value) {
@@ -55,10 +133,10 @@ class PopupStack extends Widget {
 
     set(item) {
         if (this.topItem !== null) {
-            const topItemIndex = this.childrenArray().indexOf(this.topItem);
-            this.topItem.style.zIndex = topItemIndex;
+            this.topItem.style.zIndex = this.topItemIndex;
             this.topItem.removeAttribute("selected");
         }
+        this.topItemIndex = this.childrenArray().indexOf(item);
         this.topItem = item;
         this.topItem.setAttribute("selected", "");
         this.topItem.style.zIndex = this.children.length;

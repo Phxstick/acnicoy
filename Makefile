@@ -6,6 +6,8 @@ ELECTRON_PATH = ./node_modules/.bin/electron
 
 DICTIONARY_PATH = $(RESOURCE_PATH)/JMdict.xml
 DICT_TEXTS_PATH = $(RESOURCE_PATH)/improved-dictionary-texts.json
+PROPER_NAMES_PATH = $(RESOURCE_PATH)/enamdict
+NAME_TAG_TEXTS_PATH = $(RESOURCE_PATH)/name-tag-to-text.json
 KANJI_PATH = $(RESOURCE_PATH)/kanjidic.txt
 KANJI_MEANINGS_PATH = $(RESOURCE_PATH)/improved-kanji-meanings.json
 KANJI_RADICALS_PATH = $(RESOURCE_PATH)/radical.utf8.txt
@@ -36,7 +38,9 @@ dictionary_data:
 	$(PYTHON) $(DATA_SCRIPT_PATH) \
         --dict $(DICTIONARY_PATH) \
         --texts $(DICT_TEXTS_PATH) \
+        --names $(PROPER_NAMES_PATH) \
         -o $(OUTPUT_PATH)
+	cp $(NAME_TAG_TEXTS_PATH) $(OUTPUT_PATH)
 
 kanji_data:
 	mkdir -p $(OUTPUT_PATH)

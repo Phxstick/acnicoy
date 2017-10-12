@@ -196,7 +196,7 @@ hr {
 
 .pulsating-triple-dots {
   > div {
-    background-color: $color;
+    background-color: $color-light;
   }
 }
 
@@ -213,18 +213,61 @@ hr {
   }
 }
 
-#search-info, #no-search-results-info {
+.info-container {
   @include center-content;
   flex: 1;
   background-color: $background-color-dark;
   height: 100%;
+  font-size: 1.5rem;
+  line-height: 150%;
+  text-align: center;
 
-  > * {
-    line-height: 150%;
-    color: $color;
-    font-size: 150%;
+  *:not(i, .search-example) {
     font-family: $light-font;
-    text-align: center;
+  }
+  ul {
+    list-style-type: none;
+    padding-left: 25px;
+    text-align: left;
+  }
+  > ul > li {
+    font-size: 1.3rem;
+    &:not(:last-child) {
+      margin-bottom: 16px;
+    }
+    &:before {
+      content: "\f105";
+      margin-right: 8px;
+    }
+  }
+  > ul > li > ul > li {
+    font-size: 1.2rem;
+    &:before {
+      content: "\f101";
+      margin-right: 8px;
+    }
+    > div {
+      margin-left: 25px;
+      margin-top: -10px;
+    }
+  }
+  .search-example {
+    margin-left: 8px;
+    margin-right: 8px;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid $border-color-medium;
+    background-color: $input-background;
+
+    &:hover {
+      background-color: $input-background-hover;
+      border-color: $border-color-dark;
+    }
+  }
+  i {
+    margin-left: 5px;
+    margin-right: 5px;
+    color: $color-light;
   }
 }
 
@@ -282,6 +325,20 @@ hr {
     margin-bottom: 2px;
     padding-top: 5px;
     padding-bottom: 5px;
+  }
+}
+
+.labeled-checkbox, .labeled-radiobutton {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  check-box {
+    margin-left: 2px;
+    margin-right: 8px;
+  }
+  span {
+    display: inline-block;
   }
 }
 

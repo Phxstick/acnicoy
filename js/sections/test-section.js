@@ -118,6 +118,8 @@ class TestSection extends Section {
         });
         // Create context menu
         this.$("test-item").contextMenu(menuItems, ["copy-test-item"]);
+       // Bind callback for ignoring answers via shortcut
+        shortcuts.bindCallback("ignore-answer", () => this._ignoreAnswer());
     }
 
     /* =====================================================================
@@ -182,10 +184,9 @@ class TestSection extends Section {
             if (this.testInfo !== null && this.testInfo.inEvalStep
                     && !dataManager.settings.test.useFlashcardMode){
                 if (dataManager.settings.test.enableIgnoreShortcut) {
-                    shortcuts.register(
-                        "ignore-answer", () => this._ignoreAnswer());
+                    shortcuts.enable("ignore-answer");
                 } else {
-                    shortcuts.unregister("ignore-answer");
+                    shortcuts.disable("ignore-answer");
                 }
             }
         });
@@ -266,7 +267,6 @@ class TestSection extends Section {
             if (this.testInfo.inEvalStep &&
                    !dataManager.settings.test.useFlashcardMode &&
                    dataManager.settings.test.enableIgnoreShortcut) {
-                shortcuts.register("ignore-answer", () => this._ignoreAnswer());
             }
             // Put focus on correct element
             if (dataManager.settings.test.useFlashcardMode) {
@@ -302,7 +302,7 @@ class TestSection extends Section {
     }
 
     close() {
-        shortcuts.unregister("ignore-answer");
+        shortcuts.disable("ignore-answer");
     }
 
     /* =====================================================================
@@ -442,7 +442,7 @@ class TestSection extends Section {
             this.$("continue-button").show();
             this.$("continue-button").focus();
             if (dataManager.settings.test.enableIgnoreShortcut) {
-                shortcuts.register("ignore-answer", () => this._ignoreAnswer());
+                shortcuts.enable("ignore-answer");
             }
             this.$("ignore-answer").removeAttribute("disabled");
             if (!answerCorrect)
@@ -583,7 +583,7 @@ class TestSection extends Section {
 
     async _createQuestion(newLevel) {
         if (dataManager.settings.test.enableIgnoreShortcut) {
-            shortcuts.unregister("ignore-answer");
+            shortcuts.disable("ignore-answer");
         }
         this.testInfo.inEvalStep = false;
         dataManager.database.run("BEGIN TRANSACTION");
