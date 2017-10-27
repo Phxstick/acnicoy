@@ -18,113 +18,161 @@ HTMLTextAreaElement.prototype.disableInputConversion = function () {
 //   Methods to convert between romaji and kana
 // ============================================================================
 
-const hiragana1 = [];
-for (let i = 12353; i < 12439; ++i) hiragana1.push(String.fromCharCode(i));
-const hiragana2 = [
-    "きゃ", "きゅ", "きょ", "ぎゃ", "ぎゅ", "ぎょ", "しゃ", "しゅ",
-    "しょ", "じゃ", "じゅ", "じょ", "ちゃ", "ちゅ", "ちょ", "にゃ",
-    "にゅ", "にょ", "ひゃ", "ひゅ", "ひょ", "びゃ", "びゅ", "びょ",
-    "ぴゃ", "ぴゅ", "ぴょ", "みゃ", "みゅ", "みょ", "にゃ", "にゅ",
-    "にょ", "りゃ", "りゅ", "りょ"
+const singleHiragana = [];
+for (let charCode = 12353; charCode < 12439; ++charCode)
+    singleHiragana.push(String.fromCharCode(charCode));
+const hiraganaCompounds = [
+    "きゃ", "きゅ", "きょ", "ぎゃ", "ぎゅ", "ぎょ",
+    "しゃ", "しゅ", "しょ", "じゃ", "じゅ", "じょ",
+    "ちゃ", "ちゅ", "ちょ",
+    "にゃ", "にゅ", "にょ",
+    "ひゃ", "ひゅ", "ひょ", "びゃ", "びゅ", "びょ", "ぴゃ", "ぴゅ", "ぴょ",
+    "みゃ", "みゅ", "みょ",
+    "にゃ", "にゅ", "にょ",
+    "りゃ", "りゅ", "りょ"
 ];
-const hiraRomaji1 = [
-    "", "a", "", "i", "", "u", "", "e", "", "o", "ka", "ga", "ki", "gi",
-    "ku", "gu", "ke", "ge", "ko", "go", "sa", "za", "shi", "ji", "su",
-    "zu", "se", "ze", "so", "zo", "ta", "da", "chi", "di", "っ", "tsu",
-    "du", "te", "de", "to", "do", "na", "ni", "nu", "ne", "no", "ha", "ba",
-    "pa", "hi", "bi", "pi", "fu", "bu", "pu", "he", "be", "pe", "ho", "bo",
-    "po", "ma", "mi", "mu", "me", "mo", "ゃ", "ya", "ゅ", "yu", "ょ", "yo",
-    "ra", "ri", "ru", "re", "ro", "", "wa", "", "", "wo", "n", "", "", ""
+const singleHiraganaRomaji = [
+    "xa", "a", "xi", "i", "xu", "u", "xe", "e", "xo", "o",
+    "ka", "ga", "ki", "gi", "ku", "gu", "ke", "ge", "ko", "go",
+    "sa", "za", "shi", "ji", "su", "zu", "se", "ze", "so", "zo",
+    "ta", "da", "chi", "di", "xtsu", "tsu", "du", "te", "de", "to", "do",
+    "na", "ni", "nu", "ne", "no",
+    "ha", "ba", "pa", "hi", "bi", "pi", "fu", "bu", "pu", "he", "be", "pe",
+    "ho", "bo", "po",
+    "ma", "mi", "mu", "me", "mo",
+    "xya", "ya", "xyu", "yu", "xyo", "yo",
+    "ra", "ri", "ru", "re", "ro",
+    "xwa", "wa", "wi", "we", "wo",
+    "n", "ゔ", "xka", "xke"
 ];
-const hiraRomaji2 = [
-    "kya", "kyu", "kyo", "gya", "gyu", "gyo", "sha", "shu",
-    "sho", "ja", "ju", "jo", "cha", "chu", "cho", "nya",
-    "nyu", "nyo", "hya", "hyu", "hyo", "bya", "byu", "byo",
-    "pya", "pyu", "pyo", "mya", "myu", "myo", "nya", "nyu",
-    "nyo", "rya", "ryu", "ryo"
+const hiraganaCompoundsRomaji = [
+    "kya", "kyu", "kyo", "gya", "gyu", "gyo",
+    "sha", "shu", "sho", "ja", "ju", "jo",
+    "cha", "chu", "cho",
+    "nya", "nyu", "nyo",
+    "hya", "hyu", "hyo", "bya", "byu", "byo", "pya", "pyu", "pyo",
+    "mya", "myu", "myo",
+    "nya", "nyu", "nyo",
+    "rya", "ryu", "ryo"
 ];
-const hiraRepl1 = {};
-const hiraRepl2 = {};
-const romajiHira1 = {};
-const romajiHira2 = {};
-for (let i = 0; i < hiragana1.length; ++i)
-    hiraRepl1[hiragana1[i]] = hiraRomaji1[i];
-for (let i = 0; i < hiragana2.length; ++i)
-    hiraRepl2[hiragana2[i]] = hiraRomaji2[i];
-for (let i = 0; i < hiraRomaji1.length; ++i)
-    romajiHira1[hiraRomaji1[i]] = hiragana1[i];
-for (let i = 0; i < hiraRomaji2.length; ++i)
-    romajiHira2[hiraRomaji2[i]] = hiragana2[i];
+const singleHiraganaToRomaji = {};
+const hiraganaCompoundsToRomaji = {};
+const romajiToSingleHiragana = {};
+const romajiToHiraganaCompounds = {};
+for (let i = 0; i < singleHiragana.length; ++i)
+    singleHiraganaToRomaji[singleHiragana[i]] = singleHiraganaRomaji[i];
+for (let i = 0; i < hiraganaCompounds.length; ++i)
+    hiraganaCompoundsToRomaji[hiraganaCompounds[i]] = hiraganaCompoundsRomaji[i]
+for (let i = 0; i < singleHiraganaRomaji.length; ++i)
+    romajiToSingleHiragana[singleHiraganaRomaji[i]] = singleHiragana[i];
+for (let i = 0; i < hiraganaCompoundsRomaji.length; ++i)
+    romajiToHiraganaCompounds[hiraganaCompoundsRomaji[i]] = hiraganaCompounds[i]
 
-const katakana1 = [];
-for (let i = 12449; i < 12539; ++i) katakana1.push(String.fromCharCode(i));
-const katakana2 = [
-    "キャ", "キュ", "キョ", "ギャ", "ギュ", "ギョ", "シャ", "シュ",
-    "ショ", "ジャ", "ジュ", "ジョ", "チャ", "チュ", "チョ", "ニャ",
-    "ニュ", "ニョ", "ヒャ", "ヒュ", "ヒョ", "ビャ", "ビュ", "ビョ",
-    "ピャ", "ピュ", "ピョ", "ミャ", "ミュ", "ミョ", "ニャ", "ニュ",
-    "ニョ", "リャ", "リュ", "リョ"
+const singleKatakana = [];
+for (let charCode = 12449; charCode < 12539; ++charCode)
+    singleKatakana.push(String.fromCharCode(charCode));
+const katakanaCompounds = [
+    "キャ", "キュ", "キョ", "ギャ", "ギュ", "ギョ",
+    "シャ", "シュ", "ショ", "ジャ", "ジュ", "ジョ",
+    "チャ", "チュ", "チョ",
+    "ニャ", "ニュ", "ニョ",
+    "ヒャ", "ヒュ", "ヒョ", "ビャ", "ビュ", "ビョ", "ピャ", "ピュ", "ピョ",
+    "ミャ", "ミュ", "ミョ",
+    "ニャ", "ニュ", "ニョ",
+    "リャ", "リュ", "リョ",
+    
+    "ファ", "フェ", "フィ", "フォ",
+    "ヴァ", "ヴェ", "ヴィ", "ヴォ",
+    "ツァ", "チェ", "ティ", "トゥ", "ディ", "デュ",
+    "シェ", "ジェ",
+    "ウェ", "ウォ", "ウィ"
 ];
-const kataRomaji1 = [
-    "", "a", "", "i", "", "u", "", "e", "", "o", "ka", "ga", "ki", "gi",
-    "ku", "gu", "ke", "ge", "ko", "go", "sa", "za", "shi", "ji", "su",
-    "zu", "se", "ze", "so", "zo", "ta", "da", "chi", "di", "ッ", "tsu",
-    "du", "te", "de", "to", "do", "na", "ni", "nu", "ne", "no", "ha", "ba",
-    "pa", "hi", "bi", "pi", "fu", "bu", "pu", "he", "be", "pe", "ho", "bo",
-    "po", "ma", "mi", "mu", "me", "mo", "ャ", "ya", "ュ", "yu", "ョ", "yo",
-    "ra", "ri", "ru", "re", "ro", "", "wa", "", "", "wo", "n", "", "", ""
+const singleKatakanaRomaji = [
+    "xa", "a", "xi", "i", "xu", "u", "xe", "e", "xo", "o",
+    "ka", "ga", "ki", "gi", "ku", "gu", "ke", "ge", "ko", "go",
+    "sa", "za", "shi", "ji", "su", "zu", "se", "ze", "so", "zo",
+    "ta", "da", "chi", "di", "xtsu", "tsu", "du", "te", "de", "to", "do",
+    "na", "ni", "nu", "ne", "no",
+    "ha", "ba", "pa", "hi", "bi", "pi", "fu", "bu", "pu", "he", "be", "pe",
+    "ho", "bo", "po",
+    "ma", "mi", "mu", "me", "mo",
+    "xya", "ya", "xyu", "yu", "xyo", "yo",
+    "ra", "ri", "ru", "re", "ro",
+    "xwa", "wa", "wi", "we", "wo",
+    "n", "ヴ", "xka", "xke", "va", "vi", "ve", "vo"
 ];
-const kataRomaji2 = [
-    "kya", "kyu", "kyo", "gya", "gyu", "gyo", "sha", "shu",
-    "sho", "ja", "ju", "jo", "cha", "chu", "cho", "nya",
-    "nyu", "nyo", "hya", "hyu", "hyo", "bya", "byu", "byo",
-    "pya", "pyu", "pyo", "mya", "myu", "myo", "nya", "nyu",
-    "nyo", "rya", "ryu", "ryo"
+const katakanaCompoundsRomaji = [
+    "kya", "kyu", "kyo", "gya", "gyu", "gyo",
+    "sha", "shu", "sho", "ja", "ju", "jo",
+    "cha", "chu", "cho",
+    "nya", "nyu", "nyo",
+    "hya", "hyu", "hyo", "bya", "byu", "byo", "pya", "pyu", "pyo",
+    "mya", "myu", "myo",
+    "nya", "nyu", "nyo",
+    "rya", "ryu", "ryo",
+
+    "fa", "fe", "fi", "fo",
+    "va", "ve", "vi", "vo",
+    "tsa", "che", "thi", "tu", "dhi", "dyu",
+    "she", "je",
+    "we", "wo", "wi"
 ];
-const kataRepl1 = {};
-const kataRepl2 = {};
-const romajiKata1 = {};
-const romajiKata2 = {};
-for (let i = 0; i < katakana1.length; ++i)
-    kataRepl1[katakana1[i]] = kataRomaji1[i];
-for (let i = 0; i < katakana2.length; ++i)
-    kataRepl2[katakana2[i]] = kataRomaji2[i];
-for (let i = 0; i < kataRomaji1.length; ++i)
-    romajiKata1[kataRomaji1[i]] = katakana1[i];
-for (let i = 0; i < kataRomaji2.length; ++i)
-    romajiKata2[kataRomaji2[i]] = katakana2[i];
+const singleKatakanaToRomaji = {};
+const katakanaCompoundsToRomaji = {};
+const romajiToSingleKatakana = {};
+const romajiToKatakanaCompounds = {};
+for (let i = 0; i < singleKatakana.length; ++i)
+    singleKatakanaToRomaji[singleKatakana[i]] = singleKatakanaRomaji[i];
+for (let i = 0; i < katakanaCompounds.length; ++i)
+    katakanaCompoundsToRomaji[katakanaCompounds[i]] = katakanaCompoundsRomaji[i]
+for (let i = 0; i < singleKatakanaRomaji.length; ++i)
+    romajiToSingleKatakana[singleKatakanaRomaji[i]] = singleKatakana[i];
+for (let i = 0; i < katakanaCompoundsRomaji.length; ++i)
+    romajiToKatakanaCompounds[katakanaCompoundsRomaji[i]] = katakanaCompounds[i]
 
 const romajiChars = new Set("abcdefghijkmnoprstuwyzABCDEFGHIJKMNOPRSTUWYZ");
-const smallKana = new Set(["ゃ", "ゅ", "ょ", "ャ", "ュ", "ョ"]);
-const kanaVowels = new Set("あえいおう");
+const smallKana = new Set("ゃゅょャュョ");
+const kanaVowels = new Set("あえいおうアエイオウ");
+const yRowKana = new Set("やゆよヤユヨ");
 const singleRomaji = new Set("aeioun");
 
 
 String.prototype.toRomaji = function() {
     const string = this.toLowerCase();
     let converted = [];
-    for (let i = 0; i < string.length; ++i) {
+    let i = 0;
+    while (i < string.length) {
         // Treat compounds specially
-        if (smallKana.has(string[i]) && i !== 0) {
-            const composition = string[i - 1] + string[i];
-            if (hiraRepl2.hasOwnProperty(composition))
-                converted.push(hiraRepl2[composition]);
-            else if (kataRepl2.hasOwnProperty(composition))
-                converted.push(kataRepl2[composition]);
+        if (i !== string.length - 1 && smallKana.has(string[i + 1]) &&
+              (hiraganaCompoundsToRomaji.hasOwnProperty(string.slice(i,i+2)) ||
+               katakanaCompoundsToRomaji.hasOwnProperty(string.slice(i,i+2)))) {
+            const composition = string[i] + string[i + 1];
+            if (hiraganaCompoundsToRomaji.hasOwnProperty(composition))
+                converted.push(hiraganaCompoundsToRomaji[composition]);
+            else if (katakanaCompoundsToRomaji.hasOwnProperty(composition))
+                converted.push(katakanaCompoundsToRomaji[composition]);
+            ++i;
         }
-        // Insert 'n' + apostrophe when encountering "ん" + vowel
-        else if (string[i] === "ん" && i !== string.length - 1 &&
-                kanaVowels.has(string[i + 1])) {
+        //  Skip "っ" or "ッ" (convert later) unless it's at the end
+        else if (i !== string.length - 1 &&
+                (string[i] === "っ" || string[i] === "ッ")) {
+            converted.push(string[i]);
+            ++i;
+            continue;
+        }
+        // Insert 'n' + apostrophe when encountering "ん"/"ン" + vowel/yRowKana
+        else if ((string[i] === "ん" || string[i] === "ン" ) &&
+                i !== string.length - 1 && (kanaVowels.has(string[i + 1]) ||
+                yRowKana.has(string[i + 1]))) {
             converted.push("n", "'");
         }
         // Convert single kana
-        else if ((hiraRepl1.hasOwnProperty(string[i]) ||
-                  kataRepl1.hasOwnProperty(string[i])) &&
-                 !(i !== string.length - 1 && smallKana.has(string[i + 1]))) {
-            if (hiraRepl1.hasOwnProperty(string[i]))
-                converted.push(hiraRepl1[string[i]]);
-            else if (kataRepl1.hasOwnProperty(string[i]))
-                converted.push(kataRepl1[string[i]]);
+        else if ((singleHiraganaToRomaji.hasOwnProperty(string[i]) ||
+                  singleKatakanaToRomaji.hasOwnProperty(string[i]))) {
+            if (singleHiraganaToRomaji.hasOwnProperty(string[i]))
+                converted.push(singleHiraganaToRomaji[string[i]]);
+            else if (singleKatakanaToRomaji.hasOwnProperty(string[i]))
+                converted.push(singleKatakanaToRomaji[string[i]]);
         }
         // Convert "ー" to hyphen when writing katakana
         else if (string[i] === "ー") {
@@ -134,6 +182,7 @@ String.prototype.toRomaji = function() {
         else if (string[i] === "." || romajiChars.has(string[i])) {
             converted.push(string[i]);
         }
+        ++i;
     }
     converted = converted.join("");
     const finalString = [];
@@ -152,8 +201,10 @@ String.prototype.toRomaji = function() {
 }
 
 String.prototype.toKana = function (type, ignoreN) {
-    const dict1 = type === "hiragana" ? romajiHira1 : romajiKata1;
-    const dict2 = type === "hiragana" ? romajiHira2 : romajiKata2;
+    const romajiToSingleKana = type === "hiragana" ?
+        romajiToSingleHiragana : romajiToSingleKatakana;
+    const romajiToCompounds = type === "hiragana" ?
+        romajiToHiraganaCompounds : romajiToKatakanaCompounds;
     const string = this.toLowerCase().trim();
     const converted = [];
     let i = 0;
@@ -170,26 +221,32 @@ String.prototype.toKana = function (type, ignoreN) {
         }
         // Check for 3-letter compounds
         else if (i < string.length - 2 &&
-                 dict2.hasOwnProperty(string.slice(i, i + 3))) {
-            converted.push(dict2[string.slice(i, i + 3)]);
+                 romajiToCompounds.hasOwnProperty(string.slice(i, i + 3))) {
+            converted.push(romajiToCompounds[string.slice(i, i + 3)]);
             i += 2;
         }
         // Check for 2-letter compounds
         else if (i < string.length - 1 &&
-                 dict2.hasOwnProperty(string.slice(i, i + 2))) {
-            converted.push(dict2[string.slice(i, i + 2)]);
+                 romajiToCompounds.hasOwnProperty(string.slice(i, i + 2))) {
+            converted.push(romajiToCompounds[string.slice(i, i + 2)]);
             ++i;
+        }
+        // Check for single kana with 4 romaji letters (only 'xtsu')
+        else if (i < string.length - 3 &&
+                 romajiToSingleKana.hasOwnProperty(string.slice(i, i + 4))) {
+            converted.push(romajiToSingleKana[string.slice(i, i + 4)]);
+            i += 3;
         }
         // Check for single kana with 3 romaji letters
         else if (i < string.length - 2 &&
-                 dict1.hasOwnProperty(string.slice(i, i + 3))) {
-            converted.push(dict1[string.slice(i, i + 3)]);
+                 romajiToSingleKana.hasOwnProperty(string.slice(i, i + 3))) {
+            converted.push(romajiToSingleKana[string.slice(i, i + 3)]);
             i += 2;
         }
         // Check for single kana with 2 romaji letters
         else if (i < string.length - 1 &&
-                 dict1.hasOwnProperty(string.slice(i, i + 2))) {
-            converted.push(dict1[string.slice(i, i + 2)]);
+                 romajiToSingleKana.hasOwnProperty(string.slice(i, i + 2))) {
+            converted.push(romajiToSingleKana[string.slice(i, i + 2)]);
             ++i;
         }
         // If "n" is being ignored, just append it
@@ -198,7 +255,7 @@ String.prototype.toKana = function (type, ignoreN) {
         }
         // Check for single kana with 1 romaji letter
         else if (singleRomaji.has(string[i])) {
-            converted.push(dict1[string[i]]);
+            converted.push(romajiToSingleKana[string[i]]);
         }
         // Replace minus or underscore with "ー" when writing katakana
         else if (type === "katakana" &&

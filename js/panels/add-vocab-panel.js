@@ -102,13 +102,13 @@ class AddVocabPanel extends Panel {
             this.$("translations-entry").value, separator);
         let readings = utility.parseEntries(
             this.$("readings-entry").value, separator);
-        // Update status with error messages if something is missing
+        // Display error messages if something is missing
         if (word.length === 0) {
             dialogWindow.info("The word to be added is missing.");
             return;
         }
         if (translations.length === 0) {
-            main.updateStatus("No translations have been entered.");
+            dialogWindow.info("No translations have been entered.");
             return;
         }
         // Add word and update status message
