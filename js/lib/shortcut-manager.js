@@ -14,7 +14,9 @@ function initialize() {
     for (const shortcutName in dataManager.settings.shortcuts) {
         keyCombinationToShortcutName.set(
             dataManager.settings.shortcuts[shortcutName], shortcutName);
-        shortcutNameToCallbacks.set(shortcutName, []);
+        if (!shortcutNameToCallbacks.has(shortcutName)) {
+            shortcutNameToCallbacks.set(shortcutName, []);
+        }
     }
     window.addEventListener("keydown", (event) => {
         if (allShortcutsDisabled)
@@ -41,10 +43,13 @@ function initialize() {
  * @param {Function} callback
  */
 function bindCallback(shortcutName, callback) {
-    if (shortcutNameToCallbacks.get(shortcutName).includes(callback)) {
+    if (!shortcutNameToCallbacks.has(shortcutName)) {
+        shortcutNameToCallbacks.set(shortcutName, [callback]);
+    } else if (!shortcutNameToCallbacks.get(shortcutName).includes(callback)) {
+        shortcutNameToCallbacks.get(shortcutName).push(callback);
+    } else {
         throw new Error("Given callback is already bound to this shortcut!");
     }
-    shortcutNameToCallbacks.get(shortcutName).push(callback);
 }
 
 /**

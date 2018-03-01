@@ -241,6 +241,9 @@ class EditVocabPanel extends Panel {
             this.$("readings").appendChild(node);
             node.contextMenu(menuItems, ["delete-reading", "modify-reading"],
                     { section: this });
+            // Enable special input methods if necessary
+            node.toggleKanaInput(dataManager.currentLanguage === "Japanese");
+            node.togglePinyinInput(dataManager.currentLanguage === "Chinese");
         } else if (type === "translation") {
             this.$("translations").appendChild(node);
             node.contextMenu(menuItems,
@@ -250,9 +253,6 @@ class EditVocabPanel extends Panel {
             this.$("vocab-lists").appendChild(node);
             node.contextMenu(menuItems, ["remove-from-list"], { section: this });
         }
-        // Enable special input methods if necessary
-        node.toggleKanaInput(dataManager.currentLanguage === "Japanese");
-        node.togglePinyinInput(dataManager.currentLanguage === "Chinese");
         return node;
     }
 

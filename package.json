@@ -2,6 +2,7 @@
   "name": "acnicoy",
   "version": "0.1.0",
   "description": "A tool for learning Japanese and other languages.",
+  "homepage": "https://github.com/Phxstick/acnicoy",
   "author": "Daniel Bindemann",
   "license": "GPL-3.0",
   "keywords": [
@@ -13,6 +14,7 @@
   "devDependencies": {
     "autoprefixer": "^6.3.4",
     "electron-builder": "^15.3.0",
+    "fs-extra": "^5.0.0",
     "glob": "^7.1.1",
     "gulp": "^3.9.1",
     "gulp-postcss": "^6.0.1",
@@ -25,7 +27,7 @@
     "dateformat": "^2.0.0",
     "electron": "^1.6.2",
     "electron-localshortcut": "^0.6.0",
-    "fs-extra": "^2.0.0",
+    "electron-settings": "^3.1.4",
     "handlebars": "^4.0.5",
     "languages": "^0.1.3",
     "random-js": "^1.0.8",

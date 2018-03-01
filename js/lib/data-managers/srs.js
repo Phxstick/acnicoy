@@ -7,10 +7,14 @@ module.exports = function (paths, modules) {
     const srs = {};
     const dataMap = {};
 
+    srs.initialize = function () {
+        srs.loadSchemes();
+    };
+
     srs.load = function (language) {
         dataMap[language] = {};
         srs.loadSchemeInfo(language);
-    }
+    };
 
     srs.unload = function (language) {
         delete dataMap[language];
@@ -139,7 +143,7 @@ module.exports = function (paths, modules) {
     };
 
     srs.switchScheme = function (language, newSchemeName) {
-        const languageSettings = dataManager.languageSettings.for(language);
+        const languageSettings = modules.languageSettings.for(language);
         languageSettings.srs.scheme = newSchemeName;
         srs.loadSchemeInfo(language);
         modules.stats.calculateScorePerLevel(language);

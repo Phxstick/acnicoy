@@ -13,6 +13,7 @@ class LanguageTable extends Widget {
             element.hide();
         }
         this.languageConfigs = [];
+        this.languageToConfig = new Map();
         this.rowToConfig = new WeakMap();
         this.interactiveMode = false;
         this.settingsSubsection = null;
@@ -30,11 +31,9 @@ class LanguageTable extends Widget {
         this.$("add-language-button").addEventListener("click", async () => {
             const config = await overlays.open("add-lang");
             if (config === null) return;
-            for (const { language } of this.languageConfigs) {
-                if (config.language === language) {
-                    dialogWindow.info("You cannot add a language twice!"); 
-                    return;
-                }
+            if (this.languageToConfig.has(config.language)) {
+                dialogWindow.info("You cannot add a language twice!"); 
+                return;
             }
             if (this.interactiveMode) {
                 await dataManager.languages.add(
@@ -45,6 +44,11 @@ class LanguageTable extends Widget {
             }
             config.interactiveMode = this.interactiveMode;
             this.addTableRow(config);
+            if (this.interactiveMode) {
+                events.emit("update-content-status",
+                    { language: config.language,
+                      secondary: config.settings.secondary });
+            }
         });
         // When a readings checkbox is clicked, update config
         this.$("table-body").addEventListener("click", (target) => {
@@ -77,12 +81,13 @@ class LanguageTable extends Widget {
         // Functionality for downloading language content
         this.$("table-body").addEventListener("click", (event) => {
             if (!event.target.classList.contains("content-status-label")) return
-            const row = event.target.parentNode.parentNode.parentNode;
+            const row = event.target.parentNode.parentNode.parentNode; // Oh god
             const config = this.rowToConfig.get(row);
             if (!config.downloadReady) return;
-            config.downloading = true;
-            config.downloadReady = false;
-            this.updateContentStatus(config);
+            events.emit("start-content-download", {
+                language: config.language,
+                secondaryLanguage: config.settings.secondary
+            });
         });
         // Functionality for setting language opened by default
         this.$("table-body").addEventListener("click", (event) => {
@@ -159,6 +164,7 @@ class LanguageTable extends Widget {
                 }
             }
             this.languageConfigs.remove(config);
+            this.languageToConfig.delete(config.language);
             this.$("table-body").removeChild(row);
             if (this.languageConfigs.length === 0) {
                 if (this.interactiveMode) {
@@ -173,18 +179,27 @@ class LanguageTable extends Widget {
     }
 
     registerCentralEventListeners() {
-        events.on("update-content-status", () => {
-            for (const config of this.languageConfigs) {
-                this.updateContentStatus(config);
-            }
+        events.on("start-content-download", ({ language, secondary }) => {
+            if (!this.interactiveMode) return;
+            const config = this.languageToConfig.get(language);
+            config.downloading = true;
+            config.downloadReady = false;
+            this.updateContentStatus(language);
+        });
+        events.on("update-content-view", ({ language, secondary }) => {
+            if (!this.interactiveMode) return;
+            this.updateContentStatus(language);
         });
     }
 
     addTableRow(config) {
+        const language = config.language;
+        const secondary = config.settings.secondary;
         config.downloading = networkManager.content.getDownloadStatus(
-                config.language, config.settings.secondary) !== null;
+                language, secondary) !== null;
         config.downloadReady = false;
         this.languageConfigs.push(config);
+        this.languageToConfig.set(language, config);
         const template = templates.get("language-table-entry");
         const row = utility.fragmentFromString(template(config)).children[0];
         this.$("table-body").appendChild(row);
@@ -204,12 +219,18 @@ class LanguageTable extends Widget {
             config, row.querySelector(".update-required-icon"));
         this.connectingSpinners.set(
             config, row.querySelector(".connecting-spinner"));
-        this.updateContentStatus(config);
+        if (config.interactiveMode) {
+            this.updateContentStatus(language);
+        }
     }
 
-    async updateContentStatus(config) {
+    async updateContentStatus(language) {
+        const config = this.languageToConfig.get(language);
         if (this.updatingContentStatus.has(config)) return;
         this.updatingContentStatus.add(config);
+        const secondary = config.settings.secondary;
+        const cacheKey = `cache.contentVersionInfo.${language}.${secondary}`;
+        // Get HTML elements for this table row and update their status
         const progressFrame = this.contentDownloadProgressFrames.get(config);
         const progressBar = this.contentDownloadProgressBars.get(config);
         const progressText = this.contentDownloadProgressTexts.get(config);
@@ -228,54 +249,58 @@ class LanguageTable extends Widget {
             if (config.downloading) {
                 const downloadStream =
                     await networkManager.content.startDownload(
-                        config.language, config.settings.secondary);
-                if (this.handledDownloadStreams.has(downloadStream))
-                    return;
-                this.handledDownloadStreams.add(downloadStream);
-                const { totalSize, downloaded, percentage } =
-                    networkManager.content.getDownloadStatus(
-                    config.language, config.settings.secondary);
-                progressBar.max = totalSize;
-                progressBar.value = downloaded;
-                progressText.textContent = `${percentage.toFixed(0)} %`;
-                downloadStream.on("progressing", (status) => {
-                    progressBar.value = status.downloaded;
-                    progressText.textContent =
-                        `${status.percentage.toFixed(0)} %`;
-                });
-                downloadStream.on("finished", () => {
-                    config.downloading = false;
-                    this.updateContentStatus(config);
-                });
-                downloadStream.on("connection-lost", () => {
-                    this.updateContentStatus(config);
-                });
-                progressFrame.show();
-            } else {
-                const { updateAvailable,
-                        alreadyDownloaded,
-                        programUpdateRequired } =
-                    await networkManager.content.getStatus(
-                        config.language, config.settings.secondary);
-                statusLabel.classList.remove("error");
-                if (updateAvailable) {
-                    if (alreadyDownloaded) {
-                        statusLabel.textContent = "Update";
-                    } else {
-                        statusLabel.textContent = "Download";
-                    }
-                } else {
-                    if (alreadyDownloaded) {
-                        statusLabel.textContent = "Up to date";
-                        statusLabel.classList.add("up-to-date");
-                    } else {
-                        statusLabel.textContent = "n.a.";
-                    }
+                        language, secondary)
+                if (!this.handledDownloadStreams.has(downloadStream)) {
+                    this.handledDownloadStreams.add(downloadStream);
+                    const { totalSize, downloaded, percentage } =
+                        networkManager.content.getDownloadStatus(
+                            language, secondary);
+                    progressBar.max = totalSize;
+                    progressBar.value = downloaded;
+                    progressText.textContent = `${percentage.toFixed(0)} %`;
+                    downloadStream.on("progressing", (status) => {
+                        progressBar.value = status.downloaded;
+                        progressText.textContent =
+                            `${status.percentage.toFixed(0)} %`;
+                    });
+                    downloadStream.on("finished", () => {
+                        config.downloading = false;
+                        events.emit("content-download-finished",
+                            { language, secondary });
+                        storage.set(`${cacheKey}.updateAvailable`, false);
+                        this.updateContentStatus(language);
+                    });
+                    downloadStream.on("connection-lost", () => {
+                        this.updateContentStatus(language);
+                    });
+                    progressFrame.show();
                 }
-                statusFrame.show();
-                statusLabel.classList.toggle("button", updateAvailable);
-                config.downloadReady = updateAvailable;
-                updateRequiredIcon.toggleDisplay(programUpdateRequired);
+            } else {
+                if (storage.has(cacheKey)) {
+                    const { updateAvailable, programUpdateRequired } =
+                            storage.get(cacheKey);
+                    const alreadyDownloaded =
+                            dataManager.content.isAvailable(language, secondary)
+                    statusLabel.classList.remove("error");
+                    if (updateAvailable) {
+                        if (alreadyDownloaded) {
+                            statusLabel.textContent = "Update";
+                        } else {
+                            statusLabel.textContent = "Download";
+                        }
+                    } else {
+                        if (alreadyDownloaded) {
+                            statusLabel.textContent = "Up to date";
+                            statusLabel.classList.add("up-to-date");
+                        } else {
+                            statusLabel.textContent = "n.a.";
+                        }
+                    }
+                    statusFrame.show();
+                    statusLabel.classList.toggle("button", updateAvailable);
+                    config.downloadReady = updateAvailable;
+                    updateRequiredIcon.toggleDisplay(programUpdateRequired);
+                }
             }
         } catch (error) {
             if (error instanceof networkManager.NoServerConnectionError ||
@@ -291,7 +316,7 @@ class LanguageTable extends Widget {
                 }
                 statusLabel.classList.add("error");
                 // Frequently try to reconnect
-                window.setTimeout(() => this.updateContentStatus(config),
+                window.setTimeout(() => this.updateContentStatus(language),
                     this.retryContentStatusUpdateDelay);
             } else {
                 throw error;
@@ -304,6 +329,7 @@ class LanguageTable extends Widget {
 
     clear() {
         this.languageConfigs.length = 0;
+        this.languageToConfig.clear();
         this.$("table").hide();
         this.$("table-body").empty();
     }

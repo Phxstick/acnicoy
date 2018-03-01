@@ -16,15 +16,12 @@ module.exports = function (paths, modules) {
         return require(paths.defaultSettings);
     };
 
-    settings.load = function() {
+    settings.initialize = function() {
         if (fs.existsSync(paths.globalSettings)) {
             data = require(paths.globalSettings);
         } else {
             data = settings.setDefault();
         }
-        shortcuts.initialize();
-        modules.srs.loadSchemes();
-        modules.achievements.loadUserData();
     };
 
     settings.save = function() {

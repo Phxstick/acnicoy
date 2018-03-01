@@ -443,7 +443,7 @@ const accentPositions = {
     "wen": 1,
     "weng": 1,
     "yu": 1,
-    "yue": 1,
+    "yue": 2,
     "yuan": 2,
     "yun": 1,
 

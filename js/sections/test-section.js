@@ -118,8 +118,15 @@ class TestSection extends Section {
         });
         // Create context menu
         this.$("test-item").contextMenu(menuItems, ["copy-test-item"]);
-       // Bind callback for ignoring answers via shortcut
+        // Bind callback for ignoring answers via shortcut
         shortcuts.bindCallback("ignore-answer", () => this._ignoreAnswer());
+        // Enable choosing next level without explicitly focussing popup stack
+        this.$("continue-button").addEventListener("keypress", (event) => {
+            if (event.key >= "1" && event.key <= "9") {
+                const new_event = new KeyboardEvent(event.type, event);
+                this.$("new-level").dispatchEvent(new_event);
+            }
+        });
     }
 
     /* =====================================================================

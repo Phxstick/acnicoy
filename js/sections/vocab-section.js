@@ -125,43 +125,51 @@ class VocabSection extends Section {
         // Initialize search info and attach event listeners for searching
         // =====================================================================
         this.viewStates = {};
-        const displayAmounts = {
+        const viewConfigs = {
             "vocab": {
-                initial: 50,
-                onScroll: 100
+                displayInitial: 50,
+                displayOnScroll: 100,
+                sortingCriterion: "dateAdded",
+                sortBackwards: true
             },
             "vocab-lists": {
-                initial: 40,
-                onScroll: 40
+                displayInitial: 40,
+                displayOnScroll: 40,
+                sortingCriterion: "alphabetical",
+                sortBackwards: false
             },
             "list-contents": {
-                initial: 40,
-                onScroll: 80
+                displayInitial: 40,
+                displayOnScroll: 80,
+                sortingCriterion: "alphabetical",
+                sortBackwards: false
             }
         };
-        for (const fieldName in displayAmounts) {
-            this.viewStates[fieldName] = utility.initializeView({
-                view: this.$(fieldName),
-                getData: (query) => this.search(fieldName, query),
-                createViewItem: (text) => this.createViewItem(fieldName, text),
-                initialDisplayAmount: displayAmounts[fieldName].initial,
-                displayAmount: displayAmounts[fieldName].onScroll,
+        for (const viewName in viewConfigs) {
+            this.viewStates[viewName] = utility.initializeView({
+                view: this.$(viewName),
+                getData: (query) => this.search(viewName, query),
+                createViewItem: (text) => this.createViewItem(viewName, text),
+                initialDisplayAmount: viewConfigs[viewName].displayInitial,
+                displayAmount: viewConfigs[viewName].displayOnScroll,
                 criticalScrollDistance: 150
             });
-            this.viewStates[fieldName].sortingCriterion = "alphabetical";
-            this.viewStates[fieldName].sortBackwards = false;
+            this.viewStates[viewName].sortingCriterion =
+                    viewConfigs[viewName].sortingCriterion;
+            this.viewStates[viewName].sortBackwards =
+                    viewConfigs[viewName].sortBackwards;
             // Attach event listener to search entry
-            const searchEntry = this.$(`search-${fieldName}-entry`)
+            const searchEntry = this.$(`search-${viewName}-entry`)
             searchEntry.addEventListener("keypress", (event) => {
                 if (event.key !== "Enter") return;
                 const query = searchEntry.value.trim();
-                this.viewStates[fieldName].search(query);
+                this.viewStates[viewName].search(query);
             });
             // Attach event listener to search button
-            const searchButton = this.$(`search-${fieldName}-button`);
+            const searchButton = this.$(`search-${viewName}-button`);
             searchButton.addEventListener("click", () => {
                 const query = searchEntry.value.trim();
-                this.viewStates[fieldName].search(query);
+                this.viewStates[viewName].search(query);
             });
         }
     }

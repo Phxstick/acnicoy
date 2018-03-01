@@ -3,56 +3,48 @@
 const path = require("path");
 const fs = require("fs-extra");
 const os = require("os");
+const { remote } = require("electron");
 
 module.exports = function (basePath) {
     const paths = {};
 
-    const dataPathConfigFile = path.resolve(basePath, "data", "data-path.txt");
     paths.standardDataPathPrefix = path.resolve(os.homedir(), "Documents");
     paths.dataPathPrefix = null;
     paths.base = basePath;
     let dataPath = null;
     let langPath = null;
-    let backupsPath = null;
-    let downloadsPath = null;
-    let contentPath = null;
 
     // Return true if location for user data is set
     paths.existsDataPath = function () {
-        return fs.existsSync(dataPathConfigFile);
+        return localStorage.getItem("data-path") !== null;
+    };
+    // Set location for folder to store user data in
+    paths.setDataPath = function (prefix) { 
+        localStorage.setItem("data-path", prefix);
+        paths.init();
     };
 
     // Initialize paths for user data
     paths.init = function() {
         if (!paths.existsDataPath())
             throw Error("Path for user data has not been set!");
-        let prefix = fs.readFileSync(dataPathConfigFile, "utf8");
+        let prefix = localStorage.getItem("data-path");
         if (prefix[prefix.length - 1] == "\n")
             prefix = prefix.slice(0, prefix.length - 1);
-        const dataPathBaseName = `${app.name}Data`;
         const previousPath = dataPath;
+        const dataPathBaseName = `${app.name}Data`;
         const newPath = path.resolve(prefix, dataPathBaseName);
-        paths.dataPathBaseName = dataPathBaseName;
         paths.dataPathPrefix = prefix;
         paths.data = dataPath = newPath;
         paths.languages = langPath = path.resolve(dataPath, "Languages");
-        paths.downloads = downloadsPath = path.resolve(dataPath, "Downloads");
-        paths.downloadsInfo = path.resolve(downloadsPath, "info.json");
-        paths.backups = backupsPath = path.resolve(dataPath, "Backups");
         paths.globalSettings = path.resolve(dataPath, "settings.json");
         paths.srsSchemes = path.resolve(dataPath, "srs-schemes.json")
         paths.achievementsUnlocked = path.resolve(dataPath, "achievements.json")
-        contentPath = path.resolve(dataPath, "Content");
+        paths.notifications = path.resolve(dataPath, "notifications.json");
         if (previousPath === null) {
             // Create folders if they do not exist yet
             if (!fs.existsSync(dataPath)) fs.mkdirSync(dataPath);
             if (!fs.existsSync(langPath)) fs.mkdirSync(langPath);
-            if (!fs.existsSync(backupsPath)) fs.mkdirSync(backupsPath);
-            if (!fs.existsSync(downloadsPath)) fs.mkdirSync(downloadsPath);
-            if (!fs.existsSync(contentPath)) fs.mkdirSync(contentPath);
-            // Create other necessary files
-            if (!fs.existsSync(paths.downloadsInfo))
-                fs.writeFileSync(paths.downloadsInfo, "{}");
         } else {
             // Copy previous data to new location
             if (fs.existsSync(newPath)) {
@@ -61,12 +53,24 @@ module.exports = function (basePath) {
             fs.renameSync(previousPath, newPath);
         }
     };
-    
-    // Set location for folder to store user data in
-    paths.setDataPath = function (prefix) { 
-        fs.writeFileSync(dataPathConfigFile, prefix);
-        paths.init();
-    };
+
+    // Local storage
+    const userDataPath = remote.app.getPath("userData");
+    const storagePath = path.resolve(userDataPath, "storage");
+    const contentPath = path.resolve(storagePath, "Content");
+    const backupsPath = path.resolve(storagePath, "Backups");
+    const downloadsPath = path.resolve(storagePath, "Downloads");
+    paths.downloadsInfo = path.resolve(downloadsPath, "info.json");
+    paths.backups = backupsPath;
+    // Create storage paths if necessary
+    if (!fs.existsSync(storagePath)) fs.mkdirSync(storagePath);
+    if (!fs.existsSync(contentPath)) fs.mkdirSync(contentPath);
+    if (!fs.existsSync(backupsPath)) fs.mkdirSync(backupsPath);
+    if (!fs.existsSync(downloadsPath)) fs.mkdirSync(downloadsPath);
+    if (!fs.existsSync(paths.downloadsInfo))
+        fs.writeFileSync(paths.downloadsInfo, "{}");
+    // Set path for electron-settings module
+    storage.setPath(path.resolve(storagePath, "storage.json"));
 
     // Global data
     paths.packageInfo = path.resolve(basePath, "package.json");
@@ -88,6 +92,7 @@ module.exports = function (basePath) {
     paths.img = {
         programIcon: path.resolve(basePath, "img", "icon.png")
     };
+    paths.japaneseIndices = path.resolve(basePath, "japanese-indices.sql");
 
     // JS
     const jsPath = path.resolve(basePath, "js");
@@ -163,7 +168,7 @@ module.exports = function (basePath) {
         const day = currentDate.getDate();
         const month = currentDate.getMonth() + 1;
         const year = currentDate.getFullYear();
-        const backupDir = path.resolve(backupsPath, [
+        const backupDir = path.resolve(paths.backups, [
             id.toString().padStart(5, "0"),
             year.toString().padStart(4, "0"),
             month.toString().padStart(2, "0"),
@@ -171,13 +176,12 @@ module.exports = function (basePath) {
         ].join("-"));
         return {
             directory: backupDir,
-            infoFile: path.resolve(backupDir, "info.json"),
-            achievements: path.resolve(backupDir, "achievements.json")
+            infoFile: path.resolve(backupDir, "info.json")
         };
     };
     paths.backupInfo = (backupName) => {
         return path.resolve(
-            path.resolve(backupsPath, backupName), "info.json");
+            path.resolve(paths.backups, backupName), "info.json");
     };
 
     // Language content

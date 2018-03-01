@@ -6,6 +6,7 @@ const startTime = performance.now();
 const { clipboard, remote } = require("electron");
 const EventEmitter = require("events");
 const Velocity = require("velocity-animate");
+const storage = require("electron-settings");
 
 // Load modules
 const basePath = remote.app.getAppPath();
@@ -61,6 +62,7 @@ class Application {
         this.version = packageJson.version;
         this.description = packageJson.description;
         this.author = packageJson.author;
+        this.homepage = packageJson.homepage;
     }
 
     quit() {
@@ -162,10 +164,10 @@ class Application {
         await new Promise((resolve) => { window.onload = resolve; });
         document.title = this.name;
 
-        // Immediately load/create settings if data path is already set
+        // Immediately initialize global data if data path is already set
         if (paths.existsDataPath()) {
             paths.init();
-            dataManager.settings.load();
+            dataManager.initialize();
         }
 
         // Create interface (using design settings if already loaded above)
@@ -177,7 +179,7 @@ class Application {
         if (!paths.existsDataPath()) {
             const newPath = await this.openWindow("init-path");
             paths.setDataPath(newPath);
-            dataManager.settings.load();
+            dataManager.initialize();
         }
 
         // Create sections, panels and suggestion panes in main-window

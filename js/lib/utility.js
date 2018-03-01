@@ -31,6 +31,34 @@ function finishEventQueue() {
 }
 
 /**
+ * Return a promise which resolves after the given duration.
+ * @param {Integer} [duration=500]
+ * @returns {Promise}
+ */
+function wait(duration=500) {
+    return new Promise((resolve) => {
+        window.setTimeout(resolve, duration);
+    });
+}
+
+/**
+ * Execute given callback when 'offset' time has passed after the last time it
+ * was called. If 'lastTime' is undefined, execute the callback immediately.
+ * @param {Function} callback
+ * @param {Integer} offset - Time to call callback after (in seconds).
+ * @param {Integer} [lastTime] - Last time the callback was called (in seconds).
+ */
+function setTimer(callback, offset, lastTime) {
+    if (lastTime === undefined) {
+        callback();
+    } else {
+        const currentTime = utility.getTime();
+        const newOffset = Math.max(0, lastTime + offset - currentTime);
+        window.setTimeout(callback, 1000 * newOffset);
+    }
+}
+
+/**
  * Parse text of given css file and return object with css rules.
  * Returned object maps each css selector to an object mapping css properties
  * to their values.
@@ -673,10 +701,11 @@ function initializeView({ view, getData, createViewItem, initialDisplayAmount,
 
 /**
  * Make given node behave like a popup-window, i.e. it gets closed when clicking
- * somewhere outside of it.
+ * somewhere outside of it. Call given callback if the window is being closed.
  * @param {HTMLElement} node
+ * @param {Function} [callback]
  */
-function makePopupWindow(node) {
+function makePopupWindow(node, callback) {
     let nodeClicked = false;
     node.addEventListener("click", (event) => {
         nodeClicked = true;
@@ -684,6 +713,9 @@ function makePopupWindow(node) {
     window.addEventListener("click", (event) => {
         if (!node.isHidden() && !nodeClicked) {
             node.hide();
+            if (callback !== undefined) {
+                callback();
+            }
         }
         nodeClicked = false;
     });
@@ -709,6 +741,8 @@ module.exports.existsDirectory = existsDirectory;
 module.exports.parseHtmlFile = parseHtmlFile;
 module.exports.fragmentFromString = fragmentFromString;
 module.exports.finishEventQueue = finishEventQueue;
+module.exports.wait = wait;
+module.exports.setTimer = setTimer;
 module.exports.createSvgNode = createSvgNode;
 module.exports.createDefaultOption = createDefaultOption;
 module.exports.findIndex = findIndex;

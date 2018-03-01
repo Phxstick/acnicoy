@@ -1,0 +1,32 @@
+@import "overlay";
+
+:host {
+  background-color: transparent;
+}
+
+#frame {
+  @include center-content;
+  flex-direction: column;
+}
+
+#loading-label {
+  color: $dark-contrast-color;
+  font-size: 2.5rem;
+  font-family: $light-font;
+  text-shadow: 0 0 10px $dark-contrast-shadow-color,
+               0 0 5px $dark-contrast-shadow-color,
+               0 0 2px $dark-contrast-shadow-color;
+  margin-bottom: 20px;
+}
+
+.pulsating-triple-dots {
+  width: auto;
+  > div {
+    background-color: $dark-contrast-color;
+    width: 24px;
+    height: 24px;
+    box-shadow: 0 0 10px $dark-contrast-shadow-color,
+                0 0 5px $dark-contrast-shadow-color,
+                0 0 2px $dark-contrast-shadow-color;
+  }
+}

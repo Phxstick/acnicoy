@@ -3,6 +3,7 @@
 const { ipcRenderer, remote } = require("electron");
 const mainBrowserWindow = remote.getCurrentWindow();
 const AutoLaunch = require("auto-launch");
+const markdown = require("markdown").markdown;
 
 const menuItems = contextMenu.registerItems({
     "copy-kanji": {
@@ -33,6 +34,24 @@ const menuItems = contextMenu.registerItems({
             main.panels["edit-kanji"].load(kanji);
             main.openPanel("edit-kanji", { entryName: kanji });
         }
+    },
+    "delete-notification": {
+        label: "Delete notification",
+        click: ({ currentNode }) => {
+            dataManager.notifications.delete(parseInt(currentNode.dataset.id));
+            main.$("notifications").removeChild(currentNode);
+        }
+    },
+    "delete-all-notifications": {
+        label: "Delete all notifications",
+        click: async ({ currentNode }) => {
+            const confirmed = await dialogWindow.confirm(
+                "Are you sure you want to delete all notifications?");
+            if (confirmed) {
+                dataManager.notifications.deleteAll();
+                main.$("notifications").empty();
+            }
+        }
     }
 });
 
@@ -41,6 +60,7 @@ class MainWindow extends Window {
         super("main");
         this.panelSlideDuration = 350;
         this.sectionFadeDuration = 200;
+        this.statusUpdateInterval = utility.timeSpanStringToSeconds("3 hours");
         this.sections = {};
         this.panels = {};
         this.suggestionPanes = {};
@@ -63,6 +83,34 @@ class MainWindow extends Window {
                 () => this.openSection("vocab"));
         this.$("settings-button").addEventListener("click",
                 () => this.openSection("settings"));
+        const onNotificationsWindowClosed = () => {
+            // Unhighlight all highlighted notifications after they were viewed
+            let notificationNode = this.$("notifications").firstElementChild;
+            while (notificationNode !== null &&
+                    notificationNode.classList.contains("highlighted")) {
+                notificationNode.classList.remove("highlighted");
+                notificationNode = notificationNode.nextElementSibling;
+            }
+        }
+        let notificationsWindowOpen = false;
+        this.$("notifications-button").addEventListener("click", (event) => {
+            event.currentTarget.classList.remove("highlighted");
+            event.currentTarget.classList.toggle("selected");
+            dataManager.notifications.unhighlightAll();
+            notificationsWindowOpen = !notificationsWindowOpen;
+            this.$("notifications").toggleDisplay();
+            if (!notificationsWindowOpen) {
+                onNotificationsWindowClosed();
+            }
+            event.stopPropagation();
+        });
+        utility.makePopupWindow(this.$("notifications"), () => {
+            this.$("notifications-button").classList.remove("highlighted");
+            this.$("notifications-button").classList.remove("selected");
+            dataManager.notifications.unhighlightAll();
+            notificationsWindowOpen = false;
+            onNotificationsWindowClosed();
+        });
         // Sidebar button events
         this.$("add-vocab-button").addEventListener("click",
                 () => this.openPanel("add-vocab"));
@@ -219,6 +267,40 @@ class MainWindow extends Window {
                 }
             });
         });
+        events.on("update-program-status", async () => {
+            const info = await networkManager.program.getLatestVersionInfo();
+            info.lastUpdateTime = utility.getTime();
+            const cacheKey = "cache.programVersionInfo";
+            const cachedInfo = storage.get(cacheKey);
+            storage.set(cacheKey, info);
+            if ((cachedInfo === undefined && app.version !== info.latestVersion)
+                    || (cachedInfo !== undefined &&
+                        cachedInfo.latestVersion !== info.latestVersion)) {
+                this.addNotification("program-update-available", info);
+            }
+            window.setTimeout(() => events.emit("update-program-status"),
+                              this.statusUpdateInterval * 1000);
+        });
+        events.on("update-content-status", async ({ language, secondary }) => {
+            const info = 
+                    await networkManager.content.getStatus(language, secondary);
+            info.lastUpdateTime = utility.getTime();
+            const cacheKey = `cache.contentVersionInfo.${language}.${secondary}`
+            const cachedInfo = storage.get(cacheKey);
+            storage.set(cacheKey, info);
+            if ((cachedInfo === undefined && info.updateAvailable)
+                    || (cachedInfo !== undefined && !cachedInfo.updateAvailable
+                                                 && info.updateAvailable)) {
+                this.addNotification("content-update-available",
+                    { language, secondary });
+            }
+            events.emit("update-content-view", { language, secondary });
+            window.setTimeout(() => events.emit("update-content-status",
+                { language, secondary }), this.statusUpdateInterval * 1000);
+        });
+        events.on("content-download-finished", (info) => {
+            this.addNotification("content-download-finished", info);
+        });
     }
 
     async open() {
@@ -238,6 +320,7 @@ class MainWindow extends Window {
         // Set language and adjust to global settings
         await this.setLanguage(dataManager.settings.languages.default);
         this.sections["settings"].broadcastGlobalSettings();
+        events.emit("settings-loaded");  // Allow other widgets to adjust
         // Only display home section
         this.sections["home"].show();
         utility.finishEventQueue().then(() => {
@@ -253,16 +336,40 @@ class MainWindow extends Window {
         // Regularly update displayed SRS info
         this.srsStatusCallbackId = window.setInterval(
             () => events.emit("update-srs-status"), 1000 * 60 * 5);  // 5 min
-        // Regularly update content status
-        window.setInterval(() => events.emit("update-content-status"),
-            1000 * 60 * 60 * 3);  // 3 hours
+        // Regularly update program and language content status
+        utility.setTimer(() => events.emit("update-program-status"),
+                         this.statusUpdateInterval,
+                         storage.get("cache.programVersionInfo.lastUpdateTime"))
+        const languages = dataManager.languages.all;
+        for (const lang of languages) {
+            const secondary = 
+                dataManager.languageSettings.for(lang).secondaryLanguage;
+            const lastUpdateTime = storage.get(
+                `cache.contentVersionInfo.${lang}.${secondary}.lastUpdateTime`);
+            const pair = { language: lang, secondary };
+            utility.setTimer(() => events.emit("update-content-status", pair),
+                this.statusUpdateInterval, lastUpdateTime);
+        }
+        // Run clean-up-code from now on whenever attempting to close the window
         ipcRenderer.send("activate-controlled-closing");
         // Link achievements module to event emitter and do an initial check
         dataManager.achievements.setEventEmitter(events);
-        events.on("achievement-unlocked", (achievementId, achievementName) => {
-            this.updateStatus(`Unlocked achievement '${achievementName}'!`);
+        events.on("achievement-unlocked", (info) => {
+            this.updateStatus(`Unlocked achievement '${info.achievementName}'!`)
+            this.addNotification("achievement-unlocked", info);
         });
         await dataManager.achievements.checkAll();
+        // Load notifications
+        const notifications = dataManager.notifications.get();
+        for (const notification of notifications) {
+            // Make sure to delete notifications which are useless after restart
+            if (notification.type === "content-download-finished" ||
+                    notification.type === "content-installation-finished") {
+                dataManager.notifications.delete(notification.id);
+                continue;
+            }
+            this.displayNotification(notification);
+        }
         await utility.finishEventQueue();
         app.closeWindow("loading");
     }
@@ -496,6 +603,155 @@ class MainWindow extends Window {
         this.$("status-text").fadeOut();
         this.$("status-text").textContent = text;
         this.$("status-text").fadeIn();
+    }
+
+    addNotification(type, data) {
+        const notification = dataManager.notifications.add(type, data);
+        this.displayNotification(notification);
+    }
+
+    deleteNotification(id) {
+        const notifications = this.$("notifications").children;
+        for (const notificationNode of notifications) {
+            if (parseInt(notificationNode.dataset.id) === id) {
+                this.$("notifications").removeChild(notificationNode);
+                break;
+            }
+        }
+        dataManager.notifications.delete(id);
+    }
+
+    displayNotification(notification) {
+        const { id, date, type, data, highlighted } = notification;
+        let title;
+        let details;
+        let subtitle;
+        let buttonLabel;
+        let buttonCallback;
+        const template = templates.get("internal-notification");
+        if (type === "program-update-available") {
+            title = "New program version available";
+            buttonLabel = "Download";
+            const { latestVersion, releaseDate, description } = data;
+            subtitle = `Version ${latestVersion}, released on ${releaseDate}`;
+            details = markdown.toHTML(description);
+            buttonCallback = () => {
+                dialogWindow.info(
+                    `Automated program updating is not yet implemented.
+                     Please download and install the latest program version
+                     from <a href="${app.homepage + "/releases"}">here</a>.`)
+            };
+        }
+        else if (type === "program-download-finished") {
+            title = "Program download finished";
+            buttonLabel = "Install";
+        }
+        else if (type === "program-installation-finished") {
+            title = "Program installation finished";
+            buttonLabel = "Reload";
+        }
+        else if (type === "content-update-available") {
+            title = "New language content available";
+            buttonLabel = "Download";
+            const { language, secondary } = data;
+            // subtitle = `For ${secondary} ➝ ${language}`;
+            subtitle = `For ${language} (from ${secondary})`;
+            buttonCallback = () => {
+                events.emit("start-content-download", { language, secondary });
+            };
+            events.once("start-content-download", (info) => {
+                if (info.language === language && info.secondary == secondary) {
+                    this.deleteNotification(id);
+                    this.addNotification("content-update-downloading", info);
+                }
+            });
+        }
+        else if (type === "content-update-downloading") {
+            title = "Downloading content update...";
+            buttonLabel = "Open<br>settings";
+            const { language, secondary } = data;
+            subtitle = `For ${language} (from ${secondary}).<br>
+                        See language settings for download progress.`;
+            buttonCallback = () => {
+                main.sections["settings"].openSubsection("languages");
+                main.openSection("settings");
+            };
+            events.once("content-download-finished", (info) => {
+                if (info.language === language && info.secondary == secondary) {
+                    this.deleteNotification(id);
+                }
+            });
+        }
+        else if (type === "content-download-finished") {
+            title = "Content download finished";
+            buttonLabel = "Reload<br>content";
+            const { language, secondary } = data;
+            subtitle = `For ${language} (from ${secondary}).<br>
+                        Press button on the right to load the content.`;
+            buttonCallback = async () => {
+                overlays.open("loading");
+                await dataManager.content.load(language);
+                if (dataManager.currentLanguage === language) {
+                    dataManager.content.setLanguage(language);
+                }
+                await this.processLanguageContent(language, secondary);
+                this.adjustToLanguageContent(language, secondary);
+                this.deleteNotification(id);
+                await utility.wait();
+                overlays.closeTopmost();
+            };
+        }
+        else if (type === "achievement-unlocked") {
+            const { achievement, achievementName, language } = data;
+            title = `Achievement unlocked: ${achievementName}`;
+            buttonLabel = "";
+            subtitle = language !== undefined ? `[${language}] ` : "";
+            subtitle +=
+                dataManager.achievements.getDescription(achievement, language);
+        }
+        else {
+            throw new Error(`Notification type '${type}' does not exist.`);
+        }
+        // Create document fragment with given data
+        const html = template({ title, subtitle, details, buttonLabel });
+        const fragment = utility.fragmentFromString(html);
+        const buttonNode = fragment.querySelector(".action");
+        const detailsNode = fragment.querySelector(".details");
+        const notificationNode = fragment.querySelector(".notification");
+        notificationNode.dataset.id = id;
+        notificationNode.dataset.type = type;
+        const infoNode = fragment.querySelector(".info-frame");
+        // Add callbacks
+        if (buttonLabel) {
+            buttonNode.addEventListener("click", buttonCallback);
+        }
+        detailsNode.hide();
+        infoNode.addEventListener("click", () => {
+            if (!details) return;
+            detailsNode.toggleDisplay();
+        });
+        notificationNode.contextMenu(menuItems, ["delete-notification"]);
+        this.$("notifications").contextMenu(menuItems, () => {
+            return this.$("notifications").children.length > 0 ?
+                ["delete-all-notifications"] : [];
+        });
+        // Highlight notification button and notification itself
+        if (highlighted) {
+            this.$("notifications-button").classList.add("highlighted");
+            notificationNode.classList.add("highlighted");
+        }
+        // Overwrite existing notification if it must be unique
+        if (type === "program-update-available" ||
+                type === "content-update-available") {
+            for (const notification of this.$("notifications").children) {
+                if (notification.type === type) {
+                    dataManager.notifications.delete(notification.id);
+                    this.$("notifications").removeChild(notification);
+                    break;
+                }
+            }
+        }
+        this.$("notifications").prependChild(fragment);
     }
 
     openTestSection() {

@@ -26,6 +26,7 @@
   box-sizing: border-box;
   background-color: $main-window-background;
   color: $main-window-color;
+  position: relative;
 
   #language-popup {
     --label-background-hover: $main-window-background-hover;
@@ -74,6 +75,97 @@
       text-align: center;
       padding-top: 5px;
       padding-bottom: 5px;
+    }
+  }
+
+  #notifications-button {
+    width: 45px;
+    font-size: 140%;
+    border-left: 1px solid $main-window-border-color;
+    --tooltip-delay: 0.5s;
+    &:hover, &.selected {
+      background: $main-window-background-hover;
+      color: $main-window-color-hover;
+    }
+    &.highlighted {
+      box-shadow: 0 0 15px 2px $highlight-background;
+      background-color: $highlight-background;
+      border-color: $highlight-background;
+      text-shadow: 0 0 10px $highlight-color, 0 0 6px $highlight-color;
+      color: $highlight-color;
+      &:hover {
+        $light-background: lighten($highlight-background, 15%);
+        $light-color: lighten($highlight-color, 15%);
+        box-shadow: 0 0 15px 2px $light-background;
+        background-color: $light-background;
+        border-color: $light-background;
+        text-shadow: 0 0 10px $light-color, 0 0 6px $light-color;
+        color: $light-color;
+      }
+    }
+  }
+
+  #notifications {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    height: 250px;
+    width: 400px;
+    display: block;
+    overflow: auto;
+
+    &:empty {
+      @include center-content;
+      padding: 40px;
+      &::after {
+        content: "There are currently no notifications.";
+        text-align: center;
+        font-size: 1.5rem;
+        font-family: $light-font;
+        color: $color-light;
+      }
+    }
+
+    > .notification {
+      border-bottom: 1px solid $border-color-medium;
+      padding: 8px;
+      &.highlighted {
+        background-color: $highlight-background-light;
+      }
+      // &:hover {
+      //   background-color: $view-background-medium;
+      // }
+      .upper {
+        display: flex;
+        flex-direction: row;
+      }
+      .info-frame {
+        flex: 1;
+        padding-right: 8px;
+        .title {
+          font-weight: bold;
+          font-family: $light-font;
+          font-size: 1.2rem;
+          margin-bottom: 8px;
+        }
+        .subtitle {
+          font-family: $header-font;
+        }
+      }
+      .action {
+        @extend button.light, button.no-shadow;
+        border-left: 1px solid $border-color-light;
+        padding: 0;
+        padding-left: 8px;
+      }
+      .details {
+        padding-top: 10px;
+        // white-space: pre-wrap;
+        p {
+          margin-top: 6px;
+          margin-bottom: 6px;
+        }
+      }
     }
   }
 }

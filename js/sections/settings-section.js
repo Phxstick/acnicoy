@@ -29,6 +29,10 @@ class SettingsSection extends Section {
         }
     }
 
+    openSubsection(name) {
+        this.$$(`button[slot='tabs'][data-tab-name='${name}']`)[0].click();
+    }
+
     broadcastGlobalSettings() {
         for (const subsection of this.subsections) {
             subsection.broadcastGlobalSettings();

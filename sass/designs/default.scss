@@ -24,6 +24,7 @@ $color-negative: crimson;
 $color-positive: green;
 $select-background: firebrick;
 $select-color: white;
+$highlight-background-light: peachpuff;
 $highlight-background: crimson;
 $highlight-background-dark: darkred;
 $highlight-color: white;
@@ -32,8 +33,10 @@ $border-color-medium: darkgrey;
 $border-color-dark: grey;
 $border-color-darkest: dimgray;
 $border-color-highlight: $highlight-background;
-$contrast-font-color: black;
-$contrast-text-shadow-color: white;
+$contrast-color: black;
+$contrast-shadow-color: white;
+$dark-contrast-color: white;
+$dark-contrast-shadow-color: black;
 $code-background: rgba(27, 31, 35, 0.05);
 
 // Local links (to open another section/panel/overlay)
@@ -234,9 +237,9 @@ $input-inset-shadow: inset 0 1px 10px -5px black;
 $input-shadow: 0 0 5px $input-border-color;
 $input-highlight-shadow: 0 0 3px 2px $highlight-background;
 $button-focus-shadow: 0 0 4px 2px $button-shadow-color-focus;
-$contrast-text-shadow: 0.5px 0.5px 0.5px $contrast-text-shadow-color,
-                       0px 0px 5px $contrast-text-shadow-color,
-                       0px 0px 10px $contrast-text-shadow-color;
+$contrast-text-shadow: 0.5px 0.5px 0.5px $contrast-shadow-color,
+                       0px 0px 5px $contrast-shadow-color,
+                       0px 0px 10px $contrast-shadow-color;
 
 // Scrollbar sizes
 $scrollbar-width: 10px;

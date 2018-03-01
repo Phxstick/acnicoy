@@ -124,10 +124,6 @@ class KanjiInfoPanel extends Widget {
             if (event.target.parentNode !== this.$("history")) return;
             this.load(event.target.textContent);
         });
-        // =================================================================
-        // Load settings
-        // =================================================================
-        this.setMaximized(dataManager.settings.kanjiInfo.maximized);
     }
 
     registerCentralEventListeners() {
@@ -155,6 +151,9 @@ class KanjiInfoPanel extends Widget {
         });
         events.on("word-deleted", (word, dictionaryId) => {
             updateWordStatus(word, dictionaryId, false);
+        });
+        events.on("settings-loaded", () => {
+            this.setMaximized(dataManager.settings.kanjiInfo.maximized);
         });
     }
 

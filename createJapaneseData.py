@@ -372,31 +372,6 @@ def parse_dictionary(filename, cursor, code_to_text_output_path):
         print("Inserting dict entries into database... %d%%" % perc, end="\r")
     print("Inserting dict entries into database... 100%")
 
-    print("Creating index on words...", end="\r")
-    cursor.execute("CREATE INDEX words_word ON words(word COLLATE NOCASE)")
-    print("Creating index on words... Done")
-    print("Creating index on translations...", end="\r")
-    cursor.execute(
-        "CREATE INDEX translations_translation ON translations(translation "
-        "COLLATE NOCASE)")
-    print("Creating index on translations... Done")
-    print("Creating index on readings...", end="\r")
-    cursor.execute(
-        "CREATE INDEX readings_reading ON readings(reading COLLATE NOCASE)")
-    print("Creating index on readings... Done")
-    print("Creating index on entry ids for words...", end="\r")
-    cursor.execute(
-        "CREATE INDEX words_id ON words(id)")
-    print("Creating index on entry ids for words... Done")
-    print("Creating index on entry ids for meanings...", end="\r")
-    cursor.execute(
-        "CREATE INDEX meanings_id ON meanings(id)")
-    print("Creating index on entry ids for meanings... Done")
-    print("Creating index on entry ids for readings...", end="\r")
-    cursor.execute(
-        "CREATE INDEX readings_id ON readings(id)")
-    print("Creating index on entry ids for readings... Done")
-
     print("Creating json file containing code-to-text mapping...", end="\r")
     code_to_text = dict()
     for text in text_to_code:
@@ -494,16 +469,6 @@ def parse_proper_names(filename, cursor):
             print(count + 1, "proper names parsed...\r", end="")
         print("Finished parsing", count + 1, "proper names.")
 
-    print("Creating index on name...", end="\r")
-    cursor.execute("CREATE INDEX proper_names_name " +
-                   "ON proper_names(name COLLATE NOCASE)")
-    print("Creating index on name... Done")
-
-    print("Creating index on reading...", end="\r")
-    cursor.execute("CREATE INDEX proper_names_reading "
-                   "ON proper_names(reading COLLATE NOCASE)")
-    print("Creating index on reading... Done")
-
 
 def match_word_to_dictionary_entry(word, cursor):
     """Return the ids of the dictionary entries which match given word in
@@ -563,14 +528,6 @@ def parse_kanji(filename, cursor):
             print(count + 1, "Kanji parsed...\r", end="")
         print("Finished parsing", count + 1, "Kanji.")
 
-    print("Creating indices on kanji table...", end="\r")
-    cursor.execute("CREATE INDEX kanji_entry ON kanji (entry ASC)")
-    cursor.execute("CREATE INDEX kanji_grade ON kanji (grade ASC)")
-    cursor.execute("CREATE INDEX kanji_strokes ON kanji (strokes ASC)")
-    cursor.execute("CREATE INDEX kanji_frequency ON kanji (frequency ASC)")
-    cursor.execute("CREATE INDEX kanji_radical_id on kanji(radical_id)")
-    print("Creating indices on kanji table... Done.")
-
 
 def parse_radicals(filename, cursor):
     """Parse given radicals file (should be called 'radical.utf8.txt')
@@ -587,11 +544,6 @@ def parse_radicals(filename, cursor):
             parse_radical_entry(line, cursor)
             print(count, "radicals parsed...\r", end="")
         print("Finished parsing", count, "radicals.")
-
-    print("Creating indices on radicals table...", end="\r")
-    cursor.execute("CREATE INDEX radicals_radical ON radicals (radical ASC)")
-    cursor.execute("CREATE INDEX radicals_strokes ON radicals (strokes ASC)")
-    print("Creating indices on radicals table... Done.")
 
 
 def parse_improved_kanji_meanings(filename, cursor):
@@ -700,17 +652,9 @@ def create_example_words_index(cursor, output_path):
     kanji_list = cursor.fetchall()
     for i, (kanji,) in enumerate(kanji_list):
         pattern = "%%%s%%" % kanji
-        cursor.execute(
-            """WITH frequent_words AS
-               (SELECT w1.id, w1.word, w1.news_freq
-                FROM words w1
-                WHERE w1.word LIKE ?
-                  AND w1.news_freq = (SELECT MAX(w2.news_freq)
-                                      FROM words w2
-                                      WHERE w2.word = w1.word))
-               SELECT f.id
-               FROM frequent_words f
-               ORDER BY f.news_freq DESC""", (pattern,))
+        cursor.execute("""
+            SELECT id FROM dictionary WHERE words LIKE ?
+            ORDER BY news_freq DESC """, (pattern,))
         kanji_to_word_ids[kanji] = [entry for (entry,) in cursor.fetchall()]
         print("Creating index for kanji example words... %d%%"
               % (((i + 1) / len(kanji_list)) * 100), end="\r")

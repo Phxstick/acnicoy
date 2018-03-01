@@ -51,6 +51,7 @@ kanji_data:
         --kanji-parts $(KANJI_PARTS_PATH) \
         --kanji-strokes $(KANJI_STROKES_PATH) \
         --kanji-jlpt $(NEW_JLPT_N3_PATH) \
+        --example-words-index \
         -o $(OUTPUT_PATH)
 	cp $(KANJI_NUMERALS_PATH) $(OUTPUT_PATH)
 	cp $(KANJI_COUNTERS_PATH) $(OUTPUT_PATH)

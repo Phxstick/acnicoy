@@ -713,14 +713,9 @@ module.exports = async function (paths, contentPaths, modules) {
             await query(`INSERT INTO ${name} SELECT * FROM content.${name}`);
         }
         // Create indices of content database in in-memory database
-        const indicesInfo = await query(
-            "SELECT name, sql FROM content.sqlite_master WHERE type='index'");
-        for (const { name, sql } of indicesInfo) {
-            if (name.startsWith("sqlite_autoindex"))
-                continue;
-            console.log(`Creating index ${name}...`);
-            await db.exec(sql);
-        }
+        const createIndicesSql = fs.readFileSync(paths.japaneseIndices, "utf8");
+        console.log("Creating indices...");
+        await db.exec(createIndicesSql);
         // Detach content database again
         await query("DETACH DATABASE ?", "content");
         return query;
@@ -745,6 +740,11 @@ module.exports = async function (paths, contentPaths, modules) {
     for (const { level, amount } of amountPerLevel) {
         kanjiPerJlpt[level] = amount;
     }
+    // Define function to require a new version of a file (not cached version)
+    function requireNew(path) {
+        delete require.cache[require.resolve(path)];
+        return require(path);
+    }
     // Gather all the content into a frozen object
     data = Object.freeze({
         query: queryFunction,
@@ -752,14 +752,14 @@ module.exports = async function (paths, contentPaths, modules) {
         // Data objects
         numKanjiPerGrade: Object.freeze(kanjiPerGrade),
         numKanjiPerJlptLevel: Object.freeze(kanjiPerJlpt),
-        kanjiStrokes: Object.freeze(require(contentPaths.kanjiStrokes)),
-        numericKanji: Object.freeze(require(contentPaths.numbers)),
-        counterKanji: Object.freeze(require(contentPaths.counters)),
-        codeToText: Object.freeze(require(contentPaths.dictCodeToText)),
-        nameTagToText: Object.freeze(require(contentPaths.nameTagToText)),
+        kanjiStrokes: Object.freeze(requireNew(contentPaths.kanjiStrokes)),
+        numericKanji: Object.freeze(requireNew(contentPaths.numbers)),
+        counterKanji: Object.freeze(requireNew(contentPaths.counters)),
+        codeToText: Object.freeze(requireNew(contentPaths.dictCodeToText)),
+        nameTagToText: Object.freeze(requireNew(contentPaths.nameTagToText)),
         kokujiList: Object.freeze(
             new Set(fs.readFileSync(contentPaths.kokujiList, "utf8"))),
-        exampleWordIds: Object.freeze(require(contentPaths.exampleWordIds)),
+        exampleWordIds: Object.freeze(requireNew(contentPaths.exampleWordIds)),
 
         // Kanji related
         isKnownKanji,

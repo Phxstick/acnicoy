@@ -12,7 +12,7 @@ const unzip = require("unzip");
 
 const HOSTNAME = "http://acnicoy.netai.net";
 const SCRIPT_URI = "/download.php";
-const TIMEOUT_DURATION = 30000;
+const TIMEOUT_DURATION = 20000;
 
 class ServerRequestFailedError extends Error {
     constructor(statusCode, statusMessage) {
@@ -45,18 +45,40 @@ function requestFromServer(query) {
         timeout: TIMEOUT_DURATION
     };
     return new Promise((resolve, reject) => {
-        const stream = request(options).on("error", (error) => {
-            reject(new NoServerConnectionError(error.message));
-        });
-        request(options).on("response", (response) => {
+        let dataCounter = 0;
+        const stream = request(options, (err, response, body) => {
+            if (err) {
+                console.log("Error:", err);
+                return;
+            }
+            console.log("body.length:", body.length);
+        }).on("response", (response) => {
             if (response.statusCode !== 200 && response.statusCode !== 201) {
                 reject(new ServerRequestFailedError(
                     response.statusCode, response.statusMessage));
                 return;
             }
+            // console.log(response);
             stream.headers = response.headers;
-            stream.destroy = () => response.destroy();
+            // stream.destroy = () => response.destroy();
+            stream.destroy = () => {
+                console.log("'stream.destroy' is called!");
+                response.destroy();
+            };
             resolve(stream);
+            console.log("Data gathered before response event: ", dataCounter);
+        }).on("error", (error) => {
+            console.log("STREAM ERROR: ", error);
+            reject(new NoServerConnectionError(error.message));
+        });
+        // console.log(stream);
+        // console.log("Stream state: ", stream._readableState);
+        // console.log("Stream highWaterMark: ", stream.readableHighWaterMark);
+        stream.on("data", (chunk) => {
+            dataCounter += chunk.length;
+        });
+        stream.on("end", () => {
+            console.log("Data amount received in direct data listener:", dataCounter);
         });
     });
 }
@@ -154,12 +176,12 @@ function handleDownload(downloadName, stream) {
     const buffer = Buffer.alloc(FRAGMENT_SIZE);
     let bufferOffset = 0;
     let fileOffset = currentSize;
-    let dataCounter = 0;
     // Fill fragment buffer with received data chunks until full
+    let totalChunkSize = 0;
     stream.on("data", (chunk) => {
         let chunkOffset = 0;
         let chunkRestSize = chunk.length;
-        dataCounter += chunk.length;
+        totalChunkSize += chunk.length;
         while (chunkRestSize > 0) {
             const bufferSpaceLeft = FRAGMENT_SIZE - bufferOffset;
             const copySize = Math.min(bufferSpaceLeft, chunkRestSize);
@@ -197,6 +219,7 @@ function handleDownload(downloadName, stream) {
         const { totalSize: total, currentSize: current } = 
             downloadsInfo.get(downloadName);
         console.log("Downloaded %d of %d bytes.", current, total);
+        stream.emit("progressing", getDownloadStatus(downloadName));
         if (total !== current) {
             stream.emit("connection-lost");
         }
@@ -214,6 +237,8 @@ function handleDownload(downloadName, stream) {
             const { totalSize: total, currentSize: current } = 
                 downloadsInfo.get(downloadName);
             console.log("Downloaded %d of %d bytes.", current, total);
+            console.log("Total chunk size: ", totalChunkSize);
+            stream.emit("progressing", getDownloadStatus(downloadName));
             if (total !== current) return;
             fs.renameSync(
                 paths.downloadDataPart(filename), paths.downloadData(filename));
@@ -285,20 +310,13 @@ function getContentFileVersions (language, secondary) {
 }
 
 content.getStatus = async function (language, secondary) {
-    const { updateAvailable,
-            programUpdateRequired } = await requestFromServerFull({
+    return await requestFromServerFull({
         target: "content",
         action: "info",
         languagePair: `${language}-${secondary}`,
         currentProgramVersion: app.version,
         currentFileVersions: getContentFileVersions(language, secondary)
     });
-    const downloadName = getContentDownloadName();
-    const downloadExists = downloadsInfo.has(downloadName);
-    const alreadyDownloaded =
-        dataManager.content.isAvailable(language, secondary);
-    return { alreadyDownloaded, downloadExists, updateAvailable,
-             programUpdateRequired };
 }
 
 content.getDownloadStatus = function (language, secondary) {
@@ -391,10 +409,6 @@ content.startDownload = async function (language, secondary) {
             downloadsInfo.delete(downloadName);
             saveDownloadsInfo();
             fs.unlinkSync(paths.downloadData(filename));
-            await dataManager.content.load(language);
-            dataManager.content.setLanguage(language);
-            await main.processLanguageContent(language, secondary);
-            main.adjustToLanguageContent(language, secondary);
             response.emit("finished");
         });
     });
@@ -407,3 +421,90 @@ content.pauseDownload = function (language, secondary) {
 }
 
 module.exports.content = content;
+
+// =============================================================================
+// Functions for managing program downloads
+// =============================================================================
+
+const program = {}
+
+program.getLatestVersionInfo = async function () {
+    return await requestFromServerFull({ target: "program", action: "info" });
+};
+
+module.exports.program = program;
+
+// =============================================================================
+// TODO TODO TODO Delete this later TODO TODO TODO
+// =============================================================================
+module.exports.content.testDownload = async function () {
+    const requestedFileVersions = require("/home/daniel/Documents/AcnicoyData/Content/Japanese-English-1/versions.json")
+    const query = {
+        target: "content",
+        action: "download",  // "info"
+        languagePair: `Japanese-English`,
+        offset: 0,
+        requestedFileVersions
+    };
+    // const contentStatus = await requestFromServerFull({
+    //     target: "content",
+    //     action: "info",
+    //     languagePair: `Japanese-English`,
+    //     currentProgramVersion: app.version,
+    //     currentFileVersions: {}
+    // });
+    const options = {
+        baseUrl: HOSTNAME,
+        url: SCRIPT_URI,
+        method: "POST",
+        timeout: TIMEOUT_DURATION,
+        headers: { "Content-Type": "application/json",
+                   "Accept-Encoding": "identity",
+                   "Cache-Control": "no-cache, no-store, no-transform" },
+        encoding: null,
+        body: JSON.stringify(query)
+    };
+    const stream = request(options, (error, response, body) => {
+        if (error) {
+            console.log("Error: ", error);
+            return;
+        }
+        // console.log("Status code:", response.statusCode);
+        // console.log("Content type", response.headers["content-type"]);
+        // console.log("Received response of size:",
+        //         parseInt(response.headers["content-length"]));
+        console.log("Full body size: ", body.length);
+        // if (response.headers["content-type"] == "application/json") {
+        //     console.log("Body: ", body.toString());
+        // } else {
+        //     console.log("Body: ", body);
+        // }
+    }).on("response", (response) => {
+        if (response.statusCode !== 200 && response.statusCode !== 201) {
+            console.log("DAFUQ");
+            return;
+        }
+        console.log(response);
+        stream.headers = response.headers;
+        stream.destroy = () => {
+            console.log("'stream.destroy' is called!");
+            response.destroy();
+        };
+        let sumChuckSizes = 0;
+        let numChunksReceived = 0;
+        const sleep = require("sleep");
+        stream.on("data", (chunk) => {
+            sumChuckSizes += chunk.length;
+            ++numChunksReceived;
+            if (numChunksReceived % 3000 === 0) {
+                console.log(`Sum of chunk sizes: ${sumChuckSizes}`);
+            }
+        });
+        stream.on("error", (error) => {
+            console.log("Error: ", error);
+        });
+        stream.on("end", (chunk) => {
+            console.log(`Sum of chunk sizes: ${sumChuckSizes}`);
+        });
+    });
+};

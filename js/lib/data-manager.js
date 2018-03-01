@@ -15,15 +15,29 @@ module.exports = function (paths) {
     modules.vocabLists = modules["vocab-lists"];
 
     /**
+     * Load language-independent data.
+     * @returns {Promise}
+     */
+    modules.initialize = function () {
+        const results = [];
+        for (const name of components.modules) {
+            if (modules[name].hasOwnProperty("initialize")) {
+                results.push(modules[name].initialize());
+            }
+        }
+        shortcuts.initialize();
+        return Promise.all(results);
+    };
+
+    /**
      * Load user data and content (if available) for given language.
      * @param {String} language
      * @returns {Promise}
      */
     modules.load = function (language) {
-        modules.languageSettings.load(language);  // Always load settings first
         const results = [];
-        for (const name in modules) {
-            if (modules[name].hasOwnProperty("load") && name !== "settings") {
+        for (const name of components.modules) {
+            if (modules[name].hasOwnProperty("load")) {
                 results.push(modules[name].load(language));
             }
         }
@@ -36,7 +50,7 @@ module.exports = function (paths) {
      */
     modules.save = function () {
         const results = [];
-        for (const name in modules) {
+        for (const name of components.modules) {
             if (modules[name].hasOwnProperty("save")) {
                 results.push(modules[name].save());
             }
@@ -49,11 +63,10 @@ module.exports = function (paths) {
      * @param {String} language
      */
     modules.setLanguage = function (language) {
-        modules.languageSettings.setLanguage(language);
         modules.currentLanguage = language;
         modules.currentSecondaryLanguage =
             modules.languageSettings.secondaryLanguage;
-        for (const name in modules) {
+        for (const name of components.modules) {
             if (modules[name].hasOwnProperty("setLanguage")) {
                 modules[name].setLanguage(language);
             }
@@ -72,10 +85,8 @@ module.exports = function (paths) {
         info.time = utility.getTime();
         info.languages = modules.languages.all;
         // Copy all data to new backup location and create info file
-        fs.copy(paths.languages, newBackupPath.directory, async () => {
-            await fs.copy(paths.achievementsUnlocked, newBackupPath.achievements);
-            fs.writeFileSync(newBackupPath.infoFile, JSON.stringify(info, null, 4));
-        });
+        await fs.copy(paths.data, newBackupPath.directory);
+        fs.writeFileSync(newBackupPath.infoFile, JSON.stringify(info, null, 4));
     };
 
     /**

@@ -1,4 +1,26 @@
 ### Up next
+- Add new loading-overlay whereever useful
+- Give option to only save all user data on quitting program
+  - Would allow putting user data into Dropbox without large network overhead
+- Create quick start overlay with quick info on structure of the program
+  - Give option to "not display this window again on program start"
+  - Display on program start if not disabled
+- Use velocity's slide-function instead of toggleDisplay where useful
+  - For opening solutions in test-complete-overlay
+  - For opening notification details
+- Implement program updating functionality (in general settings)
+  - Handle the "update-program-status" event there instead
+  - Make sure notifications are removed or updated whenever necessary!
+  - Make sure no additional program file is loaded after start for safe update
+- Extend vocabulary section:
+  - Add functionality to view both words and kanji/hanzi (switch using button)
+  - Add switch-buttons for sorting lexicographically/chronically/randomly(?)
+  - When sorting lexicographically, allow jumping to a certain letter
+  - Consider using a larger font with more padding
+- Remove all kanji nodes in kanji section before recreating them after update
+- Round up download manager with hash checking? Necessary?
+- Before loading language content, check if all versions are compatible
+  - For that purpose, store "content-versions-min.json" both in Acnicoy & server
 - Add some more achievements and find a better way to display them
 - Finish dictionary search:
   - Somehow handle multiple concurrent searches (maybe in utility.js)
@@ -18,7 +40,6 @@
   - Complete dictionary tag descriptions in Japanese
   - Make sure all necessary content files are on the server
   - Make sure content can be downloaded correctly
-  - Remove all indices from content-database, provide as SQL statements only
   - Remove a bunch of content database indices?
   - Also parse the remaining fields from the JMdict.xml file
   - Remove example words index?
@@ -35,6 +56,7 @@
 - Implement some settings for kanji-info-panel?
 - Also let font-family be inherited, and remove all workarounds (and test!)
 - Finish first version of the stats
+- Add reload-button to language table (right side), emit "update-content-event"
 
 
 ### Others
@@ -62,11 +84,27 @@
 - Register content-related shortcuts in adjustToLanguageContent instead
 - Write more sophisticated function to guess whether vocab contains a certain
   entry from the dictionary
+- Implement searching for existing and also adding new vocab lists in all panels
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
-- Promise returned by "fs.copy" from "fs-extra" doesn't work. Report it?
 - When adding word to a vocab list it is entered twice in the view
+- 屈伸 has the wrong meaning in the dictionary?
+- There still seems to be this bug that notes overwrite those of other languages
+- Don't preload words in vocabulary section - on scroll, new entries are missing
+- Problem when editing word with dictonary id assigned but a different variant
+- Shortcuts for language content are activated even if theres none available
+- In test section for Japanese it says "Translate into undefined"
+- After having moved content to userData, content buttons sometimes don't appear
+- Notifications:
+  - Why is "display:flex" added to notifications window when adding notification?
+  - After deleting all notifications, text is not at the right place
+  - When getting a notification, it is a bit messed up
+  - After deleting a notification, text doesn't appear (still children left?)
+- Prevent backslash-encoding on server side, newlines should arrive as such
+- Searching for empty string in dictionary doesn't remove last search result
+- Opening a panel and switching languages removes background dimming
+- Content status says "n.a." after successful download
 
 
 By category
@@ -74,9 +112,6 @@ By category
 ### General
 - Remove flickering when quickly dragging vocab item over list contents column
   - Not a bug in Acnicoy - Events are just fired incorrectly
-- Store user data path somewhere else (e.g. localStorage/`app.getPath(name)`)
-  - Also store downloaded content and language packs somewhere else to allow
-    putting all user data (including backups) into Dropbox
 - Make semicolon standard separator to fix some bugs with language data
 - Adjust scrollbars to corresponding background color so that they're always
   visible well. Also consider using thin, rounded scrollbars with margin
@@ -108,11 +143,12 @@ By category
 
 ### Main window
 - Remember where focus was when opening panel, restore after closing panel again
-- Create quick start overlay with quick info on structure of the program
-  - Give option to "not display this window again on program start"
-  - Display on program start if not disabled
 - Highlight menu button whose corresponding section/panel is opened?
   Or otherwise indicate which section/panel is currently opened?
+- Notifications:
+  - Use main-window color for notification window background maybe?A
+  - Add buttons to remove a notifications or all of them?
+  - Add conspicious animation when new notification pops up, possible persistent
 
 ### Home section
 - Extend srs-status-bar
@@ -130,6 +166,7 @@ By category
 - Re-evaluate answer after current item has been edited?
 - If item has been renamed, directly display change instead of skipping?
 - Also animate upwards-movement of test item when solutions are given
+- Allow directly setting new level in flashcard-mode
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)
@@ -170,6 +207,9 @@ By category
 
 ### Dictionary
 - Have option to only show a single combined search entry (like in Jisho.org)
+  - Otherwise, detect when searching for English term in JA-entry, suggest
+    interpreting as ENG-query instead
+    
 
 ### Kanji section
 - Search customization:
@@ -283,20 +323,6 @@ Future
 - Create stylable `<select>` alternative
 - Somehow display frequencies for specific words and readings in dictionary?
 
-### In-program notifications
-- Notifications on following events:
-  - New language content or program update is available
-    - Button to start download and link to settings (and progress bar?)
-  - Achievement earned
-  - Download finished
-- Small icon in each notification to remove it
-- "Clear all" functionality
-- Accessable from top right corner of the window?
-- Shortly light up with an animation if there's a new notification
-  - Keep faintly glowing until notification is read
-  - Highlight unread notifications
-- Store in a new file in user data
-
 ### Content section
 - Create similar kanji/word disambiguation pages of the following form:
   - [Optional] Title
@@ -319,6 +345,7 @@ Code
   a folder called "gui-components"
   - Adjust pathManager and index.js
 - Rename "Windows" to "Screens"?
+- Starting to get collisions with classes defined in base.scss. Prefix them...
 
 ### Refactoring
 - Move stuff in settings subsections into a settings manager?
@@ -344,6 +371,8 @@ once? --> Faster loading, centralized resource loading
 - Make "events" and "main" globals attributes of "app" global
 - Implement dynamic adding of tabs in tabbed-frame using `slotchange`-event
 - Merge kanji and hanzi module into one, generalize with different readings
+- Consider making shortcut-manager a data manager
+  (-> if done, then remove separate init-call in data-manager.js)
 
 ### Adaptions
 - Don't assign font family for every element and let it be inherited instead

@@ -15,7 +15,7 @@ module.exports = function (paths, modules) {
     // These functions return true if achievement is unlocked for given value
     const achievementToCheckFunction = {
         "srs-items-reviewed": (value) => {
-            return dataManager.stats.getNumberOfItemsTestedForAllLanguages()
+            return modules.stats.getNumberOfItemsTestedForAllLanguages()
                 >= value;
         },
         "languages-registered": (value) => {
@@ -101,14 +101,15 @@ module.exports = function (paths, modules) {
             if (unlocked[i] > 0) {
                 anyUnlocked = true;
                 const achievement = achievementList[i];
-                const language = modules.currentLanguage;
+                const language = userData.global.hasOwnProperty(achievement) ?
+                    undefined : modules.currentLanguage;
                 const level = userData.global.hasOwnProperty(achievement) ?
                     userData.global[achievement].length - 1 :
                     userData.local[language][achievement].length - 1;
                 const achievementName =
                     achievements.definitions[achievement].levels[level].name;
                 eventEmitter.emit(`achievement-unlocked`,
-                    achievement, achievementName);
+                    achievement, achievementName, language);
             }
         }
         if (anyUnlocked) saveUserData();
@@ -164,7 +165,7 @@ module.exports = function (paths, modules) {
 
     const achievementInterface = {};
 
-    achievementInterface.loadUserData = function () {
+    achievementInterface.initialize = function () {
         if (!fs.existsSync(paths.achievementsUnlocked)) {
             const object = { global: {}, local: {} };
             fs.writeFileSync(paths.achievementsUnlocked, JSON.stringify(object))
@@ -198,6 +199,18 @@ module.exports = function (paths, modules) {
                 achievementIds.concat(achievements.languageSpecific[language]);
         }
         return getUnlockedAchievements(achievementIds, userData.local[language])
+    };
+
+    achievementInterface.getDescription = function (achievement, language) {
+        let level;
+        if (userData.global.hasOwnProperty(achievement)) {
+            level = userData.global[achievement].length;
+        } else if (language !== undefined) {
+            level = userData.local[language][achievement].length;
+        }
+        const val = achievements.definitions[achievement].levels[level-1].value;
+        const description = achievements.definitions[achievement].description;
+        return description.replace("{X}", val);
     };
 
         // const list = [];

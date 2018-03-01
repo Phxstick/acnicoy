@@ -41,7 +41,7 @@ module.exports = function (paths, modules) {
     };
 
     // Remove all user data for given language
-    languageManager.remove = function (language) {
+    languageManager.remove = async function (language) {
         if (!languageList.includes(language)) {
             throw new Error(`Language '${language}' is not registered.`);
         }
@@ -51,12 +51,9 @@ module.exports = function (paths, modules) {
                 modules[name].unload(language);
             }
         }
-        return new Promise((resolve, reject) => {
-            fs.remove(paths.languageData(language).directory, (error) => {
-                if (error) reject(`Failed to remove language data for ` +
-                                  `'${language}': ${error}`);
-                else resolve();
-            });
+        await fs.remove(paths.languageData(language).directory)
+        .catch((error) => {
+            throw(`Failed to remove language data for '${language}': ${error}`);
         });
     };
 
