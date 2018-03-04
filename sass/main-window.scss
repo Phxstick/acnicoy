@@ -291,3 +291,12 @@
   bottom: 0;
   z-index: var(--kanji-info-panel-layer);
 }
+
+#selective-dimmer {
+  z-index: var(--selective-dimmer-layer);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}

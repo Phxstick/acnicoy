@@ -370,6 +370,29 @@ class MainWindow extends Window {
             }
             this.displayNotification(notification);
         }
+        // TODO
+        const selectiveDimmer = this.$("selective-dimmer");
+        selectiveDimmer.hide();
+        // TODO: Make sure canvas adjust to window size on resizing
+        selectiveDimmer.width = window.innerWidth;
+        selectiveDimmer.height = window.innerHeight;
+        const dimCtx = selectiveDimmer.getContext("2d");
+        window.dimCtx = dimCtx;
+        window.highlightElement = (element) => {
+            selectiveDimmer.show()
+            const rect = element.getBoundingClientRect();
+            // Clear and dim whole window
+            dimCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            dimCtx.fillStyle = "rgba(0, 0, 0, 0.7)";
+            dimCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+            // Draw shadow
+            dimCtx.shadowColor = "white";
+            dimCtx.shadowBlur = "15";
+            dimCtx.fillStyle = "white";
+            dimCtx.fillRect(rect.left, rect.top, rect.width, rect.height);
+            // Clear canvas above element
+            dimCtx.clearRect(rect.left, rect.top, rect.width, rect.height);
+        }
         await utility.finishEventQueue();
         app.closeWindow("loading");
     }

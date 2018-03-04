@@ -11,6 +11,7 @@ module.exports = function (basePath) {
     paths.standardDataPathPrefix = path.resolve(os.homedir(), "Documents");
     paths.dataPathPrefix = null;
     paths.base = basePath;
+    paths.dataPathBaseName = `AcnicoyData`;
     let dataPath = null;
     let langPath = null;
 
@@ -32,8 +33,7 @@ module.exports = function (basePath) {
         if (prefix[prefix.length - 1] == "\n")
             prefix = prefix.slice(0, prefix.length - 1);
         const previousPath = dataPath;
-        const dataPathBaseName = `${app.name}Data`;
-        const newPath = path.resolve(prefix, dataPathBaseName);
+        const newPath = path.resolve(prefix, paths.dataPathBaseName);
         paths.dataPathPrefix = prefix;
         paths.data = dataPath = newPath;
         paths.languages = langPath = path.resolve(dataPath, "Languages");
@@ -148,7 +148,7 @@ module.exports = function (basePath) {
         database: path.resolve(langPath, language, "Vocabulary.sqlite"),
         vocabLists: path.resolve(langPath, language, "lists.json"),
         stats: path.resolve(langPath, language, "stats.json"),
-        pinwall: path.resolve(langPath, language, "pinwall.json"),
+        notes: path.resolve(langPath, language, "notes.json"),
         settings: path.resolve(langPath, language, "settings.json"),
         history: path.resolve(langPath, language, "history.sqlite")
     });

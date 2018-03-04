@@ -1,7 +1,7 @@
 {
     "modules": [
         "languages", "settings", "language-settings", "database", "vocab-lists",
-        "pinwall", "content", "vocab", "kanji", "hanzi", "srs", "stats", "test",
+        "notes", "content", "vocab", "kanji", "hanzi", "srs", "stats", "test",
         "history", "achievements", "notifications"
     ],
     "windows": [

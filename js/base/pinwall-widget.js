@@ -6,14 +6,7 @@ class PinwallWidget extends Widget {
         this.widgetType = type;
     }
 
-    load(data) {
-    }
-
-    getSaveData() {
-        return { type: this.widgetType };
-    }
-
-    open() {
+    adjustToLanguage(language, secondary) {
     }
 }
 

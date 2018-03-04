@@ -1,10 +1,28 @@
-### Up next
-- Add new loading-overlay whereever useful
-- Give option to only save all user data on quitting program
-  - Would allow putting user data into Dropbox without large network overhead
-- Create quick start overlay with quick info on structure of the program
+- Solve problem with updating diagram while not visible (should still update!)
+- Periodically save user data (reset time if saved manually inbetween)
+- Add save-button (with last-saved time) and make Ctrl+S shortcut for saving
+- Finish introduction tour mechanism and make a main-window tour
+  1. Insert text-box on sides where more space is left, next to the element
+  2. Center text-box with relation to the element
+  3. If text-box leaves window, move it back into the window (possibly padded)
+  - Add arrow like for css-tooltip, no animation needed
+  - Add button to each tour into the corresponding help page
+  - Limit size of text-box, allow scrolling for longer text
+- Create quick start overlay (or normal one?) which offers taking a quick tour
   - Give option to "not display this window again on program start"
   - Display on program start if not disabled
+
+### Up next
+- Extend vocabulary section:
+  - Add functionality to view both words and kanji/hanzi (switch using button)
+  - Add switch-buttons for sorting lexicographically/chronically/randomly(?)
+  - When sorting lexicographically, allow jumping to a certain letter
+  - Consider using a larger font with more padding
+- Finish first version of the stats
+- Add reload-button to language table (right side), emit "update-content-event"
+
+### Up next
+- Add new loading-overlay whereever useful
 - Use velocity's slide-function instead of toggleDisplay where useful
   - For opening solutions in test-complete-overlay
   - For opening notification details
@@ -12,11 +30,6 @@
   - Handle the "update-program-status" event there instead
   - Make sure notifications are removed or updated whenever necessary!
   - Make sure no additional program file is loaded after start for safe update
-- Extend vocabulary section:
-  - Add functionality to view both words and kanji/hanzi (switch using button)
-  - Add switch-buttons for sorting lexicographically/chronically/randomly(?)
-  - When sorting lexicographically, allow jumping to a certain letter
-  - Consider using a larger font with more padding
 - Remove all kanji nodes in kanji section before recreating them after update
 - Round up download manager with hash checking? Necessary?
 - Before loading language content, check if all versions are compatible
@@ -55,8 +68,6 @@
   - Switch to "better-sqlite3" to increase performance and code style?
 - Implement some settings for kanji-info-panel?
 - Also let font-family be inherited, and remove all workarounds (and test!)
-- Finish first version of the stats
-- Add reload-button to language table (right side), emit "update-content-event"
 
 
 ### Others
@@ -105,6 +116,7 @@
 - Searching for empty string in dictionary doesn't remove last search result
 - Opening a panel and switching languages removes background dimming
 - Content status says "n.a." after successful download
+- Databases should be reloaded after changing data path (else write errors)
 
 
 By category
@@ -127,6 +139,16 @@ By category
 - Adjust kanji-section (and create hanzi-section) to be available as limited
   version even when no language content is installed (and display notice that
   language content can be installed to see more).
+- Implement save-on-change mode (add checkbox in settings)
+  - After finishing a test item (and upon finishing test session)
+  - Save global/local settings whenever something changes
+  - Save vocabulary (and history?) database on every change
+  - After editing/moving/deleting notes (-> put at end of saveData function)
+  - After change to vocabulary lists
+  - Add explanation that enabling this setting might cause increased hard drive
+    usage and network overhead if third-party synchronization services like
+    dropbox are used to store user data, but it can prevent data loss.
+  - If not activated, data only saved periodically + on exit + on certain events
 
 ### Performance
 - Things got slower when reworking sass? Maybe because main window is flex now?
@@ -156,6 +178,7 @@ By category
   - Allow showing detailed infos per mode
   - Replace "level" label with reload- and help-button?
   - Add a displayable bar-diagram to visualize SRS status
+- Make writing notes-data into data-manager more efficent (not always overwrite)
 
 ### Svg Bar Diagram
 - Use a shadow at both sides to show when scrolling is possible

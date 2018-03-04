@@ -6,5 +6,6 @@ Session.vim
 /language-content/
 /data/data-path.txt
 /test/
+/dist/
 /img/bg/
 /sass/_design.scss

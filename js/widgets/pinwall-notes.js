@@ -142,26 +142,28 @@ class PinwallNotes extends PinwallWidget {
                     this.draggedNote, this.currentlyHoveredNote);
                 this.currentlyHoveredNote.classList.remove("highlight-top");
             }
+            this.saveData();
         });
     }
 
-    getSaveData() {
+    adjustToLanguage(language, secondary) {
+        this.$("notes").empty();
+        const notesContent = dataManager.notes.get();
+        for (const noteContent of notesContent) {
+            this.addNote(noteContent);
+        }
+    }
+
+    saveData() {
         if (this.noteBeingEdited !== null) {
             this.saveNote(this.noteBeingEdited);
         }
-        const saveData = super.getSaveData();
-        saveData.notes = [];
-        for (const note of this.$("notes").children) {
-            saveData.notes.push(this.noteToMarkdown.get(note));
+        const notes = this.$("notes").children;
+        const notesData = [];
+        for (const note of notes) {
+            notesData.push(this.noteToMarkdown.get(note));
         }
-        return saveData;
-    }
-
-    load(data) {
-        this.$("notes").empty();
-        for (const content of data.notes) {
-            this.addNote(content);
-        }
+        dataManager.notes.set(notesData);
     }
 
     addNote(markdownText) {
@@ -223,6 +225,7 @@ class PinwallNotes extends PinwallWidget {
         this.noteToMarkdown.set(note, trimmedContent);
         note.setAttribute("contenteditable", "false");
         note.blur();
+        this.saveData();
     }
 }
 

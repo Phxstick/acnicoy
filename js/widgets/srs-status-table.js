@@ -16,19 +16,18 @@ class SrsStatusTable extends PinwallWidget {
             this.updateListener);
     }
 
-    update() {
-        return dataManager.srs.getAmounts().then((amounts) => {
-            const html = templates.get("srs-status-table")({
-                amounts, modes: dataManager.test.modes
-            });
-            this.$("srs-table").innerHTML = html;
-            this.$("reload-srs").addEventListener(
-                "click", () => events.emit("update-srs-status"));
-        });
+    async adjustToLanguage(language, secondary) {
+        await this.update();
     }
 
-    open() {
-        return this.update();
+    async update() {
+        const amounts = await dataManager.srs.getAmounts();
+        const html = templates.get("srs-status-table")({
+            amounts, modes: dataManager.test.modes
+        });
+        this.$("srs-table").innerHTML = html;
+        this.$("reload-srs").addEventListener(
+            "click", () => events.emit("update-srs-status"));
     }
 }
 

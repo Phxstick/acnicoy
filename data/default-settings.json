@@ -58,6 +58,11 @@
     "add": {
         "separator": ","
     },
+    "pinwall": [
+        { "type": "srs-status-bar" },
+        { "type": "srs-review-schedule" },
+        { "type": "pinwall-notes" }
+    ],
     "shortcuts": {
         "quit": "CmdOrCtrl+Q",
         "force-quit": "CmdOrCtrl+Escape",
