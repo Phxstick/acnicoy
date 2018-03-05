@@ -1,6 +1,9 @@
-- Solve problem with updating diagram while not visible (should still update!)
-- Periodically save user data (reset time if saved manually inbetween)
-- Add save-button (with last-saved time) and make Ctrl+S shortcut for saving
+- Define proper interface for global/language settings to detect modifications?
+- Finish user data saving
+  - Add save-button (with last-saved time) and make Ctrl+S shortcut for saving
+  - Run checkpoint in databases on program exit? On periodic saving?
+  - Periodically save user data (reset time if saved manually inbetween)
+  - How to make saving more efficient?
 - Finish introduction tour mechanism and make a main-window tour
   1. Insert text-box on sides where more space is left, next to the element
   2. Center text-box with relation to the element
@@ -105,8 +108,6 @@
 - Don't preload words in vocabulary section - on scroll, new entries are missing
 - Problem when editing word with dictonary id assigned but a different variant
 - Shortcuts for language content are activated even if theres none available
-- In test section for Japanese it says "Translate into undefined"
-- After having moved content to userData, content buttons sometimes don't appear
 - Notifications:
   - Why is "display:flex" added to notifications window when adding notification?
   - After deleting all notifications, text is not at the right place
@@ -156,6 +157,7 @@ By category
 - Cut down on event listeners (kanji/vocab section,
   tooltips/context-menu/kanji-info-links)
 - Why the significant performance degradation after doing something?
+- Check if WAL size can exceed original database size. How to save disk space?
 
 ### Init window
 - Make init section feel more welcoming and less plain. Consider:

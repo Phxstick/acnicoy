@@ -11,6 +11,7 @@ module.exports = function (paths, modules) {
     history.create = async function (language, settings) {
         const db = promisifyDatabase(
             new sqlite3.Database(paths.languageData(language).history));
+        await db.run("PRAGMA journal_mode=WAL");
         await db.run("BEGIN TRANSACTION");
         await db.run(`CREATE TABLE dictionary (
             id INTEGER PRIMARY KEY,
@@ -40,6 +41,12 @@ module.exports = function (paths, modules) {
     history.load = async function (language) {
         const path = paths.languageData(language).history;
         dataMap[language] = promisifyDatabase(new sqlite3.Database(path));
+        await dataMap[language].run("BEGIN TRANSACTION");
+    };
+
+    history.save = async function (language) {
+        await dataMap[language].run("END");
+        await dataMap[language].run("BEGIN TRANSACTION");
     };
 
     history.unload = function (language) {

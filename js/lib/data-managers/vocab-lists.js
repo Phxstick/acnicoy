@@ -5,6 +5,7 @@ const fs = require("fs");
 module.exports = function (paths, modules) {
     const vocabLists = {};
     const dataMap = {};
+    const isModified = {};
 
     let data;
     let wordToLists;
@@ -28,10 +29,12 @@ module.exports = function (paths, modules) {
                     dataMap[language].wordToLists.get(word).push(list);
             }
         }
+        isModified[language] = false;
     };
 
     vocabLists.unload = function (language) {
         delete dataMap[language];
+        delete isModified[language];
     };
 
     vocabLists.setLanguage = function (language) {
@@ -39,12 +42,11 @@ module.exports = function (paths, modules) {
         wordToLists = dataMap[language].wordToLists;
     };
 
-    vocabLists.save = function () {
-        for (const language in dataMap) {
-            const path = paths.languageData(language).vocabLists;
-            fs.writeFileSync(
-                    path, JSON.stringify(dataMap[language].data, null, 4));
-        }
+    vocabLists.save = function (language) {
+        if (!isModified[language]) return;
+        const path = paths.languageData(language).vocabLists;
+        fs.writeFileSync(path, JSON.stringify(dataMap[language].data, null, 4));
+        isModified[language] = false;
     };
 
     // =====================================================================
@@ -84,12 +86,14 @@ module.exports = function (paths, modules) {
             if (lists.includes(oldName))
                 lists[lists.indexOf(oldName)] = newName;
         }
+        isModified[modules.currentLanguage] = true;
         return true;
     };
 
     vocabLists.createList = function (name) {
         if (name in data) return false;
         data[name] = [];
+        isModified[modules.currentLanguage] = true;
         return true;
     };
 
@@ -99,6 +103,7 @@ module.exports = function (paths, modules) {
         for (const [word, listNames] of wordToLists) {
             listNames.remove(name);
         }
+        isModified[modules.currentLanguage] = true;
     };
 
     // =====================================================================
@@ -112,16 +117,17 @@ module.exports = function (paths, modules) {
             return false;
         wordToLists.get(word).push(list);
         data[list].push(word);
+        isModified[modules.currentLanguage] = true;
         return true;
     };
 
     vocabLists.removeWordFromList = function (word, list) {
-        if (wordToLists.has(word)) {
-            if (wordToLists.get(word).includes(list)) {
-                wordToLists.get(word).remove(list);
-                data[list].remove(word);
-            }
-        }
+        if (!wordToLists.has(word)) return;
+        if (!wordToLists.get(word).includes(list)) return;
+        wordToLists.get(word).remove(list);
+        data[list].remove(word);
+        isModified[modules.currentLanguage] = true;
+        return true;
     };
 
     // =====================================================================

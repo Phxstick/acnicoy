@@ -41,7 +41,6 @@ module.exports = function (paths, modules) {
         }
         const promises = [];
         // Update kanji data for each attribute
-        modules.database.run("BEGIN TRANSACTION");
         for (const attribute of attributes) {
             const mode = modes[attribute];
             const table = modules.test.modeToTable(mode);
@@ -90,7 +89,6 @@ module.exports = function (paths, modules) {
             promises.push(promise);
         }
         await Promise.all(promises);
-        modules.database.run("END");
         return newStatus;
     };
 
@@ -114,7 +112,6 @@ module.exports = function (paths, modules) {
             "kun_yomi": modules.test.mode.KANJI_KUN_YOMI
         };
         const promises = [];
-        modules.database.run("BEGIN TRANSACTION");
         for (const attribute of attributes) {
             const mode = modes[attribute];
             const table = modules.test.modeToTable(mode);
@@ -179,7 +176,6 @@ module.exports = function (paths, modules) {
             await modules.database.run(
                 "DELETE FROM kanji WHERE kanji = ?", kanji);
         }
-        modules.database.run("END");
         return newStatus;
     };
 

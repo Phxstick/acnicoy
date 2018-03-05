@@ -7,9 +7,15 @@ module.exports = function (paths, modules) {
     const dataMap = {};
     let data;
 
-    database.load = function (language) {
+    database.load = async function (language) {
         const path = paths.languageData(language).database;
         dataMap[language] = new sqlite3.Database(path);
+        await database.runLanguage(language, "BEGIN TRANSACTION");
+    };
+
+    database.save = async function (language) {
+        await database.runLanguage(language, "END");
+        await database.runLanguage(language, "BEGIN TRANSACTION");
     };
 
     database.unload = function (language) {
@@ -60,6 +66,7 @@ module.exports = function (paths, modules) {
         const db = new sqlite3.Database(paths.languageData(language).database);
         return new Promise((resolve) => {
             db.serialize(() => {
+                db.run("PRAGMA journal_mode=WAL");
                 db.run("BEGIN TRANSACTION");
                 db.run("PRAGMA foreign_keys = ON");
                 // Create tables

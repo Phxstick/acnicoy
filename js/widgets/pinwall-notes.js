@@ -204,6 +204,7 @@ class PinwallNotes extends PinwallWidget {
 
     deleteNote(note) {
         this.$("notes").removeChild(note);
+        this.saveData();
     }
 
     editNote(note) {

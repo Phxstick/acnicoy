@@ -34,41 +34,60 @@ module.exports = function (paths) {
      * @param {String} language
      * @returns {Promise}
      */
-    modules.load = function (language) {
+    modules.load = async function (language) {
         const results = [];
         for (const name of components.modules) {
             if (modules[name].hasOwnProperty("load")) {
                 results.push(modules[name].load(language));
             }
         }
-        return Promise.all(results);
+        await Promise.all(results);
     };
 
     /**
-     * Save user data for all languages.
+     * Save user data for given language.
+     * @param {String} language
      * @returns {Promise}
      */
-    modules.save = function () {
+    modules.save = async function (language) {
         const results = [];
         for (const name of components.modules) {
             if (modules[name].hasOwnProperty("save")) {
-                results.push(modules[name].save());
+                results.push(modules[name].save(language));
             }
         }
-        return Promise.all(results);
+        await Promise.all(results);
+    };
+
+    /**
+     * Save user data for all languages as well as all global data.
+     * @returns {Promise}
+     */
+    modules.saveAll = async function () {
+        const promises = [];
+        const languages = modules.languages.all;
+        for (const language of languages) {
+            promises.push(modules.save(language));
+        }
+        for (const name of components.modules) {
+            if (modules[name].hasOwnProperty("saveGlobal")) {
+                promises.push(modules[name].saveGlobal());
+            }
+        }
+        await Promise.all(promises);
     };
 
     /**
      * Set currently used language in all modules.
      * @param {String} language
      */
-    modules.setLanguage = function (language) {
+    modules.setLanguage = async function (language) {
         modules.currentLanguage = language;
         modules.currentSecondaryLanguage =
-            modules.languageSettings.secondaryLanguage;
+            modules.languageSettings.for(language).secondaryLanguage;
         for (const name of components.modules) {
             if (modules[name].hasOwnProperty("setLanguage")) {
-                modules[name].setLanguage(language);
+                await modules[name].setLanguage(language);
             }
         }
     };
@@ -79,8 +98,8 @@ module.exports = function (paths) {
      *     Should contain at least an "event" field specifiying the occasion.
      */
     modules.createBackup = async function (info) {
-        // Save any unsaved changes to data first
-        await modules.save();
+        // Save all data first
+        await modules.saveAll();
         const newBackupPath = paths.newBackup();
         info.time = utility.getTime();
         info.languages = modules.languages.all;

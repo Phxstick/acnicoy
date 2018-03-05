@@ -5,6 +5,7 @@ const fs = require("fs");
 module.exports = function (paths, modules) {
     const stats = {};
     const dataMap = {};
+    const isModified = {};
 
     let data;
     const scoreCalculation = Object.freeze(require(paths.scoreCalculation));
@@ -27,19 +28,21 @@ module.exports = function (paths, modules) {
         dataMap[language] = {
             data: require(paths.languageData(language).stats)
         };
+        isModified[language] = false;
         stats.calculateScorePerLevel(language);
         return stats.recalculateTotalScores(language);
     };
 
     stats.unload = function (language) {
         delete dataMap[language];
+        delete isModified[language];
     };
 
-    stats.save = function () {
-        for (const language in dataMap) {
-            const path = paths.languageData(language).stats;
-            fs.writeFileSync(path, JSON.stringify(dataMap[language].data));
-        }
+    stats.save = function (language) {
+        if (!isModified[language]) return;
+        const path = paths.languageData(language).stats;
+        fs.writeFileSync(path, JSON.stringify(dataMap[language].data));
+        isModified[language] = false;
     };
 
     stats.setLanguage = function (language) {
@@ -112,7 +115,7 @@ module.exports = function (paths, modules) {
     }
 
     /* =========================================================================
-        Updating stats
+        Helper functions
     ========================================================================= */
 
     /**
@@ -154,26 +157,33 @@ module.exports = function (paths, modules) {
         data.data["daily"].push(...newItems);
     }
 
+    /* =========================================================================
+        Updating stats
+    ========================================================================= */
 
     stats.incrementTestedCounter = function (mode) {
         registerPassedDays();
         data.data["testedPerMode"][mode]++;
         data.data["daily"].last()["tested"]++;
+        isModified[modules.currentLanguage] = true;
     };
 
     stats.incrementWordsAddedToday = function () {
         registerPassedDays();
         data.data["daily"].last()["words"]++;
+        isModified[modules.currentLanguage] = true;
     };
 
     stats.incrementKanjiAddedToday = function () {
         registerPassedDays();
         data.data["daily"].last()["kanji"]++;
+        isModified[modules.currentLanguage] = true;
     };
 
     stats.incrementHanziAddedToday = function () {
         registerPassedDays();
         data.data["daily"].last()["hanzi"]++;
+        isModified[modules.currentLanguage] = true;
     };
 
     /**
@@ -190,6 +200,7 @@ module.exports = function (paths, modules) {
                             * scoreCalculation.modeToMultiplier[mode];
         data.data["daily"].last()["score"] += difference;
         data.data["scorePerMode"][mode] += difference;
+        isModified[modules.currentLanguage] = true;
         return difference;
     };
 

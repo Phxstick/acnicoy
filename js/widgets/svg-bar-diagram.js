@@ -26,6 +26,10 @@ class SvgBarDiagram extends Widget {
         this.dragStartX = null;
         this.viewOffsetX = 0;
         this.dragOffset = 0;
+        this.svg.addEventListener("mouseenter", (event) => {
+            const { width: viewWidth } = this.svg.getBoundingClientRect();
+            this.svg.classList.toggle("draggable", this.totalWidth > viewWidth);
+        });
         this.svg.addEventListener("mousedown", (event) => {
             const { width: viewWidth } = this.svg.getBoundingClientRect();
             if (this.totalWidth <= viewWidth) return;
@@ -97,13 +101,15 @@ class SvgBarDiagram extends Widget {
         // Unless both spacing and barWidth are given, the diagram width will be
         // the view-width. Otherwise it will take up as much space as needed to
         // draw everything.
-        const { width: viewWidth, height: viewHeight } =
-                this.svg.getBoundingClientRect();
-        this.svg.setAttribute("width", viewWidth.toString());
-        this.svg.setAttribute("height", viewHeight.toString());
-        this.svg.setAttribute("viewBox", `0 0 ${viewWidth} ${viewHeight}`);
+        //// const { width: viewWidth, height: viewHeight } =
+        ////         this.svg.getBoundingClientRect();
+        //// this.svg.setAttribute("width", viewWidth.toString());
+        //// this.svg.setAttribute("height", viewHeight.toString());
+        //// this.svg.setAttribute("viewBox", `0 0 ${viewWidth} ${viewHeight}`);
         this.viewOffsetX = 0;
-        const totalHeight = viewHeight;
+        //// const totalHeight = viewHeight;
+        const totalHeight = parseInt(window.getComputedStyle(this)
+                            .getPropertyValue("height").slice(0,-2));
         let totalWidth;
         if (this.barSpacing !== null && this.barWidth !== null) {
             if (isNaN(this.barSpacing) || isNaN(this.barWidth)) {
@@ -113,10 +119,11 @@ class SvgBarDiagram extends Widget {
             totalWidth = numValues * (this.barWidth + this.barSpacing) -
                          this.barSpacing + this.margin.left + this.margin.right;
         } else {
-            totalWidth = viewWidth;
+            //// totalWidth = viewWidth;
+            totalWidth = this.svg.getBoundingClientRect().width;
         }
         this.totalWidth = totalWidth;
-        this.svg.classList.toggle("draggable", totalWidth > viewWidth);
+        //// this.svg.classList.toggle("draggable", totalWidth > viewWidth);
         // Size of the bar area only
         const width = totalWidth - this.margin.left - this.margin.right;
         const height = totalHeight - this.margin.bottom - this.margin.top

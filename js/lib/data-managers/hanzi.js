@@ -40,7 +40,6 @@ module.exports = function (paths, modules) {
         }
         const promises = [];
         // Update hanzi data for each attribute
-        modules.database.run("BEGIN TRANSACTION");
         for (const attribute of attributes) {
             const mode = modes[attribute];
             const table = modules.test.modeToTable(mode);
@@ -89,7 +88,6 @@ module.exports = function (paths, modules) {
             promises.push(promise);
         }
         await Promise.all(promises);
-        modules.database.run("END");
         return newStatus;
     };
 
@@ -112,7 +110,6 @@ module.exports = function (paths, modules) {
             "readings": modules.test.mode.HANZI_READINGS
         };
         const promises = [];
-        modules.database.run("BEGIN TRANSACTION");
         for (const attribute of attributes) {
             const mode = modes[attribute];
             const table = modules.test.modeToTable(mode);
@@ -177,7 +174,6 @@ module.exports = function (paths, modules) {
             await modules.database.run(
                 "DELETE FROM hanzi WHERE hanzi = ?", hanzi);
         }
-        modules.database.run("END");
         return newStatus;
     };
 

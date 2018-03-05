@@ -896,7 +896,7 @@ class MainWindow extends Window {
         const testSessionClosed = await this.sections["test"].abortSession();
         if (!testSessionClosed)
             return false;
-        dataManager.setLanguage(language);
+        await dataManager.setLanguage(language);
         this.adjustToLanguage(dataManager.currentLanguage,
                               dataManager.currentSecondaryLanguage);
         this.adjustToLanguageContent(dataManager.currentLanguage,
@@ -995,7 +995,7 @@ class MainWindow extends Window {
         const testSessionClosed = await this.sections["test"].abortSession();
         if (!testSessionClosed) return false;
         this.sections[this.currentSection].close();
-        await dataManager.save(); 
+        await dataManager.saveAll(); 
         networkManager.stopAllDownloads();
         networkManager.save();
         return true;

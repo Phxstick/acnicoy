@@ -28,11 +28,9 @@ module.exports = function (paths, modules) {
         delete dataMap[language];
     };
 
-    settings.save = function () {
-        for (const language in dataMap) {
-            const path = paths.languageData(language).settings;
-            fs.writeFileSync(path, JSON.stringify(dataMap[language], null, 4));
-        }
+    settings.save = function (language) {
+        const path = paths.languageData(language).settings;
+        fs.writeFileSync(path, JSON.stringify(dataMap[language], null, 4));
     };
 
     settings.setLanguage = function (language) {

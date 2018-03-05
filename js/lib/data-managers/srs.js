@@ -11,6 +11,11 @@ module.exports = function (paths, modules) {
         srs.loadSchemes();
     };
 
+    // Not needed since saveSchemes is already called when necessary
+    // srs.saveGlobal = function () {
+    //     srs.saveSchemes();
+    // };
+
     srs.load = function (language) {
         dataMap[language] = {};
         srs.loadSchemeInfo(language);
@@ -145,6 +150,7 @@ module.exports = function (paths, modules) {
     srs.switchScheme = function (language, newSchemeName) {
         const languageSettings = modules.languageSettings.for(language);
         languageSettings.srs.scheme = newSchemeName;
+        modules.languageSettings.save(language);
         srs.loadSchemeInfo(language);
         modules.stats.calculateScorePerLevel(language);
         return modules.stats.recalculateTotalScores(language);
@@ -394,7 +400,7 @@ module.exports = function (paths, modules) {
      *     time which the SRS item has already been scheduled in its current
      *     level.
      */
-    srs.migrateItems = function (
+    srs.migrateItems = async function (
             language, oldIntervals, newIntervals, migrationPlan) {
         // Get SRS items with all necessary info for all testmodes
         const srsItemListPromises = [];
@@ -409,71 +415,66 @@ module.exports = function (paths, modules) {
         }
         const modeToItemList = {};
         // Map each mode to a list of their SRS items
-        return Promise.all(srsItemListPromises).then((srsItemLists) => {
-            for (let i = 0; i < srsItemLists.length; ++i) {
-                modeToItemList[modes[i]] = srsItemLists[i];
-            }
-        }).then(() => {
-            const itemPromises = [];
-            const currentTime = utility.getTime();
-            modules.database.runLanguage(language, "BEGIN TRANSACTION");
-            for (const mode in modeToItemList) {
-                const srsItemList = modeToItemList[mode];
-                const table = modules.test.modeToTable(mode);
-                const column = modules.test.modeToColumn(mode);
-                for (const { item, level, reviewDate } of srsItemList) {
-                    const oldInterval = oldIntervals[level];
-                    const timeUntilReview =
-                        Math.max(reviewDate - currentTime, 0);
-                    const timeScheduled = oldInterval - timeUntilReview;
-                    let finalLevel, finalReviewDate;
-                    let cumulativeInterval = 0;
-                    for (const [newLevel, modifier] of
-                            migrationPlan.get(level)) {
-                        cumulativeInterval += newIntervals[newLevel];
-                        const timeDiff = cumulativeInterval - oldInterval;
-                        if (cumulativeInterval >= oldInterval) {
-                            if (modifier === "+") {
-                                // Postpone review date to fit into new level
+        const srsItemLists = await Promise.all(srsItemListPromises);
+        for (let i = 0; i < srsItemLists.length; ++i) {
+            modeToItemList[modes[i]] = srsItemLists[i];
+        }
+        const itemPromises = [];
+        const currentTime = utility.getTime();
+        for (const mode in modeToItemList) {
+            const srsItemList = modeToItemList[mode];
+            const table = modules.test.modeToTable(mode);
+            const column = modules.test.modeToColumn(mode);
+            for (const { item, level, reviewDate } of srsItemList) {
+                const oldInterval = oldIntervals[level];
+                const timeUntilReview = Math.max(reviewDate - currentTime, 0);
+                const timeScheduled = oldInterval - timeUntilReview;
+                let finalLevel, finalReviewDate;
+                let cumulativeInterval = 0;
+                for (const [newLevel, modifier] of migrationPlan.get(level)) {
+                    cumulativeInterval += newIntervals[newLevel];
+                    const timeDiff = cumulativeInterval - oldInterval;
+                    if (cumulativeInterval >= oldInterval) {
+                        if (modifier === "+") {
+                            // Postpone review date to fit into new level
+                            finalReviewDate = reviewDate + timeDiff;
+                        }
+                        finalLevel = newLevel;
+                        break;
+                    } else {
+                        if (timeScheduled < cumulativeInterval) {
+                            if (modifier === "-" || modifier === "\u223c") {
+                                // Bring review date forward
                                 finalReviewDate = reviewDate + timeDiff;
                             }
                             finalLevel = newLevel;
                             break;
-                        } else {
-                            if (timeScheduled < cumulativeInterval) {
-                                if (modifier === "-" || modifier === "\u223c") {
-                                    // Bring review date forward
-                                    finalReviewDate = reviewDate + timeDiff;
-                                }
-                                finalLevel = newLevel;
-                                break;
-                            }
                         }
                     }
-                    // Case that timeScheduled is larger than cumulative
-                    // intervals of all specified new levels.
-                    if (finalLevel === undefined) {
-                        const [lastLevel, modifier] =
-                            migrationPlan.get(level).last();
-                        finalLevel = lastLevel;
-                        if (modifier === "-") {
-                            // Bring review date forward
-                            const timeDiff = cumulativeInterval - oldInterval;
-                            finalReviewDate = reviewDate + timeDiff;
-                        }
-                    }
-                    if (finalReviewDate === undefined) {
-                        finalReviewDate = reviewDate;
-                    }
-                    itemPromises.push(modules.database.runLanguage(language,
-                        `UPDATE ${table} SET level = ?, review_date = ?
-                         WHERE ${column} = ?`,
-                        [finalLevel, finalReviewDate, item]));
                 }
+                // Case that timeScheduled is larger than cumulative
+                // intervals of all specified new levels.
+                if (finalLevel === undefined) {
+                    const [lastLevel, modifier] =
+                        migrationPlan.get(level).last();
+                    finalLevel = lastLevel;
+                    if (modifier === "-") {
+                        // Bring review date forward
+                        const timeDiff = cumulativeInterval - oldInterval;
+                        finalReviewDate = reviewDate + timeDiff;
+                    }
+                }
+                if (finalReviewDate === undefined) {
+                    finalReviewDate = reviewDate;
+                }
+                itemPromises.push(modules.database.runLanguage(language,
+                    `UPDATE ${table} SET level = ?, review_date = ?
+                     WHERE ${column} = ?`,
+                    [finalLevel, finalReviewDate, item]));
             }
-            return Promise.all(itemPromises).then(() =>
-                modules.database.runLanguage(language, "END TRANSACTION"));
-        });
+        }
+        await Promise.all(itemPromises);
+        modules.database.save(language);
     };
     
     return srs;

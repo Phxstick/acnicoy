@@ -5,6 +5,7 @@ const fs = require("fs-extra");
 module.exports = function (paths, modules) {
     const notificationsManager = {};
     let notifications;
+    let isModified = false;
 
     notificationsManager.initialize = function () {
         if (!fs.existsSync(paths.notifications)) {
@@ -13,8 +14,10 @@ module.exports = function (paths, modules) {
         notifications = require(paths.notifications);
     };
 
-    notificationsManager.save = function () {
+    notificationsManager.saveGlobal = function () {
+        if (!isModified) return;
         fs.writeFileSync(paths.notifications, JSON.stringify(notifications));
+        isModified = false;
     };
 
     notificationsManager.get = function () {
@@ -26,6 +29,7 @@ module.exports = function (paths, modules) {
         const date = utility.getTime();
         const notification = { id, date, type, data, highlighted: true };
         notifications.push(notification);
+        isModified = true;
         return notification;
     };
 
@@ -33,12 +37,16 @@ module.exports = function (paths, modules) {
         for (const notification of notifications) {
             if (notification.id === id) {
                 notifications.remove(notification);
+                isModified = true;
+                return true;
             }
         }
+        return false;
     };
 
     notificationsManager.deleteAll = function () {
         notifications.length = 0;
+        isModified = true;
     };
 
     notificationsManager.unhighlightAll = function () {
@@ -46,6 +54,7 @@ module.exports = function (paths, modules) {
             if (!notifications[i].highlighted)
                 break;
             notifications[i].highlighted = false;
+            isModified = true;
         }
     };
 

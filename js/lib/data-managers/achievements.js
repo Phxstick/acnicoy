@@ -44,7 +44,7 @@ module.exports = function (paths, modules) {
         }
     }
 
-    function saveUserData() {
+    function saveGlobal() {
         fs.writeFileSync(paths.achievementsUnlocked, JSON.stringify(userData));
     }
 
@@ -112,7 +112,7 @@ module.exports = function (paths, modules) {
                     achievement, achievementName, language);
             }
         }
-        if (anyUnlocked) saveUserData();
+        if (anyUnlocked) saveGlobal();
     }
 
     /**

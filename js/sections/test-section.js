@@ -593,7 +593,6 @@ class TestSection extends Section {
             shortcuts.disable("ignore-answer");
         }
         this.testInfo.inEvalStep = false;
-        dataManager.database.run("BEGIN TRANSACTION");
         // Process previously answered item
         if (this.testInfo.currentItem !== null &&
                 !this.testInfo.skipNextEvaluation) {
@@ -723,7 +722,7 @@ class TestSection extends Section {
         // Check if test is completed (no items left)
         if (this.testInfo.pickedItems.length === 0) {
             if (!this.testInfo.vocabListMode) {
-                dataManager.database.run("END TRANSACTION");
+                // TODO: If frequent saving activated, save database+stats here
             }
             this.closeSession();
             return;
@@ -753,7 +752,7 @@ class TestSection extends Section {
         // If item has solutions, finally assign it as current item
         this.testInfo.currentItem = newItem;
         this.testInfo.currentPart = part;
-        dataManager.database.run("END TRANSACTION");
+        // TODO: If frequent saving activated, save database+stats here
         // == Update view ==
         // If animate flag is set, fade away previous item and solutions
         if (dataManager.settings.test.animate && previousItem !== null) {

@@ -6,17 +6,17 @@ module.exports = function (paths, modules) {
     const settings = {};
     let data;
 
-    settings.isLoaded = function() {
+    settings.isLoaded = function () {
         return data !== undefined;
     };
 
-    settings.setDefault = function() {
+    settings.setDefault = function () {
         const defaultSettings = fs.readFileSync(paths.defaultSettings);
         fs.writeFileSync(paths.globalSettings, defaultSettings);
         return require(paths.defaultSettings);
     };
 
-    settings.initialize = function() {
+    settings.initialize = function () {
         if (fs.existsSync(paths.globalSettings)) {
             data = require(paths.globalSettings);
         } else {
@@ -24,7 +24,7 @@ module.exports = function (paths, modules) {
         }
     };
 
-    settings.save = function() {
+    settings.saveGlobal = function () {
         fs.writeFileSync(paths.globalSettings, JSON.stringify(data, null, 4));
     };
 
