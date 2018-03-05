@@ -41,11 +41,13 @@ module.exports = function (paths, modules) {
     history.load = async function (language) {
         const path = paths.languageData(language).history;
         dataMap[language] = promisifyDatabase(new sqlite3.Database(path));
+        await dataMap[language].run("PRAGMA wal_autocheckpoint=50");
         await dataMap[language].run("BEGIN TRANSACTION");
     };
 
     history.save = async function (language) {
         await dataMap[language].run("END");
+        // await dataMap[language].run("PRAGMA wal_checkpoint");
         await dataMap[language].run("BEGIN TRANSACTION");
     };
 

@@ -10,11 +10,13 @@ module.exports = function (paths, modules) {
     database.load = async function (language) {
         const path = paths.languageData(language).database;
         dataMap[language] = new sqlite3.Database(path);
+        await database.runLanguage(language, "PRAGMA wal_autocheckpoint=50");
         await database.runLanguage(language, "BEGIN TRANSACTION");
     };
 
     database.save = async function (language) {
         await database.runLanguage(language, "END");
+        // await database.runLanguage(language, "PRAGMA wal_checkpoint");
         await database.runLanguage(language, "BEGIN TRANSACTION");
     };
 

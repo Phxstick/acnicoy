@@ -261,12 +261,13 @@ function parseEntries(entryString, separator) {
  * @param {String} String defining a time span. Is a comma separated sequence
  *     of parts of the form: "number unit".
  * @returns {Object} Time span object of the form
- *     { hours, days, weeks, months, years }.
+ *     { seconds, minutes, hours, days, weeks, months, years }.
  * @throws Error if argument is not correctly formatted.
  */
 function timeSpanStringToObject(string) {
     const parts = string.split(",").map((s) => s.trim());
-    const result = { hours: 0, days: 0, weeks: 0, months: 0, years: 0 };
+    const result = { seconds: 0, minutes: 0, hours: 0,
+                     days: 0, weeks: 0, months: 0, years: 0 };
     if (string.length === 0) {
         return result;
     }
@@ -284,6 +285,15 @@ function timeSpanStringToObject(string) {
         }
         const [number, unit] = match.slice(1).map((s) => s.toLowerCase());
         switch (unit) {
+        case "s":
+        case "sec":
+        case "second":
+        case "seconds":
+            result.seconds += parseInt(number); break;
+        case "min":
+        case "minute":
+        case "minutes":
+            result.minutes += parseInt(number); break;
         case "h":
         case "hour":
         case "hours":
@@ -296,7 +306,7 @@ function timeSpanStringToObject(string) {
         case "week":
         case "weeks":
             result.weeks += parseInt(number); break;
-        case "m":
+        case "mon":
         case "month":
         case "months":
             result.months += parseInt(number); break;
@@ -321,9 +331,11 @@ function timeSpanStringToObject(string) {
  * @throws Error if argument is not correctly formatted.
  */
 function timeSpanStringToSeconds(string) {
-    const { hours, days, weeks, months, years } =
+    const { seconds, minutes, hours, days, weeks, months, years } =
         timeSpanStringToObject(string);
-    return hours * 60 * 60
+    return seconds
+           + minutes * 60
+           + hours * 60 * 60
            + days * 60 * 60 * 24
            + weeks * 60 * 60 * 24 * 7
            + months * 60 * 60 * 24 * 30
@@ -332,12 +344,14 @@ function timeSpanStringToSeconds(string) {
 
 /**
  * Return standard string notation for timespan defined by given object.
- * @param {Object} object - Object of form { hours, days, weeks, months, years }
+ * @param {Object} object - Object of form
+ *     { seconds, minutes, hours, days, weeks, months, years }
  * @returns {String}
  */
 function timeSpanObjectToString(object) {
     const substrings = [];
-    const units = ["years", "months", "weeks", "days", "hours"];
+    const units = ["years", "months", "weeks", "days",
+                   "hours", "minutes", "seconds"];
     for (const unit of units) {
         const amount = object[unit];
         if (amount === 0) continue;

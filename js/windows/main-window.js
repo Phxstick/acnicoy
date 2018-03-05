@@ -58,12 +58,17 @@ const menuItems = contextMenu.registerItems({
 class MainWindow extends Window {
     constructor () {
         super("main");
+        // Constants
         this.panelSlideDuration = 350;
         this.sectionFadeDuration = 200;
         this.statusUpdateInterval = utility.timeSpanStringToSeconds("3 hours");
+        this.dataSavingInterval = utility.timeSpanStringToSeconds("10 minutes");
+        this.srsStatusUpdateInterval = utility.timeSpanStringToSeconds("5 min");
+        // Collections
         this.sections = {};
         this.panels = {};
         this.suggestionPanes = {};
+        // Variables
         this.fadingOutPreviousSection = false;
         this.nextSection = "";
         this.currentPanel = null;
@@ -71,7 +76,9 @@ class MainWindow extends Window {
         this.suggestionsShown = false;
         this.srsNotificationCallbackId = null;
         this.regularBackupCallbackId = null;
+        this.dataSavingCallbackId = null;
         this.creatingBackup = false;
+        this.savingData = false;
         // Top menu button events
         this.$("exit-button").addEventListener("click",
                 () => ipcRenderer.send("quit"));
@@ -186,6 +193,14 @@ class MainWindow extends Window {
                 if (this.currentPanel !== null) {
                     this.panels[this.currentPanel].save();
                 }
+            },
+            "save-data": async () => {
+                if (this.savingData) return;
+                window.clearTimeout(this.dataSavingCallbackId);
+                this.savingData = true;
+                await dataManager.saveAll();
+                this.scheduleDataSaving();
+                this.savingData = false;
             }
         };
         this.shortcutsForLanguage = {
@@ -335,7 +350,8 @@ class MainWindow extends Window {
         }
         // Regularly update displayed SRS info
         this.srsStatusCallbackId = window.setInterval(
-            () => events.emit("update-srs-status"), 1000 * 60 * 5);  // 5 min
+            () => events.emit("update-srs-status"),
+            1000 * this.srsStatusUpdateInterval);
         // Regularly update program and language content status
         utility.setTimer(() => events.emit("update-program-status"),
                          this.statusUpdateInterval,
@@ -350,6 +366,17 @@ class MainWindow extends Window {
             utility.setTimer(() => events.emit("update-content-status", pair),
                 this.statusUpdateInterval, lastUpdateTime);
         }
+        // Periodically write user data to disk
+        this.scheduleDataSaving = () => {
+            this.dataSavingCallbackId = window.setTimeout(async () => {
+                if (this.savingData) return;
+                this.savingData = true;
+                await dataManager.saveAll();
+                this.scheduleDataSaving();
+                this.savingData = false;
+            }, 1000 * this.dataSavingInterval);
+        };
+        this.scheduleDataSaving();
         // Run clean-up-code from now on whenever attempting to close the window
         ipcRenderer.send("activate-controlled-closing");
         // Link achievements module to event emitter and do an initial check
@@ -995,7 +1022,10 @@ class MainWindow extends Window {
         const testSessionClosed = await this.sections["test"].abortSession();
         if (!testSessionClosed) return false;
         this.sections[this.currentSection].close();
-        await dataManager.saveAll(); 
+        if (!this.savingData) {
+            window.clearTimeout(this.dataSavingCallbackId);
+            await dataManager.saveAll(); 
+        }
         networkManager.stopAllDownloads();
         networkManager.save();
         return true;

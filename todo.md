@@ -1,7 +1,4 @@
-- Define proper interface for global settings to detect modifications?
-- Run checkpoint in databases on program exit? On periodic saving?
-- Periodically save user data (reset time if saved manually inbetween)
-- Add save-button (with last-saved time) and make Ctrl+S shortcut for saving
+### Primary goals
 - Finish introduction tour mechanism and make a main-window tour
   1. Insert text-box on sides where more space is left, next to the element
   2. Center text-box with relation to the element
@@ -12,8 +9,6 @@
 - Create quick start overlay (or normal one?) which offers taking a quick tour
   - Give option to "not display this window again on program start"
   - Display on program start if not disabled
-
-### Up next
 - Extend vocabulary section:
   - Add functionality to view both words and kanji/hanzi (switch using button)
   - Add switch-buttons for sorting lexicographically/chronically/randomly(?)
@@ -22,7 +17,7 @@
 - Finish first version of the stats
 - Add reload-button to language table (right side), emit "update-content-event"
 
-### Up next
+### Secondary goals
 - Add new loading-overlay whereever useful
 - Use velocity's slide-function instead of toggleDisplay where useful
   - For opening solutions in test-complete-overlay
@@ -138,7 +133,7 @@ By category
 - Adjust kanji-section (and create hanzi-section) to be available as limited
   version even when no language content is installed (and display notice that
   language content can be installed to see more).
-- Implement save-on-change mode (add checkbox in settings)
+- Implement save-on-change mode (add checkbox in settings)?
   - After finishing a test item (and upon finishing test session)
   - Save global/local settings whenever something changes
   - Save vocabulary (and history?) database on every change
@@ -148,6 +143,9 @@ By category
     usage and network overhead if third-party synchronization services like
     dropbox are used to store user data, but it can prevent data loss.
   - If not activated, data only saved periodically + on exit + on certain events
+- Add save-button for user data somewhere (with last-saved label)
+- Define proper interface for global settings to detect modifications?
+- Run `VACUUM` on databases once in a while to clean up? Add button to settings?
 
 ### Performance
 - Things got slower when reworking sass? Maybe because main window is flex now?
