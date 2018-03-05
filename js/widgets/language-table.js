@@ -56,8 +56,8 @@ class LanguageTable extends Widget {
             const row = event.target.parentNode.parentNode;
             const config = this.rowToConfig.get(row);
             if (this.interactiveMode) {
-                dataManager.languageSettings.for(config.language).readings =
-                    event.target.checked;
+                dataManager.languageSettings.setFor(
+                    config.language, "readings", event.target.checked);
                 this.settingsSubsection.broadcastLanguageSetting("readings");
             }
             config.settings.readings = event.target.checked;
@@ -75,7 +75,7 @@ class LanguageTable extends Widget {
             }).then((migrated) => {
                 if (!migrated) return;
                 label.textContent = dataManager.languageSettings
-                                    .for(config.language).srs.scheme;
+                                    .getFor(config.language, "srs.scheme");
             });
         });
         // Functionality for downloading language content
@@ -115,8 +115,9 @@ class LanguageTable extends Widget {
             const row = event.target.parentNode.parentNode;
             const config = this.rowToConfig.get(row);
             const hidden = !dataManager.languageSettings
-                            .for(config.language).hidden;
-            dataManager.languageSettings.for(config.language).hidden = hidden;
+                            .getFor(config.language, "hidden");
+            dataManager.languageSettings.setFor(
+                config.language, "hidden", hidden);
             row.classList.toggle("hidden", hidden);
             this.settingsSubsection.broadcastLanguageSetting("visibility");
         });

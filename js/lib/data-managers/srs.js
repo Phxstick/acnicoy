@@ -120,8 +120,8 @@ module.exports = function (paths, modules) {
     srs.getLanguagesUsingScheme = function (schemeName) {
         const languagesUsingScheme = [];
         for (const language of modules.languages.all) {
-            const langSettings = modules.languageSettings.for(language);
-            if (langSettings.srs.scheme === schemeName) {
+            const used = modules.languageSettings.getFor(language, "srs.scheme")
+            if (used === schemeName) {
                 languagesUsingScheme.push(language);
             }
         }
@@ -148,8 +148,7 @@ module.exports = function (paths, modules) {
     };
 
     srs.switchScheme = function (language, newSchemeName) {
-        const languageSettings = modules.languageSettings.for(language);
-        languageSettings.srs.scheme = newSchemeName;
+        modules.languageSettings.setFor(language, "srs.scheme", newSchemeName);
         modules.languageSettings.save(language);
         srs.loadSchemeInfo(language);
         modules.stats.calculateScorePerLevel(language);
@@ -157,7 +156,7 @@ module.exports = function (paths, modules) {
     };
 
     srs.loadSchemeInfo = function (language) {
-        const scheme = modules.languageSettings.for(language)["srs"]["scheme"];
+        const scheme = modules.languageSettings.getFor(language, "srs.scheme");
         const timeSpanNames = srs.getIntervalTextsForScheme(scheme);
         const intervalModifier = utility.timeSpanStringToSeconds(
             modules.settings.srs.intervalModifier);
@@ -265,7 +264,7 @@ module.exports = function (paths, modules) {
         .then(([{level}]) => level);
     };
 
-    srs.getAmountOfItemsPerLevel = function (language) {
+    srs.getAmountOfItemsPerLevel = async function (language) {
         const modePromises = [];
         for (const mode of modules.test.modesForLanguage(language)) {
             const table = modules.test.modeToTable(mode);
@@ -283,21 +282,20 @@ module.exports = function (paths, modules) {
             });
             modePromises.push(promise);
         }
-        return Promise.all(modePromises).then((levelToAmountMaps) => {
-            const levelToTotalAmount = new Map();
-            const scheme = modules.languageSettings.for(language).srs.scheme;
-            const numLevels = srs.getNumLevelsForScheme(scheme);
-            for (let level = 1; level <= numLevels; ++level) {
-                levelToTotalAmount.set(level, 0);
+        const levelToAmountMaps = await Promise.all(modePromises);
+        const levelToTotalAmount = new Map();
+        const scheme = modules.languageSettings.getFor(language, "srs.scheme");
+        const numLevels = srs.getNumLevelsForScheme(scheme);
+        for (let level = 1; level <= numLevels; ++level) {
+            levelToTotalAmount.set(level, 0);
+        }
+        for (const levelToAmount of levelToAmountMaps) {
+            for (const [level, amount] of levelToAmount) {
+                levelToTotalAmount.set(level,
+                    levelToTotalAmount.get(level) + amount);
             }
-            for (const levelToAmount of levelToAmountMaps) {
-                for (const [level, amount] of levelToAmount) {
-                    levelToTotalAmount.set(level,
-                        levelToTotalAmount.get(level) + amount);
-                }
-            }
-            return levelToTotalAmount;
-        });
+        }
+        return levelToTotalAmount;
     };
 
     srs.getAmountOfItems = function (language) {

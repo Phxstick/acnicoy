@@ -84,7 +84,7 @@ module.exports = function (paths) {
     modules.setLanguage = async function (language) {
         modules.currentLanguage = language;
         modules.currentSecondaryLanguage =
-            modules.languageSettings.for(language).secondaryLanguage;
+            modules.languageSettings.getFor(language, "secondaryLanguage");
         for (const name of components.modules) {
             if (modules[name].hasOwnProperty("setLanguage")) {
                 await modules[name].setLanguage(language);

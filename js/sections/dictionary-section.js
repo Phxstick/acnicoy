@@ -200,7 +200,7 @@ class DictionarySection extends Section {
             updateWordStatus(word, dictionaryId, false);
         });
         events.on("settings-languages-readings", () => {
-            if (dataManager.languageSettings.readings) {
+            if (dataManager.languageSettings.get("readings")) {
                 this.$("words-filter").placeholder =
                     "Filter by words and readings";
             } else {

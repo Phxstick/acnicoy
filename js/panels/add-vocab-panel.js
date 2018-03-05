@@ -29,7 +29,7 @@ class AddVocabPanel extends Panel {
         });
         events.on("settings-languages-readings", () => {
             this.$("readings-entry").toggleDisplay(
-                dataManager.languageSettings["readings"]);
+                dataManager.languageSettings.get("readings"));
         });
         events.on("vocab-list-created", (listName) => {
             const option = document.createElement("option");

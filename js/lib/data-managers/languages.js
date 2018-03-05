@@ -20,7 +20,7 @@ module.exports = function (paths, modules) {
     // Get list of visible registered languages
     Object.defineProperty(languageManager, "visible", {
         get: () => languageList.filter(
-            (language) => !modules.languageSettings.for(language).hidden)
+            (language) => !modules.languageSettings.getFor(language, "hidden"))
     });
 
     // Register a new language with given configuration

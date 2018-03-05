@@ -1,9 +1,7 @@
-- Define proper interface for global/language settings to detect modifications?
-- Finish user data saving
-  - Add save-button (with last-saved time) and make Ctrl+S shortcut for saving
-  - Run checkpoint in databases on program exit? On periodic saving?
-  - Periodically save user data (reset time if saved manually inbetween)
-  - How to make saving more efficient?
+- Define proper interface for global settings to detect modifications?
+- Run checkpoint in databases on program exit? On periodic saving?
+- Periodically save user data (reset time if saved manually inbetween)
+- Add save-button (with last-saved time) and make Ctrl+S shortcut for saving
 - Finish introduction tour mechanism and make a main-window tour
   1. Insert text-box on sides where more space is left, next to the element
   2. Center text-box with relation to the element

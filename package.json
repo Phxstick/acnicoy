@@ -24,6 +24,7 @@
   "dependencies": {
     "auto-launch": "^5.0.1",
     "dateformat": "^2.0.0",
+    "dot-object": "^1.7.0",
     "electron-localshortcut": "^0.6.0",
     "electron-settings": "^3.1.4",
     "fs-extra": "^5.0.0",

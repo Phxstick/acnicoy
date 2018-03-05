@@ -150,7 +150,7 @@ class EditVocabPanel extends Panel {
         });
         events.on("settings-languages-readings", () => {
             this.$("readings-frame").toggleDisplay(
-                dataManager.languageSettings["readings"]);
+                dataManager.languageSettings.get("readings"));
         });
         events.on("settings-design-animate-popup-stacks", () => {
             const animate = dataManager.settings.design.animatePopupStacks;

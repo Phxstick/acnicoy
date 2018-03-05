@@ -161,7 +161,7 @@ class VocabSuggestionPane extends Widget {
                     this.$("readings").appendChild(rNode);
                 }
                 this.$("readings-row").toggleDisplay(
-                    dataManager.languageSettings.readings);
+                    dataManager.languageSettings.get("readings"));
             // If no readings exist, don't display readings row
             } else {
                 this.$("readings-row").hide();

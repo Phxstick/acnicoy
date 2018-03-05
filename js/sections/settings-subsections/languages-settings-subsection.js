@@ -10,7 +10,8 @@ class LanguagesSettingsSubsection extends SettingsSubsection {
     initialize() {
         this.$("languages-table").clear();
         for (const language of dataManager.languages.all) {
-            const languageSettings = dataManager.languageSettings.for(language);
+            const languageSettings =
+                dataManager.languageSettings.getFor(language);
             this.$("languages-table").addTableRow({
                 language,
                 settings: {

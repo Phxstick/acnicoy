@@ -15,7 +15,7 @@ module.exports = function (paths, modules) {
 
     content.load = function (language) {
         const secondaryLanguage =
-            modules.languageSettings.for(language).secondaryLanguage;
+            modules.languageSettings.getFor(language, "secondaryLanguage");
         const contentPaths = paths.content(language, secondaryLanguage);
         const languagePair = `${language}-${secondaryLanguage}`;
         if (!utility.existsDirectory(contentPaths.directory)) {
@@ -36,7 +36,7 @@ module.exports = function (paths, modules) {
 
     content.unload = function (language) {
         const secondaryLanguage =
-            modules.languageSettings.for(language).secondaryLanguage;
+            modules.languageSettings.getFor(language, "secondaryLanguage");
         const languagePair = `${language}-${secondaryLanguage}`;
         if (dataMap.hasOwnProperty(languagePair)) {
             delete dataMap[languagePair];
@@ -45,7 +45,7 @@ module.exports = function (paths, modules) {
 
     content.setLanguage = function (language) {
         const secondaryLanguage =
-            modules.languageSettings.for(language).secondaryLanguage;
+            modules.languageSettings.getFor(language, "secondaryLanguage");
         const languagePair = `${language}-${secondaryLanguage}`;
         data = dataMap[languagePair];
     };

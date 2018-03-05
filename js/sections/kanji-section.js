@@ -254,9 +254,10 @@ class KanjiSection extends Section {
         } else if (splittingCriterion === "stroke-count") {
             stepSize = 5;
         }
-        const kanjiLists = await dataManager.content.get("Japanese",
-                dataManager.languageSettings.for("Japanese").secondaryLanguage)
-                .getKanjiLists({
+        const secondaryLanguage = dataManager.languageSettings
+                                  .getFor("Japanese", "secondaryLanguage");
+        const kanjiLists = await dataManager.content.get(
+                "Japanese", secondaryLanguage).getKanjiLists({
             splittingCriterion,
             includeAdded: !onlyMissing,
             includeJouyou: showJouyou,

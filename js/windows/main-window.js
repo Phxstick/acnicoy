@@ -343,7 +343,7 @@ class MainWindow extends Window {
         const languages = dataManager.languages.all;
         for (const lang of languages) {
             const secondary = 
-                dataManager.languageSettings.for(lang).secondaryLanguage;
+                dataManager.languageSettings.getFor(lang, "secondaryLanguage");
             const lastUpdateTime = storage.get(
                 `cache.contentVersionInfo.${lang}.${secondary}.lastUpdateTime`);
             const pair = { language: lang, secondary };

@@ -133,8 +133,8 @@ class Application {
         this.openWindow("loading", "Processing language content...");
         promises.length = 0;
         for (const language of languages) {
-            const secondary =
-                dataManager.languageSettings.for(language).secondaryLanguage;
+            const secondary = dataManager.languageSettings.getFor(
+                language, "secondaryLanguage");
             promises.push(main.processLanguageContent(language, secondary));
         }
         await Promise.all(promises);
