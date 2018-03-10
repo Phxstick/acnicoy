@@ -84,6 +84,7 @@
         "open-help": "F1",
 
         "ignore-answer": "CmdOrCtrl+I",
+        "edit-test-item": "CmdOrCtrl+M",
         "save-input": "CmdOrCtrl+Enter"
     }
 }

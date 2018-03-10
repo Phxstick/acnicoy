@@ -87,6 +87,8 @@ module.exports = function (basePath) {
         path.resolve(basePath, "data", "help", ...nodes) + ".md";
     paths.helpSubdir = (nodes) =>
         path.resolve(basePath, "data", "help", ...nodes);
+    paths.introTour = (name) =>
+        path.resolve(basePath, "data", "intro-tours", name + "-tour.html");
     paths.componentRegister = path.resolve(basePath, "component-register.json");
     paths.styleClasses = path.resolve(basePath, "data", "style-classes.json");
     paths.img = {

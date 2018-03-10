@@ -79,6 +79,9 @@ class MainWindow extends Window {
         this.dataSavingCallbackId = null;
         this.creatingBackup = false;
         this.savingData = false;
+        this.introTourParts = null;
+        this.currentPartIndex = -1;
+        this.introTourContext = null;
         // Top menu button events
         this.$("exit-button").addEventListener("click",
                 () => ipcRenderer.send("quit"));
@@ -218,6 +221,18 @@ class MainWindow extends Window {
             this.attemptToQuit().then((confirmed) => {
                 if (confirmed) ipcRenderer.send("close-now");
             });
+        });
+        // Introduction tour button callbacks
+        this.$("intro-tour-exit-button").addEventListener("click", () => {
+            this.exitIntroTour();
+        });
+        this.$("intro-tour-back-button").addEventListener("click", () => {
+            --this.currentPartIndex;
+            this.displayNextPart();
+        });
+        this.$("intro-tour-next-button").addEventListener("click", () => {
+            ++this.currentPartIndex;
+            this.displayNextPart();
         });
     }
 
@@ -397,29 +412,8 @@ class MainWindow extends Window {
             }
             this.displayNotification(notification);
         }
-        // TODO
-        const selectiveDimmer = this.$("selective-dimmer");
-        selectiveDimmer.hide();
-        // TODO: Make sure canvas adjust to window size on resizing
-        selectiveDimmer.width = window.innerWidth;
-        selectiveDimmer.height = window.innerHeight;
-        const dimCtx = selectiveDimmer.getContext("2d");
-        window.dimCtx = dimCtx;
-        window.highlightElement = (element) => {
-            selectiveDimmer.show()
-            const rect = element.getBoundingClientRect();
-            // Clear and dim whole window
-            dimCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-            dimCtx.fillStyle = "rgba(0, 0, 0, 0.7)";
-            dimCtx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-            // Draw shadow
-            dimCtx.shadowColor = "white";
-            dimCtx.shadowBlur = "15";
-            dimCtx.fillStyle = "white";
-            dimCtx.fillRect(rect.left, rect.top, rect.width, rect.height);
-            // Clear canvas above element
-            dimCtx.clearRect(rect.left, rect.top, rect.width, rect.height);
-        }
+        this.$("selective-dimmer").hide();
+        this.$("intro-tour-textbox").hide();
         await utility.finishEventQueue();
         app.closeWindow("loading");
     }
@@ -655,153 +649,11 @@ class MainWindow extends Window {
         this.$("status-text").fadeIn();
     }
 
-    addNotification(type, data) {
-        const notification = dataManager.notifications.add(type, data);
-        this.displayNotification(notification);
-    }
-
-    deleteNotification(id) {
-        const notifications = this.$("notifications").children;
-        for (const notificationNode of notifications) {
-            if (parseInt(notificationNode.dataset.id) === id) {
-                this.$("notifications").removeChild(notificationNode);
-                break;
-            }
-        }
-        dataManager.notifications.delete(id);
-    }
-
-    displayNotification(notification) {
-        const { id, date, type, data, highlighted } = notification;
-        let title;
-        let details;
-        let subtitle;
-        let buttonLabel;
-        let buttonCallback;
-        const template = templates.get("internal-notification");
-        if (type === "program-update-available") {
-            title = "New program version available";
-            buttonLabel = "Download";
-            const { latestVersion, releaseDate, description } = data;
-            subtitle = `Version ${latestVersion}, released on ${releaseDate}`;
-            details = markdown.toHTML(description);
-            buttonCallback = () => {
-                dialogWindow.info(
-                    `Automated program updating is not yet implemented.
-                     Please download and install the latest program version
-                     from <a href="${app.homepage + "/releases"}">here</a>.`)
-            };
-        }
-        else if (type === "program-download-finished") {
-            title = "Program download finished";
-            buttonLabel = "Install";
-        }
-        else if (type === "program-installation-finished") {
-            title = "Program installation finished";
-            buttonLabel = "Reload";
-        }
-        else if (type === "content-update-available") {
-            title = "New language content available";
-            buttonLabel = "Download";
-            const { language, secondary } = data;
-            // subtitle = `For ${secondary} ➝ ${language}`;
-            subtitle = `For ${language} (from ${secondary})`;
-            buttonCallback = () => {
-                events.emit("start-content-download", { language, secondary });
-            };
-            events.once("start-content-download", (info) => {
-                if (info.language === language && info.secondary == secondary) {
-                    this.deleteNotification(id);
-                    this.addNotification("content-update-downloading", info);
-                }
-            });
-        }
-        else if (type === "content-update-downloading") {
-            title = "Downloading content update...";
-            buttonLabel = "Open<br>settings";
-            const { language, secondary } = data;
-            subtitle = `For ${language} (from ${secondary}).<br>
-                        See language settings for download progress.`;
-            buttonCallback = () => {
-                main.sections["settings"].openSubsection("languages");
-                main.openSection("settings");
-            };
-            events.once("content-download-finished", (info) => {
-                if (info.language === language && info.secondary == secondary) {
-                    this.deleteNotification(id);
-                }
-            });
-        }
-        else if (type === "content-download-finished") {
-            title = "Content download finished";
-            buttonLabel = "Reload<br>content";
-            const { language, secondary } = data;
-            subtitle = `For ${language} (from ${secondary}).<br>
-                        Press button on the right to load the content.`;
-            buttonCallback = async () => {
-                overlays.open("loading");
-                await dataManager.content.load(language);
-                if (dataManager.currentLanguage === language) {
-                    dataManager.content.setLanguage(language);
-                }
-                await this.processLanguageContent(language, secondary);
-                this.adjustToLanguageContent(language, secondary);
-                this.deleteNotification(id);
-                await utility.wait();
-                overlays.closeTopmost();
-            };
-        }
-        else if (type === "achievement-unlocked") {
-            const { achievement, achievementName, language } = data;
-            title = `Achievement unlocked: ${achievementName}`;
-            buttonLabel = "";
-            subtitle = language !== undefined ? `[${language}] ` : "";
-            subtitle +=
-                dataManager.achievements.getDescription(achievement, language);
-        }
-        else {
-            throw new Error(`Notification type '${type}' does not exist.`);
-        }
-        // Create document fragment with given data
-        const html = template({ title, subtitle, details, buttonLabel });
-        const fragment = utility.fragmentFromString(html);
-        const buttonNode = fragment.querySelector(".action");
-        const detailsNode = fragment.querySelector(".details");
-        const notificationNode = fragment.querySelector(".notification");
-        notificationNode.dataset.id = id;
-        notificationNode.dataset.type = type;
-        const infoNode = fragment.querySelector(".info-frame");
-        // Add callbacks
-        if (buttonLabel) {
-            buttonNode.addEventListener("click", buttonCallback);
-        }
-        detailsNode.hide();
-        infoNode.addEventListener("click", () => {
-            if (!details) return;
-            detailsNode.toggleDisplay();
+    updateTestButton() {
+        return dataManager.srs.getTotalAmountDue().then((amount) => {
+            this.$("num-srs-items").textContent = amount;
+            return amount;
         });
-        notificationNode.contextMenu(menuItems, ["delete-notification"]);
-        this.$("notifications").contextMenu(menuItems, () => {
-            return this.$("notifications").children.length > 0 ?
-                ["delete-all-notifications"] : [];
-        });
-        // Highlight notification button and notification itself
-        if (highlighted) {
-            this.$("notifications-button").classList.add("highlighted");
-            notificationNode.classList.add("highlighted");
-        }
-        // Overwrite existing notification if it must be unique
-        if (type === "program-update-available" ||
-                type === "content-update-available") {
-            for (const notification of this.$("notifications").children) {
-                if (notification.type === type) {
-                    dataManager.notifications.delete(notification.id);
-                    this.$("notifications").removeChild(notification);
-                    break;
-                }
-            }
-        }
-        this.$("notifications").prependChild(fragment);
     }
 
     openTestSection() {
@@ -813,13 +665,6 @@ class MainWindow extends Window {
                 this.updateStatus("There are currently no items " +
                                   "scheduled for testing!");
             }
-        });
-    }
-
-    updateTestButton() {
-        return dataManager.srs.getTotalAmountDue().then((amount) => {
-            this.$("num-srs-items").textContent = amount;
-            return amount;
         });
     }
 
@@ -1030,6 +875,330 @@ class MainWindow extends Window {
         networkManager.save();
         return true;
     }
+
+    // ========================================================================
+    //    Application-internal notifications
+    // ========================================================================
+
+    addNotification(type, data) {
+        const notification = dataManager.notifications.add(type, data);
+        this.displayNotification(notification);
+    }
+
+    deleteNotification(id) {
+        const notifications = this.$("notifications").children;
+        for (const notificationNode of notifications) {
+            if (parseInt(notificationNode.dataset.id) === id) {
+                this.$("notifications").removeChild(notificationNode);
+                break;
+            }
+        }
+        dataManager.notifications.delete(id);
+    }
+
+    displayNotification(notification) {
+        const { id, date, type, data, highlighted } = notification;
+        let title;
+        let details;
+        let subtitle;
+        let buttonLabel;
+        let buttonCallback;
+        const template = templates.get("internal-notification");
+        if (type === "program-update-available") {
+            title = "New program version available";
+            buttonLabel = "Download";
+            const { latestVersion, releaseDate, description } = data;
+            subtitle = `Version ${latestVersion}, released on ${releaseDate}`;
+            details = markdown.toHTML(description);
+            buttonCallback = () => {
+                dialogWindow.info(
+                    `Automated program updating is not yet implemented.
+                     Please download and install the latest program version
+                     from <a href="${app.homepage + "/releases"}">here</a>.`)
+            };
+        }
+        else if (type === "program-download-finished") {
+            title = "Program download finished";
+            buttonLabel = "Install";
+        }
+        else if (type === "program-installation-finished") {
+            title = "Program installation finished";
+            buttonLabel = "Reload";
+        }
+        else if (type === "content-update-available") {
+            title = "New language content available";
+            buttonLabel = "Download";
+            const { language, secondary } = data;
+            // subtitle = `For ${secondary} ➝ ${language}`;
+            subtitle = `For ${language} (from ${secondary})`;
+            buttonCallback = () => {
+                events.emit("start-content-download", { language, secondary });
+            };
+            events.once("start-content-download", (info) => {
+                if (info.language === language && info.secondary == secondary) {
+                    this.deleteNotification(id);
+                    this.addNotification("content-update-downloading", info);
+                }
+            });
+        }
+        else if (type === "content-update-downloading") {
+            title = "Downloading content update...";
+            buttonLabel = "Open<br>settings";
+            const { language, secondary } = data;
+            subtitle = `For ${language} (from ${secondary}).<br>
+                        See language settings for download progress.`;
+            buttonCallback = () => {
+                main.sections["settings"].openSubsection("languages");
+                main.openSection("settings");
+            };
+            events.once("content-download-finished", (info) => {
+                if (info.language === language && info.secondary == secondary) {
+                    this.deleteNotification(id);
+                }
+            });
+        }
+        else if (type === "content-download-finished") {
+            title = "Content download finished";
+            buttonLabel = "Reload<br>content";
+            const { language, secondary } = data;
+            subtitle = `For ${language} (from ${secondary}).<br>
+                        Press button on the right to load the content.`;
+            buttonCallback = async () => {
+                overlays.open("loading");
+                await dataManager.content.load(language);
+                if (dataManager.currentLanguage === language) {
+                    dataManager.content.setLanguage(language);
+                }
+                await this.processLanguageContent(language, secondary);
+                this.adjustToLanguageContent(language, secondary);
+                this.deleteNotification(id);
+                await utility.wait();
+                overlays.closeTopmost();
+            };
+        }
+        else if (type === "achievement-unlocked") {
+            const { achievement, achievementName, language } = data;
+            title = `Achievement unlocked: ${achievementName}`;
+            buttonLabel = "";
+            subtitle = language !== undefined ? `[${language}] ` : "";
+            subtitle +=
+                dataManager.achievements.getDescription(achievement, language);
+        }
+        else {
+            throw new Error(`Notification type '${type}' does not exist.`);
+        }
+        // Create document fragment with given data
+        const html = template({ title, subtitle, details, buttonLabel });
+        const fragment = utility.fragmentFromString(html);
+        const buttonNode = fragment.querySelector(".action");
+        const detailsNode = fragment.querySelector(".details");
+        const notificationNode = fragment.querySelector(".notification");
+        notificationNode.dataset.id = id;
+        notificationNode.dataset.type = type;
+        const infoNode = fragment.querySelector(".info-frame");
+        // Add callbacks
+        if (buttonLabel) {
+            buttonNode.addEventListener("click", buttonCallback);
+        }
+        detailsNode.hide();
+        infoNode.addEventListener("click", () => {
+            if (!details) return;
+            detailsNode.toggleDisplay();
+        });
+        notificationNode.contextMenu(menuItems, ["delete-notification"]);
+        this.$("notifications").contextMenu(menuItems, () => {
+            return this.$("notifications").children.length > 0 ?
+                ["delete-all-notifications"] : [];
+        });
+        // Highlight notification button and notification itself
+        if (highlighted) {
+            this.$("notifications-button").classList.add("highlighted");
+            notificationNode.classList.add("highlighted");
+        }
+        // Overwrite existing notification if it must be unique
+        if (type === "program-update-available" ||
+                type === "content-update-available") {
+            for (const notification of this.$("notifications").children) {
+                if (notification.type === type) {
+                    dataManager.notifications.delete(notification.id);
+                    this.$("notifications").removeChild(notification);
+                    break;
+                }
+            }
+        }
+        this.$("notifications").prependChild(fragment);
+    }
+
+    // ========================================================================
+    //    Introduction tours
+    // ========================================================================
+
+    exitIntroTour() {
+        this.$("selective-dimmer").hide();
+        this.$("intro-tour-textbox").hide();
+    }
+
+    startIntroTour(name) {
+        this.introTourParts =
+            utility.parseHtmlFile(paths.introTour(name)).children;
+        this.currentPartIndex = 0;
+        this.displayNextPart();
+    }
+    
+    displayNextPart() {
+        if (this.currentPartIndex === this.introTourParts.length) {
+            this.exitIntroTour();
+            return;
+        }
+        if (this.currentPartIndex === this.introTourParts.length - 1) {
+            this.$("intro-tour-exit-button").hide();
+            this.$("intro-tour-next-button").textContent = "Finish tour";
+        } else {
+            this.$("intro-tour-exit-button").show();
+            this.$("intro-tour-next-button").textContent = "Next";
+        }
+        if (this.currentPartIndex === 0) {
+            this.$("intro-tour-back-button").hide();
+        } else {
+            this.$("intro-tour-back-button").show();
+        }
+        const currentPart = this.introTourParts[this.currentPartIndex];
+        const content = document.importNode(currentPart.content, true);
+        this.$("intro-tour-textbox-content").innerHTML = "";
+        this.$("intro-tour-textbox-content").appendChild(content);
+        this.showTextbox(this.introTourContext.$(currentPart.dataset.target));
+        this.$("intro-tour-next-button").focus();
+    }
+
+    showTextbox(targetElement) {
+        const selectiveDimmer = this.$("selective-dimmer");
+        const textbox = this.$("intro-tour-textbox");
+        const totalHeight = window.innerHeight;
+        const totalWidth = window.innerWidth;
+        const dimCtx = selectiveDimmer.getContext("2d");
+        selectiveDimmer.width = totalWidth;
+        selectiveDimmer.height = totalHeight;
+        // Determine size of the textbox
+        const textboxWidth = 300;
+        textbox.style.width = `${textboxWidth}px`;
+        textbox.style.visibility = "hidden";
+        textbox.show();
+        const textboxHeight = textbox.clientHeight;
+        // Clear and dim whole window
+        dimCtx.clearRect(0, 0, totalWidth, totalHeight);
+        dimCtx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        dimCtx.fillRect(0, 0, totalWidth, totalHeight);
+        // If no target element is given, just center the textbox
+        if (!targetElement) {
+            textbox.style.top = `${(totalHeight - textboxHeight) / 2}px`;
+            textbox.style.left = `${(totalWidth - textboxWidth) / 2}px`;
+            textbox.style.bottom = "";
+            textbox.style.right = "";
+            selectiveDimmer.show()
+            textbox.style.visibility = "visible";
+            return;
+        }
+        const rect = targetElement.getBoundingClientRect();
+        // Draw rectangle for shadow around element
+        dimCtx.shadowColor = "white";
+        dimCtx.shadowBlur = "15";
+        dimCtx.fillStyle = "white";
+        dimCtx.fillRect(rect.left, rect.top, rect.width, rect.height);
+        // Clear rectangle above element such that only shadow remains
+        dimCtx.clearRect(rect.left, rect.top, rect.width, rect.height);
+        // ================================================================
+        // Position textbox according to element position/size
+        // ================================================================
+        let textboxPos = {};
+        // Calculate space to each side of the element
+        const space = { left: rect.left, top: rect.top,
+            right: totalWidth - rect.left - rect.width,
+            bottom: totalHeight - rect.top - rect.height }
+        const mostSpace =
+            Math.max(space.left, space.right, space.bottom, space.top);
+        // Set the main anchor of the textbox (= where more space is left)
+        const textboxElemOffset = 25;
+        if (mostSpace === space.right) {
+            textboxPos.left = rect.left + rect.width + textboxElemOffset;
+        } else if (mostSpace === space.bottom) {
+            textboxPos.top = rect.top + rect.height + textboxElemOffset;
+        } else if (mostSpace === space.left) {
+            textboxPos.right = totalWidth - rect.left + textboxElemOffset;
+        } else if (mostSpace === space.top) {
+            textboxPos.bottom = totalHeight - rect.top + textboxElemOffset;
+        }
+        // Set the secondary anchor of the textbox
+        if (mostSpace === space.left || mostSpace === space.right) {
+            // Center textbox if it is smaller than the element
+            if (textboxHeight < rect.height) {
+                textboxPos.top = rect.top + (rect.height - textboxHeight) / 2;
+            // Otherwise slightly offset textbox to the top
+            } else {
+                textboxPos.top = Math.max(6,
+                    rect.top - Math.min(20, (textboxHeight - rect.height) / 2));
+            }
+        } else if (mostSpace === space.top || mostSpace === space.bottom) {
+            // Center textbox if it is smaller than the element
+            if (textboxWidth < rect.width) {
+                textboxPos.left = rect.left + (rect.width - textboxWidth) / 2;
+            // Otherwise slightly offset textbox to the left
+            } else {
+                textboxPos.left = Math.max(6,
+                    rect.left - Math.min(20, (textboxWidth - rect.width) / 2));
+            }
+        }
+        // If textbox leaves window, reposition it (and leave small gap to edge)
+        const windowEdgePadding = 10;
+        if (textboxPos.top + textboxHeight > totalHeight - windowEdgePadding) {
+            delete textboxPos.top;
+            textboxPos.bottom = windowEdgePadding;
+        }
+        if (textboxPos.left + textboxWidth > totalWidth - windowEdgePadding) {
+            delete textboxPos.left;
+            textboxPos.right = windowEdgePadding;
+        }
+        // Draw arrow pointing to the element in focus
+        const arrowToElementGap = 3;
+        const arrowTipPos = {};
+        const arrowBasePos = {};
+        if (mostSpace === space.right) {
+            arrowTipPos.y = arrowBasePos.y = rect.top + rect.height / 2;
+            arrowTipPos.x = rect.left + rect.width + arrowToElementGap;
+            arrowBasePos.x = rect.left + rect.width + textboxElemOffset;
+        } else if (mostSpace === space.bottom) {
+            arrowTipPos.x = arrowBasePos.x = rect.left + rect.width / 2;
+            arrowTipPos.y = rect.top + rect.height + arrowToElementGap;
+            arrowBasePos.y = rect.top + rect.height + textboxElemOffset;
+        } else if (mostSpace === space.left) {
+            arrowTipPos.y = arrowBasePos.y = rect.top + rect.height / 2;
+            arrowTipPos.x = rect.left - arrowToElementGap;
+            arrowBasePos.x = rect.left - textboxElemOffset;
+        } else if (mostSpace === space.top) {
+            arrowTipPos.x = arrowBasePos.x = rect.left + rect.width / 2;
+            arrowTipPos.y = rect.top - arrowToElementGap;
+            arrowBasePos.y = rect.top - textboxElemOffset;
+        }
+        dimCtx.shadowColor = "black";
+        dimCtx.shadowBlur = "5";
+        dimCtx.fillStyle = "#f5f5f5";
+        utility.drawArrowOnCanvas(dimCtx, {
+            start: arrowBasePos, end: arrowTipPos,
+            headWidth: 30, headLength: 12, baseWidth: 12
+        });
+        // Move textbox to calculated position
+        textbox.style.top = "top" in textboxPos ?
+            `${textboxPos.top}px` : "";
+        textbox.style.bottom = "bottom" in textboxPos ?
+            `${textboxPos.bottom}px` : "";
+        textbox.style.left = "left" in textboxPos ?
+            `${textboxPos.left}px` : "";
+        textbox.style.right = "right" in textboxPos ?
+            `${textboxPos.right}px` : "";
+        // Finally after everything is positioned, show the textbox/dimmer
+        selectiveDimmer.show()
+        textbox.style.visibility = "visible";
+    }
+
 }
 
 customElements.define("main-window", MainWindow);

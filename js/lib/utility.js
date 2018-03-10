@@ -736,6 +736,54 @@ function makePopupWindow(node, callback) {
     node.hide();
 }
 
+
+/**
+ * Draw an arrow with given parameters on canvas given by its context.
+ * @param {Object} ctx - Context of the canvas to draw on.
+ * @param {Object} params - Parameters defining the arrow position and shape.
+ */
+function drawArrowOnCanvas(ctx,
+        { start, end, headWidth, headLength, baseWidth }) {
+    // Define functions for vector arithmetics
+    const rotate = (point, angle) => ({
+        x: Math.cos(angle) * point.x - Math.sin(angle) * point.y,
+        y: Math.sin(angle) * point.x + Math.cos(angle) * point.y
+    });
+    const add = (point1, point2) => ({
+        x: point1.x + point2.x, y: point1.y + point2.y
+    });
+    // Calculate necessary values
+    const arrowLength = Math.sqrt((end.x - start.x)**2 + (end.y - start.y)**2);
+    const baseLength = arrowLength - headLength;
+    let angle = Math.asin((start.x - end.x) / arrowLength);
+    if (end.y < start.y && start.x > end.x) {
+        angle = Math.PI - angle;
+    }
+    if (end.y < start.y && start.x <= end.x) {
+        angle = -Math.PI - angle;
+    }
+    // Define points in the unrotated coordinate system
+    const points = [
+        { x: baseWidth / 2, y: 0 },
+        { x: baseWidth / 2, y: baseLength },
+        { x: headWidth / 2, y: baseLength },
+        { x: 0, y: arrowLength },  // tip of the arrow
+        { x: -headWidth / 2, y: baseLength },
+        { x: -baseWidth / 2, y: baseLength },
+        { x: -baseWidth / 2, y: 0 },
+    ]
+    // Draw points with rotation and offset applied
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    for (const point of points) {
+        const transformedPoint = add(rotate(point, angle), start);
+        ctx.lineTo(transformedPoint.x, transformedPoint.y);
+    }
+    ctx.closePath();
+    ctx.fill();
+}
+
+
 // Non DOM-related functions
 module.exports.getTime = getTime;
 module.exports.getShortDateString = getShortDateString;
@@ -767,3 +815,4 @@ module.exports.selectAllOnFocus = selectAllOnFocus;
 module.exports.bindRadiobuttonGroup = bindRadiobuttonGroup;
 module.exports.initializeView = initializeView;
 module.exports.makePopupWindow = makePopupWindow;
+module.exports.drawArrowOnCanvas = drawArrowOnCanvas;

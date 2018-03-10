@@ -1,11 +1,5 @@
 ### Primary goals
-- Finish introduction tour mechanism and make a main-window tour
-  1. Insert text-box on sides where more space is left, next to the element
-  2. Center text-box with relation to the element
-  3. If text-box leaves window, move it back into the window (possibly padded)
-  - Add arrow like for css-tooltip, no animation needed
-  - Add button to each tour into the corresponding help page
-  - Limit size of text-box, allow scrolling for longer text
+- Add button to introduction tours in the corresponding help page
 - Create quick start overlay (or normal one?) which offers taking a quick tour
   - Give option to "not display this window again on program start"
   - Display on program start if not disabled
@@ -65,7 +59,6 @@
 - Implement some settings for kanji-info-panel?
 - Also let font-family be inherited, and remove all workarounds (and test!)
 
-
 ### Others
 - Completely remove example-word-entry widget/template?
 - Make status update message fade out after a short while if not updated
@@ -111,6 +104,7 @@
 - Opening a panel and switching languages removes background dimming
 - Content status says "n.a." after successful download
 - Databases should be reloaded after changing data path (else write errors)
+- Do WAL checkpoints really work? WAL file seems to keep growing...
 
 
 By category
@@ -166,9 +160,12 @@ By category
 - Highlight menu button whose corresponding section/panel is opened?
   Or otherwise indicate which section/panel is currently opened?
 - Notifications:
-  - Use main-window color for notification window background maybe?A
+  - Use main-window color for notification window background maybe?
   - Add buttons to remove a notifications or all of them?
-  - Add conspicious animation when new notification pops up, possible persistent
+  - Add conspicious animation when new notification pops up, make it persistent
+- Make sure selective-dimmer canvas adjusts to window size on resizing
+- Add contrast shadow to introduction tour textbox? (solve arrow problem then)
+- Add design for buttons in introduction tour textbox as general design
 
 ### Home section
 - Extend srs-status-bar

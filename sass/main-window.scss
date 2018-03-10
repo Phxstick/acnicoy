@@ -300,3 +300,62 @@
   top: 0;
   bottom: 0;
 }
+
+#intro-tour-textbox {
+  position: fixed;
+  z-index: var(--intro-tour-textbox-layer);
+  background-color: $background-color;
+  border-radius: 8px;
+  padding: 10px;
+  // box-shadow: 0 0 3px $dark-contrast-shadow-color;
+
+  #intro-tour-textbox-content {
+    font-size: 0.9rem;
+    * {
+      font-family: OpenSans-Regular;
+    }
+    p:first-of-type {
+      margin-top: 0;
+    }
+    p:last-of-type {
+      margin-bottom: 0;
+    }
+    em {
+      color: $highlight-background;
+      font-style: normal;
+    }
+    ul {
+      padding-left: 25px;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+  }
+
+  #intro-tour-textbox-buttons {
+    display: flex;
+    flex-direction: row;
+    margin-top: 10px;
+
+    > button {
+      padding: 6px;
+      border: 1px solid $border-color-medium;
+      border-radius: 3px;
+      font-family: $button-font;
+      &:hover {
+        border: 1px solid $border-color-dark;
+        box-shadow: 0 0 3px $border-color-medium;
+        color: $color-dark;
+      }
+      &:active {
+        box-shadow: inset 0px 2px 13px -2px $button-light-shadow-color-active;
+      }
+      &:focus:not(:hover) {
+        box-shadow: none;
+      }
+    }
+  }
+  #intro-tour-next-button, #intro-tour-back-button {
+    margin-left: 15px;
+  }
+}

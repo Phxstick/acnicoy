@@ -104,22 +104,13 @@ class TestSection extends Section {
             this._ignoreAnswer();
         });
         this.$("modify-item").addEventListener("click", () => {
-            const item = this.testInfo.currentItem;
-            if (item.mode === dataManager.test.mode.KANJI_MEANINGS ||
-                    item.mode === dataManager.test.mode.KANJI_ON_YOMI ||
-                    item.mode === dataManager.test.mode.KANJI_KUN_YOMI) {
-                main.openPanel("edit-kanji", { entryName: item.entry });
-            } else if (item.mode === dataManager.test.mode.WORDS) {
-                main.openPanel("edit-vocab", { entryName: item.entry });
-            } else if (item.mode === dataManager.test.mode.HANZI_MEANINGS ||
-                    item.mode === dataManager.test.mode.HANZI_READINGS) {
-                main.openPanel("edit-hanzi", { entryName: item.entry });
-            }
+            this._modifyItem();
         });
         // Create context menu
         this.$("test-item").contextMenu(menuItems, ["copy-test-item"]);
-        // Bind callback for ignoring answers via shortcut
+        // Bind callbacks for shortcuts
         shortcuts.bindCallback("ignore-answer", () => this._ignoreAnswer());
+        shortcuts.bindCallback("edit-test-item", () => this._modifyItem());
         // Enable choosing next level without explicitly focussing popup stack
         this.$("continue-button").addEventListener("keypress", (event) => {
             if (event.key >= "1" && event.key <= "9") {
@@ -851,6 +842,20 @@ class TestSection extends Section {
             this.testInfo.currentItem.parts.push(this.testInfo.currentPart);
         this.testInfo.currentItem.lastAnswerIncorrect = false;
         this._createQuestion();
+    }
+    
+    _modifyItem() {
+        const item = this.testInfo.currentItem;
+        if (item.mode === dataManager.test.mode.KANJI_MEANINGS ||
+                item.mode === dataManager.test.mode.KANJI_ON_YOMI ||
+                item.mode === dataManager.test.mode.KANJI_KUN_YOMI) {
+            main.openPanel("edit-kanji", { entryName: item.entry });
+        } else if (item.mode === dataManager.test.mode.WORDS) {
+            main.openPanel("edit-vocab", { entryName: item.entry });
+        } else if (item.mode === dataManager.test.mode.HANZI_MEANINGS ||
+                item.mode === dataManager.test.mode.HANZI_READINGS) {
+            main.openPanel("edit-hanzi", { entryName: item.entry });
+        }
     }
 
     async _createTestItem(entry, mode) {
