@@ -33,7 +33,8 @@ class HelpOverlay extends Overlay {
                 if (!this.loadedTreePath.equals(treePath)) {
                     let html = `<h2>${treePath.last()}</h2><ul class="large">`;
                     for (const childName of children) {
-                        const lPath = "#" + [...treePath, childName].join("#");
+                        const lPath = 
+                            "help#" + [...treePath, childName].join("#");
                         html += `<li><a href="${lPath}">${childName}</a></li>`;
                     }
                     html += "</ul>"
@@ -85,17 +86,31 @@ class HelpOverlay extends Overlay {
                     this.$("content-path").appendChild(separator);
                 }
             }
-            // Turn every <a> element whose href-attribute value contains "#"
-            // into a local link pointing to other help sections
+            // Convert <a> elements whose href-attribute value starts with a
+            // certain sequence.
             if (newSectionLoaded) {
                 const links = this.$("content").querySelectorAll("a");
                 for (const link of links) {
-                    const linkPath = link.href.split("#").slice(1);
-                    if (linkPath.length === 0) continue;
-                    link.addEventListener("click", () => {
-                        this.$("tree").select(linkPath);
-                    });
-                    link.removeAttribute("href");
+                    const linkPath = link.getAttribute("href").split("#");
+                    // 'help#' -> local link pointing to other help sections.
+                    if (linkPath[0] === "help") {
+                        link.addEventListener("click", () => {
+                            this.$("tree").select(linkPath.splice(1));
+                        });
+                        link.removeAttribute("href");
+                    // 'tour#' -> button to start an introduction tour
+                    } else if (linkPath[0] === "tour") {
+                        const button = document.createElement("button");
+                        button.textContent = link.textContent;
+                        button.classList.add("simple", "highlighted");
+                        button.addEventListener("click", () => {
+                            main.startIntroTour(linkPath[1]);
+                            overlays.closeTopmost();
+                        });
+                        link.parentNode.insertBefore(button, link);
+                        link.parentNode.removeChild(link);
+                        link.remove();
+                    }
                 }
             }
         };

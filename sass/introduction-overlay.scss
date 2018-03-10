@@ -1,0 +1,13 @@
+@import "overlay";
+
+#main-frame > * {
+  font-family: OpenSans-Regular;
+  text-align: center;
+}
+
+#welcome-message {
+  font-size: 1.8rem;
+  font-family: $light-font;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}

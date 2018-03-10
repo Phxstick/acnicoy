@@ -1,10 +1,10 @@
 Japanese is the primarily supported language in Acnicoy. In order to be able to
 use all the features (such as the dictionary), make sure you always have the
-latest version of the [content data](#Settings#Languages) installed.
+latest version of the [content data](help#Settings#Languages) installed.
 
 In addition to the word vocabulary, there is also a vocabulary for kanji. In
 order to add kanji to your kanji vocabulary, you can use the "Add kanji" button
-on the side bar, or select a kanji in the [kanji section](#Languages#Japanese#Kanji section).
+on the side bar, or select a kanji in the [kanji section](help#Languages#Japanese#Kanji section).
 
 In all places where hiragana or katakana need to be written (e.g. when adding
 kun-yomi or on-yomi to a kanji in the vocabulary), the input field converts

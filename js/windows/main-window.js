@@ -414,6 +414,11 @@ class MainWindow extends Window {
         }
         this.$("selective-dimmer").hide();
         this.$("intro-tour-textbox").hide();
+        // Display introduction overlay if not displayed yet
+        const showIntroOverlay = storage.get("show-introduction-overlay");
+        if (showIntroOverlay === undefined || showIntroOverlay) {
+            overlays.open("introduction");
+        }
         await utility.finishEventQueue();
         app.closeWindow("loading");
     }

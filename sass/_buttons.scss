@@ -137,3 +137,33 @@ button.link {
     border-color: $border-color-dark;
   }
 }
+
+button.simple {
+  padding: 6px;
+  border: 1px solid $border-color-medium;
+  border-radius: 3px;
+  font-family: $button-font;
+  &:hover {
+    border: 1px solid $border-color-dark;
+    box-shadow: 0 0 3px $border-color-medium;
+    color: $color-dark;
+  }
+  &:active {
+    box-shadow: inset 0px 2px 13px -2px $button-light-shadow-color-active;
+  }
+  &:focus:not(:hover) {
+    box-shadow: none;
+  }
+  &.highlighted {
+    color: $highlight-background;
+    border-color: $highlight-background;
+    &:hover {
+      color: darken($highlight-background, 5%);
+      border-color: darken($highlight-background, 5%);
+      box-shadow: 0 0 3px $highlight-background;
+    }
+    &:active {
+      box-shadow: inset 0px 2px 13px -2px $button-light-shadow-color-active;
+    }
+  }
+}

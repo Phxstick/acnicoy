@@ -1,8 +1,4 @@
 ### Primary goals
-- Add button to introduction tours in the corresponding help page
-- Create quick start overlay (or normal one?) which offers taking a quick tour
-  - Give option to "not display this window again on program start"
-  - Display on program start if not disabled
 - Extend vocabulary section:
   - Add functionality to view both words and kanji/hanzi (switch using button)
   - Add switch-buttons for sorting lexicographically/chronically/randomly(?)
@@ -140,6 +136,9 @@ By category
 - Add save-button for user data somewhere (with last-saved label)
 - Define proper interface for global settings to detect modifications?
 - Run `VACUUM` on databases once in a while to clean up? Add button to settings?
+- Initialize json-file in local storage somewhere upon first program start?
+- Make OpenSans-Regular the main font everywhere? (make it a sass variable then)
+- Remove font-awesome from github repo and add as node package instead
 
 ### Performance
 - Things got slower when reworking sass? Maybe because main window is flex now?
@@ -165,7 +164,6 @@ By category
   - Add conspicious animation when new notification pops up, make it persistent
 - Make sure selective-dimmer canvas adjusts to window size on resizing
 - Add contrast shadow to introduction tour textbox? (solve arrow problem then)
-- Add design for buttons in introduction tour textbox as general design
 
 ### Home section
 - Extend srs-status-bar

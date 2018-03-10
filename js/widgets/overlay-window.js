@@ -15,7 +15,7 @@ class OverlayWindow extends Widget {
         }
     }
 
-    open(overlay, args) {
+    async open(overlay, args) {
         if (this.overlays.length === 0)
             this.show();
         // Prevent previously opened overlay from capturing focus
@@ -47,6 +47,10 @@ class OverlayWindow extends Widget {
         overlay.captureFocus = true;
         // Display the new overlay according to its display options
         const { mode, speed, distance } = overlay.displayOptions;
+        overlay.style.opacity = "0";
+        overlay.show();
+        overlay.elementFocussedByDefault.focus();
+        await utility.finishEventQueue();
         switch (mode) {
         case "slide-down":
             Velocity.mock = true;
@@ -65,13 +69,9 @@ class OverlayWindow extends Widget {
         case "instant":
             filter.show();
             overlay.show();
+            overlay.style.opacity = "1";
             break;
         }
-        overlay.style.opacity = "0";
-        utility.finishEventQueue().then(() => {
-            overlay.show();
-            overlay.elementFocussedByDefault.focus();
-        });
         return promise;
     }
     
