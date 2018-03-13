@@ -23,6 +23,16 @@ function getShortDateString(date) {
 }
 
 /**
+ * Return the number of days in the given month for given year.
+ * @param {Integer} month
+ * @param {Integer} year
+ * @returns {Integer}
+ */
+function daysInMonth(month, year) {
+    return new Date(year, month + 1, 0).getDate();
+}
+
+/**
  * Return a promise which is fulfilled when the current event queue is empty.
  * @returns {Promise}
  */
@@ -571,7 +581,7 @@ function bindRadiobuttonGroup(container, initialValue, callback) {
     let currentlySelected = container.querySelector(
         `check-box[data-value='${initialValue}']`);
     if (currentlySelected === null) {
-        console.log(
+        throw new Error(
             `Radiobutton with value '${initialValue}' could not be found.`);
     }
     currentlySelected.checked = true;
@@ -784,9 +794,131 @@ function drawArrowOnCanvas(ctx,
 }
 
 
+/**
+ * Return an list containing certain information for given time intervals
+ * in the near future, starting from the current date.
+ * @param {String} unit - Can be "hours", "weeks", "days" or "months".
+ * @param {String} numUnits - Number of intervals to get schedule for.
+ * @param {Function} getInfoForInterval - A function which should return an
+ *     object containing information corresponding to the given time interval.
+ *     Time interval is given as 2 parameters startDate and endDate (exclusive).
+ * @param {Boolean} [toFuture=true] - Whether timeline goes into the future.
+ * @returns {Array} - Array with objects { data, startDate, endDate }, where
+ *     date is the object returned from the callback for the interval.
+ */
+async function getTimeline(unit, numUnits, getInfoForInterval, toFuture=true) {
+    const promises = [];
+    const currentDate = new Date();
+    let intervalStartDate = new Date(currentDate);
+    let intervalEndDate = new Date(currentDate);
+    // Set end of first interval to start of next hour/day/month
+    if (unit === "hours") {
+        intervalEndDate.setHours(currentDate.getHours() + toFuture, 0, 0, 0);
+    } else if (unit === "days") {
+        intervalEndDate.setHours(0, 0, 0, 0);
+        intervalEndDate.setDate(currentDate.getDate() + toFuture);
+    } else if (unit === "weeks") {
+        intervalEndDate.setHours(0, 0, 0, 0);
+        intervalEndDate.setDate(currentDate.getDate() + 7 * toFuture
+                                - (currentDate.getDay() - 1) % 7);
+    } else if (unit === "months") {
+        intervalEndDate.setHours(0, 0, 0, 0);
+        intervalEndDate.setDate(1);
+        intervalEndDate.setMonth(currentDate.getMonth() + toFuture);
+    }
+    for (let i = 0; i < numUnits; ++i) {
+        // Adjust order of dates depending on whether it goes to future/past
+        const startDate = new Date(toFuture ? intervalStartDate :
+                                              intervalEndDate);
+        const endDate = new Date(toFuture ? intervalEndDate :
+                                            intervalStartDate);
+        const promise = Promise.resolve(getInfoForInterval(startDate,endDate,i))
+                        .then((data) => ({ data, startDate, endDate }));
+        promises.push(promise);
+        // Shift interval by 1 unit
+        intervalStartDate = new Date(intervalEndDate);
+        const delta = toFuture ? 1 : -1;
+        if (unit === "hours") {
+            intervalEndDate.setHours(intervalStartDate.getHours() + delta);
+        } else if (unit === "days") {
+            intervalEndDate.setDate(intervalStartDate.getDate() + delta);
+        } else if (unit === "weeks") {
+            intervalEndDate.setDate(intervalStartDate.getDate() + 7 * delta);
+        } else if (unit === "months") {
+            intervalEndDate.setMonth(intervalStartDate.getMonth() + delta);
+        }
+    }
+    return Promise.all(promises);
+} 
+
+
+/**
+ * Given an array of successive time intervals and the name of the used unit,
+ * return an array of labels (one for every few intervals) and an object mapping
+ * indices to separators (for every next-larger unit). Usable for a bar diagram.
+ * @param {Array} intervals - Array of objects { startDate, endDate }.
+ * @param {String} unit - Can be "hours", "days", "months".
+ * @param {Boolean} [toFuture=true] - Whether timeline goes into the future.
+ * @returns {Object} - Object of the form { labels, separators }.
+ */
+function getTimelineMarkers(intervals, unit) {
+    const labels = [];
+    const separators = {};
+    if (unit === "hours") {
+        const startHour = (intervals[0].endDate.getHours() + 23) % 24;
+        if (startHour % 3 === 0) labels.push(`${startHour}:00`);
+        else labels.push("");
+    }
+    for (let i = 0; i < intervals.length; ++i) {
+        const startDate = intervals[i].startDate;
+        const endDate = intervals[i].endDate;
+        if (unit === "hours") {
+            const hour = endDate.getHours();
+            // Display hour if divisible by 3
+            if (hour % 3 === 0) {
+                labels.push(`${hour}:00`);
+            } else {
+                labels.push("");
+            }
+            // Add separator if a new day begins
+            if (startDate.getHours() === 0) {
+                separators[i] = endDate.toLocaleString("en-us",
+                    { month: "short", day: "2-digit" });
+            }
+        } else if (unit === "days") {
+            // Display date if first day of a week
+            if (startDate.getDay() === 1) {
+                labels.push(`${getOrdinalNumberString(startDate.getDate())}`);
+            } else {
+                labels.push("");
+            }
+            // Add separator if a new month begins
+            if (startDate.getDate() === 1) {
+                separators[i] =
+                    startDate.toLocaleString("en-us", { month: "long" });
+            }
+        } else if (unit === "months") {
+            // Display month if divisible by 3 (Jan, Apr, Jul, Oct)
+            if (startDate.getMonth() % 3 === 0) {
+                labels.push(startDate.toLocaleString("en-us",{ month:"short" }))
+            } else {
+                labels.push("");
+            }
+            // Add separator if a new year begins
+            if (startDate.getMonth() === 0) {
+                separators[i] = startDate.toLocaleString("en-us",
+                    { year: "numeric" });
+            }
+        }
+    }
+    return { labels, separators };
+}
+
+
 // Non DOM-related functions
 module.exports.getTime = getTime;
 module.exports.getShortDateString = getShortDateString;
+module.exports.daysInMonth = daysInMonth;
 module.exports.parseCssFile = parseCssFile;
 module.exports.setEqual = setEqual;
 module.exports.calculateED = calculateED;
@@ -798,6 +930,8 @@ module.exports.timeSpanStringToSeconds = timeSpanStringToSeconds;
 module.exports.timeSpanObjectToString = timeSpanObjectToString;
 module.exports.existsFile = existsFile;
 module.exports.existsDirectory = existsDirectory;
+module.exports.getTimeline = getTimeline;
+module.exports.getTimelineMarkers = getTimelineMarkers;
 
 // DOM related functions
 module.exports.parseHtmlFile = parseHtmlFile;

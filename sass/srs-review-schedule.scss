@@ -5,33 +5,3 @@
   color: $view-color;
   background-color: $view-background-dark;
 }
-
-#diagram {
-  width: fill;
-  height: 150px;
-}
-
-#control-bar {
-  display: flex;
-  flex-direction: row;
-  padding: 5px;
-
-  #info-text {
-    @include center-content;
-    font-family: $header-font;
-    margin-right: 15px;
-    margin-left: 8px;
-  }
-  button {
-    @extend button.light, button.no-shadow;
-    padding: 5px;
-    font-family: $header-font;
-    margin-right: 15px;
-    font-size: 110%;
-
-    &.selected {
-      color: $highlight-background-dark;
-      text-shadow: 0 0 1px $highlight-background;
-    }
-  }
-}

@@ -31,7 +31,7 @@
         "kanji-search-result-entry", "dictionary-search-result-entry",
         "pinwall-notes", "srs-status-table", "language-table", "language-popup",
         "check-box", "example-word-entry", "tabbed-frame",
-        "srs-review-schedule", "tree-view"
+        "srs-review-schedule", "tree-view", "time-bar-diagram"
     ],
     "extensions": [
         "converter", "array-extensions", "html-element-extensions",

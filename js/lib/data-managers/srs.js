@@ -309,9 +309,9 @@ module.exports = function (paths, modules) {
     };
 
     /**
-     * Return an list containing numbers of SRS items scheduled for intervals
+     * Return a list containing numbers of SRS items scheduled for intervals
      * in the near future, starting from the current date.
-     * @param {String} unit - Can be "hours", "days" or "months".
+     * @param {String} unit - Can be "hours", "weeks", "days" or "months".
      * @param {String} numUnits - Number of intervals to get schedule for.
      * @returns {Array} - Array with entries of the form { amount, endDate }.
      *     Each entry contains the number of SRS items scheduled for the i-th
@@ -319,48 +319,20 @@ module.exports = function (paths, modules) {
      *     and the end date of the interval (exclusive).
      */
     srs.getSchedule = function (unit, numUnits) {
-        const promises = [];
-        const currentDate = new Date();
-        let intervalStartDate = new Date(currentDate);
-        let intervalEndDate = new Date(currentDate);
-        // Set end of first interval to start of next hour/day/month
-        if (unit === "hours") {
-            intervalEndDate.setHours(currentDate.getHours() + 1, 0, 0, 0);
-        } else if (unit === "days") {
-            intervalEndDate.setHours(0, 0, 0, 0);
-            intervalEndDate.setDate(currentDate.getDate() + 1);
-        } else if (unit === "months") {
-            intervalEndDate.setHours(0, 0, 0, 0);
-            intervalEndDate.setDate(1);
-            intervalEndDate.setMonth(currentDate.getMonth() + 1);
-        }
-        for (let i = 0; i < numUnits; ++i) {
-            const intervalStart = parseInt(intervalStartDate.getTime() / 1000);
-            const intervalEnd = parseInt(intervalEndDate.getTime() / 1000);
-            // Create object containing the amount of SRS items in this interval
-            const modePromises = [];
+        return utility.getTimeline(unit, numUnits, async (startDate,endDate)=> {
+            const startSecs = parseInt(startDate.getTime() / 1000);
+            const endSecs = parseInt(endDate.getTime() / 1000);
+            const promises = [];
             for (const mode of modules.test.modes) {
                 const table = modules.test.modeToTable(mode);
-                modePromises.push(modules.database.query(
+                promises.push(modules.database.query(
                     `SELECT COUNT(review_date) AS amount FROM ${table}
                      WHERE review_date BETWEEN ? AND ?`,
-                    intervalStart, intervalEnd-1).then(([{amount}]) => amount));
+                    startSecs, endSecs-1).then(([{amount}]) => amount));
             }
-            const endDate = new Date(intervalEndDate);
-            promises.push(Promise.all(modePromises).then((amounts) => ({
-                amount: amounts.sum(), date: endDate
-            })));
-            // Shift interval by 1 unit
-            intervalStartDate = new Date(intervalEndDate);
-            if (unit === "hours") {
-                intervalEndDate.setHours(intervalStartDate.getHours() + 1);
-            } else if (unit === "days") {
-                intervalEndDate.setDate(intervalStartDate.getDate() + 1);
-            } else if (unit === "months") {
-                intervalEndDate.setMonth(intervalStartDate.getMonth() + 1);
-            }
-        }
-        return Promise.all(promises);
+            const amounts = await Promise.all(promises);
+            return amounts.sum();
+        });
     };
 
     /* =========================================================================

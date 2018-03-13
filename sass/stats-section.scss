@@ -14,10 +14,10 @@ body {
   background-color: $background-color;
   color: $color;
   box-shadow: $slim-frame-shadow;
+  margin: 20px;
 }
 
 #general-stats {
-  margin: 20px;
 
   #top {
     @include center-content;
@@ -66,118 +66,118 @@ body {
   }
 }
 
-#kanji-diagrams {
-  height: 210px;
-  display: flex;
-  flex-direction: row;
-  .kanji-frame {
-    flex: 1;
-    margin: 20px;
-    margin-top: 0;
-    display: flex;
-    flex-direction: column;
-    .kanji-header {
-      @extend %header;
-      padding: 5px;
-      text-align: center;
-    }
-    .kanji-diagram {
-      width: fill;
-      flex: 1;
-    }
-  }
-  #jlpt-kanji-frame {
-    margin-left: 0px;
-  }
-}
+// #kanji-diagrams {
+//   height: 210px;
+//   display: flex;
+//   flex-direction: row;
+//   .kanji-frame {
+//     flex: 1;
+//     margin: 20px;
+//     margin-top: 0;
+//     display: flex;
+//     flex-direction: column;
+//     .kanji-header {
+//       @extend %header;
+//       padding: 5px;
+//       text-align: center;
+//     }
+//     .kanji-diagram {
+//       width: fill;
+//       flex: 1;
+//     }
+//   }
+//   #jlpt-kanji-frame {
+//     margin-left: 0px;
+//   }
+// }
 
-$achievement-margin: 20px;
-
-.achievements-frame {
-  margin: 20px;
-  margin-top: 0;
-  padding-bottom: 20px;
-  background: $marble-background;
-
-  > * {
-    display: inline-block;
-    width: calc(50% - 2 * #{$achievement-margin});
-    margin-left: $achievement-margin;
-    margin-top: $achievement-margin;
-    box-shadow: $wide-shadow-centered;
-    background-color: $background-color-medium;
-
-    &:empty {
-      display: none;
-    }
-
-    > * {
-      display: flex;
-      flex-direction: row;
-      counter-increment: level -1;
-      padding-left: 8px;
-
-      .name {
-        font-family: $header-font;
-      }
-
-      .description {
-        font-size: 80%;
-        font-family: $small-font;
-        margin-right: 20px;
-        margin-bottom: 15px;
-      }
-
-      &:first-child {
-        height: 90px;
-        .name {
-          font-size: 130%;
-          margin-top: 15px;
-          margin-bottom: 6px;
-        }
-        .achievement-info {
-          align-self: flex-start;
-        }
-        &::before {
-          font-size: 180%;
-        }
-      }
-
-      &:not(:first-child) {
-        height: 30px;
-
-        .description {
-          display: none
-        };
-        .achievement-info {
-          align-self: center;
-        }
-        &::before {
-          font-size: 120%;
-        }
-        // color: $color-light;
-        background-color: $background-color-dark;
-        border-top: 1px solid $border-color-light;
-      }
-
-      &::before {
-        @include center-content;
-        width: 50px;
-        content: counter(level, upper-roman);
-        background-color: var(--tier-color);
-        margin-right: 20px;
-        // border-right: 1px solid $border-color-medium;
-        font-family: serif;
-        flex-shrink: 0;
-        text-shadow: 0px 0px 3px $background-color;
-      }
-
-      // &.tier-0 { --tier-color: #D1A684; }  // #A67D3D
-      // &.tier-1 { --tier-color: #B4B8BC; }  // silver
-      // &.tier-2 { --tier-color: #FFCC01; }  // gold
-      // &.tier-3 { --tier-color: #E5E4E2; }
-      // &.tier-4 { --tier-color: cornsilk; }
-      // &.tier-5 { --tier-color: lightcyan; }
-    }
-  }
-}
+// $achievement-margin: 20px;
+// 
+// .achievements-frame {
+//   margin: 20px;
+//   margin-top: 0;
+//   padding-bottom: 20px;
+//   background: $marble-background;
+// 
+//   > * {
+//     display: inline-block;
+//     width: calc(50% - 2 * #{$achievement-margin});
+//     margin-left: $achievement-margin;
+//     margin-top: $achievement-margin;
+//     box-shadow: $wide-shadow-centered;
+//     background-color: $background-color-medium;
+// 
+//     &:empty {
+//       display: none;
+//     }
+// 
+//     > * {
+//       display: flex;
+//       flex-direction: row;
+//       counter-increment: level -1;
+//       padding-left: 8px;
+// 
+//       .name {
+//         font-family: $header-font;
+//       }
+// 
+//       .description {
+//         font-size: 80%;
+//         font-family: $small-font;
+//         margin-right: 20px;
+//         margin-bottom: 15px;
+//       }
+// 
+//       &:first-child {
+//         height: 90px;
+//         .name {
+//           font-size: 130%;
+//           margin-top: 15px;
+//           margin-bottom: 6px;
+//         }
+//         .achievement-info {
+//           align-self: flex-start;
+//         }
+//         &::before {
+//           font-size: 180%;
+//         }
+//       }
+// 
+//       &:not(:first-child) {
+//         height: 30px;
+// 
+//         .description {
+//           display: none
+//         };
+//         .achievement-info {
+//           align-self: center;
+//         }
+//         &::before {
+//           font-size: 120%;
+//         }
+//         // color: $color-light;
+//         background-color: $background-color-dark;
+//         border-top: 1px solid $border-color-light;
+//       }
+// 
+//       &::before {
+//         @include center-content;
+//         width: 50px;
+//         content: counter(level, upper-roman);
+//         background-color: var(--tier-color);
+//         margin-right: 20px;
+//         // border-right: 1px solid $border-color-medium;
+//         font-family: serif;
+//         flex-shrink: 0;
+//         text-shadow: 0px 0px 3px $background-color;
+//       }
+// 
+//       // &.tier-0 { --tier-color: #D1A684; }  // #A67D3D
+//       // &.tier-1 { --tier-color: #B4B8BC; }  // silver
+//       // &.tier-2 { --tier-color: #FFCC01; }  // gold
+//       // &.tier-3 { --tier-color: #E5E4E2; }
+//       // &.tier-4 { --tier-color: cornsilk; }
+//       // &.tier-5 { --tier-color: lightcyan; }
+//     }
+//   }
+// }

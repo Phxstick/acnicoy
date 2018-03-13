@@ -250,5 +250,52 @@ module.exports = function (paths, modules) {
         }, 0));
     };
 
+    /**
+     * Return a list containing the amounts of SRS items added recently.
+     * @param {String} unit - Can be "days" or "months".
+     * @param {String} numUnits - Number of intervals in the timeline.
+     * @returns {Array}
+     */
+    stats.getItemsAddedTimeline = function (unit, numUnits) {
+        return utility.getTimeline(unit, numUnits, async (startDate,endDate)=> {
+            const startSecs = parseInt(startDate.getTime() / 1000);
+            const endSecs = parseInt(endDate.getTime() / 1000);
+            const wordsAdded = await modules.database.query(
+                `SELECT COUNT(*) AS amount FROM vocabulary
+                 WHERE date_added BETWEEN ? AND ?`, startSecs, endSecs-1)
+                .then(([{amount}]) => amount);
+            // TODO Kanji added
+            return wordsAdded;
+        }, false);
+    };
+
+    /**
+     * Return a list containing the amounts of items tested on recently.
+     * @param {String} unit - Can be "days" or "months".
+     * @param {String} numUnits - Number of intervals in the timeline.
+     * @returns {Array}
+     */
+    stats.getItemsTestedTimeline = function (unit, numUnits) {
+        const list = new Array(numUnits);
+        if (unit === "days") {
+            for (let i = 0; i < numUnits; ++i) {
+                list[i] = data.data.daily[data.data.daily.length - i - 1].tested
+            }
+        } else if (unit === "months") {
+            const d = new Date();
+            let offset = 0;
+            for (let i = 0; i < numUnits; ++i) {
+                const numDays = utility.daysInMonth(d.getMonth(), d.getYear());
+                list[i] = data.data.daily.slice(
+                    data.data.daily.length - offset - numDays,
+                    data.data.daily.length - offset)
+                    .reduce((total, dayObject) => total += dayObject.tested, 0);
+                offset += numDays;
+                d.setMonth(d.getMonth() - 1);
+            }
+        }
+        return utility.getTimeline(unit, numUnits, (sd,ed,i) => list[i], false);
+    };
+
     return stats;
 };

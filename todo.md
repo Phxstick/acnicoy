@@ -1,10 +1,13 @@
 ### Primary goals
+- Also update SRS stuff after finishing a test session or adding/removing items!
 - Extend vocabulary section:
   - Add functionality to view both words and kanji/hanzi (switch using button)
   - Add switch-buttons for sorting lexicographically/chronically/randomly(?)
   - When sorting lexicographically, allow jumping to a certain letter
   - Consider using a larger font with more padding
 - Finish first version of the stats
+  - Implement reversing direction of bar diagram (for history instead of sched)
+  - Decide carefully when to update each part of the stats (maybe seperately)
 - Add reload-button to language table (right side), emit "update-content-event"
 
 ### Secondary goals
@@ -56,6 +59,8 @@
 - Also let font-family be inherited, and remove all workarounds (and test!)
 
 ### Others
+- Only store number of items tested in stats (get added items from database)?
+  - Necessary to build an index in the userdata database on time added?
 - Completely remove example-word-entry widget/template?
 - Make status update message fade out after a short while if not updated
 - Make history view loading more efficient
@@ -101,6 +106,7 @@
 - Content status says "n.a." after successful download
 - Databases should be reloaded after changing data path (else write errors)
 - Do WAL checkpoints really work? WAL file seems to keep growing...
+- Labels/separators in stats timelines are party shifted
 
 
 By category
