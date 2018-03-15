@@ -1,6 +1,8 @@
 'use strict';
 
 const { ipcMain, app, BrowserWindow } = require('electron');
+const path = require("path");
+const url = require("url");
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -26,7 +28,11 @@ app.on('ready', function() {
   });
 
   // Load the index.html of the app and execute corresponding script.
-  mainWindow.loadURL(`file://${__dirname}/html/index.html`);
+  mainWindow.loadURL(url.format({
+      pathname: path.join(__dirname, "html", "index.html"),
+      protocol: "file:",
+      slashes: true
+  }));
   mainWindow.webContents.openDevTools();
   // mainWindow.setAutoHideMenuBar(true);
   mainWindow.setMenu(null);

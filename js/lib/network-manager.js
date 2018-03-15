@@ -4,7 +4,7 @@ const http = require("http");
 const fs = require("fs");
 const request = require("request");
 const EventEmitter = require("events");
-const unzip = require("unzip");
+const extract = require("extract-zip");
 
 // =============================================================================
 // Functions for communicating with the server.
@@ -389,9 +389,8 @@ content.startDownload = async function (language, secondary) {
             fs.mkdirSync(contentPaths.directory);
         }
         // Unzip new files into content directory
-        fs.createReadStream(paths.downloadData(filename))
-        .pipe(unzip.Extract({ path: contentPaths.directory }))
-        .on("close", async () => {
+        extract(paths.downloadData(filename), { dir: contentPaths.directory },
+        async (error) => {
             // Update version register
             let versions;
             if (dataManager.content.isAvailable(language, secondary)) {

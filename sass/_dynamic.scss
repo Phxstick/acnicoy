@@ -1,9 +1,13 @@
 $font: var(--main-font);
 $serif-font: var(--main-font-serif);
 
-:host(.GLOBAL-main-font-Chinese), :root {
+:host(.GLOBAL-main-font-Japanese), :root {
   --main-font: TakaoPGothic;
   --main-font-serif: TakaoPMincho;
+}
+:host(.GLOBAL-main-font-Chinese), :root {
+  --main-font: MicrosoftYaHei;
+  --main-font-serif: SimSun;
 }
 :host(.GLOBAL-main-font-Cyrillic), :root {
   --main-font: Ubuntu;
@@ -28,6 +32,7 @@ $dragging-cursor: var(--dragging-cursor);
   --grab-cursor: grab;
   --dragging-cursor: grabbing;
 }
+$test-cursor: auto;
 :host(.GLOBAL-cursor-test), :root {
   --default-cursor: $test-cursor;
   --pointer-cursor: $test-cursor;

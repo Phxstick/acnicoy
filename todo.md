@@ -1,4 +1,7 @@
 ### Primary goals
+- Rethink what belongs into local storage and what should be shared
+  - When using Acnicoy on multiple computers, some notifications are problematic
+- Rework sass: Use gui-font for gui, and content-font for content
 - Also update SRS stuff after finishing a test session or adding/removing items!
 - Extend vocabulary section:
   - Add functionality to view both words and kanji/hanzi (switch using button)
@@ -344,6 +347,7 @@ Future
 - Add icons to achievements 
 - Create stylable `<select>` alternative
 - Somehow display frequencies for specific words and readings in dictionary?
+- Upgrade to Font Awesome 5
 
 ### Content section
 - Create similar kanji/word disambiguation pages of the following form:
@@ -409,28 +413,3 @@ once? --> Faster loading, centralized resource loading
 - Identify SRS schemes by ID instead of name!
 - Use advanced CSS width values where possible (`width: fill`);
 - Replace inputs in srs-schemes-overlay with content-editable attribute
-
-Resources
---------------------------------------------------------------------------------
-#### Japanese
-- [New JLPT stuff](http://www.tanos.co.uk/jlpt/skills/vocab/)
-  - Get JLPT lists for words too
-- [Unicode ranges](http://www.rikai.com/library/kanjitables/kanji_codes.unicode.shtml)
-- [Counters](http://hiramatu-hifuka.com/onyak/onyak2/josu-ta.html)
-- Kanji textbook/Internet frequencies?
-- [Honorific language](http://www.levelup99.net/businessmanner/cate3post24.html)
-  - Study uses of Teineigo, Sonkeigo, Kenjougo
-- [Country names in Kanji](http://www.jref.com/articles/country-names-in-kanji.224/)
-
-#### CSS/DOM
-- [Buttons](http://usabilitypost.com/2012/01/10/pressed-button-state-with-css3)
-- [Shadow DOM](https://webkit.org/blog/4096/introducing-shadow-dom-api)
-- [CSS Grid](https://css-tricks.com/snippets/css/complete-guide-grid)
-- [Selection API](http://caniuse.com/#feat=selection-api)
-(`window.getSelection()`, `selectionstart`, `selectionchanged`)
-- [Convenient DOM Manipulation](http://caniuse.com/#feat=dom-manip-convenience)
-- Use `Element.scrollIntoViewIfNeeded()`
-- [Focus within](http://caniuse.com/#feat=css-focus-within)
-- [Scrollbar styling](http://caniuse.com/#feat=css-scrollbar)
-- [CSS triangles](http://apps.eky.hk/css-triangle-generator/)
-- [Background images](https://subtlepatterns.com/)

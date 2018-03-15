@@ -7,10 +7,12 @@ const { clipboard, remote } = require("electron");
 const EventEmitter = require("events");
 const Velocity = require("velocity-animate");
 const storage = require("electron-settings");
+const path = require("path");
 
 // Load modules
 const basePath = remote.app.getAppPath();
-const paths = require(basePath + "/js/lib/path-manager.js")(basePath);
+const paths = require(path.resolve(
+    basePath, "js", "lib", "path-manager.js"))(basePath);
 const components = require(paths.componentRegister);
 const dataManager = require(paths.js.lib("data-manager"))(paths);
 const utility = require(paths.js.lib("utility"));

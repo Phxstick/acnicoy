@@ -140,8 +140,7 @@ module.exports = function (basePath) {
     paths.css = (name, design) =>
         path.resolve(basePath, "css", design, name + ".css");
     paths.layers = path.resolve(basePath, "css", "default", "layers.css");
-    paths.fontAwesome = path.resolve(basePath, "font-awesome",
-                                     "css", "font-awesome.min.css");
+    paths.fontAwesome = path.resolve(basePath, "font-awesome.css");
     paths.colorSchemes = path.resolve(basePath, "sass", "designs");
 
     // Language data

@@ -3,9 +3,6 @@
 [Spinners](https://tobiasahlin.com/spinkit/)
 from Tobias Ahlin
 
-[Backgrounds](https://subtlepatterns.com/)
-from subtlepatterns.com
-
 
 ### Japanese language data
 

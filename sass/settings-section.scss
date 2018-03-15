@@ -15,71 +15,12 @@
 
 #tabs[data-tab-layout="horizontal"] > button[slot="tabs"],
     #tabs:not([data-tab-layout]) > button[slot="tabs"] {
-  flex: 1;
-  font-family: $light-font;
-  font-size: 150%;
-  color: $color-light;
-  text-align: center;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid $border-color-dark;
-  --tabs-frame-background: $background-color-dark;
-
-  &:not(:first-child) {
-    border-left: 1px solid transparent;
-  }
-  &:not(:last-child) {
-    border-right: 1px solid transparent;
-  }
-  &:hover {
-    background-color: mix($background-color, $background-color-dark, 50%);
-  }
-
-  &[selected] {
-    background-color: $background-color;
-    color: $color;
-    &:not(:first-of-type) {
-      border-left: 1px solid $border-color-dark;
-    }
-    &:not(:last-of-type) {
-      border-right: 1px solid $border-color-dark;
-    }
-    border-bottom: 1px solid transparent;
-  }
+  @extend .horizontal-tab;
 }
 
 #tabs[data-tab-layout="vertical"] > button[slot="tabs"] {
-  font-family: $light-font;
-  font-size: 150%;
-  color: $color-light;
-  text-align: center;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-bottom: 5px;
-  border-right: 1px solid $border-color-dark;
-
-  &:not(:first-child) {
-    border-top: 1px solid transparent;
-  }
-  &:not(:last-child) {
-    border-bottom: 1px solid transparent;
-  }
-  &:hover {
-    background-color: mix($background-color, $background-color-dark, 50%);
-  }
-
-  &[selected] {
-    background-color: $background-color;
-    color: $color;
-    &:not(:first-of-type) {
-      border-top: 1px solid $border-color-dark;
-    }
-    border-bottom: 1px solid $border-color-dark;
-    border-right: 1px solid transparent;
-  }
+  @extend .vertical-tab;
 }
-
 
 #tabs > *[slot="panels"] {
   position: relative;

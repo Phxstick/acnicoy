@@ -24,9 +24,6 @@
     display: flex;
     font-family: var(--font-family, initial);
     font-size: var(--font-size, initial);
-    > div {
-      flex: 1;
-    }
     background-color: var(--tabs-frame-background, initial);
   }
 

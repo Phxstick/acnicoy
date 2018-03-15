@@ -12,7 +12,8 @@ class Component extends HTMLElement {
         super();
         this.root = this.attachShadow({ mode: "open", delegatesFocus });
         const style = document.createElement("style");
-        style.textContent = `@import url(${paths.fontAwesome});`;
+        const fontAwesomePath = paths.fontAwesome.replace(/\\/g, "/");
+        style.textContent = `@import url(${fontAwesomePath});`;
         // Apply global design (set in settings)
         let design = "default";
         if (dataManager.settings.isLoaded()) {
@@ -20,7 +21,8 @@ class Component extends HTMLElement {
         }
         // Apply local CSS (if it exists)
         if (utility.existsFile(paths.css(name, design))) {
-            style.textContent += `@import url(${paths.css(name, design)});`;
+            const cssPath = paths.css(name, design).replace(/\\/g, "/");
+            style.textContent += `@import url(${cssPath});`;
         }
         // Attach HTML to root (if it exists)
         if (utility.existsFile(paths.html(name))) {

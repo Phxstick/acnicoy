@@ -1,15 +1,25 @@
 // =============================================================================
-// Font definitions
+// General fonts
 // =============================================================================
-
-@font-face {
-  font-family: Ubuntu-Regular;
-  src: url(../../fonts/Ubuntu-Regular.ttf);
-}
 
 @font-face {
   font-family: OpenSans-Light;
   src: url(../../fonts/OpenSans-Light.woff);
+}
+
+@font-face {
+  font-family: OpenSans-Regular;
+  src: url(../../fonts/OpenSans-Regular.ttf);
+}
+
+@font-face {
+  font-family: Ubuntu;
+  src: url(../../fonts/Ubuntu-Regular.ttf);
+}
+
+@font-face {
+  font-family: Questrial;
+  src: url(../../fonts/Questrial-Regular.otf) format("opentype");
 }
 
 @font-face {
@@ -18,9 +28,15 @@
 }
 
 @font-face {
-  font-family: OpenSans-Regular;
-  src: url(../../fonts/OpenSans-Regular.ttf);
+  font-family: FontAwesome;
+  src: url(../../fonts/font-awesome.woff2) format(woff2);
+  font-weight: normal;
+  font-style: normal;
 }
+
+// =============================================================================
+// Japanese fonts
+// =============================================================================
 
 @font-face {
   font-family: TakaoPGothic;
@@ -32,19 +48,29 @@
   src: url(../../fonts/TakaoPMincho.ttf);
 }
 
+// =============================================================================
+// Chinese fonts
+// =============================================================================
+
 @font-face {
-  font-family: Questrial;
-  src: url(../../fonts/Questrial-Regular.otf) format("opentype");
+  font-family: SourceHanSansCN-Normal;
+  src: url(../../fonts/SourceHanSansCN-Normal.otf);
+}
+
+@font-face {
+  font-family: MicrosoftYaHei;
+  src: url(../../fonts/MicrosoftYaHei.ttf);
+}
+
+@font-face {
+  font-family: SimSun;
+  src: url(../../fonts/SimSun.ttf);
 }
 
 // =============================================================================
 // Cursor loading
 // =============================================================================
 
-$test-cursor: url(../../img/test_cursor.png), auto;
-
 // =============================================================================
 // Background images
 // =============================================================================
-
-$marble-background: url(../../img/bg/marble.jpeg);

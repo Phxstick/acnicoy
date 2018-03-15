@@ -730,7 +730,6 @@ class MainWindow extends Window {
         }
         this.updateTestButton();
         // Choose fitting font
-        const chineseBased = new Set(["Chinese", "Japanese", "Korean"]);
         const cyrillicBased = new Set(["Belarusian", "Bulgarian", "Macedonian",
             "Russian", "Rusyn", "Serbo-Croatian", "Ukrainian", "Bosnian",
             "Montenegrin", "Serbian",
@@ -738,8 +737,10 @@ class MainWindow extends Window {
             "Komi", "Kyrgyz", "Mari", "Moksha", "Mongolian", "Ossetic",
             "Romani", "Sakha", "Yakut", "Tajik", "Tatar", "Tuvan", "Udmurt",
             "Yuit", "Yupik"]);
-        if (chineseBased.has(language)) {
+        if (language === "Chinese") {
             Component.setStyleClass("main-font", "Chinese");
+        } else if (language === "Japanese") {
+            Component.setStyleClass("main-font", "Japanese");
         } else if (cyrillicBased.has(language)) {
             Component.setStyleClass("main-font", "Cyrillic");
         } else {

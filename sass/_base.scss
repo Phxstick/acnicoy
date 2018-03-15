@@ -342,6 +342,70 @@ hr {
   }
 }
 
+.tab {
+  flex: 1;
+  font-family: $light-font;
+  font-size: 150%;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  color: $color-light;
+  background-color: $background-color-dark;
+  &:hover {
+    background-color: mix($background-color, $background-color-dark, 50%);
+  }
+  &[selected] {
+    background-color: $background-color;
+    color: $color;
+  }
+}
+
+.horizontal-tab {
+  @extend .tab;
+  border-bottom: 1px solid $border-color-dark;
+
+  &:not(:first-child) {
+    border-left: 1px solid transparent;
+  }
+  &:not(:last-child) {
+    border-right: 1px solid transparent;
+  }
+
+  &[selected] {
+    &:not(:first-of-type) {
+      border-left: 1px solid $border-color-dark;
+    }
+    &:not(:last-of-type) {
+      border-right: 1px solid $border-color-dark;
+    }
+    border-bottom: 1px solid transparent;
+  }
+}
+
+.vertical-tab {
+  @extend .tab;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-right: 1px solid $border-color-dark;
+
+  &:not(:first-child) {
+    border-top: 1px solid transparent;
+  }
+  &:not(:last-child) {
+    border-bottom: 1px solid transparent;
+  }
+
+  &[selected] {
+    &:not(:first-of-type) {
+      border-top: 1px solid $border-color-dark;
+    }
+    &:not(:last-of-type) {
+      border-bottom: 1px solid $border-color-dark;
+    }
+    border-right: 1px solid transparent;
+  }
+}
+
 // =============================================================================
 // Font awesome icon position adjustment
 // =============================================================================
