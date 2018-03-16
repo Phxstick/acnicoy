@@ -267,5 +267,64 @@ module.exports = function (paths, modules) {
                .then(([{amount}]) => amount);
     };
 
+    /**
+     * Return a list of all hanzi in the vocabulary.
+     * @param {String} sortingCriterion - "alphabetical" or "dateAdded".
+     * @param {Boolean} [sortBackwards=false]
+     * @returns {Promise[Array[String]]}
+     */
+    hanziModule.getAll = function (sortingCriterion, sortBackwards=false) {
+        let columnToSortBy;
+        if (sortingCriterion === "alphabetical") columnToSortBy = "hanzi";
+        else if (sortingCriterion === "dateAdded") columnToSortBy = "date_added";
+        const sortingDirection = sortBackwards ? "DESC" : "ASC";
+        return modules.database.query(
+            `SELECT hanzi FROM hanzi
+             ORDER BY ${columnToSortBy} ${sortingDirection}`)
+        .then((rows) => rows.map((row) => row.hanzi));
+    };
+
+    /**
+     * Return a mapping from all hanzi to the date when they were added
+     * (in seconds).
+     * @returns {Promise[Object[Integer]]}
+     */
+    hanziModule.getDateAddedForEachHanzi = function () {
+        return modules.database.query(`SELECT hanzi, date_added FROM hanzi`)
+        .then((rows) => {
+            const mapping = {};
+            for (const { hanzi, date_added } of rows) {
+                mapping[hanzi] = date_added;
+            }
+            return mapping;
+        });
+    }
+
+    /**
+     * Get a list of hanzi containing the given query string in their meanings
+     * or readings.
+     * @param {String} query
+     * @param {String} searchMethod - "meanings" or "readings".
+     * @returns {Array[String]}
+     */
+    hanziModule.search = async function (query, searchMethod) {
+        let matchString = query.replace(/[*]/g, "%").replace(/[?]/g, "_");
+        if (!matchString.includes("%")) matchString += "%";
+        const args = [matchString];
+        const conditions = [];
+        let tableName;
+        if (searchMethod === "meanings") {
+            tableName = "hanzi_meanings";
+            conditions.push("meanings LIKE ?");
+        } else if (searchMethod === "readings") {
+            tableName = "hanzi_readings";
+            conditions.push("readings LIKE ?");
+        }
+        const rows = await modules.database.query(
+            `SELECT hanzi FROM ${tableName} WHERE ${conditions.join(" OR ")}`,
+            ...args)
+        return rows.map((row) => row.hanzi);
+    }
+
     return hanziModule;
 };

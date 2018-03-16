@@ -341,5 +341,68 @@ module.exports = function (paths, modules) {
         });
     };
 
+    /**
+     * Return a list of all kanji in the vocabulary.
+     * @param {String} sortingCriterion - "alphabetical" or "dateAdded".
+     * @param {Boolean} [sortBackwards=false]
+     * @returns {Promise[Array[String]]}
+     */
+    kanjiModule.getAll = function (sortingCriterion, sortBackwards=false) {
+        let columnToSortBy;
+        if (sortingCriterion === "alphabetical") columnToSortBy = "kanji";
+        else if (sortingCriterion === "dateAdded") columnToSortBy = "date_added";
+        const sortingDirection = sortBackwards ? "DESC" : "ASC";
+        return modules.database.query(
+            `SELECT kanji FROM kanji
+             ORDER BY ${columnToSortBy} ${sortingDirection}`)
+        .then((rows) => rows.map((row) => row.kanji));
+    };
+
+    /**
+     * Return a mapping from all kanji to the date when they were added
+     * (in seconds).
+     * @returns {Promise[Object[Integer]]}
+     */
+    kanjiModule.getDateAddedForEachKanji = function () {
+        return modules.database.query(`SELECT kanji, date_added FROM kanji`)
+        .then((rows) => {
+            const mapping = {};
+            for (const { kanji, date_added } of rows) {
+                mapping[kanji] = date_added;
+            }
+            return mapping;
+        });
+    }
+
+    /**
+     * Get a list of kanji containing the given query string in their meanings,
+     * on-yomi or kun-yomi.
+     * @param {String} query
+     * @param {String} searchMethod - "meanings", "on-yomi" or "kun-yomi".
+     * @returns {Array[String]}
+     */
+    kanjiModule.search = async function (query, searchMethod) {
+        let matchString = query.replace(/[*]/g, "%").replace(/[?]/g, "_");
+        if (!matchString.includes("%")) matchString += "%";
+        const args = [matchString];
+        const conditions = [];
+        let tableName;
+        if (searchMethod === "meanings") {
+            tableName = "kanji_meanings";
+            conditions.push("meanings LIKE ?");
+        } else if (searchMethod === "on-yomi") {
+            tableName = "kanji_on_yomi";
+            conditions.push("on_yomi LIKE ?")
+        } else if (searchMethod === "kun-yomi") {
+            tableName = "kanji_kun_yomi";
+            conditions.push("kun_yomi LIKE ?","replace(kun_yomi,'.','') LIKE ?")
+            args.push(matchString);
+        }
+        const rows = await modules.database.query(
+            `SELECT kanji FROM ${tableName} WHERE ${conditions.join(" OR ")}`,
+            ...args)
+        return rows.map((row) => row.kanji);
+    }
+
     return kanjiModule;
 };

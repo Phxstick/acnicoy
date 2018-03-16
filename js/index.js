@@ -206,5 +206,6 @@ class Application {
 }
 
 window.events = new EventEmitter();  // Communication between components
+window.events.setMaxListeners(20);
 window.app = new Application();
 app.initialize();

@@ -143,14 +143,10 @@ module.exports = function (paths, modules) {
         return searchResult;
     };
 
-    vocabLists.searchList = function (listName, query) {
-        query = query.toLowerCase();
-        const searchResult = [];
-        const words = vocabLists.getWordsForList(listName);
-        for (const word of words) {
-            if (word.toLowerCase().includes(query)) searchResult.push(word);
-        }
-        return searchResult;
+    vocabLists.searchList = async function (listName, query) {
+        const searchResult = await modules.vocab.search(query);
+        const wordsInList = new Set(vocabLists.getWordsForList(listName));
+        return searchResult.filter((word) => wordsInList.has(word));
     };
 
     return vocabLists;

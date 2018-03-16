@@ -710,6 +710,14 @@ function initializeView({ view, getData, createViewItem, initialDisplayAmount,
         state.searchResult = searchResult;
         state.view.scrollToTop();
         await displayMoreViewItems();
+        // Load items until view is filled sufficiently or no more left to load
+        while (!state.view.isHidden()) {
+            if (state.nextResultIndex === state.searchResult.length) break;
+            await finishEventQueue();
+            const threshold = state.view.clientHeight + criticalScrollDistance;
+            if (state.view.scrollHeight > threshold) break;
+            await displayMoreViewItems();
+        }
         state.resultLoaded = true;
         if (placeholder !== undefined)
             placeholder.hide();

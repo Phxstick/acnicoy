@@ -1,32 +1,63 @@
 @import "base";
 
-body {
+#tabs {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  > button {
+    border-bottom: 1px solid $border-color-dark;
+  }
+}
+
+#words-tab {
+  flex: 1;
   display: flex;
   flex-direction: row;
+}
+
+#kanji-tab, #hanzi-tab {
+  display: flex;
+  flex-direction: column;
+}
+
+#kanji-frame, #hanzi-frame {
+  flex: 1;
+}
+
+#kanji, #hanzi {
+  font-size: 2rem;
+  > * {
+    display: inline-block;
+    padding: 6px;
+  }
 }
 
 .column {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 3px;
   background-color: $background-color;
 
   &:not(:first-child) {
     border-left: 1px solid $border-color-dark;
   }
+}
 
-  .list-frame {
+.list-frame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  .list-view {
     flex: 1;
-    display: flex;
-    flex-direction: column;
 
-    .list-view {
-      flex: 1;
-
-      &.dragover {
-        background-color: $view-hover-background;
-      }
+    &.dragover {
+      background-color: $view-hover-background;
+    }
+    > * {
+      cursor: $pointer-cursor;
     }
   }
 }
@@ -59,13 +90,22 @@ body {
   display: flex;
   flex-direction: row;
   border-bottom: 1px solid $border-color-dark;
-  margin-bottom: 2px;
+ 
+  .search-entry-subframe {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+
+    &:not(:first-child) {
+      border-left: 1px solid $border-color-dark;
+    }
+  }
 
   .search-entry {
     @extend input.light;
     width: 1px;
     flex: 1;
-    padding-left: 4px;
+    padding-left: 10px;
   }
 
   .search-button {
@@ -77,7 +117,6 @@ body {
 }
 
 #vocab-lists > * {
-  cursor: $pointer-cursor;
   display: flex;
   flex-direction: row;
 

@@ -3,14 +3,10 @@
   - When using Acnicoy on multiple computers, some notifications are problematic
 - Rework sass: Use gui-font for gui, and content-font for content
 - Also update SRS stuff after finishing a test session or adding/removing items!
-- Extend vocabulary section:
-  - Add functionality to view both words and kanji/hanzi (switch using button)
-  - Add switch-buttons for sorting lexicographically/chronically/randomly(?)
-  - When sorting lexicographically, allow jumping to a certain letter
-  - Consider using a larger font with more padding
 - Finish first version of the stats
   - Implement reversing direction of bar diagram (for history instead of sched)
   - Decide carefully when to update each part of the stats (maybe seperately)
+  - Show kanji added as well
 - Add reload-button to language table (right side), emit "update-content-event"
 
 ### Secondary goals
@@ -60,6 +56,7 @@
   - Switch to "better-sqlite3" to increase performance and code style?
 - Implement some settings for kanji-info-panel?
 - Also let font-family be inherited, and remove all workarounds (and test!)
+- Don't attach separate context menu to every node in dict/kanji/vocab-section
 
 ### Others
 - Only store number of items tested in stats (get added items from database)?
@@ -92,7 +89,6 @@
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
-- When adding word to a vocab list it is entered twice in the view
 - 屈伸 has the wrong meaning in the dictionary?
 - There still seems to be this bug that notes overwrite those of other languages
 - Don't preload words in vocabulary section - on scroll, new entries are missing
@@ -270,12 +266,7 @@ By category
 - Retry button next to error message in each row
 
 ### Stats/Achievements
-- Use single-bar diagram for kanji progress to display relative to total!
-- Display earned achievement in status bar and make it glow to highlight?
-- Daily stats diagrams below the general stats (next to each other?)
-  - One for mastery points, one for new vocab/kanji added
-  - Allow displaying both daily and cumulative progress for each diagram
-  - Also color each bar in two colors according to kanji and vocab progress
+- Allow switching between showing daily/cumulative progress for each diagram?
 - Possibly use D3.js for diagrams?
 
 List of settings

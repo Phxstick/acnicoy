@@ -55,38 +55,29 @@ module.exports = function (paths, modules) {
 
     /**
      * Search the vocabulary for entries containing the given query string
-     * in their word, readings or translations. Also try to match a version
+     * in the word, readings or translations. Also try to match a version
      * converted to both hiragana and katakana, if the language is Japanese.
-     * If a subset of words is provided as additional argument, only search
-     * that subset.
      * @param {String} query
-     * @param {Array} [subset]
      * @returns {Array[String]}
      */
-    vocab.search = async function (query, { subset }={}) {
-        // TODO: Extend and optimize this function, use exact-match-priority
-        // TODO: Add sorting algorithm using scores
-        // If no subset of words is given, search entire vocabulary
-        if (subset === undefined) {
-            const matchString = `%${query}%`;
-            const conditions = [
-                "word LIKE ?", "translations LIKE ?", "readings LIKE ?"];
-            const args = [matchString, matchString, matchString];
-            if (modules.currentLanguage === "Japanese") {
-                conditions.push("word LIKE ?", "word LIKE ?",
-                    "readings LIKE ?", "readings LIKE ?");
-                const hiraganaMatchString = matchString.toKana("hiragana");
-                const katakanaMatchString = matchString.toKana("katakana");
-                args.push(hiraganaMatchString, katakanaMatchString,
-                    hiraganaMatchString, katakanaMatchString);
-            }
-            const rows = await modules.database.query(
-                `SELECT word FROM vocabulary
-                 WHERE ${conditions.join(" OR ")}`, ...args);
-            return rows.map((row) => row.word);
-        } else {
-            // TODO
+    vocab.search = async function (query) {
+        let matchString = query.replace(/[*]/g, "%").replace(/[?]/g, "_");
+        if (!matchString.includes("%")) matchString += "%";
+        const args = [matchString, matchString, matchString];
+        const conditions = [
+            "word LIKE ?", "translations LIKE ?", "readings LIKE ?"];
+        if (modules.currentLanguage === "Japanese") {
+            conditions.push("word LIKE ?", "word LIKE ?",
+                "readings LIKE ?", "readings LIKE ?");
+            const hiraganaMatchString = matchString.toKana("hiragana");
+            const katakanaMatchString = matchString.toKana("katakana");
+            args.push(hiraganaMatchString, katakanaMatchString,
+                hiraganaMatchString, katakanaMatchString);
         }
+        const rows = await modules.database.query(
+            `SELECT word FROM vocabulary
+             WHERE ${conditions.join(" OR ")}`, ...args);
+        return rows.map((row) => row.word);
     }
 
     /**

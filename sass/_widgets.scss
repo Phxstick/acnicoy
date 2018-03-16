@@ -63,3 +63,20 @@ svg-bar-diagram {
   --description-font: $small-font;
   --separator-font: $header-font;
 }
+
+tabbed-frame {
+  background-color: $background-color;
+  --tabs-frame-background: $background-color-dark;
+
+  &[data-tab-layout="horizontal"] > button[slot="tabs"],
+      &:not([data-tab-layout]) > button[slot="tabs"] {
+    @extend .horizontal-tab;
+  }
+  &[data-tab-layout="vertical"] > button[slot="tabs"] {
+    @extend .vertical-tab;
+  }
+  > [slot="panels"] {
+    position: relative;
+    height: 100%;
+  }
+}

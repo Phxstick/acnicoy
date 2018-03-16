@@ -406,18 +406,6 @@ hr {
   }
 }
 
-// =============================================================================
-// Font awesome icon position adjustment
-// =============================================================================
-
 .fa.fa-plus {
   @include justify($top: 1px);
-}
-
-.fa.fa-search {
-  @include justify($top: -3px);
-}
-
-.fa.fa-settings {
-  @include justify($top: -2px);
 }

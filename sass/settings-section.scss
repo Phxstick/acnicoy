@@ -6,25 +6,6 @@
   right: 0;
   bottom: 0;
   left: 0;
-  background-color: $background-color;
-}
-
-#tabs {
-  --tabs-frame-background: $background-color-dark;
-}
-
-#tabs[data-tab-layout="horizontal"] > button[slot="tabs"],
-    #tabs:not([data-tab-layout]) > button[slot="tabs"] {
-  @extend .horizontal-tab;
-}
-
-#tabs[data-tab-layout="vertical"] > button[slot="tabs"] {
-  @extend .vertical-tab;
-}
-
-#tabs > *[slot="panels"] {
-  position: relative;
-  height: 100%;
 }
 
 .settings-subsection {
