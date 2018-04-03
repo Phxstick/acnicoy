@@ -17,11 +17,11 @@ module.exports = function (basePath) {
 
     // Return true if location for user data is set
     paths.existsDataPath = function () {
-        return localStorage.getItem("data-path") !== null;
+        return storage.get("data-path") !== undefined;
     };
     // Set location for folder to store user data in
     paths.setDataPath = function (prefix) { 
-        localStorage.setItem("data-path", prefix);
+        storage.set("data-path", prefix);
         paths.init();
     };
 
@@ -29,7 +29,7 @@ module.exports = function (basePath) {
     paths.init = function() {
         if (!paths.existsDataPath())
             throw Error("Path for user data has not been set!");
-        let prefix = localStorage.getItem("data-path");
+        let prefix = storage.get("data-path");
         if (prefix[prefix.length - 1] == "\n")
             prefix = prefix.slice(0, prefix.length - 1);
         const previousPath = dataPath;

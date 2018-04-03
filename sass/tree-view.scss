@@ -4,11 +4,12 @@
 
 .node.open {
   > .node-name-frame > .open-node-button::after {
-    content: "\f107"
-  };
+    content: "\f107";
+    font-family: FontAwesome;
+  }
   > .node-name-frame > .open-node-button.hidden {
     visibility: hidden;
-  };
+  }
 }
 
 .node.selected {
@@ -22,6 +23,7 @@
   .open-node-button {
     &::after {
       content: "\f105";
+      font-family: FontAwesome;
     }
     background-color: transparent;
     padding-left: var(--indentation-padding, 5px) - 5px;

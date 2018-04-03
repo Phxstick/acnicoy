@@ -239,6 +239,13 @@ class DictionarySection extends Section {
         }
         // If query is empty, just display information about how to search
         if (query.length === 0) {
+            const selectedCategory = this.selectedSearchResultCategory;
+            if (selectedCategory !== null) {
+                this.$(`search-results-${selectedCategory}`).hide();
+                this.$(`search-results-info-${selectedCategory}`)
+                .classList.remove("selected");
+            }
+            this.selectedSearchResultCategory = null;
             this.$("search-info").show();
             return;
         }

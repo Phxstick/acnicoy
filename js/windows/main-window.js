@@ -155,7 +155,13 @@ class MainWindow extends Window {
         // Shortcut callbacks
         this.shortcutMap = {
             "add-word": () => this.openPanel("add-vocab"),
-            "add-kanji": () => this.openPanel("add-kanji"),
+            "add-kanji": () => {
+                if (dataManager.currentLanguage === "Japanese") {
+                    this.openPanel("add-kanji");
+                } else if (dataManager.currentLanguage === "Chinese") {
+                    this.openPanel("add-hanzi");
+                }
+            },
             "open-test-section": () => this.openTestSection(),
             "open-dictionary": () => {
                 this.openSection("dictionary");
@@ -206,10 +212,11 @@ class MainWindow extends Window {
                 this.savingData = false;
             }
         };
-        this.shortcutsForLanguage = {
-            "Japanese":
-                ["add-kanji", "open-kanji-search", "open-kanji-overview",
-                 "open-dictionary"]
+        this.restrictedShortcuts = {
+            "add-kanji": ["Japanese", "Chinese"],
+            "open-kanji-search": ["Japanese"],
+            "open-kanji-overview": ["Japanese"],
+            "open-dictionary": ["Japanese"]
         };
         // Register all shortcut callbacks
         for (const shortcutName in this.shortcutMap) {
@@ -330,6 +337,9 @@ class MainWindow extends Window {
         });
         events.on("content-download-finished", (info) => {
             this.addNotification("content-download-finished", info);
+        });
+        events.on("settings-test-show-progress", () => {
+            this.updateTestButton();
         });
     }
 
@@ -654,11 +664,19 @@ class MainWindow extends Window {
         this.$("status-text").fadeIn();
     }
 
-    updateTestButton() {
-        return dataManager.srs.getTotalAmountDue().then((amount) => {
-            this.$("num-srs-items").textContent = amount;
-            return amount;
-        });
+    async updateTestButton() {
+        const amount = await dataManager.srs.getTotalAmountDue();
+        if (dataManager.settings.test.showProgress) {
+            this.$("num-srs-items").innerHTML = `${amount}<br>items`;
+        } else {
+            if (amount > 0) {
+                this.$("num-srs-items").innerHTML = `items<br>avail.`;
+            } else {
+                this.$("num-srs-items").innerHTML = "no<br>items";
+            }
+        }
+        this.$("test-button").classList.toggle("no-items", amount === 0);
+        return amount;
     }
 
     openTestSection() {
@@ -668,7 +686,7 @@ class MainWindow extends Window {
                 this.openSection("test");
             } else {
                 this.updateStatus("There are currently no items " +
-                                  "scheduled for testing!");
+                                  "available for testing!");
             }
         });
     }
@@ -705,8 +723,10 @@ class MainWindow extends Window {
         } else {
             this.$("add-kanji-button").hide();
             this.$("kanji-info-panel").close();
-            this.closePanel("add-kanji");
-            this.closePanel("edit-kanji");
+            if (this.currentPanel === "add-kanji" ||
+                    this.currentPanel === "edit-kanji") {
+                this.closePanel(this.currentPanel);
+            }
             if (this.currentSection === "kanji" ||
                     this.currentSection === "dictionary") {
                 this.openSection("home");
@@ -717,15 +737,12 @@ class MainWindow extends Window {
         } else {
             this.$("add-hanzi-button").hide();
         }
-        for (const l in this.shortcutsForLanguage) {
-            if (language !== l) {
-                for (const shortcutName of this.shortcutsForLanguage[l]) {
-                    shortcuts.disable(shortcutName);
-                }
+        for (const shortcutName in this.restrictedShortcuts) {
+            const compatibleLanguages = this.restrictedShortcuts[shortcutName];
+            if (compatibleLanguages.includes(language)) {
+                shortcuts.enable(shortcutName);
             } else {
-                for (const shortcutName of this.shortcutsForLanguage[l]) {
-                    shortcuts.enable(shortcutName);
-                }
+                shortcuts.disable(shortcutName);
             }
         }
         this.updateTestButton();

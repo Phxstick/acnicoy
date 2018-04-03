@@ -145,6 +145,23 @@ function setEqual(a, b) {
 }
 
 /**
+ * Given an array, return a new one without duplicates.
+ * @param {Array} array
+ * @returns {Array}
+ */
+function removeDuplicates(array) {
+    const alreadySeen = new Set();
+    const newArray = [];
+    for (const element of array) {
+        if (!alreadySeen.has(element)) {
+            newArray.push(element);
+        }
+        alreadySeen.add(element);
+    }
+    return newArray;
+}
+
+/**
  * Given a path, parse the html file at that path and return a fragment node
  * with the contents.
  * @param {String} path
@@ -485,9 +502,7 @@ function insertNodeIntoSortedList(
         container.appendChild(node);
     } else {
         const index = findIndex(container, key(node), key, sortedBackwards);
-        if (index === -1) {
-            container.prependChild(node);
-        } else if (index === container.children.length) {
+        if (index === container.children.length) {
             container.appendChild(node);
         } else {
             container.insertChildAt(node, index);
@@ -502,14 +517,38 @@ function insertNodeIntoSortedList(
  * @param {*} value
  * @param {function} key
  * @param {Boolean} sortedBackwards
+ * @returns {Boolean} - Whether the element has been found.
  */
 function removeEntryFromSortedList(
         container, value, key=(n)=>n.textContent, sortedBackwards) {
-    if (container.children.length === 0) return;
+    if (container.children.length === 0) return false;
     const index = findIndex(container, value, key, sortedBackwards);
-    if (index < 0 || index >= container.children.length) return;
-    if (key(container.children[index]) === value)
+    if (index < 0 || index >= container.children.length) return false;
+    if (key(container.children[index]) === value) {
         container.removeChildAt(index);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Given an HTMLElement whose children are sorted according to given key,
+ * return child node with given value if it exists (or null if it doesn't).
+ * @param {HTMLElement} container
+ * @param {*} value
+ * @param {function} key
+ * @param {Boolean} sortedBackwards
+ * @returns {HTMLElement}
+ */
+function getEntryFromSortedList(
+        container, value, key=(n)=>n.textContent, sortedBackwards) {
+    if (container.children.length === 0) return null;
+    const index = findIndex(container, value, key, sortedBackwards);
+    if (index < 0 || index >= container.children.length) return null;
+    if (key(container.children[index]) === value) {
+        return container.children[index];
+    }
+    return null;
 }
 
 /**
@@ -658,7 +697,8 @@ function initializeView({ view, getData, createViewItem, initialDisplayAmount,
         viewItemsLoaded: true,
         initialDisplayAmount,
         displayAmount,
-        deterministicSearch
+        deterministicSearch,
+        data: {}  // Use this to store custom data required by this view
     };
     function displayMoreViewItems() {
         state.viewItemsLoaded = false;
@@ -929,6 +969,7 @@ module.exports.getShortDateString = getShortDateString;
 module.exports.daysInMonth = daysInMonth;
 module.exports.parseCssFile = parseCssFile;
 module.exports.setEqual = setEqual;
+module.exports.removeDuplicates = removeDuplicates;
 module.exports.calculateED = calculateED;
 module.exports.getStringForNumber = getStringForNumber;
 module.exports.getOrdinalNumberString = getOrdinalNumberString;
@@ -952,6 +993,7 @@ module.exports.createDefaultOption = createDefaultOption;
 module.exports.findIndex = findIndex;
 module.exports.insertNodeIntoSortedList = insertNodeIntoSortedList;
 module.exports.removeEntryFromSortedList = removeEntryFromSortedList;
+module.exports.getEntryFromSortedList = getEntryFromSortedList;
 module.exports.calculateHeaderCellWidths = calculateHeaderCellWidths;
 module.exports.selectAllOnFocus = selectAllOnFocus;
 module.exports.bindRadiobuttonGroup = bindRadiobuttonGroup;

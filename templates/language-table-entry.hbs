@@ -5,7 +5,13 @@
     <check-box class="readings-checkbox"
      {{#if settings.readings}}checked{{/if}}></check-box>
   </td>
-  <td><button class="scheme-button link">{{settings.srs.scheme}}</button></td>
+  <td>
+    {{#if interactiveMode}}
+      <button class="scheme-button link">{{settings.srs.scheme}}</button>
+    {{else}}
+      {{settings.srs.scheme}}
+    {{/if}}
+  </td>
   {{#if interactiveMode}}
     <td>
       <div class="pulsating-triple-dots connecting-spinner">

@@ -63,16 +63,21 @@ module.exports = function (paths, modules) {
     vocab.search = async function (query) {
         let matchString = query.replace(/[*]/g, "%").replace(/[?]/g, "_");
         if (!matchString.includes("%")) matchString += "%";
-        const args = [matchString, matchString, matchString];
-        const conditions = [
-            "word LIKE ?", "translations LIKE ?", "readings LIKE ?"];
+        let multiFieldMatchString = matchString;
+        if (!matchString.startsWith("%"))
+            multiFieldMatchString = "%;" + multiFieldMatchString;
+        if (!matchString.endsWith("%"))
+            multiFieldMatchString = multiFieldMatchString + ";%";
+        const args = [matchString, multiFieldMatchString, multiFieldMatchString]
+        const conditions = ["word LIKE ?",
+            "(';'||translations||';') LIKE ?", "(';'||readings||';') LIKE ?"];
         if (modules.currentLanguage === "Japanese") {
             conditions.push("word LIKE ?", "word LIKE ?",
-                "readings LIKE ?", "readings LIKE ?");
-            const hiraganaMatchString = matchString.toKana("hiragana");
-            const katakanaMatchString = matchString.toKana("katakana");
-            args.push(hiraganaMatchString, katakanaMatchString,
-                hiraganaMatchString, katakanaMatchString);
+                "(';'||readings||';') LIKE ?", "(';'||readings||';') LIKE ?");
+            args.push(matchString.toKana("hiragana"),
+                      matchString.toKana("katakana"),
+                      multiFieldMatchString.toKana("hiragana"),
+                      multiFieldMatchString.toKana("katakana"));
         }
         const rows = await modules.database.query(
             `SELECT word FROM vocabulary
@@ -96,6 +101,8 @@ module.exports = function (paths, modules) {
      */
     vocab.add = async function (word, translations, readings, level,
                                 dictionaryId=null) {
+        translations = utility.removeDuplicates(translations);
+        readings = utility.removeDuplicates(readings);
         const rows = await modules.database.query(
             "SELECT * FROM vocabulary WHERE word = ?", word);
         if (!rows.length) {
@@ -299,17 +306,28 @@ module.exports = function (paths, modules) {
     }
 
     /**
+     * Return the date when the given word was added (in seconds).
+     * @param {String} word
+     * @returns {Integer}
+     */
+    vocab.getDateAdded = async function (word) {
+        const rows = await modules.database.query(
+            `SELECT date_added FROM vocabulary WHERE word = ?`, word);
+        return rows[0].date_added;
+    }
+
+    /**
      * Return a mapping from words to date added (in seconds).
      * @returns {Promise[Object[Integer]]}
      */
     vocab.getDateAddedForEachWord = function () {
         return modules.database.query(`SELECT word, date_added FROM vocabulary`)
         .then((rows) => {
-            const mapping = {};
+            const map = new Map();
             for (const { word, date_added } of rows) {
-                mapping[word] = date_added;
+                map.set(word, date_added);
             }
-            return mapping;
+            return map;
         });
     }
 
@@ -320,11 +338,11 @@ module.exports = function (paths, modules) {
     vocab.getLevelForEachWord = function () {
         return modules.database.query(`SELECT word, level FROM vocabulary`)
         .then((rows) => {
-            const mapping = {};
+            const map = new Map();
             for (const { word, level } of rows) {
-                mapping[word] = level;
+                map.set(word, level);
             }
-            return mapping;
+            return map;
         });
     }
 

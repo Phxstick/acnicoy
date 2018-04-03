@@ -64,11 +64,11 @@ module.exports = function (paths, modules) {
 
     vocabLists.getListsForWord = function (word) {
         if (!wordToLists.has(word)) return [];
-        return wordToLists.get(word);
+        return [...wordToLists.get(word)];
     };
 
     vocabLists.getWordsForList = function (list) {
-        return data[list];
+        return [...data[list]];
     };
 
     // =====================================================================

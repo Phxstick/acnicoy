@@ -346,6 +346,9 @@
   font-size: 1.5rem;
 
   button {
+    > i {
+      font-family: FontAwesome;
+    }
     opacity: 0.4;
     &:hover:not(:disabled) {
       opacity: 0.8;

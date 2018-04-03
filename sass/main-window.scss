@@ -217,6 +217,13 @@
         text-shadow: 0 0 1px $main-window-color;
         font-family: inherit;
       }
+      &.no-items {
+        color: mix($main-window-color, $main-window-background, 55%);
+        &:hover {
+          background-color: $main-window-background;
+          color: mix($main-window-color, $main-window-background, 55%);
+        }
+      }
     }
   }
 

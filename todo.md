@@ -1,8 +1,7 @@
 ### Primary goals
 - Rethink what belongs into local storage and what should be shared
   - When using Acnicoy on multiple computers, some notifications are problematic
-- Rework sass: Use gui-font for gui, and content-font for content
-- Also update SRS stuff after finishing a test session or adding/removing items!
+- Also update SRS stuff after adding/removing items!
 - Finish first version of the stats
   - Implement reversing direction of bar diagram (for history instead of sched)
   - Decide carefully when to update each part of the stats (maybe seperately)
@@ -86,12 +85,12 @@
 - Write more sophisticated function to guess whether vocab contains a certain
   entry from the dictionary
 - Implement searching for existing and also adding new vocab lists in all panels
+- Rework sass: Use gui-font for gui, and content-font for content
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
 - 屈伸 has the wrong meaning in the dictionary?
 - There still seems to be this bug that notes overwrite those of other languages
-- Don't preload words in vocabulary section - on scroll, new entries are missing
 - Problem when editing word with dictonary id assigned but a different variant
 - Shortcuts for language content are activated even if theres none available
 - Notifications:
@@ -100,13 +99,14 @@
   - When getting a notification, it is a bit messed up
   - After deleting a notification, text doesn't appear (still children left?)
 - Prevent backslash-encoding on server side, newlines should arrive as such
-- Searching for empty string in dictionary doesn't remove last search result
 - Opening a panel and switching languages removes background dimming
 - Content status says "n.a." after successful download
 - Databases should be reloaded after changing data path (else write errors)
 - Do WAL checkpoints really work? WAL file seems to keep growing...
 - Labels/separators in stats timelines are party shifted
-
+- Strange error if autostart is not enabled. How to make it work on linux?
+- Don't preload words in vocabulary section - on scroll, given date is outdated
+- Add text-center to long test items (and more padding?), what could go wrong?
 
 By category
 --------------------------------------------------------------------------------
@@ -144,6 +144,8 @@ By category
 - Initialize json-file in local storage somewhere upon first program start?
 - Make OpenSans-Regular the main font everywhere? (make it a sass variable then)
 - Remove font-awesome from github repo and add as node package instead
+- Select exact folder to store data in? (create it if it doesn't exist yet)
+- For multi-language shortcuts, make sure to adjust text accordingly
 
 ### Performance
 - Things got slower when reworking sass? Maybe because main window is flex now?
@@ -339,6 +341,8 @@ Future
 - Create stylable `<select>` alternative
 - Somehow display frequencies for specific words and readings in dictionary?
 - Upgrade to Font Awesome 5
+- Disallow deleting/editing default schemes (give info that it can be copied)
+- Implement adding example sentences (which can be displayed in a test session)
 
 ### Content section
 - Create similar kanji/word disambiguation pages of the following form:
@@ -390,6 +394,7 @@ once? --> Faster loading, centralized resource loading
 - Merge kanji and hanzi module into one, generalize with different readings
 - Consider making shortcut-manager a data manager
   (-> if done, then remove separate init-call in data-manager.js)
+- Using font-awesome font in some general widgets (e.g. tree-view), generalize
 
 ### Adaptions
 - Don't assign font family for every element and let it be inherited instead

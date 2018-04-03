@@ -359,6 +359,17 @@ module.exports = function (paths, modules) {
     };
 
     /**
+     * Return the date when the given kanji was added (in seconds).
+     * @param {String} kanji
+     * @returns {Integer}
+     */
+    kanjiModule.getDateAdded = async function (kanji) {
+        const rows = await modules.database.query(
+            `SELECT date_added FROM kanji WHERE kanji = ?`, kanji);
+        return rows[0].date_added;
+    }
+
+    /**
      * Return a mapping from all kanji to the date when they were added
      * (in seconds).
      * @returns {Promise[Object[Integer]]}
@@ -366,11 +377,11 @@ module.exports = function (paths, modules) {
     kanjiModule.getDateAddedForEachKanji = function () {
         return modules.database.query(`SELECT kanji, date_added FROM kanji`)
         .then((rows) => {
-            const mapping = {};
+            const map = new Map();
             for (const { kanji, date_added } of rows) {
-                mapping[kanji] = date_added;
+                map.set(kanji, date_added);
             }
-            return mapping;
+            return map;
         });
     }
 
@@ -384,18 +395,21 @@ module.exports = function (paths, modules) {
     kanjiModule.search = async function (query, searchMethod) {
         let matchString = query.replace(/[*]/g, "%").replace(/[?]/g, "_");
         if (!matchString.includes("%")) matchString += "%";
+        if (!matchString.startsWith("%")) matchString = "%;" + matchString;
+        if (!matchString.endsWith("%")) matchString = matchString + ";%";
         const args = [matchString];
         const conditions = [];
         let tableName;
         if (searchMethod === "meanings") {
             tableName = "kanji_meanings";
-            conditions.push("meanings LIKE ?");
+            conditions.push("(';'||meanings||';') LIKE ?");
         } else if (searchMethod === "on-yomi") {
             tableName = "kanji_on_yomi";
-            conditions.push("on_yomi LIKE ?")
+            conditions.push("(';'||on_yomi||';') LIKE ?")
         } else if (searchMethod === "kun-yomi") {
             tableName = "kanji_kun_yomi";
-            conditions.push("kun_yomi LIKE ?","replace(kun_yomi,'.','') LIKE ?")
+            conditions.push("(';'||kun_yomi||';') LIKE ?",
+                "(';'||replace(kun_yomi,'.','')||';') LIKE ?")
             args.push(matchString);
         }
         const rows = await modules.database.query(

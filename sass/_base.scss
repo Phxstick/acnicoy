@@ -236,6 +236,7 @@ hr {
       margin-bottom: 16px;
     }
     &:before {
+      font-family: FontAwesome;
       content: "\f105";
       margin-right: 8px;
     }
@@ -243,6 +244,7 @@ hr {
   > ul > li > ul > li {
     font-size: 1.2rem;
     &:before {
+      font-family: FontAwesome;
       content: "\f101";
       margin-right: 8px;
     }

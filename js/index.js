@@ -158,7 +158,7 @@ class Application {
                 defaultLanguage = newDefaultLang;
             }
             dataManager.settings["languages"]["default"] = defaultLanguage;
-            await dataManager.settings.save();
+            await dataManager.settings.saveGlobal();
         }
     }
 

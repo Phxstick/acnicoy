@@ -715,6 +715,7 @@ class TestSection extends Section {
             if (!this.testInfo.vocabListMode) {
                 // TODO: If frequent saving activated, save database+stats here
             }
+            events.emit("update-srs-status");
             this.closeSession();
             return;
         }

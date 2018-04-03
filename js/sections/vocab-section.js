@@ -52,14 +52,14 @@ const menuItems = contextMenu.registerItems({
                 `Are you sure you want to delete the ${itemType}<br>'${item}'?`)
             if (!confirmed) return;
             if (itemType === "word") {
-                const oldLists = dataManager.vocabLists.getListsForWord(word);
+                const oldLists = dataManager.vocabLists.getListsForWord(item);
                 const dictionaryId = 
-                    await dataManager.vocab.getAssociatedDictionaryId(word);
-                await dataManager.vocab.remove(word);
+                    await dataManager.vocab.getAssociatedDictionaryId(item);
+                await dataManager.vocab.remove(item);
                 for (const listName of oldLists) {
-                    events.emit("removed-from-list", word, listName);
+                    events.emit("removed-from-list", item, listName);
                 }
-                events.emit("word-deleted", word, dictionaryId);
+                events.emit("word-deleted", item, dictionaryId);
                 events.emit("vocab-changed");
             } else if (itemType === "kanji") {
                 dataManager.kanji.remove(item);
@@ -247,34 +247,63 @@ class VocabSection extends Section {
         // Update views if vocabulary changed
         // ====================================================================
         events.on("word-deleted", (word) => {
+            if (!this.isViewLoaded["vocab"]) return;
             this.removeEntryFromSortedView("vocab", word);
         });
-        events.on("word-added", (word) => {
+        events.on("word-added", async (word) => {
+            const dateAdded = await dataManager.vocab.getDateAdded(word);
+            const srsLevel = await dataManager.srs.getLevel(
+                    word, dataManager.test.mode.WORDS);
+            this.viewStates["vocab"].data.datesAdded.set(word, dateAdded);
+            this.viewStates["vocab"].data.srsLevels.set(word, srsLevel);
+            if (!this.isViewLoaded["vocab"]) return;
             this.insertEntryIntoSortedView("vocab", word);
         });
         // ====================================================================
         // Update views if content of a vocabulary list changed
         // ====================================================================
-        events.on("removed-from-list", (word, list) => {
+        events.on("removed-from-list", async (word, list) => {
+            if (!this.isViewLoaded["vocab-lists"]) return;
+            if (!this.isViewLoaded["vocab"]) return;
+            // Remove vocab item from list contents view
             if (this.selectedList === list) {
                 this.removeEntryFromSortedView("list-contents", word);
             }
+            // Decrement word counter of the list
             const amountLabel = this.listNameToAmountLabel.get(list);
             amountLabel.textContent = parseInt(amountLabel.textContent) - 1;
+            // Rearrange lists if they are sorted by length
             if (this.viewStates["vocab-lists"].sortingCriterion === "length") {
                 this.insertNodeIntoSortedView(
                     "vocab-lists", this.listNameToViewNode.get(list));
             }
+            // Unmark vocab-view item if it is not part of any list anymore
+            if (dataManager.vocabLists.getListsForWord(word).length === 0) {
+                const node = await this.getEntryFromSortedView("vocab", word);
+                if (node !== null) {
+                    node.classList.remove("already-in-list");
+                }
+            }
         });
-        events.on("added-to-list", (word, list) => {
+        events.on("added-to-list", async (word, list) => {
+            if (!this.isViewLoaded["vocab-lists"]) return;
+            if (!this.isViewLoaded["vocab"]) return;
+            // Add vocab item to list contents view
             if (this.selectedList === list) {
                 this.insertEntryIntoSortedView("list-contents", word);
             }
+            // Increment word counter of the list
             const amountLabel = this.listNameToAmountLabel.get(list);
             amountLabel.textContent = parseInt(amountLabel.textContent) + 1;
+            // Rearrange lists if they are sorted by length
             if (this.viewStates["vocab-lists"].sortingCriterion === "length") {
                 this.insertNodeIntoSortedView(
                     "vocab-lists", this.listNameToViewNode.get(list));
+            }
+            // Mark the vocab item if it is displayed in the vocab-view
+            const node = await this.getEntryFromSortedView("vocab", word);
+            if (node !== null) {
+                node.classList.add("already-in-list");
             }
         });
         // ====================================================================
@@ -318,9 +347,13 @@ class VocabSection extends Section {
         // Kanji view updates
         // ====================================================================
         events.on("kanji-deleted", (kanji) => {
+            if (!this.isViewLoaded["kanji"]) return;
             this.removeEntryFromSortedView("kanji", kanji);
         });
-        events.on("kanji-added", (kanji) => {
+        events.on("kanji-added", async (kanji) => {
+            const dateAdded = await dataManager.kanji.getDateAdded(kanji);
+            this.viewStates["kanji"].data.datesAdded.set(kanji, dateAdded);
+            if (!this.isViewLoaded["kanji"]) return;
             this.insertEntryIntoSortedView("kanji", kanji);
         });
         events.onAll(["language-changed", "kanji-added", "kanji-deleted"],
@@ -335,9 +368,13 @@ class VocabSection extends Section {
         // Hanzi view updates
         // ====================================================================
         events.on("hanzi-deleted", (hanzi) => {
+            if (!this.isViewLoaded["hanzi"]) return;
             this.removeEntryFromSortedView("hanji", hanzi);
         });
-        events.on("hanzi-added", (hanzi) => {
+        events.on("hanzi-added", async (hanzi) => {
+            const dateAdded = await dataManager.hanzi.getDateAdded(hanzi);
+            this.viewStates["hanzi"].data.datesAdded.set(hanzi, dateAdded);
+            if (!this.isViewLoaded["hanzi"]) return;
             this.insertEntryIntoSortedView("hanzi", hanzi);
         });
         events.onAll(["language-changed", "hanzi-added", "hanzi-deleted"],
@@ -350,7 +387,7 @@ class VocabSection extends Section {
         });
     }
     
-    adjustToLanguage(language, secondary) {
+    async adjustToLanguage(language, secondary) {
         this.deselectVocabList();
         this.listNameToAmountLabel.clear();
         this.listNameToViewNode.clear();
@@ -362,6 +399,19 @@ class VocabSection extends Section {
             this.$("words-tab-button").show();
         } else {
             this.$("words-tab-button").hide();
+        }
+        // Load data needed for item sorting
+        this.viewStates["vocab"].data.datesAdded =
+            await dataManager.vocab.getDateAddedForEachWord();
+        this.viewStates["vocab"].data.srsLevels =
+            await dataManager.vocab.getLevelForEachWord();
+        if (language === "Japanese") {
+            this.viewStates["kanji"].data.datesAdded =
+                await dataManager.kanji.getDateAddedForEachKanji();
+        }
+        if (language === "Chinese") {
+            this.viewStates["hanzi"].data.datesAdded =
+                await dataManager.hanzi.getDateAddedForEachHanzi();
         }
         // Defer initial loading of views until section is actually opened
         for (const viewName in this.viewStates) {
@@ -685,9 +735,6 @@ class VocabSection extends Section {
 
     addToVocabList (word, listName) {
         if (dataManager.vocabLists.addWordToList(word, listName)) {
-            if (this.draggedItemType === "vocab-item") {
-                this.draggedItem.classList.add("already-in-list");
-            }
             events.emit("added-to-list", word, listName);
         }
     }
@@ -704,18 +751,14 @@ class VocabSection extends Section {
     async getStringKeyForSorting(fieldName) {
         const sortingCriterion = this.viewStates[fieldName].sortingCriterion;
         if (fieldName === "vocab") {
+            const datesAdded = this.viewStates["vocab"].data.datesAdded;
+            const srsLevels = this.viewStates["vocab"].data.srsLevels;
             if (sortingCriterion === "alphabetical") {
                 return (word) => word;
             } else if (sortingCriterion === "dateAdded") {
-                return dataManager.vocab.getDateAddedForEachWord()
-                .then((datesAdded) => {
-                    return (word) => datesAdded[word];
-                });
+                return (word) => datesAdded.get(word);
             } else if (sortingCriterion === "level") {
-                return dataManager.vocab.getLevelForEachWord()
-                .then((levels) => {
-                    return (word) => levels[word];
-                });
+                return (word) => srsLevels.get(word);
             }
         } else if (fieldName === "vocab-lists") {
             if (sortingCriterion === "alphabetical") {
@@ -729,22 +772,18 @@ class VocabSection extends Section {
                 return (word) => word;
             }
         } else if (fieldName === "kanji") {
+            const datesAdded = this.viewStates["kanji"].data.datesAdded;
             if (sortingCriterion === "alphabetical") {
                 return (kanji) => kanji;
             } else if (sortingCriterion === "dateAdded") {
-                return dataManager.kanji.getDateAddedForEachKanji()
-                .then((datesAdded) => {
-                    return (kanji) => datesAdded[kanji];
-                });
+                return (kanji) => datesAdded.get(kanji);
             }
         } else if (fieldName === "hanzi") {
+            const datesAdded = this.viewStates["hanzi"].data.datesAdded;
             if (sortingCriterion === "alphabetical") {
                 return (hanzi) => hanzi;
             } else if (sortingCriterion === "dateAdded") {
-                return dataManager.hanzi.getDateAddedForEachHanzi()
-                .then((datesAdded) => {
-                    return (hanzi) => datesAdded[hanzi];
-                });
+                return (hanzi) => datesAdded.get(hanzi);
             }
         }
     }
@@ -805,8 +844,19 @@ class VocabSection extends Section {
         const stringKey = await this.getStringKeyForSorting(fieldName);
         const key = (node) => stringKey(nodeKey(node));
         const sortBackwards = this.viewStates[fieldName].sortBackwards;
+        const value = stringKey(content);
         await utility.removeEntryFromSortedList(
-            this.$(fieldName), content, key, sortBackwards);
+            this.$(fieldName), value, key, sortBackwards);
+    }
+
+    async getEntryFromSortedView(fieldName, content) {
+        const nodeKey = this.getNodeKeyForSorting(fieldName);
+        const stringKey = await this.getStringKeyForSorting(fieldName);
+        const key = (node) => stringKey(nodeKey(node));
+        const sortBackwards = this.viewStates[fieldName].sortBackwards;
+        const value = stringKey(content);
+        return utility.getEntryFromSortedList(
+            this.$(fieldName), value, key, sortBackwards);
     }
 
     // =====================================================================

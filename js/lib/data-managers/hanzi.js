@@ -285,6 +285,17 @@ module.exports = function (paths, modules) {
     };
 
     /**
+     * Return the date when the given hanzi was added (in seconds).
+     * @param {String} hanzi
+     * @returns {Integer}
+     */
+    hanziModule.getDateAdded = async function (hanzi) {
+        const rows = await modules.database.query(
+            `SELECT date_added FROM hanzi WHERE hanzi = ?`, hanzi);
+        return rows[0].date_added;
+    }
+
+    /**
      * Return a mapping from all hanzi to the date when they were added
      * (in seconds).
      * @returns {Promise[Object[Integer]]}
@@ -292,11 +303,11 @@ module.exports = function (paths, modules) {
     hanziModule.getDateAddedForEachHanzi = function () {
         return modules.database.query(`SELECT hanzi, date_added FROM hanzi`)
         .then((rows) => {
-            const mapping = {};
+            const map = new Map();
             for (const { hanzi, date_added } of rows) {
-                mapping[hanzi] = date_added;
+                map.set(hanzi, date_added);
             }
-            return mapping;
+            return map;
         });
     }
 
@@ -310,15 +321,17 @@ module.exports = function (paths, modules) {
     hanziModule.search = async function (query, searchMethod) {
         let matchString = query.replace(/[*]/g, "%").replace(/[?]/g, "_");
         if (!matchString.includes("%")) matchString += "%";
+        if (!matchString.startsWith("%")) matchString = "%;" + matchString;
+        if (!matchString.endsWith("%")) matchString = matchString + ";%";
         const args = [matchString];
         const conditions = [];
         let tableName;
         if (searchMethod === "meanings") {
             tableName = "hanzi_meanings";
-            conditions.push("meanings LIKE ?");
+            conditions.push("(';'||meanings||';') LIKE ?");
         } else if (searchMethod === "readings") {
             tableName = "hanzi_readings";
-            conditions.push("readings LIKE ?");
+            conditions.push("(';'||readings||';') LIKE ?");
         }
         const rows = await modules.database.query(
             `SELECT hanzi FROM ${tableName} WHERE ${conditions.join(" OR ")}`,

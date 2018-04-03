@@ -276,15 +276,16 @@ module.exports = function (paths, modules) {
      * @returns {Array}
      */
     stats.getItemsTestedTimeline = function (unit, numUnits) {
+        const numUnitsNonzero = Math.min(numUnits, data.data.daily.length);
         const list = new Array(numUnits);
         if (unit === "days") {
-            for (let i = 0; i < numUnits; ++i) {
+            for (let i = 0; i < numUnitsNonzero; ++i) {
                 list[i] = data.data.daily[data.data.daily.length - i - 1].tested
             }
         } else if (unit === "months") {
             const d = new Date();
             let offset = 0;
-            for (let i = 0; i < numUnits; ++i) {
+            for (let i = 0; i < numUnitsNonzero; ++i) {
                 const numDays = utility.daysInMonth(d.getMonth(), d.getYear());
                 list[i] = data.data.daily.slice(
                     data.data.daily.length - offset - numDays,
@@ -293,6 +294,9 @@ module.exports = function (paths, modules) {
                 offset += numDays;
                 d.setMonth(d.getMonth() - 1);
             }
+        }
+        for (let i = numUnitsNonzero; i < numUnits; ++i) {
+            list[i] = 0;
         }
         return utility.getTimeline(unit, numUnits, (sd,ed,i) => list[i], false);
     };
