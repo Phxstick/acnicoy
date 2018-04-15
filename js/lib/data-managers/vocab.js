@@ -44,11 +44,12 @@ module.exports = function (paths, modules) {
     }
 
     /**
-     * Return amount of words in the vocabulary.
+     * Return amount of words in the vocabulary of the given language.
+     * @param {String} language
      * @returns {Promise[Integer]}
      */
-    vocab.size = function () {
-        return modules.database.query(
+    vocab.sizeFor = function (language) {
+        return modules.database.queryLanguage(language,
             "SELECT COUNT(word) AS amount FROM vocabulary")
         .then(([{amount}]) => amount);
     }

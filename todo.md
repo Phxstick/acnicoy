@@ -1,18 +1,32 @@
 ### Primary goals
+- Finish uni-color test section
+  - Adapt buttons in flashcard-mode
+  - Also move and further adjust level frame
+  - Allow overflow of answer-entry, fix overflow for kana/pinyin inputs
+  - Strange lag and visual bugs after first test item
+- Finish first version of the stats
+  - Something is wrong: Bunch of Chinese item reviews before even starting
+  - Fix large separators in bar diagrams
+  - Hide legend/"total"-bar everywhere if there is only one language
+  - Find a way to scroll stats-diagrams to the end initially
+  - Update stats regularly
+  - Remove num-items-tested-diagram?
+  - Set lower bound for max value in bar diagrams
 - Rethink what belongs into local storage and what should be shared
   - When using Acnicoy on multiple computers, some notifications are problematic
-- Also update SRS stuff after adding/removing items!
-- Finish first version of the stats
-  - Implement reversing direction of bar diagram (for history instead of sched)
-  - Decide carefully when to update each part of the stats (maybe seperately)
-  - Show kanji added as well
+  - Remove test-stuff on server afterwards (like test-versions etc.)
+- Opening a solution for first time in test-complete-overlay is not fluent
+- How to make it more convenient to test multiple languages in succession?
+  - Implement a test-mode which just tests low-level items for each language?
+- When continuing to test on new language, or exiting app, open/close is called
+  again, so side/menu-bar become partly visible for a moment.
+- Update SRS stuff after adding/removing items?
+- Move plus-sign into views in edit-panels
 - Add reload-button to language table (right side), emit "update-content-event"
+- Bunch of conflicting WALs. What's going wrong? Dropbox or SQLite error?
 
 ### Secondary goals
 - Add new loading-overlay whereever useful
-- Use velocity's slide-function instead of toggleDisplay where useful
-  - For opening solutions in test-complete-overlay
-  - For opening notification details
 - Implement program updating functionality (in general settings)
   - Handle the "update-program-status" event there instead
   - Make sure notifications are removed or updated whenever necessary!
@@ -21,7 +35,7 @@
 - Round up download manager with hash checking? Necessary?
 - Before loading language content, check if all versions are compatible
   - For that purpose, store "content-versions-min.json" both in Acnicoy & server
-- Add some more achievements and find a better way to display them
+- Add some more achievements and create achievements section
 - Finish dictionary search:
   - Somehow handle multiple concurrent searches (maybe in utility.js)
   - Implement tags like #words, #names, #jlpt:x, etc.
@@ -56,6 +70,9 @@
 - Implement some settings for kanji-info-panel?
 - Also let font-family be inherited, and remove all workarounds (and test!)
 - Don't attach separate context menu to every node in dict/kanji/vocab-section
+- Write function to calculate n equally spaced colors on color wheel
+- Implement efficient stats update
+- Emit event when toggling language visibility, update stats/home-section
 
 ### Others
 - Only store number of items tested in stats (get added items from database)?
@@ -65,7 +82,6 @@
 - Make history view loading more efficient
 - Add functionality for clearing histories
 - Use font-family "Trajan" for roman numerals?
-- Separate stats and achievements?
 - Implement label-checkbox widget?
 - Implment simple binding function for checkboxes and settings, or radiobuttons
   and settings?
@@ -154,6 +170,7 @@ By category
   tooltips/context-menu/kanji-info-links)
 - Why the significant performance degradation after doing something?
 - Check if WAL size can exceed original database size. How to save disk space?
+- Consider adding HTML Canvas as option for bar diagram (and rename the widget)
 
 ### Init window
 - Make init section feel more welcoming and less plain. Consider:
@@ -178,7 +195,11 @@ By category
   - Allow showing detailed infos per mode
   - Replace "level" label with reload- and help-button?
   - Add a displayable bar-diagram to visualize SRS status
+
+### Notes section
 - Make writing notes-data into data-manager more efficent (not always overwrite)
+- Implement tree-like structure (with groups and subgroups)
+- Initially display a how-to-use (allow closing with X, put in help as well)
 
 ### Svg Bar Diagram
 - Use a shadow at both sides to show when scrolling is possible
@@ -188,7 +209,6 @@ By category
 ### Test section
 - Re-evaluate answer after current item has been edited?
 - If item has been renamed, directly display change instead of skipping?
-- Also animate upwards-movement of test item when solutions are given
 - Allow directly setting new level in flashcard-mode
 
 ### Kanji Info Panel
@@ -232,7 +252,6 @@ By category
 - Have option to only show a single combined search entry (like in Jisho.org)
   - Otherwise, detect when searching for English term in JA-entry, suggest
     interpreting as ENG-query instead
-    
 
 ### Kanji section
 - Search customization:
@@ -267,20 +286,22 @@ By category
 - Remove all log messages
 - Retry button next to error message in each row
 
-### Stats/Achievements
+### Stats
 - Allow switching between showing daily/cumulative progress for each diagram?
+- Implement selecting specific languages to show stats for
 - Possibly use D3.js for diagrams?
 
-List of settings
---------------------------------------------------------------------------------
-#### General settings
-- [Button] Check for program updates (Check automatically every ~1 hour)
-  - [Button] Update program (Do so safely)
-- [Radiobuttons] Choose separator for separating translations/readings
-#### Language settings
-- [Checkbox] Automatically update language content if available
-- [Button] Edit SRS schemes
-  - [Checkbutton/Entry] Choose interval-modifier for SRS-levels
+### Settings
+- Unify main window animation-settings into a single one (include bar hiding)
+- General settings
+  - [Button] Check for program updates (Check automatically every ~1 hour)
+    - [Button] Update program (Do so safely)
+  - [Radiobuttons] Choose separator for separating translations/readings
+  - [Checkbox] Toggle fullscreen
+- Language settings
+  - [Checkbox] Automatically update language content if available
+    - [Button] Edit SRS schemes
+    - [Checkbutton/Entry] Choose interval-modifier for SRS-levels
 
 Future
 --------------------------------------------------------------------------------
@@ -337,12 +358,12 @@ Future
 - Implement changelog-widget (for changelogs saved in local storage somewhere)?
 - Create a custom menu bar?
 - Find open dictionaries for English, Spanish, Chinese and Russian
-- Add icons to achievements 
 - Create stylable `<select>` alternative
 - Somehow display frequencies for specific words and readings in dictionary?
 - Upgrade to Font Awesome 5
 - Disallow deleting/editing default schemes (give info that it can be copied)
 - Implement adding example sentences (which can be displayed in a test session)
+- Create or find icons for achievements 
 
 ### Content section
 - Create similar kanji/word disambiguation pages of the following form:
@@ -395,6 +416,7 @@ once? --> Faster loading, centralized resource loading
 - Consider making shortcut-manager a data manager
   (-> if done, then remove separate init-call in data-manager.js)
 - Using font-awesome font in some general widgets (e.g. tree-view), generalize
+- Unify the fadeIn/fadeOut/slideToCurrentPosition functions
 
 ### Adaptions
 - Don't assign font family for every element and let it be inherited instead

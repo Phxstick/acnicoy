@@ -32,14 +32,20 @@ class TestSection extends Section {
         this.testInfo = null;
         this.$("show-solutions-button").hide();
         this.$("answer-entry").hide();
+        this.$("levels-frame").hide();
+        this.$("button-bar").style.visibility = "hidden";
+        this.$("new-level").removeAttribute("tabindex"); // Use shortcut instead
         // Set some constants
         this.delay = 300;
         this.itemFadeDuration = 400;  // Set in scss as well!
         this.itemFadeDistance = 300;  // Set in scss as well!
-        this.solutionFadeDuration = 100;
+        this.solutionFadeDuration = 150;
+        this.evalFadeInDuration = 225;
+        this.evalFadeOutDuration = 225;
         this.solutionFadeDistance = 10;  // Set in scss as well!
-        this.solutionFadeDelay = 50;
+        this.solutionFadeDelay = 80;
         this.pickedItemsLimit = 10;
+        this.testItemMarginBottom = "25px";  // Set in scss as well!
         // Create function which makes sure an action is not taken too fast
         this.lastTime = 0;
         const ifDelayHasPassed = (callback) => {
@@ -190,11 +196,11 @@ class TestSection extends Section {
         });
         events.on("settings-test-use-flashcard-mode", () => {
             const enabled = dataManager.settings.test.useFlashcardMode;
-            this.$("ignore-answer").toggleDisplay(!enabled);
-            this.$("add-answer").toggleDisplay(!enabled);
             this.$("modify-item").classList.toggle("flashcard-mode", enabled);
-            // If test is in answer step, exchange eval buttons and answer entry
+            // Exchange interface elements only if in an answer step
             if (this.testInfo !== null && !this.testInfo.inEvalStep) {
+                this.$("ignore-answer").toggleDisplay(!enabled);
+                this.$("add-answer").toggleDisplay(!enabled);
                 if (enabled) {
                     this.$("answer-entry").hide();
                     this.$("show-solutions-button").show();
@@ -281,6 +287,7 @@ class TestSection extends Section {
                 }
             }
         }
+        if (!main.barsHidden) main.toggleBarVisibility();
     }
 
     confirmClose() {
@@ -299,8 +306,9 @@ class TestSection extends Section {
         return true;
     }
 
-    close() {
+    async close() {
         shortcuts.disable("ignore-answer");
+        if (main.barsHidden) main.toggleBarVisibility();
     }
 
     /* =====================================================================
@@ -427,25 +435,39 @@ class TestSection extends Section {
                 solutions, dataManager.settings.test.animate);
             // Update rest of view
             if (item.parts.length === 0 && !this.testInfo.vocabListMode) {
-                this.$("levels-frame").show();
-                this.$("levels-frame").style.opacity = "1";
                 this.$("new-level").setByIndex(newLevel - 1);
                 this.$("old-level").textContent = item.level;
                 this.$("level-arrow").classList.toggle("correct",
                                                        itemCorrect);
                 this.$("level-arrow").classList.toggle("incorrect",
                                                        !itemCorrect);
+                if (dataManager.settings.test.animate) {
+                    Velocity(this.$("levels-frame"), "fadeIn", { display:"flex",
+                        visibility:"visible",duration:this.evalFadeInDuration});
+                } else {
+                    this.$("levels-frame").show();
+                    this.$("levels-frame").style.opacity = "1";
+                }
+            }
+            if (dataManager.settings.test.enableIgnoreShortcut) {
+                shortcuts.enable("ignore-answer");
             }
             this.$("answer-entry").hide();
             this.$("continue-button").show();
             this.$("continue-button").focus();
-            if (dataManager.settings.test.enableIgnoreShortcut) {
-                shortcuts.enable("ignore-answer");
-            }
             this.$("ignore-answer").removeAttribute("disabled");
+            this.$("modify-item").removeAttribute("disabled");
             if (!answerCorrect)
                 this.$("add-answer").removeAttribute("disabled");
-            this.$("modify-item").removeAttribute("disabled");
+            this.$("ignore-answer").show();
+            this.$("add-answer").toggleDisplay(!answerCorrect, "flex");
+            if (dataManager.settings.test.animate) {
+                Velocity(this.$("button-bar"), "fadeIn", { display: "flex",
+                    visibility: "visible", duration: this.evalFadeInDuration });
+            } else {
+                this.$("button-bar").style.visibility = "visible";
+                this.$("button-bar").style.opacity = "1";
+            }
         }
     }
 
@@ -463,11 +485,21 @@ class TestSection extends Section {
             this.$("status").textContent = "";
             this.$("show-solutions-button").hide();
             this.$("evaluation-buttons").show();
+            this.$("ignore-answer").hide();
+            this.$("add-answer").hide();
             this.$("modify-item").removeAttribute("disabled");
+            if (dataManager.settings.test.animate) {
+                Velocity(this.$("button-bar"), "fadeIn", { display: "flex",
+                    visibility: "visible", duration: this.evalFadeInDuration });
+            } else {
+                this.$("button-bar").style.visibility = "visible";
+                this.$("button-bar").style.opacity = "1";
+            }
         });
     }
 
-    _displaySolutions(solutions, animate) {
+    async _displaySolutions(solutions, animate) {
+        const itemPosBefore = this.$("test-item").getBoundingClientRect();
         this.$("solutions").classList.toggle("pinyin",
             dataManager.currentLanguage === "Chinese" &&
             (this.testInfo.currentPart === "readings" ||
@@ -482,30 +514,37 @@ class TestSection extends Section {
             this.$("solutions").appendChild(solutionLabel);
         }
         this.$("solutions").fadeScrollableBorders();
-        let delay = 0; 
+        this.$("test-item").style.marginBottom = this.testItemMarginBottom;
+        // Slide up test item to make space for solutions
+        const itemPosAfter = this.$("test-item").getBoundingClientRect();
+        const itemSlideDistance = itemPosBefore.top - itemPosAfter.top;
+        this.$("test-item").slideToCurrentPosition({
+            direction: "up", distance: itemSlideDistance,
+            duration: this.evalFadeInDuration, easing: "easeOutCubic"
+        });
         // If animation flag is set, fade and slide labels down a bit
-        utility.finishEventQueue().then(() => {
-            if (animate) {
-                const solutionNodes = [];
-                for (const solutionNode of this.$("solutions").children) {
-                    if (solutionNode.offsetTop >
-                            this.$("solutions").offsetHeight) {
-                        solutionNode.style.opacity = "1";
-                    } else {
-                        solutionNodes.push(solutionNode);
-                    }
-                }
-                for (const solutionNode of solutionNodes) {
-                    solutionNode.fadeIn({
-                        distance: this.solutionFadeDistance,
-                        duration: this.solutionFadeDuration,
-                        direction: "right",
-                        delay: delay
-                    });
-                    delay += this.solutionFadeDelay;
+        let delay = 0; 
+        if (animate) {
+            await utility.finishEventQueue();
+            const solutionNodes = [];
+            for (const solutionNode of this.$("solutions").children) {
+                if (solutionNode.offsetTop >
+                        this.$("solutions").offsetHeight) {
+                    solutionNode.style.opacity = "1";
+                } else {
+                    solutionNodes.push(solutionNode);
                 }
             }
-        });
+            for (const solutionNode of solutionNodes) {
+                solutionNode.fadeIn({
+                    distance: this.solutionFadeDistance,
+                    duration: this.solutionFadeDuration,
+                    direction: "right",
+                    delay: delay
+                });
+                delay += this.solutionFadeDelay;
+            }
+        }
     }
 
     _prepareMode(mode, part) {
@@ -580,10 +619,14 @@ class TestSection extends Section {
     }
 
     async _createQuestion(newLevel) {
+        this.testInfo.inEvalStep = false;
+        // Immediately disable all buttons and shortcuts to prevent bugs
+        this.$("ignore-answer").setAttribute("disabled", "");
+        this.$("add-answer").setAttribute("disabled", "");
+        this.$("modify-item").setAttribute("disabled", "");
         if (dataManager.settings.test.enableIgnoreShortcut) {
             shortcuts.disable("ignore-answer");
         }
-        this.testInfo.inEvalStep = false;
         // Process previously answered item
         if (this.testInfo.currentItem !== null &&
                 !this.testInfo.skipNextEvaluation) {
@@ -811,20 +854,21 @@ class TestSection extends Section {
         } else {
             this.$("solutions").innerHTML = "";
         }
+        this.$("test-item").style.marginBottom = "0px";
         this.$("test-item").textContent = newItem.entry;
         // If animation flag is set, fade in new item
         if (dataManager.settings.test.animate && previousItem !== null) {
             this.$("test-item").fadeIn({ duration: this.itemFadeDuration });
         }
         this._prepareMode(newItem.mode, part);
-        this.$("ignore-answer").setAttribute("disabled", "");
-        this.$("add-answer").setAttribute("disabled", "");
-        this.$("modify-item").setAttribute("disabled", "");
         if (dataManager.settings.test.animate && previousItem !== null) {
-          Velocity(this.$("levels-frame"), "fadeOut",
-                   { duration: this.itemFadeDuration });
+            Velocity(this.$("button-bar"), "fadeOut", { display: "flex",
+                visibility: "hidden", duration: this.evalFadeOutDuration });
+            Velocity(this.$("levels-frame"), "fadeOut", { display: "flex",
+                visibility: "hidden", duration: this.evalFadeOutDuration });
         } else {
-          this.$("levels-frame").hide();
+            this.$("button-bar").style.visibility = "hidden";
+            this.$("levels-frame").hide();
         }
         this.$("continue-button").hide();
         this.$("evaluation-buttons").hide();

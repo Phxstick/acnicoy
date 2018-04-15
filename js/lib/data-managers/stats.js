@@ -209,94 +209,103 @@ module.exports = function (paths, modules) {
     ========================================================================= */
 
     /**
-     * Return total number of items tested.
+     * Return total number of SRS items tested on for the given language.
+     * @param {String} language
      * @returns {Number}
      */
-    stats.getNumberOfItemsTested = function () {
-        return modules.test.modes.reduce((total, mode) => {
-            return total + data.data["testedPerMode"][mode];
-        }, 0);
-    };
-
-    /**
-     * Return total number of items tested for all languages.
-     * @returns {Number}
-     */
-    stats.getNumberOfItemsTestedForAllLanguages = function () {
-        let total = 0;
-        for (const language in dataMap) {
-            for (const mode in dataMap[language].data.testedPerMode) {
-                total += dataMap[language].data.testedPerMode[mode];
-            }
+    stats.getNumberOfItemsTestedFor = function (language) {
+        let numTested = 0;
+        for (const mode in dataMap[language].data.testedPerMode) {
+            numTested += dataMap[language].data.testedPerMode[mode];
         }
-        return total;
+        return numTested;
     };
 
     /**
-     * Return total score for given testmode.
+     * Return total score for the given language (sum of scores for all modes).
+     * @param {String} language
      * @returns {Number}
      */
-    stats.getScoreForMode = function (mode) {
-        return data.data["scorePerMode"][mode];
+    stats.getTotalScoreFor = function (language) {
+        const modes = modules.test.modesForLanguage(language);
+        let score = 0;
+        for (const mode of modes) {
+            score += dataMap[language].data.scorePerMode[mode];
+        }
+        return parseInt(score);
     };
 
     /**
-     * Return total score (Sum of scores for all modes).
-     * @returns {Number}
-     */
-    stats.getTotalScore = function() {
-        return parseInt(modules.test.modes.reduce((total, mode) => {
-           return total + stats.getScoreForMode(mode);
-        }, 0));
-    };
-
-    /**
-     * Return a list containing the amounts of SRS items added recently.
+     * Return a list containing the amounts of SRS items added recently for the
+     * given languages.
+     * @param {Array} languages
      * @param {String} unit - Can be "days" or "months".
      * @param {String} numUnits - Number of intervals in the timeline.
      * @returns {Array}
      */
-    stats.getItemsAddedTimeline = function (unit, numUnits) {
-        return utility.getTimeline(unit, numUnits, async (startDate,endDate)=> {
+    stats.getItemsAddedTimelineFor = function (languages, unit, numUnits) {
+        return utility.getTimeline(unit, numUnits, async (startDate, endDate)=>{
             const startSecs = parseInt(startDate.getTime() / 1000);
             const endSecs = parseInt(endDate.getTime() / 1000);
-            const wordsAdded = await modules.database.query(
-                `SELECT COUNT(*) AS amount FROM vocabulary
-                 WHERE date_added BETWEEN ? AND ?`, startSecs, endSecs-1)
-                .then(([{amount}]) => amount);
-            // TODO Kanji added
-            return wordsAdded;
+            const numItemsPerLanguage = [];
+            for (const language of languages) {
+                let numItemsAdded = await modules.database.queryLanguage(
+                        language, `SELECT COUNT(*) AS amount FROM vocabulary
+                        WHERE date_added BETWEEN ? AND ?`, startSecs, endSecs-1)
+                    .then(([{amount}]) => amount);
+                if (language === "Japanese") {
+                    numItemsAdded += await modules.database.queryLanguage(
+                            language,`SELECT COUNT(*) AS amount FROM kanji WHERE
+                            date_added BETWEEN ? AND ?`, startSecs, endSecs - 1)
+                        .then(([{amount}]) => amount);
+                }
+                if (language === "Chinese") {
+                    numItemsAdded += await modules.database.queryLanguage(
+                            language,`SELECT COUNT(*) AS amount FROM hanzi WHERE
+                            date_added BETWEEN ? AND ?`, startSecs, endSecs - 1)
+                        .then(([{amount}]) => amount);
+                }
+                numItemsPerLanguage.push(numItemsAdded);
+            }
+            return numItemsPerLanguage;
         }, false);
     };
 
     /**
-     * Return a list containing the amounts of items tested on recently.
+     * Return a list containing the amounts of items tested on recently for the
+     * given languages.
+     * @param {Array} languages
      * @param {String} unit - Can be "days" or "months".
      * @param {String} numUnits - Number of intervals in the timeline.
      * @returns {Array}
      */
-    stats.getItemsTestedTimeline = function (unit, numUnits) {
-        const numUnitsNonzero = Math.min(numUnits, data.data.daily.length);
+    stats.getItemsTestedTimelineFor = function (languages, unit, numUnits) {
         const list = new Array(numUnits);
-        if (unit === "days") {
-            for (let i = 0; i < numUnitsNonzero; ++i) {
-                list[i] = data.data.daily[data.data.daily.length - i - 1].tested
-            }
-        } else if (unit === "months") {
-            const d = new Date();
-            let offset = 0;
-            for (let i = 0; i < numUnitsNonzero; ++i) {
-                const numDays = utility.daysInMonth(d.getMonth(), d.getYear());
-                list[i] = data.data.daily.slice(
-                    data.data.daily.length - offset - numDays,
-                    data.data.daily.length - offset)
-                    .reduce((total, dayObject) => total += dayObject.tested, 0);
-                offset += numDays;
-                d.setMonth(d.getMonth() - 1);
-            }
+        for (let i = 0; i < numUnits; ++i) {
+            list[i] = new Array(languages.length);
         }
-        for (let i = numUnitsNonzero; i < numUnits; ++i) {
-            list[i] = 0;
+        for (let j = 0; j < languages.length; ++j) {
+            const dailyData = dataMap[languages[j]].data.daily;
+            const numUnitsNonzero = Math.min(numUnits, dailyData.length);
+            if (unit === "days") {
+                for (let i = 0; i < numUnitsNonzero; ++i) {
+                    list[i][j] = dailyData[dailyData.length - i - 1].tested;
+                }
+            } else if (unit === "months") {
+                const d = new Date();
+                let offset = 0;
+                for (let i = 0; i < numUnitsNonzero; ++i) {
+                    const start = dailyData.length - offset;
+                    const nDays = utility.daysInMonth(d.getMonth(), d.getYear())
+                    list[i][j] = dailyData.slice(start - nDays, start)
+                        .reduce((total, dayObj) => total += dayObj.tested, 0);
+                    offset += nDays;
+                    d.setMonth(d.getMonth() - 1);
+                }
+            }
+            for (let i = numUnitsNonzero; i < numUnits; ++i) {
+                list[i][j] = 0;
+            }
         }
         return utility.getTimeline(unit, numUnits, (sd,ed,i) => list[i], false);
     };

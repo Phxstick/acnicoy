@@ -1,10 +1,6 @@
 @import "base";
 
-$control-bar-border-color: $test-section-control-bar-border-color;
-$control-bar-disabled-color: $test-section-control-bar-color-disabled;
-$control-bar-button-color: $test-section-control-bar-button-color;
-$test-frame-background: $test-section-test-frame-background;
-$test-frame-color: $test-section-test-frame-color;
+$fade-color: mix($test-section-background, $test-section-color, 92%);
 
 $answer-input-margin: 30px;
 $answer-input-width: 300px;
@@ -24,8 +20,8 @@ $scroll-overflow-shadow-size: 25px;
   height: 60%;
   display: flex;
   flex-direction: column;
-  background-color: $test-section-test-frame-background;
-  color: $test-section-test-frame-color;
+  background-color: $test-section-background;
+  color: $test-section-color;
   align-items: center;
 
   &.animate {
@@ -35,7 +31,7 @@ $scroll-overflow-shadow-size: 25px;
     transition-duration: $item-fade-duration;
   }
 
-  --test-frame-background: $test-frame-background;
+  --test-frame-background: $test-section-background;
   &.word-meaning {
     --test-frame-background: $test-section-item-type-word-meaning;
   }
@@ -70,7 +66,7 @@ $scroll-overflow-shadow-size: 25px;
 
 #status {
   margin-top: 30px;
-  color: $test-section-test-frame-color;
+  color: $test-section-color;
   font-size: 120%;
   text-shadow: 1px 1px 0 $test-section-status-shadow-color;
   &.correct {
@@ -87,8 +83,9 @@ $scroll-overflow-shadow-size: 25px;
   flex: 1;
   
   #test-item {
-    color: $test-frame-color;
+    color: $test-section-color;
     margin-bottom: 25px;
+    text-align: center;
 
     &.serif { font-family: $serif-font; }
 
@@ -144,7 +141,7 @@ $scroll-overflow-shadow-size: 25px;
     z-index: 1;
 
     div {
-      color: $test-frame-color;
+      color: $test-section-color;
       font-size: 120%;
       padding: 3px;
     }
@@ -222,9 +219,18 @@ $scroll-overflow-shadow-size: 25px;
 #new-level > option {
   font-size: 100%;
   font-family: $font;
-  background-color:
-    mix($background-color, $test-section-test-frame-background, 70%);
-  color: $color;
+  background-color: $test-section-background;
+  color: $test-section-color;
+  border: 1px solid transparent;
+  &:hover {
+    border-color: $test-section-color;
+  }
+  &[selected] {
+    border-color: $test-section-color-light;
+    &:hover {
+      border-color: $test-section-color;
+    }
+  }
 }
 
 #levels-frame {
@@ -258,8 +264,7 @@ $scroll-overflow-shadow-size: 25px;
   #score {
     font-size: 140%;
     font-family: $light-font;
-    color: mix($test-section-test-frame-background,
-               $test-section-test-frame-color, 30%);
+    color: mix($test-section-background, $test-section-color, 30%);
     margin-top: -10px;
   }
   #score-animation {
@@ -273,35 +278,28 @@ $scroll-overflow-shadow-size: 25px;
 }
 
 #answer-entry {
-  @extend input.styled;
   text-align: center;
+  box-sizing: border-box;
   font-size: $answer-input-font-size;
   margin-top: $answer-input-margin;
   width: $answer-input-width;
   padding: $answer-input-padding;
-  box-sizing: border-box;
 
   &.pinyin {
     font-family: $pinyin-font;
   }
+  &:focus::placeholder {
+    color: transparent;
+  }
 }
 
 #continue-button, #show-solutions-button {
-  background-color: darken($input-background, 6%);
-  border: 1px solid $input-border-color;
-  color: $input-color;
-  font-family: $button-font;
-  font-size: $answer-input-font-size;
-  margin-top: $answer-input-margin;
+  box-sizing: border-box;
   width: $answer-input-width;
   padding: $answer-input-padding;
-  box-sizing: border-box;
-  &:focus {
-    box-shadow: none;
-  }
-  &:hover {
-    background-color: darken($input-background, 10%);
-  }
+  margin-top: $answer-input-margin;
+  font-family: $button-font;
+  font-size: $answer-input-font-size;
 }
 
 #show-solutions-button {
@@ -345,64 +343,66 @@ $scroll-overflow-shadow-size: 25px;
   display: flex;
   flex-direction: row;
   height: 35px;
-  width: 70%;
-  font-size: 90%;
+  width: 460px;
   border-width: 1px 0 0 0;
-  @include fading-border($control-bar-border-color, "horizontal");
+  @include fading-border($test-section-color-medium, "horizontal");
 
   button {
     @include center-content;
+    @include fading-border(lighten($test-section-color-medium, 5%),"to bottom");
+    // width: 190px;
     flex: 1;
-    background-color: transparent;
-    background-repeat: no-repeat;
-    background-position: center top;
-    color: $control-bar-button-color;
     border-top: 0;
     border-bottom: 0;
     border-left: 0;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center top;
+    color: $test-section-color-medium;
     font-family: $button-font;
-    @include fading-border(lighten($control-bar-border-color, 15%),"to bottom");
-    &:hover:not(.flashcard-mode) {
-      background-image: linear-gradient(to bottom,
-        darken($control-bar-border-color, 40%), transparent 75%);
-      text-shadow: 0 0 1px $control-bar-button-color;
-    }
     &:not(:last-child) {
       border-right-width: 1px;
     }
-    &:first-child:not(:last-child):not(.flashcard-mode):not(:disabled) {
-      &:hover {
-        background-image: linear-gradient(to bottom left,
-          darken($control-bar-border-color, 40%), transparent, transparent);
-      }
+    &:focus {
+      box-shadow: none;
     }
-    &:last-child:not(:first-child):not(.flashcard-mode):not(:disabled) {
-      &:hover {
-        background-image: linear-gradient(to bottom right,
-          darken($control-bar-border-color, 40%), transparent, transparent);
-      }
+
+    // Make button light up with gradient upon hovering
+    $fade-color: mix($test-section-background, $test-section-color, 80%);
+    &:not(:disabled):hover, &:not(:disabled):focus {
+      color: $test-section-color;
+      text-shadow: 0 0 0.5px $test-section-color-medium;
     }
-    &.flashcard-mode:not(:disabled) {
-      &:hover {
-        background-image: radial-gradient(ellipse at top,
-          darken($control-bar-border-color, 40%), transparent, transparent);
-      }
+    &:not(.flashcard-mode):not(:disabled):hover,
+        &:not(.flashcard-mode):not(:disabled):focus {
+      background-image: linear-gradient(to bottom,$fade-color,transparent 70%);
     }
-    &:disabled {
-      color: $control-bar-disabled-color;
-      &:hover {
-        text-shadow: none;
-        background-image: none;
-      }
+    &:not(.flashcard-mode):not(:disabled):first-child:hover,
+        &:not(.flashcard-mode):not(:disabled):first-child:focus {
+      background-image: radial-gradient(ellipse at top right,
+        $fade-color, transparent 65%);
     }
+    &:not(.flashcard-mode):not(:disabled):last-child:hover,
+        &:not(.flashcard-mode):not(:disabled):first-child:focus {
+      background-image: radial-gradient(ellipse at top left,
+        $fade-color, transparent 65%);
+    }
+    &.flashcard-mode:not(:disabled):hover,
+        &.flashcard-mode:not(:disabled):focus {
+      background-image: radial-gradient(ellipse at top,
+        $fade-color, transparent 65%);
+    }
+    // &:disabled {
+    //   color: $control-bar-disabled-color;
+    //   &:hover {
+    //     text-shadow: none;
+    //     background-image: none;
+    //   }
+    // }
   }
 }
 
 #progress {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   width: 100%;
   height: 20px;
   appearance: none;
@@ -411,7 +411,7 @@ $scroll-overflow-shadow-size: 25px;
     background-color: $background-color-dark;
   }
   &::-webkit-progress-value {
-    background-color: $color-light;
+    background-color: $test-section-background;
   }
   &::-webkit-progress-inner-element {
     border: 0;
@@ -430,36 +430,133 @@ $scroll-overflow-shadow-size: 25px;
 }
 
 #session-info-bar {
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  right: 0;
+  align-self: stretch;
   display: flex;
   flex-direction: row;
   align-items: center;
-  color: lighten($color, 5%);
-  
-  #session-info {
-    margin-left: 10px;
+  color: $color-light;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+
+  > * {
     font-family: $header-font;
-    color: $color-light;
-    font-size: 110%;
+    margin-left: 15px;
     flex-shrink: 0;
   }
+  > button {
+    margin-right: 15px;
+    &:hover {
+      color: $color;
+    }
+  }
   #vocab-list {
-    margin-left: 15px;
-    font-size: 120%;
-    font-family: $header-font;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
   }
-  #wrap-up {
-    margin-left: 10px;
-    flex-shrink: 0;
+}
+
+:host(:not(.old-design)) {
+  #bottom {
+    background-color: $test-section-background;
   }
-  #abort-session {
-    margin-left: 10px;
-    flex-shrink: 0;
+  #session-info-bar {
+    color: $test-section-color-light;
+    > button:hover {
+      color: $test-section-color;
+    }
+  }
+  #progress {
+    border-top: 1px solid $test-section-color-light;
+    &::-webkit-progress-bar {
+      background-color: $test-section-background;
+    }
+    &::-webkit-progress-value {
+      background-color: $test-section-color-light;
+    }
+  }
+  #button-bar {
+    border-width: 1px 0 1px 0;
+    @include fading-border($test-section-color-medium, "horizontal");
+
+    button {
+      border-image: none;
+
+      // Make button light up with gradient upon hovering
+      &:not(.flashcard-mode):not(:disabled):hover,
+          &:not(.flashcard-mode):not(:disabled):focus {
+        background-color: $fade-color;
+      }
+      &:not(.flashcard-mode):not(:disabled):first-child:hover,
+          &:not(.flashcard-mode):not(:disabled):first-child:focus {
+        background-image: linear-gradient(to left,$fade-color,transparent 95%);
+        background-color: transparent;
+      }
+      &:not(.flashcard-mode):not(:disabled):last-child:hover,
+          &:not(.flashcard-mode):not(:disabled):last-child:focus {
+        background-image: linear-gradient(to right,$fade-color,transparent 95%);
+        background-color: transparent;
+      }
+      &.flashcard-mode:not(:disabled):hover,
+          &.flashcard-mode:not(:disabled):focus {
+        background-image: linear-gradient(
+            to right, transparent 5%, $fade-color, transparent 95%);
+        background-color: transparent;
+      }
+    }
+  }
+  #answer-entry {
+    margin-top: 0px;
+    color: $test-section-color;
+    border-bottom: 1px solid $test-section-color-light;
+
+    &::placeholder {
+      color: $test-section-color-medium;
+    }
+    &:hover:not(:focus)::placeholder {
+      color: $test-section-color;
+    }
+    &:focus::placeholder {
+      color: transparent;
+    }
+    &:hover, &:focus {
+      border-color: $test-section-color;
+    }
+  }
+  #continue-button, #show-solutions-button {
+    @include fading-border($test-section-color-medium, "horizontal");
+    height: 40px;
+    width: 460px;
+    border-bottom-width: 1px;
+    margin-top: 0px;
+    color: $test-section-color-medium;
+
+    &:hover, &:focus {
+      color: $test-section-color;
+      border-color: $test-section-color;
+      background-image: linear-gradient(
+          to right, transparent, $fade-color, transparent);
+      box-shadow: none;
+    }
+  }
+  #show-solutions-button {
+    border-top-width: 1px;
+  }
+}
+
+:host(.old-design) {
+  #answer-entry {
+    @extend input.styled;
+  }
+  #continue-button, #show-solutions-button {
+    background-color: darken($input-background, 6%);
+    border: 1px solid $input-border-color;
+    color: $input-color;
+    &:focus {
+      box-shadow: none;
+    }
+    &:hover {
+      background-color: darken($input-background, 10%);
+    }
   }
 }

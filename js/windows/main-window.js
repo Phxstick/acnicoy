@@ -59,6 +59,8 @@ class MainWindow extends Window {
     constructor () {
         super("main");
         // Constants
+        this.sideBarWidth = "80px";  // Keep consistent with scss
+        this.menuBarHeight = "42px";  // Keep consistent with scss
         this.panelSlideDuration = 350;
         this.sectionFadeDuration = 200;
         this.statusUpdateInterval = utility.timeSpanStringToSeconds("3 hours");
@@ -82,19 +84,22 @@ class MainWindow extends Window {
         this.introTourParts = null;
         this.currentPartIndex = -1;
         this.introTourContext = null;
-        // Top menu button events
-        this.$("exit-button").addEventListener("click",
-                () => ipcRenderer.send("quit"));
+        this.barsHidden = false;
+        // Menu button events
         this.$("home-button").addEventListener("click",
                 () => this.openSection("home"));
         this.$("stats-button").addEventListener("click",
                 () => this.openSection("stats"));
-        this.$("vocab-button").addEventListener("click",
-                () => this.openSection("vocab"));
         this.$("settings-button").addEventListener("click",
                 () => this.openSection("settings"));
+        this.$("help-button").addEventListener("click",
+                () => overlays.open("help"));
+        this.$("about-button").addEventListener("click",
+                () => overlays.open("about"));
+        this.$("exit-button").addEventListener("click",
+                () => ipcRenderer.send("quit"));
+        // Unhighlight all highlighted notifications after they were viewed
         const onNotificationsWindowClosed = () => {
-            // Unhighlight all highlighted notifications after they were viewed
             let notificationNode = this.$("notifications").firstElementChild;
             while (notificationNode !== null &&
                     notificationNode.classList.contains("highlighted")) {
@@ -134,18 +139,17 @@ class MainWindow extends Window {
                 () => this.openSection("dictionary"));
         this.$("find-kanji-button").addEventListener("click",
                 () => this.openSection("kanji"));
-        this.$("about-button").addEventListener("click",
-                () => overlays.open("about"));
-        this.$("help-button").addEventListener("click",
-                () => overlays.open("help"));
+        this.$("vocab-button").addEventListener("click",
+                () => this.openSection("vocab"));
+        this.$("notes-button").addEventListener("click",
+                () => this.openSection("notes"));
         // Language popup events
         this.$("language-popup").callback = (lang) => this.setLanguage(lang);
         this.$("language-popup").onOpen = () => {
             this.$("language-popup").clear();
             for (const language of dataManager.languages.visible) {
                 this.$("language-popup").add(language);
-                dataManager.srs.getTotalAmountDueForLanguage(language)
-                .then((amount) => {
+                dataManager.srs.getTotalAmountDueFor(language).then((amount)=>{
                     this.$("language-popup").setAmountDue(language, amount);
                 });
             }
@@ -197,6 +201,7 @@ class MainWindow extends Window {
             "toggle-fullscreen": () =>
                 mainBrowserWindow.setFullScreen(
                     !mainBrowserWindow.isFullScreen()),
+            "toggle-bars-visibility": () => this.toggleBarVisibility(),
             "refresh": () => events.emit("update-srs-status"),
             "save-input": () => {
                 if (this.currentPanel !== null) {
@@ -373,7 +378,8 @@ class MainWindow extends Window {
             this.$("kanji-info-panel").load("字", true);
             this.$("kanji-info-panel").loadHistory();
         }
-        // Regularly update displayed SRS info
+        // Regularly update SRS info
+        events.emit("update-srs-status");
         this.srsStatusCallbackId = window.setInterval(
             () => events.emit("update-srs-status"),
             1000 * this.srsStatusUpdateInterval);
@@ -493,46 +499,40 @@ class MainWindow extends Window {
         return Promise.all(results);
     }
 
-    openSection(name) {
+    async openSection(name) {
         if (this.fadingOutPreviousSection) {
             this.nextSection = name;
             return;
         }
-        if (this.currentSection === name) return;
+        if (this.currentSection === name)
+            return;
         const currentSection = this.currentSection;
-        return Promise.resolve(
-                this.sections[currentSection].confirmClose())
-        .then((confirmed) => {
-            if (!confirmed) return;
-            this.nextSection = name;
-            this.sections[currentSection].close();
-            if (dataManager.settings.design.fadeSectionSwitching) {
-                this.fadingOutPreviousSection = true;
-                return Velocity(this.sections[currentSection], "fadeOut", {
-                    duration: this.sectionFadeDuration
-                }).then(() => {
-                    // Make sure section is already displayed when "open" called
-                    this.fadingOutPreviousSection = false;
-                    const nextSection = this.nextSection;
-                    this.currentSection = nextSection;
-                    this.sections[nextSection].style.opacity = "0";
-                    this.sections[nextSection].show();
-                    Velocity(this.sections[nextSection], "fadeIn",
-                        { duration: this.sectionFadeDuration });
-                    return utility.finishEventQueue().then(() => {
-                        this.sections[nextSection].open();
-                    });
-                });
-            } else {
-                this.sections[currentSection].hide();
-                this.currentSection = this.nextSection;
-                this.sections[this.nextSection].style.opacity = "1";
-                this.sections[this.nextSection].show();
-                return utility.finishEventQueue().then(() => {
-                    this.sections[this.nextSection].open();
-                });
-            }
-        });
+        const confirmed =
+            await Promise.resolve(this.sections[currentSection].confirmClose());
+        if (!confirmed)
+            return;
+        this.nextSection = name;
+        await this.sections[currentSection].close();
+        if (dataManager.settings.design.fadeSectionSwitching) {
+            this.fadingOutPreviousSection = true;
+            await Velocity(this.sections[currentSection], "fadeOut",
+                { duration: this.sectionFadeDuration });
+            // Make sure section is already displayed when "open" called
+            this.fadingOutPreviousSection = false;
+            const nextSection = this.nextSection;
+            this.currentSection = nextSection;
+            this.sections[nextSection].style.opacity = "0";
+            this.sections[nextSection].show();
+            Velocity(this.sections[nextSection], "fadeIn",
+                { duration: this.sectionFadeDuration });
+        } else {
+            this.sections[currentSection].hide();
+            this.currentSection = this.nextSection;
+            this.sections[this.nextSection].style.opacity = "1";
+            this.sections[this.nextSection].show();
+        }
+        await utility.finishEventQueue();
+        this.sections[this.nextSection].open();
     }
 
     async openPanel(name, { dictionaryId, entryName }={}) {
@@ -658,6 +658,29 @@ class MainWindow extends Window {
         }
     }
 
+    async toggleBarVisibility() {
+        // this.$("side-bar").toggleDisplay();
+        // this.$("menu-bar").toggleDisplay();
+        Velocity(this.$("side-bar"), "stop");
+        Velocity(this.$("menu-bar"), "stop");
+        let prom;
+        if (this.barsHidden) {
+            prom = Velocity(this.$("side-bar"), { "width": this.sideBarWidth },
+                { complete: () => {
+                      this.$("side-bar").style.overflow = "initial"; }})
+            Velocity(this.$("menu-bar"), { "height": this.menuBarHeight },
+                { complete: () => {
+                      this.$("menu-bar").style.overflow = "initial"; }})
+        } else {
+            this.$("menu-bar").style.overflow = "hidden";
+            this.$("side-bar").style.overflow = "hidden";
+            prom = Velocity(this.$("side-bar"), { "width": "0px" });
+            Velocity(this.$("menu-bar"), { "height": "0px" });
+        }
+        this.barsHidden = !this.barsHidden;
+        await prom;
+    }
+
     updateStatus(text) {
         this.$("status-text").fadeOut();
         this.$("status-text").textContent = text;
@@ -665,16 +688,18 @@ class MainWindow extends Window {
     }
 
     async updateTestButton() {
-        const amount = await dataManager.srs.getTotalAmountDue();
-        if (dataManager.settings.test.showProgress) {
-            this.$("num-srs-items").innerHTML = `${amount}<br>items`;
-        } else {
-            if (amount > 0) {
-                this.$("num-srs-items").innerHTML = `items<br>avail.`;
-            } else {
-                this.$("num-srs-items").innerHTML = "no<br>items";
-            }
-        }
+        const amount = await
+            dataManager.srs.getTotalAmountDueFor(dataManager.currentLanguage);
+        // if (dataManager.settings.test.showProgress) {
+        //     this.$("num-srs-items").innerHTML = `${amount}<br>items`;
+        // } else {
+        //     if (amount > 0) {
+        //         this.$("num-srs-items").innerHTML = `items<br>avail.`;
+        //     } else {
+        //         this.$("num-srs-items").innerHTML = "no<br>items";
+        //     }
+        // }
+        this.$("num-srs-items").innerHTML = `${amount}<br>items`;
         this.$("test-button").classList.toggle("no-items", amount === 0);
         return amount;
     }
@@ -696,8 +721,7 @@ class MainWindow extends Window {
         const languages = dataManager.languages.visible;
         const promises = [];
         for (const language of languages) {
-            promises.push(
-                dataManager.srs.getTotalAmountDueForLanguage(language));
+            promises.push(dataManager.srs.getTotalAmountDueFor(language));
         }
         let text = "";
         Promise.all(promises).then((amounts) => {
@@ -1024,9 +1048,15 @@ class MainWindow extends Window {
             buttonNode.addEventListener("click", buttonCallback);
         }
         detailsNode.hide();
+        let detailsOpen = false;
         infoNode.addEventListener("click", () => {
             if (!details) return;
-            detailsNode.toggleDisplay();
+            if (!detailsOpen) {
+                Velocity(detailsNode, "slideDown", { duration: "fast" });
+            } else {
+                Velocity(detailsNode, "slideUp", { duration: "fast" });
+            }
+            detailsOpen = !detailsOpen;
         });
         notificationNode.contextMenu(menuItems, ["delete-notification"]);
         this.$("notifications").contextMenu(menuItems, () => {

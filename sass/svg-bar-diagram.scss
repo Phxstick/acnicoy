@@ -2,11 +2,11 @@
   display: block;
 }
 
-svg {
+#diagram {
   display: block;
   background-color: var(--background-color, transparent);
   width: 100%;
-  height: 100%;
+  height: var(--diagram-height, 100%);
 
   rect.bar {
     stroke: var(--bar-border-color, transparent);
@@ -62,5 +62,32 @@ svg {
 
   &.dragging {
     cursor: grabbing;
+  }
+}
+
+#legend {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding: 6px;
+  background-color: var(--background-color, transparent);
+  > div {
+    &:not(:first-child) {
+      margin-left: 30px;
+    }
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .color-indicator {
+    height: 14px;
+    width: 14px;
+    border-radius: 3px;
+    margin-right: 6px;
+  }
+  .legend-label {
+    font-size: var(--legend-font-size, initial);
+    font-family: var(--legend-font-family, initial);
   }
 }

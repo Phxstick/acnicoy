@@ -133,6 +133,7 @@ class LanguageTable extends Widget {
                 if (!confirmed) return;
                 const languages = dataManager.languages.all.slice();
                 languages.remove(config.language);
+                events.emit("language-removed", config.language);
                 // If the removed language is the current one, switch to another
                 if (config.language === dataManager.currentLanguage) {
                     if (languages.length > 0) {

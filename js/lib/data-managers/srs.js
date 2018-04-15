@@ -201,23 +201,24 @@ module.exports = function (paths, modules) {
         .then((rows) => rows.map((row) => row.hanzi));
     };
 
-    srs.getAmounts = function () {
+    srs.getAmountsFor = async function (language) {
         const time = utility.getTime();
-        const amounts = {};
+        const modes = modules.test.modesForLanguage(language);
+        const amounts = new Array(dataMap[language].numLevels + 1);
         const promises = [];
-        for (let level = 0; level <= srs.currentScheme.numLevels; ++level) {
+        for (let level = 0; level <= dataMap[language].numLevels; ++level) {
             amounts[level] = {};
-            for (const mode of modules.test.modes) {
+            for (const mode of modes) {
                 amounts[level][mode] = { due: 0, scheduled: 0 };
             }
         }
-        for (const mode of modules.test.modes) {
+        for (const mode of modes) {
             const table = modules.test.modeToTable(mode);
             promises.push(Promise.all([
-                modules.database.query(
+                modules.database.queryLanguage(language,
                     `SELECT level, COUNT(review_date) AS amount FROM ${table}
                      WHERE review_date <= ? GROUP BY level`, time),
-                modules.database.query(
+                modules.database.queryLanguage(language,
                     `SELECT level, COUNT(review_date) AS amount FROM ${table}
                      WHERE review_date > ? GROUP BY level`, time)
             ]).then(([amountDue, amountScheduled]) => {
@@ -227,22 +228,15 @@ module.exports = function (paths, modules) {
                     amounts[level][mode].scheduled = amount;
             }));
         }
-        return Promise.all(promises).then(() => amounts);
+        await Promise.all(promises);
+        return amounts;
     };
 
-    srs.getTotalAmountDue = function () {
-        return srs.getAmounts().then((amounts) => {
-            let total = 0;
-            for (const level in amounts) {
-                for (const mode in amounts[level]) {
-                    total += amounts[level][mode].due;
-                }
-            }
-            return total;
-        });
+    srs.getAmounts = function () {
+        return srs.getAmountsFor(modules.currentLanguage);
     };
 
-    srs.getTotalAmountDueForLanguage = function (language) {
+    srs.getTotalAmountDueFor = function (language) {
         const time = utility.getTime();
         const promises = [];
         for (const mode of modules.test.modesForLanguage(language)) {
@@ -310,7 +304,8 @@ module.exports = function (paths, modules) {
 
     /**
      * Return a list containing numbers of SRS items scheduled for intervals
-     * in the near future, starting from the current date.
+     * in the near future, starting from the current date, for given languages.
+     * @param {Array} languages
      * @param {String} unit - Can be "hours", "weeks", "days" or "months".
      * @param {String} numUnits - Number of intervals to get schedule for.
      * @returns {Array} - Array with entries of the form { amount, endDate }.
@@ -318,20 +313,23 @@ module.exports = function (paths, modules) {
      *     hour/day/month (starting to count from the current hour/day/month),
      *     and the end date of the interval (exclusive).
      */
-    srs.getSchedule = function (unit, numUnits) {
-        return utility.getTimeline(unit, numUnits, async (startDate,endDate)=> {
+    srs.getScheduleFor = function (languages, unit, numUnits) {
+        return utility.getTimeline(unit, numUnits, (startDate, endDate) => {
             const startSecs = parseInt(startDate.getTime() / 1000);
             const endSecs = parseInt(endDate.getTime() / 1000);
-            const promises = [];
-            for (const mode of modules.test.modes) {
-                const table = modules.test.modeToTable(mode);
-                promises.push(modules.database.query(
-                    `SELECT COUNT(review_date) AS amount FROM ${table}
-                     WHERE review_date BETWEEN ? AND ?`,
-                    startSecs, endSecs-1).then(([{amount}]) => amount));
+            const numItems = [];
+            for (const language of languages) {
+                const promises = [];
+                for (const mode of modules.test.modesForLanguage(language)) {
+                    const table = modules.test.modeToTable(mode);
+                    promises.push(modules.database.queryLanguage(language,
+                        `SELECT COUNT(review_date) AS amount FROM ${table}
+                         WHERE review_date BETWEEN ? AND ?`,
+                        startSecs, endSecs-1).then(([{amount}]) => amount));
+                }
+                numItems.push(Promise.all(promises).then((arr) => arr.sum()));
             }
-            const amounts = await Promise.all(promises);
-            return amounts.sum();
+            return Promise.all(numItems);
         });
     };
 

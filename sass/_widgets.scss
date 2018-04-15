@@ -20,7 +20,7 @@ popup-list {
 popup-stack {
   --tooltip-speed: 0s;
 
-  &[disabled] > option:checked {
+  &[disabled] > option[selected] {
     color: transparent;
   }
   &:focus {
@@ -41,7 +41,7 @@ popup-stack {
       z-index: 900 !important;
     }
 
-    &:checked {
+    &[selected] {
       color: $button-color;
       background-color: $highlight-background;
     }

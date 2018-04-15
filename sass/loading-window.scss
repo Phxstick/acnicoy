@@ -20,9 +20,14 @@
       margin-bottom: 25px;
     }
     #status-message {
-      font-family: $header-font;
-      font-variant: small-caps;
-      font-size: 150%;
+      color: $dark-contrast-color;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      font-family: $light-font;
+      margin-bottom: 20px;
+      // text-shadow: 0 0 10px $dark-contrast-shadow-color,
+      //              0 0 5px $dark-contrast-shadow-color,
+      //              0 0 2px $dark-contrast-shadow-color;
     }
   }
 }

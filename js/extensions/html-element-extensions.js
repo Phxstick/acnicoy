@@ -189,13 +189,13 @@ HTMLElement.prototype.fadeOut = function(
     this.parentNode.appendChild(fadeOutNode);
     const oldWidth = this.offsetWidth;
     const oldHeight = this.offsetHeight;
-    const nodeOffsets = this.getBoundingClientRect();
-    const rootOffsets = root.host.getBoundingClientRect();
+    const nodeRect = this.getBoundingClientRect();
+    const rootRect = root.host.getBoundingClientRect();
     const oldOffsets = {
-        top: nodeOffsets.top - rootOffsets.top,
-        right: nodeOffsets.right - rootOffsets.right,
-        bottom: nodeOffsets.bottom - rootOffsets.bottom,
-        left: nodeOffsets.left - rootOffsets.left
+        left: nodeRect.left - rootRect.left,
+        top: nodeRect.top - rootRect.top,
+        right: rootRect.width - nodeRect.right + rootRect.left,
+        bottom: rootRect.height - nodeRect.bottom + rootRect.top
     };
     fadeOutNode.style.width = `${oldWidth + 1}px`;
     fadeOutNode.style.height = `${oldHeight}px`;
@@ -235,13 +235,13 @@ HTMLElement.prototype.fadeIn = function(
     this.parentNode.appendChild(fadeInNode);
     const oldWidth = this.offsetWidth;
     const oldHeight = this.offsetHeight;
-    const nodeOffsets = this.getBoundingClientRect();
-    const rootOffsets = root.host.getBoundingClientRect();
+    const nodeRect = this.getBoundingClientRect();
+    const rootRect = root.host.getBoundingClientRect();
     const newOffsets = {
-        top: nodeOffsets.top - rootOffsets.top,
-        right: nodeOffsets.right - rootOffsets.right,
-        bottom: nodeOffsets.bottom - rootOffsets.bottom,
-        left: nodeOffsets.left - rootOffsets.left
+        left: nodeRect.left - rootRect.left,
+        top: nodeRect.top - rootRect.top,
+        right: rootRect.width - nodeRect.right + rootRect.left,
+        bottom: rootRect.height - nodeRect.bottom + rootRect.top
     };
     fadeInNode.style.width = `${oldWidth + 1}px`;
     fadeInNode.style.height = `${oldHeight}px`;
@@ -264,6 +264,50 @@ HTMLElement.prototype.fadeIn = function(
         this.style.visibility = "visible";
         this.style.opacity = "1";
     });
+}
+
+/**
+ *  Slide this item to the position it's currently at.
+ */
+HTMLElement.prototype.slideToCurrentPosition = async function(
+        { distance=300, duration=500, easing="easeOutSine",
+          direction="right", delay=0, zIndex="auto" }={}) {
+    const fadeInNode = this.safeDeepClone();
+    const root = this.getRoot();
+    fadeInNode.style.position = "fixed";
+    fadeInNode.style.overflow = "hidden";
+    fadeInNode.style.visibility = "visible";
+    fadeInNode.style.zIndex = zIndex;
+    fadeInNode.style.margin = "0";
+    this.parentNode.appendChild(fadeInNode);
+    const oldWidth = this.offsetWidth;
+    const oldHeight = this.offsetHeight;
+    const nodeRect = this.getBoundingClientRect();
+    const rootRect = root.host.getBoundingClientRect();
+    const offsets = {
+        left: nodeRect.left - rootRect.left,
+        top: nodeRect.top - rootRect.top,
+        right: rootRect.width - nodeRect.right + rootRect.left,
+        bottom: rootRect.height - nodeRect.bottom + rootRect.top
+    };
+    fadeInNode.style.width = `${oldWidth + 1}px`;
+    fadeInNode.style.height = `${oldHeight}px`;
+    const directionToAttribute = {
+        right: "left", down: "top", left: "right", up: "bottom"
+    };
+    const directionToSecondaryAttribute = {
+        right: "top", down: "left", left: "top", up: "left"
+    };
+    fadeInNode.style[directionToAttribute[direction]] =
+        `${offsets[directionToAttribute[direction]] - distance}px`;
+    fadeInNode.style[directionToSecondaryAttribute[direction]] =
+        `${offsets[directionToSecondaryAttribute[direction]]}px`;
+    const options = { queue: false, duration, easing, delay };
+    this.style.visibility = "hidden";
+    await Velocity(fadeInNode, {
+        [directionToAttribute[direction]]: `+=${distance}` }, options);
+    this.style.visibility = "visible";
+    fadeInNode.remove();
 }
 
 /**

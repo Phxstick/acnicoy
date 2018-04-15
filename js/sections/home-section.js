@@ -8,6 +8,7 @@ class HomeSection extends Section {
         for (const { type } of dataManager.settings.pinwall) {
             const Type = customElements.get(type);
             const widget = new Type();
+            widget.id = type;
             fragment.appendChild(widget);
         }
         this.$("pinwall").appendChild(fragment);

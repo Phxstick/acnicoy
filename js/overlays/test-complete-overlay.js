@@ -30,10 +30,10 @@ class TestCompleteOverlay extends Overlay {
                 });
             }
             if (solutionsNode.isHidden()) {
-                solutionsNode.show();
+                Velocity(solutionsNode, "slideDown", { duration: "fast" });
                 mistakeNode.classList.add("open");
             } else {
-                solutionsNode.hide();
+                Velocity(solutionsNode, "slideUp", { duration: "fast" });
                 mistakeNode.classList.remove("open");
             }
         });
@@ -96,7 +96,7 @@ class TestCompleteOverlay extends Overlay {
         this.$("languages-ready-for-testing").clear();
         const promises = [];
         for (const language of dataManager.languages.visible) {
-            promises.push(dataManager.srs.getTotalAmountDueForLanguage(language)
+            promises.push(dataManager.srs.getTotalAmountDueFor(language)
             .then((amount) => ({ language, amount })));
         }
         Promise.all(promises).then((languageAndAmount) => {

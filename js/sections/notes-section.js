@@ -17,9 +17,9 @@ const menuItems = contextMenu.registerItems({
     }
 });
 
-class PinwallNotes extends PinwallWidget {
+class NotesSection extends Section {
     constructor() {
-        super("pinwall-notes");
+        super("notes");
         this.noteToMarkdown = new WeakMap();
         this.noteBeingEdited = null;
         this.currentlyHoveredNote = null;
@@ -230,5 +230,5 @@ class PinwallNotes extends PinwallWidget {
     }
 }
 
-customElements.define("pinwall-notes", PinwallNotes);
-module.exports = PinwallNotes;
+customElements.define("notes-section", NotesSection);
+module.exports = NotesSection;

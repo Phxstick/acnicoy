@@ -5,11 +5,14 @@ class ShortcutsSettingsSubsection extends SettingsSubsection {
         super("shortcuts");
         this.globalSettingsList = [
             "add-word", "add-kanji", "open-test-section", "open-dictionary",
-            "open-kanji-search", "open-kanji-overview", "open-home-section",
-            "open-stats-section", "open-vocab-section", "open-settings",
+            "open-kanji-search", "open-kanji-overview", "open-vocab-section",
+            "open-notes-section",
+            
+            "open-home-section", "open-stats-section", "open-settings",
             "open-help",
-            "quit", "force-quit", "close-sliding-panels", "toggle-fullscreen",
-            "refresh",
+
+            "quit", "force-quit", "close-sliding-panels",
+            "toggle-bars-visibility", "refresh",
             "ignore-answer", "save-input"
         ];
         const shortcutLabels = this.$$("#shortcuts-list .keyboard-shortcut");

@@ -311,7 +311,8 @@ class VocabSection extends Section {
         // ====================================================================
         events.onAll(["language-changed", "word-added", "word-deleted"],
         () => { 
-            dataManager.vocab.size().then((size) => {
+            dataManager.vocab.sizeFor(dataManager.currentLanguage)
+            .then((size) => {
                 this.$("vocab-frame").toggleDisplay(size > 0);
                 this.$("empty-vocabulary-info").toggleDisplay(size === 0);
             });

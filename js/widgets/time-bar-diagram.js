@@ -4,6 +4,7 @@ class TimeBarDiagram extends Widget {
     constructor() {
         super("time-bar-diagram");
         this.unitButtons = {};
+        this.reverse = false;
         this.$("diagram").margin = { top: 30, left: 25, right: 25, bottom: 40 };
         this.$("diagram").barWidth = 20;
         this.$("diagram").barSpacing = 10;
@@ -44,8 +45,24 @@ class TimeBarDiagram extends Widget {
         const timeline = await this.getTimeline(unit);
         const {labels,separators} = utility.getTimelineMarkers(timeline, unit);
         const dataList = timeline.map(({data}) => data);
+        const colors = dataList.length > 0 ?
+                utility.getDistantColors(dataList[0].length) : null;
         this.$("diagram").draw(dataList, { descriptions: labels, separators,
-            showValueLabels: true, showSmallSeparators: true });
+            colors, showValueLabels: true, showSmallSeparators: true,
+            stackBars: true, reverse: this.reverse });
+    }
+
+    setLegend(labels) {
+        const colors = utility.getDistantColors(labels.length);
+        this.$("diagram").setLegend(labels, colors);
+    }
+    
+    hideLegend() {
+        this.$("diagram").hideLegend();
+    }
+
+    showLegend() {
+        this.$("diagram").showLegend();
     }
 }
 

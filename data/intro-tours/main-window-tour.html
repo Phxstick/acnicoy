@@ -1,65 +1,101 @@
 <template data-target="side-bar">
   <script>main.introTourContext = main</script>
-  <p> The main functions are accessible through the <b>sidebar</b>.
+  <p> The <b>sidebar</b> gives access to the main functions which operate on the currently <em>active language</em>.
   This includes <em>adding new words</em> to your vocabulary and <em>testing yourself</em> on previously added words.
   </p>
   <p>
   If additional language content (such as a <em>dictionary</em>) has been installed, it will also become accessible from here.
   </p>
 </template>
+
+<template data-target="language-popup">
+  <p>
+  The currently <b>active language</b> is displayed in the top left corner. If you are learning multiple languages, you can switch between them here.
+  </p>
+</template>
+
 <template data-target="test-button">
   <p>
-  The <b>test button</b> displays the number of vocabulary items scheduled for testing.
+  The <b>test button</b> displays the number of vocabulary items which are currently available for review.
   </p>
   <p>
   Items get scheduled periodically according to your chosen <em>SRS scheme</em>.
   </p>
 </template>
-<template data-target="language-popup">
+
+<template data-target="vocab-button">
   <p>
-  Many functions of the program operate on the currently <b>active language</b>. If you are learning multiple languages, you can switch between them here.
+  The <b>vocabulary section</b> allows you to view your vocabulary, edit it and organize it into lists.
   </p>
 </template>
+
+<template data-target="notes-button">
+  <p>
+  Write down anything you want in the <b>notes section</b>. For instance, you can gather learning resources or grammar rules.
+  </p>
+  <p>
+  Basic <em>Markdown</em> syntax is supported, which makes it is possible to insert links and format text.
+  </p>
+</template>
+
 <template data-target="menu">
   <p>
   Additional functionality can be accessed from the <b>menu bar</b>.
   </p>
 </template>
+
 <template data-target="home-button">
+  <script>main.introTourContext = main</script>
   <p>
-  The <b>home section</b> contains various useful widgets:
-  <ul>
-    <li><b>SRS overview</b>: Shows how your vocabulary items are distributed across SRS levels.</li>
-    <li><b>SRS schedule</b>: A draggable timeline showing how many vocabulary items are going to be scheduled for testing in the near future.</li>
-    <li><b>Notes</b>: Write down anything you want. Supports markdown formatting.</li>
-  </ul>
+  The <b>home section</b> gives you an overview of the status of your SRS items.
+  </p>
+  <p>
+  The displayed information is updated regularly every five minutes, but you can also refresh it manually by pressing <em>Ctrl+R</em>.
   </p>
 </template>
+
+<template data-target="srs-status-overview">
+  <script>main.introTourContext = main.sections["home"]</script>
+  <p>
+  The <b>SRS status overview</b> displays the number of items ready for review for each language, as well as their distribution among SRS levels.
+  </p>
+  <p>
+  If you're short on time, it's recommended to at least review items in lower SRS levels, as these are more likely to slip out of your memory!
+  </p>
+</template>
+
+<template data-target="srs-review-schedule">
+  <script>main.introTourContext = main.sections["home"]</script>
+  <p>
+  The <b>SRS schedule</b> is a draggable timeline showing how many vocabulary items are scheduled for review in the near future.</li>
+  </p>
+</template>
+
 <template data-target="stats-button">
+  <script>main.introTourContext = main</script>
   <p>
   View your language learning progress in the <b>stats section</b>.
   </p>
 </template>
-<template data-target="vocab-button">
-  <p>
-  View your vocabulary and organize it into lists in the <b>vocabulary section</b>.
-  </p>
-</template>
+
 <template data-target="settings-button">
   <p>
   Adjust the program according to your preferences in the <b>settings</b>.
   </p>
 </template>
-<template data-target="notifications-button">
-  <p>
-  You will receive <b>notifications</b> upon earning an <em>achievement</em> or when <em>program updates</em> or new <em>language data</em> become available. 
-  </p>
-</template>
+
 <template data-target="help-button">
   <p>
   If you want to learn more about specific parts of the program, you can always check the <b>help section</b>.
   </p>
 </template>
+
+<template data-target="notifications-button">
+  <p>
+  You will receive <b>notifications</b> upon earning an <em>achievement</em>, or when <em>program updates</em> or new <em>language data</em> become available. 
+  </p>
+</template>
+
 <template data-target="">
   <p>
   That's it! Have fun learning.

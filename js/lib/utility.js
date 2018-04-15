@@ -162,6 +162,27 @@ function removeDuplicates(array) {
 }
 
 /**
+ * Given multiple arrays, return a new one where the i-th entry is an array
+ * containing the i-th entries of the individual arrays.
+ * @param {...Array} arrays
+ * @returns {Array}
+ */
+function zipArrays(...arrays) {
+    if (arrays.length === 0)
+        return [];
+    const numArrays = arrays.length;
+    const numItems = arrays[0].length;
+    const zippedArray = new Array(numItems);
+    for (let i = 0; i < numItems; ++i) {
+        zippedArray[i] = new Array(numArrays);
+        for (let j = 0; j < numArrays; ++j) {
+            zippedArray[i][j] = arrays[j][i];
+        }
+    }
+    return zippedArray;
+}
+
+/**
  * Given a path, parse the html file at that path and return a fragment node
  * with the contents.
  * @param {String} path
@@ -962,6 +983,55 @@ function getTimelineMarkers(intervals, unit) {
     return { labels, separators };
 }
 
+/**
+ * Get n different colors which are as distinguishable as possible.
+ * @param {Integer} n
+ * @returns {Array}
+ */
+function getDistantColors(n) {
+    const colors = [
+        ["#b56262"],
+        ["#b56262", "#62b562"],
+        ["#b56262", "#6262b5", "#b5b562"],
+        ["#b56262", "#62b562", "#6262b5", "#b58b62"],
+        // TODO: Improve colors for n > 4
+        ["#b56262", "#6262b5", "#b5b562", "#ba956d", "#b56ab0"],
+        ["#b56262", "#6262b5", "#b5b562", "#ba956d", "#b56ab0", "#6ab573"]
+    ];
+    return colors[n - 1];
+}
+
+
+/**
+ * Handle "keydown" event for given HTMLElement. Initially call the handler
+ * only once when a key is pressed. If the key if kept pressed for a certain
+ * amount of time, start calling the handler frequently in short intervals.
+ * @param {HTMLElement} element
+ * @param {Function} handler
+ */
+function handleKeyDownEvent(element, handler) {
+    const initialDelay = 600;
+    const longPressDelay = 80;
+    let timeLastHandled = -1;
+    let pressingLong = false;
+    element.addEventListener("keyup", (event) => {
+        timeLastHandled = -1;
+        pressingLong = false;
+    });
+    element.addEventListener("keydown", (event) => {
+        const currentTime = new Date().getTime();
+        if (timeLastHandled > 0) {
+            let delay = pressingLong ? longPressDelay : initialDelay;
+            if (currentTime - timeLastHandled <= delay) {
+                return;
+            }
+            pressingLong = true;
+        }
+        timeLastHandled = currentTime;
+        handler(event);
+    });
+}
+
 
 // Non DOM-related functions
 module.exports.getTime = getTime;
@@ -970,6 +1040,7 @@ module.exports.daysInMonth = daysInMonth;
 module.exports.parseCssFile = parseCssFile;
 module.exports.setEqual = setEqual;
 module.exports.removeDuplicates = removeDuplicates;
+module.exports.zipArrays = zipArrays;
 module.exports.calculateED = calculateED;
 module.exports.getStringForNumber = getStringForNumber;
 module.exports.getOrdinalNumberString = getOrdinalNumberString;
@@ -981,6 +1052,7 @@ module.exports.existsFile = existsFile;
 module.exports.existsDirectory = existsDirectory;
 module.exports.getTimeline = getTimeline;
 module.exports.getTimelineMarkers = getTimelineMarkers;
+module.exports.getDistantColors = getDistantColors;
 
 // DOM related functions
 module.exports.parseHtmlFile = parseHtmlFile;
@@ -1000,3 +1072,4 @@ module.exports.bindRadiobuttonGroup = bindRadiobuttonGroup;
 module.exports.initializeView = initializeView;
 module.exports.makePopupWindow = makePopupWindow;
 module.exports.drawArrowOnCanvas = drawArrowOnCanvas;
+module.exports.handleKeyDownEvent = handleKeyDownEvent;

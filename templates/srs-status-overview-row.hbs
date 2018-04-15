@@ -1,0 +1,23 @@
+<div class="row-frame">
+  <div class="language-label">{{language}}</div>
+  <div class="subrows-frame">
+    <div class="subrow" style="display:none">
+      {{#each amounts}}
+        <div>{{total}}</div>
+      {{/each}}
+    </div>
+    <div class="subrow">
+      {{#each amounts}}
+        {{#if @index}}
+          <div {{#if due}}class="highlighted"{{/if}}>
+            {{#if due}}{{due}}{{/if}}
+          </div>
+        {{else}}
+          <div {{#if due}}class="highlighted"{{/if}}>
+            {{due}}
+          </div>
+        {{/if}}
+      {{/each}}
+    </div>
+  </div>
+</div>

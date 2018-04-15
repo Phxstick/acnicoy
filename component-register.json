@@ -13,7 +13,8 @@
         "help", "loading", "introduction"
     ],
     "sections": [
-        "home", "stats", "vocab", "settings", "test", "dictionary", "kanji"
+        "home", "stats", "settings", "vocab", "test", "dictionary", "kanji",
+        "notes"
     ],
     "settingsSubsections": [
         "general", "languages", "test", "design", "shortcuts"
@@ -29,9 +30,10 @@
         "popup-stack", "switch-button", "switch-bar", "popup-list",
         "svg-bar-diagram", "kanji-info-panel", "srs-status-bar",
         "kanji-search-result-entry", "dictionary-search-result-entry",
-        "pinwall-notes", "srs-status-table", "language-table", "language-popup",
+        "srs-status-table", "language-table", "language-popup",
         "check-box", "example-word-entry", "tabbed-frame",
-        "srs-review-schedule", "tree-view", "time-bar-diagram"
+        "srs-review-schedule", "tree-view", "time-bar-diagram",
+        "srs-status-overview"
     ],
     "extensions": [
         "converter", "array-extensions", "html-element-extensions",

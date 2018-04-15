@@ -5,9 +5,19 @@ class SrsReviewSchedule extends PinwallWidget {
         super("srs-review-schedule");
         const numSteps = { "hours": 48, "days": 61, "months": 24 };
         this.$("diagram").setUnits(["hours", "days", "months"], "hours");
-        this.$("diagram").setInfoText("Show SRS schedule for the next");
+        this.$("diagram").setInfoText("SRS schedule for the next");
+        this.$("diagram").showLegend();
         this.$("diagram").setDataCallback((unit) =>
-            dataManager.srs.getSchedule(unit, numSteps[unit]));
+            dataManager.srs.getScheduleFor(
+                dataManager.languages.visible, unit, numSteps[unit]));
+    }
+
+    registerCentralEventListeners() {
+        events.onAll(["settings-loaded", "language-added", "language-removed"],
+        () => {
+            const languages = dataManager.languages.visible;
+            this.$("diagram").setLegend(languages);
+        });
     }
 
     connectedCallback() {
@@ -22,7 +32,6 @@ class SrsReviewSchedule extends PinwallWidget {
     }
 
     async adjustToLanguage(language, secondary) {
-        await this.update();
     }
 
     async update() {

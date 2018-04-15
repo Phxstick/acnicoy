@@ -61,25 +61,8 @@ class PopupStack extends Widget {
         });
         // If an arrow key was pressed, select next item (depending on
         // unfolding direction of the stack).
-        const arrowKeyDelayInitial = 600;
-        const arrowKeyDelay = 80;
-        let lastArrowKeyPressTime = -1;
-        let pressingLong = false;
-        this.addEventListener("keyup", (event) => {
-            lastArrowKeyPressTime = -1;
-            let pressingLong = false;
-        });
-        this.addEventListener("keydown", (event) => {
+        utility.handleKeyDownEvent(this, (event) => {
             if (!event.key.startsWith("Arrow")) return;
-            const time = new Date().getTime();
-            if (lastArrowKeyPressTime > 0) {
-                let delay = pressingLong ? arrowKeyDelay : arrowKeyDelayInitial;
-                if (time - lastArrowKeyPressTime <= delay) {
-                    return;
-                }
-                pressingLong = true;
-            }
-            lastArrowKeyPressTime = time;
             if (event.key === "ArrowDown") {
                 if (this._attributes["direction"] === "up" &&
                         this.topItemIndex > 0) {

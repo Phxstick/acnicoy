@@ -171,11 +171,10 @@ $kanji-search-results-rare-shadow-color: grey;
 $kanji-search-results-yomi-background: #EEE;
 
 // Test section
-$test-section-control-bar-border-color: white;
-$test-section-control-bar-color-disabled: #999999;
-$test-section-control-bar-button-color: white;
-$test-section-test-frame-background: dimgray;
-$test-section-test-frame-color: whitesmoke;
+$test-section-background: darken(indianred,15%);  // firebrick
+$test-section-color: whitesmoke;
+$test-section-color-light: darkgrey; 
+$test-section-color-medium: mix(whitesmoke, darkgrey, 65%);
 $test-section-correct-color: lawngreen;
 $test-section-incorrect-color: orange;
 $test-section-status-shadow-color: rgba(0, 0, 0, 0.2);
@@ -248,5 +247,5 @@ $scrollbar-light-width: 16px;
 
 // Sizes
 $side-bar-width: 80px;
-$menu-bar-height: 50px;
+$menu-bar-height: 42px;
 $panel-width: 400px;

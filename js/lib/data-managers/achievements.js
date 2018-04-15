@@ -15,8 +15,12 @@ module.exports = function (paths, modules) {
     // These functions return true if achievement is unlocked for given value
     const achievementToCheckFunction = {
         "srs-items-reviewed": (value) => {
-            return modules.stats.getNumberOfItemsTestedForAllLanguages()
-                >= value;
+            const languages = dataManager.languages.all;
+            let numTotal = 0;
+            for (const language of languages) {
+                numTotal += modules.stats.getNumberOfItemsTestedFor(language);
+            }
+            return numTotal >= value;
         },
         "languages-registered": (value) => {
             return modules.languages.all.length >= value;

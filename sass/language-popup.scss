@@ -32,7 +32,7 @@
     display: table-row;
     background-color: var(--menu-background);
 
-    &:hover {
+    &.focussed {
       background-color: var(--menu-background-hover);
       color: var(--menu-color-hover);
     }

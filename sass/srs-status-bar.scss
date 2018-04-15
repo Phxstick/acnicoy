@@ -30,21 +30,21 @@
 }
 
 #amounts-total-frame {
-  padding-top: 8px;
-  padding-bottom: 8px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   border-bottom: 1px solid $border-color-light;
 
   #amounts-total {
-    font-size: 150%;
+    font-size: 1.25rem;
   }
 }
 
 #amounts-due-frame {
-  padding-bottom: 8px;
-  margin-top: 8px;
+  padding-top: 4px;
+  padding-bottom: 4px;
 
   #amounts-due {
-    font-size: 150%;
+    font-size: 1.25rem;
     font-family: $light-font;
   }
 }
@@ -62,7 +62,7 @@
 }
 
 #levels > * {
-  font-size: 110%;
+  font-size: 1.1rem;
 }
 
 #amounts-total > * {

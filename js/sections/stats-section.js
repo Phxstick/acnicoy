@@ -6,23 +6,20 @@ class StatsSection extends Section {
     constructor() {
         super("stats");
         const numSteps = { "days": 61, "months": 36 };
+        this.$("words-added-timeline").reverse = true;
         this.$("words-added-timeline").setUnits(["days", "months"], "days");
         this.$("words-added-timeline").setInfoText("Items added in the last");
         this.$("words-added-timeline").setDataCallback((unit) =>
-            dataManager.stats.getItemsAddedTimeline(unit, numSteps[unit]));
+            dataManager.stats.getItemsAddedTimelineFor(
+                dataManager.languages.visible, unit, numSteps[unit]));
+        this.$("srs-reviews-timeline").reverse = true;
         this.$("srs-reviews-timeline").setUnits(["days", "months"], "days");
-        this.$("srs-reviews-timeline").setInfoText("Items tested in the last");
+        this.$("srs-reviews-timeline").setInfoText("Items reviewed in the last")
         this.$("srs-reviews-timeline").setDataCallback((unit) =>
-            dataManager.stats.getItemsTestedTimeline(unit, numSteps[unit]));
-        // Configure diagram display  parameters
-        //this.$("jouyou-kanji").bottomLineWidth = 1;
-        //this.$("jouyou-kanji").topLineWidth = 1;
-        //this.$("jouyou-kanji").margin =
-        //    { top: 0, bottom: 30, left: 20, right: 20 };
-        //this.$("jlpt-kanji").bottomLineWidth = 1;
-        //this.$("jlpt-kanji").topLineWidth = 1;
-        //this.$("jlpt-kanji").margin =
-        //    { top: 0, bottom: 30, left: 20, right: 20 };
+            dataManager.stats.getItemsTestedTimelineFor(
+                dataManager.languages.visible, unit, numSteps[unit]));
+        this.$("words-added-timeline").showLegend();
+        this.$("srs-reviews-timeline").showLegend();
         // this.achievementIdToNode = new Map();
 
         // const globalAchievements = dataManager.achievements.getUnlockedGlobal();
@@ -77,101 +74,70 @@ class StatsSection extends Section {
             if (this.isHidden()) return;
             this.updateStats();
         });
+        events.onAll(["language-added", "language-removed"], () => {
+            const languages = dataManager.languages.visible;
+            this.$("words-added-timeline").setLegend(languages);
+            this.$("srs-reviews-timeline").setLegend(languages);
+        });
         // events.on("achievement-unlocked", (achievementId) => {
         //     // TODO
         //     // TODO: Adjust counter-increment as well
         // });
     }
 
+    initialize() {
+        const languages = dataManager.languages.visible;
+        this.$("words-added-timeline").setLegend(languages);
+        this.$("srs-reviews-timeline").setLegend(languages);
+        this.initStats();
+    }
+
     open() {
-        this.updateStats();
     }
 
     adjustToLanguage(language, secondary) {
-        // this.$("jouyou-kanji").hide();
-        // this.$("jlpt-kanji").hide();
-        this.$("kanji-added-frame").toggleDisplay(language === "Japanese");
-        // this.$("kanji-diagrams").toggleDisplay(language === "Japanese");
-        this.$("hanzi-added-frame").toggleDisplay(language === "Chinese");
-        // // Content dependent
-        // const japaneseContentAvailable =
-        //     language === "Japanese" && secondary === "English" &&
-        //     dataManager.content.isAvailable("Japanese", "English");
-        // this.$("jouyou-kanji").toggleDisplay(japaneseContentAvailable);
-        // this.$("jlpt-kanji").toggleDisplay(japaneseContentAvailable);
     }
 
-    updateStats() {
-        const promises = [];
-        // Display number of items tested in total
-        this.$("items-tested").textContent =
-            dataManager.stats.getNumberOfItemsTested();
-        // Display total score
-        this.$("total-score").textContent = dataManager.stats.getTotalScore();
-        // Display number of words added
-        promises.push(dataManager.vocab.size().then((amount) => {
-            this.$("words-added").textContent = amount;
-        }));
-        // Draw timelines
+    async initStats() {
+        const languages = dataManager.languages.visible;
+        // Sort languages by mastery score for general stats
+        languages.sort((l1, l2) => dataManager.stats.getTotalScoreFor(l2) -
+                                   dataManager.stats.getTotalScoreFor(l1));
+        // Fill general stats
+        let scoreTotal = 0;
+        let numTestedTotal = 0;
+        let numAddedTotal = 0;
+        for (const lang of languages) {
+            const score = dataManager.stats.getTotalScoreFor(lang);
+            const numTested = dataManager.stats.getNumberOfItemsTestedFor(lang);
+            const numAdded = await dataManager.vocab.sizeFor(lang);
+            const row = utility.fragmentFromString(
+                `<div class="general-stats-row">
+                   <div class="language-label">${lang}</div>
+                   <div>${numAdded}</div>
+                   <div>${numTested}</div>
+                   <div>${score}</div>
+                 </div>`);
+            this.$("general-stats-per-language").appendChild(row);
+            scoreTotal += score;
+            numTestedTotal += numTested;
+            numAddedTotal += numAdded;
+        }
+        const totalsRow = utility.fragmentFromString(
+            `<div class="general-stats-row">
+               <div></div>
+               <div>${numAddedTotal}</div>
+               <div>${numTestedTotal}</div>
+               <div>${scoreTotal}</div>
+             </div>`);
+        this.$("general-stats-total").appendChild(totalsRow);
+        // Draw daily stats diagrams
         this.$("words-added-timeline").drawTimeline();
         this.$("srs-reviews-timeline").drawTimeline();
-        if (dataManager.currentLanguage === "Japanese") {
-            // Display number of kanji added
-            promises.push(dataManager.kanji.getAmountAdded().then((amount) => {
-                this.$("kanji-added").textContent = amount;
-            }));
-            // // Display percentages of jouyou kanjj per grade in bar diagram
-            // if (dataManager.currentSecondaryLanguage === "English" &&
-            //         dataManager.content.isAvailable("Japanese", "English")) {
-            //     const numKanjiPerGrade =
-            //         dataManager.content.numKanjiPerGrade;
-            //     dataManager.kanji.getAmountsAddedPerGrade().then((amounts) => {
-            //         const values = [];
-            //         const maxValues = [];
-            //         const descriptions = [];
-            //         for (let grade = 1; grade <= 6; ++grade) {
-            //             values.push(amounts[grade]);
-            //             maxValues.push(numKanjiPerGrade[grade]);
-            //             descriptions.push(
-            //                 utility.getOrdinalNumberString(grade));
-            //         }
-            //         values.push(amounts[8]);
-            //         maxValues.push(numKanjiPerGrade[8]);
-            //         descriptions.push("Sec");
-            //         utility.finishEventQueue()
-            //         .then(() => {
-            //             this.$("jouyou-kanji").draw(
-            //                 values, { maxValues, descriptions }); 
-            //         });
-            //     });
-            //     // Display percentages of kanji per jlpt level in bar diagram
-            //     const numKanjiPerJlptLevel =
-            //         dataManager.content.numKanjiPerJlptLevel;
-            //     dataManager.kanji.getAmountsAddedPerJlptLevel()
-            //     .then((amounts) => {
-            //         const values = [];
-            //         const maxValues = [];
-            //         const descriptions = [];
-            //         for (let level = 5; level >= 1; --level) {
-            //             values.push(amounts[level]);
-            //             maxValues.push(numKanjiPerJlptLevel[level]);
-            //             descriptions.push(`N${level}`);
-            //         }
-            //         utility.finishEventQueue()
-            //         .then(() => {
-            //             this.$("jlpt-kanji").draw(
-            //                 values, { maxValues, descriptions });
-            //         });
-            //     });
-            // }
-        }
-        if (dataManager.currentLanguage === "Chinese") {
-            // Display number of kanji added
-            promises.push(dataManager.hanzi.getAmountAdded().then((amount) => {
-                this.$("hanzi-added").textContent = amount;
-            }));
-        }
-        return Promise.all(promises);
+    }
+
+    async updateStats() {
+        // TODO
     }
 }
 
