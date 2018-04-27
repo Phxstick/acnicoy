@@ -53,25 +53,34 @@
     padding-top: 4px;
     padding-bottom: 4px;
   }
-  .subrow {
-    display: flex;
-    flex-direction: row;
-    font-size: 1.25rem;
+}
 
-    > * {
-      font-family: $light-font;
-      text-align: center;
-      flex: 1;
+.subrow {
+  display: flex;
+  flex-direction: row;
+  font-size: 1.25rem;
 
-      &.highlighted {
-        color: $highlight-background-dark;
-        text-shadow: 0 0 1px $highlight-background;
-      }
-      &:first-child {
-        border-right: 1px solid $border-color-light;
-        border-left: 1px solid $border-color-light;
-      }
+  > * {
+    font-family: $light-font;
+    text-align: center;
+    flex: 1;
+
+    &.highlighted {
+      color: $highlight-background-dark;
+      text-shadow: 0 0 1px $highlight-background;
     }
+    &:first-child {
+      border-right: 1px solid $border-color-light;
+      border-left: 1px solid $border-color-light;
+    }
+  }
+}
+
+.all-items {
+  color: $color-light;
+  font-size: 0.9rem;
+  > * {
+    font-family: OpenSans-Regular;
   }
 }
 

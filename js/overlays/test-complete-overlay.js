@@ -9,7 +9,7 @@ class TestCompleteOverlay extends Overlay {
         this.$("ok-button").addEventListener("click", () => {
             this.resolve(false);
         });
-        this.$("mistakes").addEventListener("click", (event) => {
+        this.$("mistakes").addEventListener("click", async (event) => {
             if (event.target === this.$("mistakes")) return;
             let node = event.target;
             while (node.parentNode !== this.$("mistakes")) {
@@ -19,15 +19,14 @@ class TestCompleteOverlay extends Overlay {
             const solutionsNode = mistakeNode.querySelector(".solutions");
             if (solutionsNode.children.length === 0) {
                 const { name, mode, part } = mistakeNode.dataset;
-                dataManager.test.getSolutions(name, mode, part)
-                .then((solutions) => {
-                    const type = solutions.length === 1 ? "none" : "square";
-                    let solutionsHTML = "";
-                    for (const solution of solutions) {
-                        solutionsHTML += `<li type="${type}">${solution}</li>`;
-                    }
-                    solutionsNode.innerHTML = solutionsHTML;
-                });
+                const solutions =
+                    await dataManager.test.getSolutions(name, mode, part);
+                const type = solutions.length === 1 ? "none" : "square";
+                let solutionsHTML = "";
+                for (const solution of solutions) {
+                    solutionsHTML += `<li type="${type}">${solution}</li>`;
+                }
+                solutionsNode.innerHTML = solutionsHTML;
             }
             if (solutionsNode.isHidden()) {
                 Velocity(solutionsNode, "slideDown", { duration: "fast" });

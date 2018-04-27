@@ -1,36 +1,19 @@
 @import "base";
 
-$fade-color: mix($test-section-background, $test-section-color, 92%);
-
-$answer-input-margin: 30px;
 $answer-input-width: 300px;
-$answer-input-font-size: 130%;
+$answer-input-max-width: 500px;
+$answer-input-font-size: 1.3rem;
 $answer-input-padding: 5px;
 
 $item-fade-timing: cubic-bezier(0.390, 0.575, 0.565, 1.000);  // Ease-out-sine
 $item-fade-duration: .4s;
-$item-fade-distance: 300px;
+$item-fade-distance: 200px;
 $solution-fade-distance: 10px;
 
 $scroll-overflow-shadow-size: 25px;
+$fade-color: mix($test-section-background, $test-section-color, 92%);
 
-
-#top {
-  position: relative;
-  height: 60%;
-  display: flex;
-  flex-direction: column;
-  background-color: $test-section-background;
-  color: $test-section-color;
-  align-items: center;
-
-  &.animate {
-    // Timing function is ease-out-sine
-    transition-property: background-color;
-    transition-timing-function: $item-fade-timing;
-    transition-duration: $item-fade-duration;
-  }
-
+:host {
   --test-frame-background: $test-section-background;
   &.word-meaning {
     --test-frame-background: $test-section-item-type-word-meaning;
@@ -52,6 +35,25 @@ $scroll-overflow-shadow-size: 25px;
   }
   &.hanzi-reading {
     --test-frame-background: $test-section-item-type-hanzi-reading;
+  }
+}
+
+#top {
+  position: relative;
+  height: 60%;
+  display: flex;
+  flex-direction: column;
+  background-color: $test-section-background;
+  color: $test-section-color;
+  align-items: center;
+  padding-left: 12%;
+  padding-right: 12%;
+
+  &.animate {
+    // Timing function is ease-out-sine
+    transition-property: background-color;
+    transition-timing-function: $item-fade-timing;
+    transition-duration: $item-fade-duration;
   }
   background-color: var(--test-frame-background);
 }
@@ -79,6 +81,7 @@ $scroll-overflow-shadow-size: 25px;
 
 #items {
   @include center-content;
+  max-width: 600px;
   flex-direction: column;
   flex: 1;
   
@@ -139,11 +142,13 @@ $scroll-overflow-shadow-size: 25px;
     align-items: center;
     overflow-y: auto;
     z-index: 1;
+    color: $test-section-color;
+    font-size: 120%;
 
     div {
-      color: $test-section-color;
-      font-size: 120%;
-      padding: 3px;
+      text-align: center;
+      padding-top: 3px;
+      padding-bottom: 3px;
     }
 
     %scroll-overflow-shadow {
@@ -281,9 +286,11 @@ $scroll-overflow-shadow-size: 25px;
   text-align: center;
   box-sizing: border-box;
   font-size: $answer-input-font-size;
-  margin-top: $answer-input-margin;
-  width: $answer-input-width;
   padding: $answer-input-padding;
+  outline: none;
+  cursor: text;
+  min-width: $answer-input-width;
+  max-width: $answer-input-max-width;
 
   &.pinyin {
     font-family: $pinyin-font;
@@ -297,7 +304,6 @@ $scroll-overflow-shadow-size: 25px;
   box-sizing: border-box;
   width: $answer-input-width;
   padding: $answer-input-padding;
-  margin-top: $answer-input-margin;
   font-family: $button-font;
   font-size: $answer-input-font-size;
 }
@@ -309,31 +315,14 @@ $scroll-overflow-shadow-size: 25px;
 }
 
 #evaluation-buttons {
-  margin-top: $answer-input-margin;
   display: flex;
   flex-direction: row;
 
   > button {
-    background-color: darken($input-background, 6%);
-    border: 1px solid $input-border-color;
-    color: $input-color;
     font-family: $button-font;
     font-size: $answer-input-font-size;
-    width: 0.6 * $answer-input-width;
-    padding: $answer-input-padding;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    box-sizing: border-box;
-    border-radius: 6px;
-
     &:focus {
       box-shadow: none;
-    }
-    &:hover {
-      background-color: darken($input-background, 10%);
-    }
-    &:not(:last-child) {
-      margin-right: 20px;
     }
   }
 }
@@ -458,7 +447,7 @@ $scroll-overflow-shadow-size: 25px;
 
 :host(:not(.old-design)) {
   #bottom {
-    background-color: $test-section-background;
+    background-color: var(--test-frame-background);
   }
   #session-info-bar {
     color: $test-section-color-light;
@@ -476,8 +465,11 @@ $scroll-overflow-shadow-size: 25px;
     }
   }
   #button-bar {
-    border-width: 1px 0 1px 0;
+    border-top-width: 1px;
+  }
+  #button-bar, #evaluation-buttons {
     @include fading-border($test-section-color-medium, "horizontal");
+    border-bottom-width: 1px;
 
     button {
       border-image: none;
@@ -506,18 +498,19 @@ $scroll-overflow-shadow-size: 25px;
     }
   }
   #answer-entry {
-    margin-top: 0px;
+    margin-top: 10px;
     color: $test-section-color;
     border-bottom: 1px solid $test-section-color-light;
 
-    &::placeholder {
+    &:empty:not(:focus):before {
+      content: "Enter your answer here";
       color: $test-section-color-medium;
     }
-    &:hover:not(:focus)::placeholder {
+    &:empty:hover:not(:focus):before {
       color: $test-section-color;
     }
-    &:focus::placeholder {
-      color: transparent;
+    &:focus:before {
+      display: none;
     }
     &:hover, &:focus {
       border-color: $test-section-color;
@@ -525,11 +518,12 @@ $scroll-overflow-shadow-size: 25px;
   }
   #continue-button, #show-solutions-button {
     @include fading-border($test-section-color-medium, "horizontal");
-    height: 40px;
     width: 460px;
     border-bottom-width: 1px;
     margin-top: 0px;
     color: $test-section-color-medium;
+    padding-top: 10px;
+    padding-bottom: 10px;
 
     &:hover, &:focus {
       color: $test-section-color;
@@ -542,13 +536,51 @@ $scroll-overflow-shadow-size: 25px;
   #show-solutions-button {
     border-top-width: 1px;
   }
+  #evaluation-buttons {
+    border-top-width: 0;
+    width: 460px;
+    color: $test-section-color-medium;
+
+    > button {
+      flex: 1;
+      padding-top: 10px;
+      padding-bottom: 10px;
+
+      &:hover, &:focus {
+        color: $test-section-color;
+        background-image: linear-gradient(
+            to right, transparent, $fade-color, transparent);
+        box-shadow: none;
+      }
+      &:not(:last-child) {
+        border: 1px solid $test-section-color-medium;
+        border-right-width: 1px;
+      }
+    }
+  }
 }
 
 :host(.old-design) {
+  $answer-input-margin: 30px;
+
   #answer-entry {
     @extend input.styled;
+    width: $answer-input-width;
+    margin-top: $answer-input-margin;
+
+    &:empty:not(:focus):before {
+      content: "Enter your answer here";
+      color: $color-light;
+    }
+    &:empty:hover:not(:focus):before {
+      color: $color;
+    }
+    &:focus:before {
+      display: none;
+    }
   }
   #continue-button, #show-solutions-button {
+    margin-top: $answer-input-margin;
     background-color: darken($input-background, 6%);
     border: 1px solid $input-border-color;
     color: $input-color;
@@ -557,6 +589,30 @@ $scroll-overflow-shadow-size: 25px;
     }
     &:hover {
       background-color: darken($input-background, 10%);
+    }
+  }
+  #evaluation-buttons {
+    margin-top: $answer-input-margin;
+    display: flex;
+    flex-direction: row;
+
+    > button {
+      background-color: darken($input-background, 6%);
+      border: 1px solid $input-border-color;
+      color: $input-color;
+      width: 0.6 * $answer-input-width;
+      padding: $answer-input-padding;
+      padding-top: 15px;
+      padding-bottom: 15px;
+      box-sizing: border-box;
+      border-radius: 6px;
+
+      &:hover {
+        background-color: darken($input-background, 10%);
+      }
+      &:not(:last-child) {
+        margin-right: 20px;
+      }
     }
   }
 }

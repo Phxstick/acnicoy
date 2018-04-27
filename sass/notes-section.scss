@@ -9,30 +9,52 @@ body {
   > * {
     position: relative;
     color: $view-color;
-    padding: 8px;
-    white-space: pre-wrap;
-    user-select: text;
     border-bottom: 1px solid $border-color-medium;
     cursor: auto;
 
-    &:focus {
-      z-index: 2;
+    .note-content {
+      padding: 10px;
+      padding-left: 18px;
+      padding-right: 18px;
       outline: none;
-      box-shadow: $input-highlight-shadow;
-      background-color: $input-background-focus;
+
+      * {
+        user-select: text;
+      }
+
+      > *:first-child {
+        margin-top: 0;
+      }
+      > *:last-child {
+        margin-bottom: 0;
+      }
+      p {
+        margin: 10px;
+        margin-left: 0px;
+        margin-right: 0px;
+      }
+      ol, ul {
+        padding-left: 25px;
+
+        > li:not(:last-child) {
+          margin-bottom: 5px;
+        }
+      }
+    }
+
+    &.editing {
+      // z-index: 2;
       border-bottom-color: $input-background-focus;
+      background-color: $input-background-focus;
+      box-shadow: $input-highlight-shadow;
       color: $input-color-focus;
 
       #control-buttons {
         display: none;
       }
-    }
-    *:not(#control-buttons) {
-      user-select: text;
-      margin: 0;
-    }
-    ol, ul {
-      padding-left: 25px;
+      .note-content {
+        white-space: pre-wrap;
+      }
     }
   }
 }

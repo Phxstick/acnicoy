@@ -304,7 +304,7 @@ function getContentDownloadName (language, secondary) {
 }
 
 function getContentFileVersions (language, secondary) {
-    if (!dataManager.content.isAvailable(language, secondary))
+    if (!dataManager.content.isAvailableFor(language, secondary))
         return {};
     return require(paths.content(language, secondary).versions);
 }
@@ -385,7 +385,7 @@ content.startDownload = async function (language, secondary) {
         const { totalSize, currentSize } = downloadsInfo.get(downloadName);
         const contentPaths = paths.content(language, secondary);
         // Create directory in content directory if it doesn't exist yet
-        if (!dataManager.content.isAvailable(language, secondary)) {
+        if (!dataManager.content.isAvailableFor(language, secondary)) {
             fs.mkdirSync(contentPaths.directory);
         }
         // Unzip new files into content directory
@@ -393,7 +393,7 @@ content.startDownload = async function (language, secondary) {
         async (error) => {
             // Update version register
             let versions;
-            if (dataManager.content.isAvailable(language, secondary)) {
+            if (dataManager.content.isAvailableFor(language, secondary)) {
                 versions = require(contentPaths.versions);
             } else {
                 versions = {};

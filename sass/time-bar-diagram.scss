@@ -6,7 +6,7 @@
 
 #diagram {
   width: fill;
-  --diagram-height: 150px;
+  --diagram-height: var(--diag-height, 150px);
 }
 
 #control-bar {

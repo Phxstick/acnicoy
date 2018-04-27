@@ -203,7 +203,7 @@ class KanjiSection extends Section {
 
     processLanguageContent(language, secondaryLanguage) {
         if (language === "Japanese") {
-            if (dataManager.content.isAvailable(language, secondaryLanguage))
+            if (dataManager.content.isAvailableFor(language, secondaryLanguage))
                 this.contentAvailable = true;
             return dataManager.content.get(language, secondaryLanguage)
             .getKanjiLists().then((kanjiList) => {

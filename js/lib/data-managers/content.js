@@ -5,8 +5,14 @@ module.exports = function (paths, modules) {
     const dataMap = {};
     let data;
 
-    content.isAvailable = (language, secondary) => {
+    content.isAvailableFor = (language, secondary) => {
         return dataMap.hasOwnProperty(`${language}-${secondary}`);
+    };
+
+    content.isAvailable = () => {
+        const language = modules.currentLanguage;
+        const secondaryLanguage = modules.currentSecondaryLanguage;
+        return dataMap.hasOwnProperty(`${language}-${secondaryLanguage}`);
     };
 
     content.get = (language, secondary) => {

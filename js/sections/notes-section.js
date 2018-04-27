@@ -21,6 +21,7 @@ class NotesSection extends Section {
     constructor() {
         super("notes");
         this.noteToMarkdown = new WeakMap();
+        this.noteToContentNode = new WeakMap();
         this.noteBeingEdited = null;
         this.currentlyHoveredNote = null;
         this.bottomHovered = false;
@@ -44,21 +45,25 @@ class NotesSection extends Section {
             this.addButtonHovered = false;
             this.$("add-button").classList.remove("highlight-top");
         });
+
         // Leave edit mode when focussing out of note, pressing escape or
         // save-shortcut
         this.$("notes").addEventListener("focusout", (event) => {
-            if (event.target.parentNode !== this.$("notes")) return;
-            this.saveNote(event.target);
+            if (!event.target.classList.contains("note-content")) return;
+            this.saveNote(event.target.parentNode);
         });
         window.addEventListener("keydown", (event) => {
             if (event.key !== "Escape") return;
             if (this.noteBeingEdited === null) return;
-            this.noteBeingEdited.blur();
+            const contentNode = this.noteToContentNode.get(this.noteBeingEdited)
+            contentNode.blur();
         });
         shortcuts.bindCallback("save-input", () => {
             if (this.noteBeingEdited === null) return;
-            this.noteBeingEdited.blur();
+            const contentNode = this.noteToContentNode.get(this.noteBeingEdited)
+            contentNode.blur();
         });
+
         // Enter edit mode when double clicking note
         this.$("notes").addEventListener("dblclick", (event) => {
             if (this.noteBeingEdited !== null) return;
@@ -168,9 +173,13 @@ class NotesSection extends Section {
 
     addNote(markdownText) {
         const note = document.createElement("div");
-        this.noteToMarkdown.set(note, markdownText);
-        note.innerHTML = markdown.toHTML(markdownText);
+        const contentNode = document.createElement("div");
+        contentNode.classList.add("note-content");
+        contentNode.innerHTML = markdown.toHTML(markdownText);
+        note.appendChild(contentNode);
         this.$("notes").appendChild(note);
+        this.noteToContentNode.set(note, contentNode);
+        this.noteToMarkdown.set(note, markdownText);
         // Display control buttons when hovering over an (unfocused) note
         note.addEventListener("mouseenter", () => {
             this.currentlyHoveredNote = note;
@@ -209,23 +218,26 @@ class NotesSection extends Section {
 
     editNote(note) {
         this.noteBeingEdited = note;
-        note.innerHTML = "";
-        note.innerText = this.noteToMarkdown.get(note);
-        note.setAttribute("contenteditable", "true");
-        note.focus();
+        const contentNode = this.noteToContentNode.get(note);
+        contentNode.innerHTML = "";
+        contentNode.innerText = this.noteToMarkdown.get(note);
+        contentNode.setAttribute("contenteditable", "true");
+        contentNode.focus();
+        note.classList.add("editing");
     }
 
     saveNote(note) {
         this.noteBeingEdited = null;
-        const trimmedContent = note.innerText.trim();
+        const contentNode = this.noteToContentNode.get(note);
+        const trimmedContent = contentNode.innerText.trim();
         if (trimmedContent.length === 0) {
             this.deleteNote(note);
             return;
         }
-        note.innerHTML = markdown.toHTML(trimmedContent);
+        contentNode.innerHTML = markdown.toHTML(trimmedContent);
+        contentNode.setAttribute("contenteditable", "false");
+        note.classList.remove("editing");
         this.noteToMarkdown.set(note, trimmedContent);
-        note.setAttribute("contenteditable", "false");
-        note.blur();
         this.saveData();
     }
 }

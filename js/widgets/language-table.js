@@ -282,7 +282,7 @@ class LanguageTable extends Widget {
                     const { updateAvailable, programUpdateRequired } =
                             storage.get(cacheKey);
                     const alreadyDownloaded =
-                            dataManager.content.isAvailable(language, secondary)
+                        dataManager.content.isAvailableFor(language, secondary);
                     statusLabel.classList.remove("error");
                     if (updateAvailable) {
                         if (alreadyDownloaded) {

@@ -4,4 +4,7 @@
   width: fill;
   color: $view-color;
   background-color: $view-background-dark;
+  #diagram {
+    --diag-height: 145px;
+  }
 }

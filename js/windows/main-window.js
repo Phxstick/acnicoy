@@ -168,18 +168,26 @@ class MainWindow extends Window {
             },
             "open-test-section": () => this.openTestSection(),
             "open-dictionary": () => {
-                this.openSection("dictionary");
-                this.sections["dictionary"].$("words-filter").focus();
-
+                if (dataManager.currentLanguage === "Japanese" &&
+                        dataManager.content.isAvailable()) {
+                    this.openSection("dictionary");
+                    this.sections["dictionary"].$("words-filter").focus();
+                }
             },
             "open-kanji-search": () => {
-                this.sections["kanji"].showSearchResults();
-                this.openSection("kanji");
-                this.sections["kanji"].$("search-by-kanji-input").focus();
+                if (dataManager.currentLanguage === "Japanese" &&
+                        dataManager.content.isAvailable()) {
+                    this.sections["kanji"].showSearchResults();
+                    this.openSection("kanji");
+                    this.sections["kanji"].$("search-by-kanji-input").focus();
+                }
             },
             "open-kanji-overview": () => {
-                this.sections["kanji"].showOverview();
-                this.openSection("kanji");
+                if (dataManager.currentLanguage === "Japanese" &&
+                        dataManager.content.isAvailable()) {
+                    this.sections["kanji"].showOverview();
+                    this.openSection("kanji");
+                }
             },
             "open-home-section": () => this.openSection("home"),
             "open-stats-section": () => this.openSection("stats"),
@@ -216,12 +224,6 @@ class MainWindow extends Window {
                 this.scheduleDataSaving();
                 this.savingData = false;
             }
-        };
-        this.restrictedShortcuts = {
-            "add-kanji": ["Japanese", "Chinese"],
-            "open-kanji-search": ["Japanese"],
-            "open-kanji-overview": ["Japanese"],
-            "open-dictionary": ["Japanese"]
         };
         // Register all shortcut callbacks
         for (const shortcutName in this.shortcutMap) {
@@ -374,7 +376,7 @@ class MainWindow extends Window {
         this.currentSection = "home";
         // Load any character in kanji info panel to render stuff there
         // (Prevents buggy animation when first opening the panel)
-        if (dataManager.content.isAvailable("Japanese", "English")) {
+        if (dataManager.content.isAvailableFor("Japanese", "English")) {
             this.$("kanji-info-panel").load("字", true);
             this.$("kanji-info-panel").loadHistory();
         }
@@ -489,7 +491,7 @@ class MainWindow extends Window {
 
     processLanguageContent(language, secondaryLanguage) {
         const results = [];
-        if (dataManager.content.isAvailable(language, secondaryLanguage)) {
+        if (dataManager.content.isAvailableFor(language, secondaryLanguage)) {
             for (const name in this.sections) {
                 results.push(
                     this.sections[name].processLanguageContent(
@@ -572,7 +574,7 @@ class MainWindow extends Window {
         if (name === "add-kanji" || name === "edit-kanji") {
             if (dataManager.currentLanguage === "Japanese" &&
                     dataManager.currentSecondaryLanguage === "English" &&
-                    dataManager.content.isAvailable("Japanese", "English")) {
+                    dataManager.content.isAvailableFor("Japanese", "English")) {
                 if (entryName !== undefined) {
                     showSuggestions = true;
                     this.suggestionPanes[name].load(entryName);
@@ -593,7 +595,8 @@ class MainWindow extends Window {
             } else if (entryName !== undefined) {
                 if (dataManager.currentLanguage === "Japanese" &&
                         dataManager.currentSecondaryLanguage === "English" &&
-                        dataManager.content.isAvailable("Japanese", "English")){
+                        dataManager.content.isAvailableFor("Japanese",
+                                                           "English")) {
                     dictionaryId = await
                         dataManager.vocab.getAssociatedDictionaryId(entryName);
                     if (dictionaryId === null) {
@@ -761,14 +764,6 @@ class MainWindow extends Window {
         } else {
             this.$("add-hanzi-button").hide();
         }
-        for (const shortcutName in this.restrictedShortcuts) {
-            const compatibleLanguages = this.restrictedShortcuts[shortcutName];
-            if (compatibleLanguages.includes(language)) {
-                shortcuts.enable(shortcutName);
-            } else {
-                shortcuts.disable(shortcutName);
-            }
-        }
         this.updateTestButton();
         // Choose fitting font
         const cyrillicBased = new Set(["Belarusian", "Bulgarian", "Macedonian",
@@ -792,7 +787,7 @@ class MainWindow extends Window {
     adjustToLanguageContent(language, secondaryLanguage) {
         this.$("find-kanji-button").hide();
         this.$("dictionary-button").hide();
-        if (!dataManager.content.isAvailable(language, secondaryLanguage))
+        if (!dataManager.content.isAvailableFor(language, secondaryLanguage))
             return;
         if (language === "Japanese") {
             this.$("find-kanji-button").show();

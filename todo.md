@@ -1,9 +1,4 @@
 ### Primary goals
-- Finish uni-color test section
-  - Adapt buttons in flashcard-mode
-  - Also move and further adjust level frame
-  - Allow overflow of answer-entry, fix overflow for kana/pinyin inputs
-  - Strange lag and visual bugs after first test item
 - Finish first version of the stats
   - Something is wrong: Bunch of Chinese item reviews before even starting
   - Fix large separators in bar diagrams
@@ -15,7 +10,6 @@
 - Rethink what belongs into local storage and what should be shared
   - When using Acnicoy on multiple computers, some notifications are problematic
   - Remove test-stuff on server afterwards (like test-versions etc.)
-- Opening a solution for first time in test-complete-overlay is not fluent
 - How to make it more convenient to test multiple languages in succession?
   - Implement a test-mode which just tests low-level items for each language?
 - When continuing to test on new language, or exiting app, open/close is called
@@ -73,6 +67,7 @@
 - Write function to calculate n equally spaced colors on color wheel
 - Implement efficient stats update
 - Emit event when toggling language visibility, update stats/home-section
+- Setting: [Checkbox] Hide total number of items per lvl in srs-status-overview
 
 ### Others
 - Only store number of items tested in stats (get added items from database)?
@@ -103,26 +98,24 @@
 - Implement searching for existing and also adding new vocab lists in all panels
 - Rework sass: Use gui-font for gui, and content-font for content
 
+### Important fixes
+- Databases should be reloaded after changing data path (else write errors)
+- Labels/separators in stats timelines are party shifted
+- Content status says "n.a." after successful download
+- Opening a panel and switching languages removes background dimming
+
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
 - 屈伸 has the wrong meaning in the dictionary?
-- There still seems to be this bug that notes overwrite those of other languages
 - Problem when editing word with dictonary id assigned but a different variant
-- Shortcuts for language content are activated even if theres none available
 - Notifications:
-  - Why is "display:flex" added to notifications window when adding notification?
+  - Why is "display:flex" added to notifications window when adding notific?
   - After deleting all notifications, text is not at the right place
   - When getting a notification, it is a bit messed up
   - After deleting a notification, text doesn't appear (still children left?)
 - Prevent backslash-encoding on server side, newlines should arrive as such
-- Opening a panel and switching languages removes background dimming
-- Content status says "n.a." after successful download
-- Databases should be reloaded after changing data path (else write errors)
-- Do WAL checkpoints really work? WAL file seems to keep growing...
-- Labels/separators in stats timelines are party shifted
 - Strange error if autostart is not enabled. How to make it work on linux?
 - Don't preload words in vocabulary section - on scroll, given date is outdated
-- Add text-center to long test items (and more padding?), what could go wrong?
 
 By category
 --------------------------------------------------------------------------------
@@ -162,6 +155,7 @@ By category
 - Remove font-awesome from github repo and add as node package instead
 - Select exact folder to store data in? (create it if it doesn't exist yet)
 - For multi-language shortcuts, make sure to adjust text accordingly
+- Implement showing only vocab entries that are not part of a list yet
 
 ### Performance
 - Things got slower when reworking sass? Maybe because main window is flex now?
@@ -210,6 +204,7 @@ By category
 - Re-evaluate answer after current item has been edited?
 - If item has been renamed, directly display change instead of skipping?
 - Allow directly setting new level in flashcard-mode
+- Where to move level-frame?
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)

@@ -32,13 +32,12 @@ class TestSection extends Section {
         this.testInfo = null;
         this.$("show-solutions-button").hide();
         this.$("answer-entry").hide();
-        this.$("levels-frame").hide();
+        this.$("levels-frame").style.visibility = "hidden";
         this.$("button-bar").style.visibility = "hidden";
         this.$("new-level").removeAttribute("tabindex"); // Use shortcut instead
         // Set some constants
-        this.delay = 300;
         this.itemFadeDuration = 400;  // Set in scss as well!
-        this.itemFadeDistance = 300;  // Set in scss as well!
+        this.itemFadeDistance = 200;  // Set in scss as well!
         this.solutionFadeDuration = 150;
         this.evalFadeInDuration = 225;
         this.evalFadeOutDuration = 225;
@@ -46,11 +45,13 @@ class TestSection extends Section {
         this.solutionFadeDelay = 80;
         this.pickedItemsLimit = 10;
         this.testItemMarginBottom = "25px";  // Set in scss as well!
+        this.testItemEasing = "easeOutQuad";
+        const actionDelay = 180;
         // Create function which makes sure an action is not taken too fast
         this.lastTime = 0;
         const ifDelayHasPassed = (callback) => {
             const time = new Date().getTime();
-            if (time - this.lastTime > this.delay) {
+            if (time - this.lastTime > actionDelay) {
                 callback();
                 this.lastTime = time;
             }
@@ -66,8 +67,10 @@ class TestSection extends Section {
             ifDelayHasPassed(() => this._showEvaluationButtons());
         });
         this.$("answer-entry").addEventListener("keypress", (event) => {
-            if (event.key === "Enter")
+            if (event.key === "Enter") {
+                event.preventDefault();
                 ifDelayHasPassed(() => this._evaluateAnswer());
+            }
         });
         this.$("evaluation-button-wrong").addEventListener("click", () => {
             const item = this.testInfo.currentItem;
@@ -103,7 +106,7 @@ class TestSection extends Section {
             this._ignoreAnswer();
         });
         this.$("add-answer").addEventListener("click", () => {
-            const answer = this.$("answer-entry").value.trim();
+            const answer = this.$("answer-entry").textContent.trim();
             const item = this.testInfo.currentItem;
             dataManager.test.addToSolutions(
                 item.entry, answer, item.mode, this.testInfo.currentPart);
@@ -384,7 +387,7 @@ class TestSection extends Section {
     }
 
     async _evaluateAnswer() {
-        const answer = this.$("answer-entry").value.trim();
+        const answer = this.$("answer-entry").textContent.trim();
         const item = this.testInfo.currentItem;
         const part = this.testInfo.currentPart;
         const entry = item.entry;
@@ -482,7 +485,12 @@ class TestSection extends Section {
         .then((solutions) => {
             this._displaySolutions(
                 solutions, dataManager.settings.test.animate);
-            this.$("status").textContent = "";
+            if (dataManager.settings.test.animate) {
+                Velocity(this.$("status"), "fadeOut", { display: "block",
+                    visibility: "hidden", duration: this.evalFadeOutDuration });
+            } else {
+                this.$("status").style.visibility = "hidden";
+            }
             this.$("show-solutions-button").hide();
             this.$("evaluation-buttons").show();
             this.$("ignore-answer").hide();
@@ -594,6 +602,14 @@ class TestSection extends Section {
         }
         if (dataManager.settings.test.useBackgroundColors) {
             this._applyColors(mode, part);
+        }
+        if (this.$("status").style.visibility === "hidden") {
+            if (dataManager.settings.test.animate) {
+                Velocity(this.$("status"), "fadeIn", { display: "block",
+                    visibility: "visible", duration: this.evalFadeInDuration });
+            } else {
+                this.$("status").style.visibility = "visible";
+            }
         }
     }
 
@@ -806,12 +822,16 @@ class TestSection extends Section {
                 if (solutionNodeBottom >= solutionFrameTop &&
                         solutionNodeTop < solutionFrameBottom) {
                     solutionNode.fadeOut({
-                        duration: this.itemFadeDuration, zIndex: "-1" })
+                        duration: this.itemFadeDuration, zIndex: "-1",
+                        distance: this.itemFadeDistance,
+                        easing: this.testItemEasing })
                 }
             }
             // Animate test item
             this.$("test-item").fadeOut({
-                duration: this.itemFadeDuration
+                duration: this.itemFadeDuration,
+                distance: this.itemFadeDistance,
+                easing: this.testItemEasing
             }).then(() => {
                 // Reset test item and solution containers afterwards
                 this.$("test-item").style.visibility = "visible";
@@ -858,17 +878,21 @@ class TestSection extends Section {
         this.$("test-item").textContent = newItem.entry;
         // If animation flag is set, fade in new item
         if (dataManager.settings.test.animate && previousItem !== null) {
-            this.$("test-item").fadeIn({ duration: this.itemFadeDuration });
+            this.$("test-item").fadeIn({ duration: this.itemFadeDuration,
+                                         distance: this.itemFadeDistance,
+                                         easing: this.testItemEasing });
         }
         this._prepareMode(newItem.mode, part);
-        if (dataManager.settings.test.animate && previousItem !== null) {
-            Velocity(this.$("button-bar"), "fadeOut", { display: "flex",
-                visibility: "hidden", duration: this.evalFadeOutDuration });
-            Velocity(this.$("levels-frame"), "fadeOut", { display: "flex",
-                visibility: "hidden", duration: this.evalFadeOutDuration });
-        } else {
-            this.$("button-bar").style.visibility = "hidden";
-            this.$("levels-frame").hide();
+        if (previousItem !== null) {
+            if (dataManager.settings.test.animate) {
+                Velocity(this.$("button-bar"), "fadeOut", { display: "flex",
+                    visibility: "hidden", duration: this.evalFadeOutDuration });
+                Velocity(this.$("levels-frame"), "fadeOut", { display: "flex",
+                    visibility: "hidden", duration: this.evalFadeOutDuration });
+            } else {
+                this.$("button-bar").style.visibility = "hidden";
+                this.$("levels-frame").hide();
+            }
         }
         this.$("continue-button").hide();
         this.$("evaluation-buttons").hide();
@@ -876,7 +900,7 @@ class TestSection extends Section {
             this.$("show-solutions-button").show();
             this.$("show-solutions-button").focus();
         } else {
-            this.$("answer-entry").value = "";
+            this.$("answer-entry").textContent = "";
             this.$("answer-entry").show();
             this.$("answer-entry").focus();
         }

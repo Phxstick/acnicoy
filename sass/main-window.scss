@@ -37,6 +37,9 @@
     --menu-color-hover: $button-color-hover;
     --menu-separator-color: $button-border-color;
     --highlight-text-shadow: 0 0 1px var(--menu-color);
+    &:focus {
+      outline: none;
+    }
   }
 
   #menu {
