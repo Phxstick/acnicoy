@@ -448,7 +448,6 @@ class TestSection extends Section {
                     Velocity(this.$("levels-frame"), "fadeIn", { display:"flex",
                         visibility:"visible",duration:this.evalFadeInDuration});
                 } else {
-                    this.$("levels-frame").show();
                     this.$("levels-frame").style.opacity = "1";
                 }
             }
@@ -883,16 +882,14 @@ class TestSection extends Section {
                                          easing: this.testItemEasing });
         }
         this._prepareMode(newItem.mode, part);
-        if (previousItem !== null) {
-            if (dataManager.settings.test.animate) {
-                Velocity(this.$("button-bar"), "fadeOut", { display: "flex",
-                    visibility: "hidden", duration: this.evalFadeOutDuration });
-                Velocity(this.$("levels-frame"), "fadeOut", { display: "flex",
-                    visibility: "hidden", duration: this.evalFadeOutDuration });
-            } else {
-                this.$("button-bar").style.visibility = "hidden";
-                this.$("levels-frame").hide();
-            }
+        if (previousItem !== null && dataManager.settings.test.animate) {
+            Velocity(this.$("button-bar"), "fadeOut", { display: "flex",
+                visibility: "hidden", duration: this.evalFadeOutDuration });
+            Velocity(this.$("levels-frame"), "fadeOut", { display: "flex",
+                visibility: "hidden", duration: this.evalFadeOutDuration });
+        } else {
+            this.$("button-bar").style.visibility = "hidden";
+            this.$("levels-frame").style.visibility = "hidden";
         }
         this.$("continue-button").hide();
         this.$("evaluation-buttons").hide();

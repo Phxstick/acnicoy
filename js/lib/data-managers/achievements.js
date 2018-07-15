@@ -113,7 +113,7 @@ module.exports = function (paths, modules) {
                 const achievementName =
                     achievements.definitions[achievement].levels[level].name;
                 eventEmitter.emit(`achievement-unlocked`,
-                    achievement, achievementName, language);
+                    { achievement, achievementName, language });
             }
         }
         if (anyUnlocked) saveGlobal();

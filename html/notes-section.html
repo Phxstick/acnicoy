@@ -1,12 +1,43 @@
+<div id="structure-tree-frame">
+  <tree-view id="structure-tree" editable></tree-view>
+</div>
 <div id="notes-frame">
-  <div id="notes"></div>
   <button id="add-button" class="light no-shadow">
     <i class="fa fa-plus"></i>
     Add note
   </button>
-</div>
-<div id="control-buttons">
-  <button id="edit-button"><i class="fa fa-pencil"></i></button>
-  <button id="delete-button"><i class="fa fa-trash"></i></button>
-  <button id="move-button"><i class="fa fa-arrows"></i></button>
+  <div id="notes"></div>
+  <div id="control-buttons">
+    <button id="edit-button"><i class="fa fa-pencil"></i></button>
+    <button id="delete-button"><i class="fa fa-trash"></i></button>
+    <button id="move-button"><i class="fa fa-arrows"></i></button>
+  </div>
+  <div id="info-panel" class="info-container">
+    <ul>
+      <li>
+        Notes are organized into groups, shown on the left.<br>
+        Selecting a group displays all notes assigned to it.
+      </li>
+      <li>
+        Right-clicking a group opens a context menu which allows removing it,
+        renaming it, or adding a subgroup.
+      </li>
+      <li>
+        Hovering over a note displays three control buttons.
+      </li>
+      <li>
+        Edit a note by pressing the <i class="fa fa-pencil"></i> button
+        or double-click.<br>
+        Leave edit-mode by pressing Escape or Ctrl+Enter.
+      </li>
+      <li>
+        Remove a note by pressing the <i class="fa fa-trash"></i> button.
+      </li>
+      <li>
+        Drag a note by pressing the <i class="fa fa-arrows"></i> button or
+        pressing Ctrl while clicking it. Notes can be moved between different
+        groups and reordered within the same group.
+      </li>
+    </ul>
+  </div>
 </div>

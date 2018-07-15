@@ -1,39 +1,50 @@
 $font: var(--main-font);
 $serif-font: var(--main-font-serif);
 
-:host(.GLOBAL-main-font-Japanese), :root {
+:host(.GLOBAL-main-font-Japanese), :root.GLOBAL-main-font-Japanese {
   --main-font: TakaoPGothic;
   --main-font-serif: TakaoPMincho;
 }
-:host(.GLOBAL-main-font-Chinese), :root {
+:host(.GLOBAL-main-font-Chinese), :root.GLOBAL-main-font-Chinese {
   --main-font: MicrosoftYaHei;
   --main-font-serif: SimSun;
 }
-:host(.GLOBAL-main-font-Cyrillic), :root {
+:host(.GLOBAL-main-font-Cyrillic), :root.GLOBAL-main-font-Cyrillic {
   --main-font: Ubuntu;
   --main-font-serif: RobotoSlab-Regular;
 }
-:host(.GLOBAL-main-font-Latin), :root {
+:host(.GLOBAL-main-font-Latin), :root.GLOBAL-main-font-Latin {
   --main-font: OpenSans-Regular;
   --main-font-serif: RobotoSlab-Regular;
 }
 
 
+$auto-cursor: var(--auto-cursor);
 $default-cursor: var(--default-cursor);
 $pointer-cursor: var(--pointer-cursor);
 $wait-cursor: var(--wait-cursor);
 $grab-cursor: var(--grab-cursor);
 $dragging-cursor: var(--dragging-cursor);
 
-:host(.GLOBAL-cursor-default), :root {
+:host(.GLOBAL-cursor-default), :root.GLOBAL-cursor-default {
+  --auto-cursor: auto;
   --default-cursor: default;
   --pointer-cursor: pointer;
   --wait-cursor: wait;
-  --grab-cursor: grab;
-  --dragging-cursor: grabbing;
+  --grab-cursor: -webkit-grab;
+  --dragging-cursor: -webkit-grabbing;
+}
+:host(.GLOBAL-cursor-dragging), :root.GLOBAL-cursor-dragging {
+  --auto-cursor: $dragging-cursor;
+  --dragging-cursor: -webkit-grabbing;
+  --default-cursor: $dragging-cursor;
+  --pointer-cursor: $dragging-cursor;
+  --wait-cursor: $dragging-cursor;
+  --grab-cursor: $dragging-cursor;
 }
 $test-cursor: auto;
-:host(.GLOBAL-cursor-test), :root {
+:host(.GLOBAL-cursor-test), :root.GLOBAL-cursor-test {
+  --auto-cursor: $test-cursor;
   --default-cursor: $test-cursor;
   --pointer-cursor: $test-cursor;
   --wait-cursor: $test-cursor;

@@ -2,7 +2,7 @@
 
 const { shell } = require("electron");
 
-const components = new Set();
+const components = new Set([document.documentElement]);
 const currentStyleVariables = {};
 const currentStyleClasses = {};
 const styleClasses = require(paths.styleClasses);

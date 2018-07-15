@@ -15,8 +15,9 @@ const menuItems = contextMenu.registerItems({
     },
     "view-kanji-info": {
         label: "View kanji info",
-        click: ({ currentNode }) => {
-            main.$("kanji-info-panel").load(currentNode.textContent);
+        click: async ({ currentNode }) => {
+            await main.$("kanji-info-panel").load(currentNode.textContent);
+            await utility.finishEventQueue();
             main.$("kanji-info-panel").open();
         }
     },
@@ -192,6 +193,7 @@ class MainWindow extends Window {
             "open-home-section": () => this.openSection("home"),
             "open-stats-section": () => this.openSection("stats"),
             "open-vocab-section": () => this.openSection("vocab"),
+            "open-notes-section": () => this.openSection("notes"),
             "open-settings": () => this.openSection("settings"),
             "open-help": () => overlays.open("help"),
             "quit": () => ipcRenderer.send("quit"),
@@ -216,14 +218,7 @@ class MainWindow extends Window {
                     this.panels[this.currentPanel].save();
                 }
             },
-            "save-data": async () => {
-                if (this.savingData) return;
-                window.clearTimeout(this.dataSavingCallbackId);
-                this.savingData = true;
-                await dataManager.saveAll();
-                this.scheduleDataSaving();
-                this.savingData = false;
-            }
+            "save-data": () => this.saveData()
         };
         // Register all shortcut callbacks
         for (const shortcutName in this.shortcutMap) {
@@ -400,16 +395,8 @@ class MainWindow extends Window {
                 this.statusUpdateInterval, lastUpdateTime);
         }
         // Periodically write user data to disk
-        this.scheduleDataSaving = () => {
-            this.dataSavingCallbackId = window.setTimeout(async () => {
-                if (this.savingData) return;
-                this.savingData = true;
-                await dataManager.saveAll();
-                this.scheduleDataSaving();
-                this.savingData = false;
-            }, 1000 * this.dataSavingInterval);
-        };
-        this.scheduleDataSaving();
+        this.dataSavingCallbackId = window.setTimeout(() => this.saveData(),
+            1000 * this.dataSavingInterval);
         // Run clean-up-code from now on whenever attempting to close the window
         ipcRenderer.send("activate-controlled-closing");
         // Link achievements module to event emitter and do an initial check
@@ -902,6 +889,17 @@ class MainWindow extends Window {
         });
     }
 
+    async saveData() {
+        if (this.savingData) return;
+        window.clearTimeout(this.dataSavingCallbackId);
+        this.savingData = true;
+        this.sections["notes"].saveData();
+        await dataManager.saveAll();
+        this.dataSavingCallbackId = window.setTimeout(() => this.saveData(),
+            1000 * this.dataSavingInterval);
+        this.savingData = false;
+    }
+
     async attemptToQuit() {
         const confirmed =
             await this.sections[this.currentSection].confirmClose();
@@ -909,10 +907,7 @@ class MainWindow extends Window {
         const testSessionClosed = await this.sections["test"].abortSession();
         if (!testSessionClosed) return false;
         this.sections[this.currentSection].close();
-        if (!this.savingData) {
-            window.clearTimeout(this.dataSavingCallbackId);
-            await dataManager.saveAll(); 
-        }
+        await this.saveData();
         networkManager.stopAllDownloads();
         networkManager.save();
         return true;

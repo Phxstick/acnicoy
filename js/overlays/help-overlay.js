@@ -11,7 +11,8 @@ class HelpOverlay extends Overlay {
         });
         this.$("tree").build(require(paths.helpStructure));
         this.loadedTreePath = [];
-        this.$("tree").onSelect = (treePath, children) => {
+        this.$("tree").setOnSelect((node) => {
+            let treePath = this.$("tree").getPath(node);
             const treeSubpath = treePath.slice(0, -1);
             const helpSubdirPath = paths.helpSubdir(treePath);
             const helpSectionPath = paths.helpSection(treePath);
@@ -32,7 +33,7 @@ class HelpOverlay extends Overlay {
             } else if (fs.existsSync(helpSubdirPath)) {
                 if (!this.loadedTreePath.equals(treePath)) {
                     let html = `<h2>${treePath.last()}</h2><ul class="large">`;
-                    for (const childName of children) {
+                    for (const childName of node.childrenArray) {
                         const lPath = 
                             "help#" + [...treePath, childName].join("#");
                         html += `<li><a href="${lPath}">${childName}</a></li>`;
@@ -77,7 +78,7 @@ class HelpOverlay extends Overlay {
                 linkNode.classList.add("link");
                 linkNode.textContent = subPath.last();
                 linkNode.addEventListener("click", () => {
-                    this.$("tree").select(subPath);
+                    this.$("tree").selectByPath(subPath);
                 });
                 this.$("content-path").appendChild(linkNode);
                 if (i !== treePath.length) {
@@ -95,7 +96,7 @@ class HelpOverlay extends Overlay {
                     // 'help#' -> local link pointing to other help sections.
                     if (linkPath[0] === "help") {
                         link.addEventListener("click", () => {
-                            this.$("tree").select(linkPath.splice(1));
+                            this.$("tree").selectByPath(linkPath.splice(1));
                         });
                         link.removeAttribute("href");
                     // 'tour#' -> button to start an introduction tour
@@ -113,8 +114,8 @@ class HelpOverlay extends Overlay {
                     }
                 }
             }
-        };
-        this.$("tree").select(["Overview"]);
+        });
+        this.$("tree").selectByPath(["Overview"]);
     }
 }
 

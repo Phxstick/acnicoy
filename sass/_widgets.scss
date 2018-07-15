@@ -9,6 +9,7 @@ popup-list {
     color: $button-color;
     background-color: $button-background;
     padding: 8px;
+    cursor: $pointer-cursor;
 
     &:hover {
       background-color: $button-background-hover;
@@ -32,6 +33,7 @@ popup-stack {
     background-color: $button-background;
     font-family: $light-font;
     font-size: 150%;
+    cursor: $pointer-cursor;
 
     &:hover {
       background-color: $button-background-hover;
@@ -79,4 +81,11 @@ tabbed-frame {
     position: relative;
     height: 100%;
   }
+}
+
+tree-view {
+  font-family: OpenSans-Regular;
+  --indentation-line-color: $border-color-medium;
+  --indentation-padding: 7px;
+  --color-selected: $highlight-background;
 }

@@ -15,11 +15,7 @@
   overflow: auto;
 
   #tree {
-    font-family: OpenSans-Regular;
     padding: 10px;
-    --indentation-line-color: $border-color-medium;
-    --indentation-padding: 7px;
-    --color-selected: $highlight-background;
   }
 }
 

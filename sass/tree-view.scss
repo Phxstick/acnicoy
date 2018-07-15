@@ -1,3 +1,5 @@
+@import "base";
+
 :host {
   display: block;
 }
@@ -13,13 +15,17 @@
 }
 
 .node.selected {
-  > .node-name-frame > .node-name {
+  > .node-name-frame > .node-name:not([contenteditable]) {
     color: var(--color-selected, initial);
     text-decoration: underline;
   }
 }
 
 .node-name-frame {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+
   .open-node-button {
     &::after {
       content: "\f105";
@@ -34,7 +40,7 @@
     border: 0px;
     color: inherit;
     font-size: inherit;
-    cursor: pointer;
+    cursor: $pointer-cursor;
     display: inline-block;
 
     &:focus {
@@ -48,15 +54,69 @@
     }
   }
   .node-name {
-    cursor: pointer;
-    &:hover {
+    // Use padding instead of margin for larger hitbox
+    padding-top: 3px;
+    padding-bottom: 3px;
+    display: inline-block;
+    cursor: $pointer-cursor;
+    white-space: nowrap;
+    border-radius: 5px;
+    font-family: OpenSans-Regular;  // TODO: Should be inherited, but is over-
+                                    //       written by stuff in "base"-import
+
+    &:hover:not([contenteditable]) {
       text-decoration: underline;
+    }
+    &[contenteditable] {
+      // Turn padding into margin to make input field smaller
+      padding-top: 0;
+      padding-bottom: 0;
+      margin-top: 3px;
+      margin-bottom: 3px;
+
+      outline: none;
+      margin-left: -5px;
+      padding-left: 5px;
+      padding-right: 5px;
+      color: $view-edit-color;
+      background-color: $input-background-focus; // $view-edit-background;
+      box-shadow: $input-highlight-shadow;
+    }
+    &.dragover {
+      background-color: $view-hover-background;
+      box-shadow: 0 0 4px $view-hover-background;
     }
   }
 }
 
 .children-container {
-  margin-left: var(--indentation-padding, 5px);
+  margin-left: 10px;  //var(--indentation-padding, 5px);
   padding-left: calc(2 * var(--indent-padding, 5px));
   border-left: 1px solid var(--indentation-line-color, transparent);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 100px;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: row;
+}
+
+input.light {
+  width: 1px;
+  flex: 1;
+  // Remove vertical padding to give it the same height as other nodes
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  // Substract -5px from margin because of 5px padding (align with other nodes)
+  margin-left: calc(var(--indentation-padding, 5px) * 3 - 5px);
+  border-radius: 5px;
+  color: $view-edit-color;
+  background-color: $input-background-focus;
+  box-shadow: $input-highlight-shadow;
+  font-family: OpenSans-Regular;
 }

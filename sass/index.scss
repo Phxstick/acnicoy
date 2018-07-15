@@ -23,7 +23,7 @@ body {
   opacity: 0.7;
   background-color: $view-background-dark;
   color: $view-color;
-  padding: 6px;
+  padding: 10px;
   white-space: pre-wrap;
   box-sizing: border-box;
   z-index: var(--dragged-item-layer);
@@ -34,6 +34,10 @@ body {
   }
   ol, ul {
     padding-left: 25px;
+
+    > li:not(:last-child) {
+      margin-bottom: 5px;
+    }
   }
 }
 

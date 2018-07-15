@@ -288,7 +288,7 @@ $fade-color: mix($test-section-background, $test-section-color, 92%);
   font-size: $answer-input-font-size;
   padding: $answer-input-padding;
   outline: none;
-  cursor: text;
+  cursor: $auto-cursor;
   min-width: $answer-input-width;
   max-width: $answer-input-max-width;
 

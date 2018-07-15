@@ -159,13 +159,21 @@ class KanjiInfoPanel extends Widget {
 
     async open() {
         if (this.isOpen) return;
-        Velocity(this, "slideDown", { duration: 200 });
+        if (!this.maximized) {
+            Velocity(this, "slideDown", { duration: 200 });
+        } else {
+            this.show();
+        }
         this.isOpen = true;
     }
 
     close() {
         if (!this.isOpen) return;
-        Velocity(this, "slideUp", { duration: 200 });
+        if (!this.maximized) {
+            Velocity(this, "slideUp", { duration: 200 });
+        } else {
+            this.hide();
+        }
         this.isOpen = false;
     }
 
@@ -314,7 +322,9 @@ class KanjiInfoPanel extends Widget {
             span.textContent = part;
             this.$("kanji-parts").appendChild(span);
         }
+        // Immediately load example words if the panel is maximized
         if (this.maximized && !dummy) {
+            this.$("example-words").empty();
             this.loadExampleWords();
             this.loadStrokeGraphics();
         }

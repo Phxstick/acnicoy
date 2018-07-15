@@ -20,6 +20,8 @@
 - Bunch of conflicting WALs. What's going wrong? Dropbox or SQLite error?
 
 ### Secondary goals
+- Add option "Load language content on program start", allow custom loading
+- Implement undo of note deletion
 - Add new loading-overlay whereever useful
 - Implement program updating functionality (in general settings)
   - Handle the "update-program-status" event there instead
@@ -68,6 +70,7 @@
 - Implement efficient stats update
 - Emit event when toggling language visibility, update stats/home-section
 - Setting: [Checkbox] Hide total number of items per lvl in srs-status-overview
+- Display number of notes in each group
 
 ### Others
 - Only store number of items tested in stats (get added items from database)?
@@ -189,11 +192,6 @@ By category
   - Allow showing detailed infos per mode
   - Replace "level" label with reload- and help-button?
   - Add a displayable bar-diagram to visualize SRS status
-
-### Notes section
-- Make writing notes-data into data-manager more efficent (not always overwrite)
-- Implement tree-like structure (with groups and subgroups)
-- Initially display a how-to-use (allow closing with X, put in help as well)
 
 ### Svg Bar Diagram
 - Use a shadow at both sides to show when scrolling is possible
