@@ -108,8 +108,22 @@ class NotesSection extends Section {
             this.deleteNote(this.currentlyHoveredNote);
         });
 
+        // When pressing CTRL, change cursor over notes to signal ready-to-drag
+        window.addEventListener("keydown", (event) => {
+            if (this.noteBeingEdited !== null) return;
+            if (event.key === "Control") {
+                this.$("notes-frame").classList.add("ready-to-drag-note");
+            }
+        });
+        window.addEventListener("keyup", (event) => {
+            if (event.key === "Control") {
+                this.$("notes-frame").classList.remove("ready-to-drag-note");
+            }
+        });
+
         // Function which initiates dragging of a note
         const startDraggingNote = (event) => {
+            if (this.noteBeingEdited !== null) return;
             this.draggingNote = true;
             this.draggedNote = this.currentlyHoveredNote;
             this.previousNeighbor = this.draggedNote.nextSibling;
@@ -125,18 +139,6 @@ class NotesSection extends Section {
             document.body.appendChild(this.draggedNote);
             Component.setStyleClass("cursor", "dragging");
         };
-
-        // When pressing CTRL, change cursor over notes to signal ready-to-drag
-        window.addEventListener("keydown", (event) => {
-            if (event.key === "Control") {
-                this.$("notes-frame").classList.add("ready-to-drag-note");
-            }
-        });
-        window.addEventListener("keyup", (event) => {
-            if (event.key === "Control") {
-                this.$("notes-frame").classList.remove("ready-to-drag-note");
-            }
-        });
 
         // Start dragging a note when pressing mouse button while pressing CTRL
         this.$("notes").addEventListener("mousedown", (event) => {
@@ -288,7 +290,7 @@ class NotesSection extends Section {
         this.$("structure-tree").addListener("mouseup", (event, node) => {
             if (!node.canDrop) return;
             window.clearTimeout(switchCallbackId);
-            node.data.appendChild(this.draggedNote);
+            node.data.prepend(this.draggedNote);
             dropNote();
             node.labelNode.classList.remove("dragover");
             node.canDrop = false;
@@ -304,7 +306,7 @@ class NotesSection extends Section {
             notesContainer.classList.add("notes-container");
             if (notes !== undefined) {
                 for (const note of notes) {
-                    this.addNote(note, notesContainer);
+                    this.addNote(note, notesContainer, true);
                 }
             }
             return notesContainer;
@@ -328,13 +330,17 @@ class NotesSection extends Section {
         dataManager.notes.set(data);
     }
 
-    addNote(markdownText, notesContainer) {
+    addNote(markdownText, notesContainer, appendAtEnd=false) {
         const note = document.createElement("div");
         const contentNode = document.createElement("div");
         contentNode.classList.add("note-content");
         contentNode.innerHTML = markdown.toHTML(markdownText);
         note.appendChild(contentNode);
-        notesContainer.prepend(note);
+        if (appendAtEnd) {
+            notesContainer.appendChild(note);
+        } else {
+            notesContainer.prepend(note);
+        }
         this.noteToContentNode.set(note, contentNode);
         this.noteToMarkdown.set(note, markdownText);
         // Display control buttons when hovering over an (unfocused) note

@@ -1,26 +1,26 @@
 ### Primary goals
+- Undo operation for deleting and editing notes
 - Finish first version of the stats
   - Something is wrong: Bunch of Chinese item reviews before even starting
   - Fix large separators in bar diagrams
   - Hide legend/"total"-bar everywhere if there is only one language
   - Find a way to scroll stats-diagrams to the end initially
-  - Update stats regularly
+  - Update stats regularly (efficiently)
   - Remove num-items-tested-diagram?
   - Set lower bound for max value in bar diagrams
 - Rethink what belongs into local storage and what should be shared
   - When using Acnicoy on multiple computers, some notifications are problematic
   - Remove test-stuff on server afterwards (like test-versions etc.)
-- How to make it more convenient to test multiple languages in succession?
-  - Implement a test-mode which just tests low-level items for each language?
-- When continuing to test on new language, or exiting app, open/close is called
-  again, so side/menu-bar become partly visible for a moment.
 - Update SRS stuff after adding/removing items?
-- Move plus-sign into views in edit-panels
-- Add reload-button to language table (right side), emit "update-content-event"
+- Move plus-sign into views in edit-panels. Use edit-panel for adding word too?
 - Bunch of conflicting WALs. What's going wrong? Dropbox or SQLite error?
+  - Transfer changes and delete WAL on program exit?
+- Make testing case-insensitive
+- Indicate in loading-window that loading content might take a while and
+  on-start loading can be disabled in the settings
+
 
 ### Secondary goals
-- Add option "Load language content on program start", allow custom loading
 - Implement undo of note deletion
 - Add new loading-overlay whereever useful
 - Implement program updating functionality (in general settings)
@@ -29,8 +29,6 @@
   - Make sure no additional program file is loaded after start for safe update
 - Remove all kanji nodes in kanji section before recreating them after update
 - Round up download manager with hash checking? Necessary?
-- Before loading language content, check if all versions are compatible
-  - For that purpose, store "content-versions-min.json" both in Acnicoy & server
 - Add some more achievements and create achievements section
 - Finish dictionary search:
   - Somehow handle multiple concurrent searches (maybe in utility.js)
@@ -67,16 +65,12 @@
 - Also let font-family be inherited, and remove all workarounds (and test!)
 - Don't attach separate context menu to every node in dict/kanji/vocab-section
 - Write function to calculate n equally spaced colors on color wheel
-- Implement efficient stats update
 - Emit event when toggling language visibility, update stats/home-section
-- Setting: [Checkbox] Hide total number of items per lvl in srs-status-overview
-- Display number of notes in each group
 
 ### Others
 - Only store number of items tested in stats (get added items from database)?
   - Necessary to build an index in the userdata database on time added?
 - Completely remove example-word-entry widget/template?
-- Make status update message fade out after a short while if not updated
 - Make history view loading more efficient
 - Add functionality for clearing histories
 - Use font-family "Trajan" for roman numerals?
@@ -100,6 +94,7 @@
   entry from the dictionary
 - Implement searching for existing and also adding new vocab lists in all panels
 - Rework sass: Use gui-font for gui, and content-font for content
+- Display number of notes in each group
 
 ### Important fixes
 - Databases should be reloaded after changing data path (else write errors)
@@ -203,6 +198,8 @@ By category
 - If item has been renamed, directly display change instead of skipping?
 - Allow directly setting new level in flashcard-mode
 - Where to move level-frame?
+- How to make it more convenient to test multiple languages in succession?
+  - Implement a test-mode which just tests low-level items for each language?
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)

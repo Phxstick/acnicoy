@@ -304,9 +304,8 @@ function getContentDownloadName (language, secondary) {
 }
 
 function getContentFileVersions (language, secondary) {
-    if (!dataManager.content.isAvailableFor(language, secondary))
-        return {};
-    return require(paths.content(language, secondary).versions);
+    return utility.existsFile(paths.content(language, secondary).versions) ?
+        require(paths.content(language, secondary).versions) : {};
 }
 
 content.getStatus = async function (language, secondary) {
@@ -336,25 +335,21 @@ content.startDownload = async function (language, secondary) {
     let currentSize;
     let totalSize;
     let requestedFileVersions;
+    let minProgramVersions;
     let filename;
     if (!downloadAlreadyExists) {
         // If download doesn't exist yet, get latest file versions from server
-        const contentStatus = await requestFromServerFull({
-            target: "content",
-            action: "info",
-            languagePair: `${language}-${secondary}`,
-            currentProgramVersion: app.version,
-            currentFileVersions: getContentFileVersions(language, secondary)
-        });
+        const contentStatus = await content.getStatus(language, secondary);
         if (!contentStatus.updateAvailable)
             throw `Content for language pair '${language}-${secondary}' is ` +
                   `already up to date.`;
         filename = `${language}-${secondary}.zip`;
         requestedFileVersions = contentStatus.latestFileVersions;
+        minProgramVersions = contentStatus.minProgramVersions;
         currentSize = 0;
     } else {
-        ({ currentSize, totalSize, requestedFileVersions, filename } =
-            downloadsInfo.get(downloadName));
+        ({ currentSize, totalSize, requestedFileVersions, minProgramVersions,
+           filename } = downloadsInfo.get(downloadName));
     }
     // TODO: Don't request data from server if 100% downloaded
     const response = await requestFromServer({
@@ -371,7 +366,8 @@ content.startDownload = async function (language, secondary) {
             paths.downloadDataPart(filename), Buffer.alloc(totalSize));
         // Create download info object for this download
         downloadsInfo.set(downloadName, {
-            currentSize, totalSize, filename, requestedFileVersions
+            currentSize, totalSize, filename, requestedFileVersions,
+            minProgramVersions
         });
         saveDownloadsInfo();
     }
@@ -382,29 +378,33 @@ content.startDownload = async function (language, secondary) {
     downloadStreams.set(downloadName, response);
     // Start downloading data and process downloaded data afterwards
     handleDownload(downloadName, response).then(() => {
-        const { totalSize, currentSize } = downloadsInfo.get(downloadName);
         const contentPaths = paths.content(language, secondary);
         // Create directory in content directory if it doesn't exist yet
-        if (!dataManager.content.isAvailableFor(language, secondary)) {
+        if (!utility.existsDirectory(contentPaths.directory)) {
             fs.mkdirSync(contentPaths.directory);
         }
         // Unzip new files into content directory
         extract(paths.downloadData(filename), { dir: contentPaths.directory },
         async (error) => {
-            // Update version register
-            let versions;
-            if (dataManager.content.isAvailableFor(language, secondary)) {
-                versions = require(contentPaths.versions);
-            } else {
-                versions = {};
-            }
-            const newVersions =
-                downloadsInfo.get(downloadName).requestedFileVersions;
-            for (const filename in newVersions) {
-                versions[filename] = newVersions[filename];
+            // TODO: Handle errors during unzip or the following procedures
+            // Update content version register
+            const versions = utility.existsFile(contentPaths.versions) ?
+                require(contentPaths.versions) : {};
+            for (const filename in requestedFileVersions) {
+                versions[filename] = requestedFileVersions[filename];
             }
             fs.writeFileSync(
                 contentPaths.versions, JSON.stringify(versions, null, 4));
+            // Update minimum program version register
+            const minProgramVersionsReg =
+                utility.existsFile(contentPaths.minProgramVersions) ?
+                require(contentPaths.minProgramVersions) : {};
+            for (const filename in minProgramVersions) {
+                minProgramVersionsReg[filename] = minProgramVersions[filename];
+            }
+            fs.writeFileSync(contentPaths.minProgramVersions,
+                JSON.stringify(minProgramVersionsReg, null, 4));
+            // Delete entry from downloads-register and delete the ZIP archive
             downloadsInfo.delete(downloadName);
             saveDownloadsInfo();
             fs.unlinkSync(paths.downloadData(filename));

@@ -67,6 +67,7 @@ class MainWindow extends Window {
         this.statusUpdateInterval = utility.timeSpanStringToSeconds("3 hours");
         this.dataSavingInterval = utility.timeSpanStringToSeconds("10 minutes");
         this.srsStatusUpdateInterval = utility.timeSpanStringToSeconds("5 min");
+        this.statusFadeOutDelay = 1000 * 5;  // 3 seconds
         // Collections
         this.sections = {};
         this.panels = {};
@@ -86,6 +87,7 @@ class MainWindow extends Window {
         this.currentPartIndex = -1;
         this.introTourContext = null;
         this.barsHidden = false;
+        this.statusFadeOutCallbackId = null;
         // Menu button events
         this.$("home-button").addEventListener("click",
                 () => this.openSection("home"));
@@ -170,14 +172,14 @@ class MainWindow extends Window {
             "open-test-section": () => this.openTestSection(),
             "open-dictionary": () => {
                 if (dataManager.currentLanguage === "Japanese" &&
-                        dataManager.content.isAvailable()) {
+                        dataManager.content.isLoaded()) {
                     this.openSection("dictionary");
                     this.sections["dictionary"].$("words-filter").focus();
                 }
             },
             "open-kanji-search": () => {
                 if (dataManager.currentLanguage === "Japanese" &&
-                        dataManager.content.isAvailable()) {
+                        dataManager.content.isLoaded()) {
                     this.sections["kanji"].showSearchResults();
                     this.openSection("kanji");
                     this.sections["kanji"].$("search-by-kanji-input").focus();
@@ -185,7 +187,7 @@ class MainWindow extends Window {
             },
             "open-kanji-overview": () => {
                 if (dataManager.currentLanguage === "Japanese" &&
-                        dataManager.content.isAvailable()) {
+                        dataManager.content.isLoaded()) {
                     this.sections["kanji"].showOverview();
                     this.openSection("kanji");
                 }
@@ -320,23 +322,6 @@ class MainWindow extends Window {
             window.setTimeout(() => events.emit("update-program-status"),
                               this.statusUpdateInterval * 1000);
         });
-        events.on("update-content-status", async ({ language, secondary }) => {
-            const info = 
-                    await networkManager.content.getStatus(language, secondary);
-            info.lastUpdateTime = utility.getTime();
-            const cacheKey = `cache.contentVersionInfo.${language}.${secondary}`
-            const cachedInfo = storage.get(cacheKey);
-            storage.set(cacheKey, info);
-            if ((cachedInfo === undefined && info.updateAvailable)
-                    || (cachedInfo !== undefined && !cachedInfo.updateAvailable
-                                                 && info.updateAvailable)) {
-                this.addNotification("content-update-available",
-                    { language, secondary });
-            }
-            events.emit("update-content-view", { language, secondary });
-            window.setTimeout(() => events.emit("update-content-status",
-                { language, secondary }), this.statusUpdateInterval * 1000);
-        });
         events.on("content-download-finished", (info) => {
             this.addNotification("content-download-finished", info);
         });
@@ -371,7 +356,7 @@ class MainWindow extends Window {
         this.currentSection = "home";
         // Load any character in kanji info panel to render stuff there
         // (Prevents buggy animation when first opening the panel)
-        if (dataManager.content.isAvailableFor("Japanese", "English")) {
+        if (dataManager.content.isLoadedFor("Japanese", "English")) {
             this.$("kanji-info-panel").load("字", true);
             this.$("kanji-info-panel").loadHistory();
         }
@@ -476,16 +461,24 @@ class MainWindow extends Window {
         return promises;
     }
 
-    processLanguageContent(language, secondaryLanguage) {
-        const results = [];
-        if (dataManager.content.isAvailableFor(language, secondaryLanguage)) {
-            for (const name in this.sections) {
-                results.push(
-                    this.sections[name].processLanguageContent(
-                        language, secondaryLanguage));
-            }
+    async loadLanguageContent(language, secondary, onStart=false) {
+        if (!dataManager.content.isAvailableFor(language, secondary) ||
+            !dataManager.content.isCompatibleFor(language, secondary)) return;
+        if (!onStart) overlays.open("loading");
+        await dataManager.content.load(language);
+        const processed = [];
+        for (const name in this.sections) {
+            processed.push(
+                this.sections[name].processLanguageContent(language,secondary));
         }
-        return Promise.all(results);
+        await Promise.all(processed);
+        if (dataManager.currentLanguage === language) {
+            dataManager.content.setLanguage(language);
+            this.adjustToLanguageContent(language, secondary);
+        }
+        events.emit("language-content-loaded", { language, secondary });
+        await utility.wait();
+        if (!onStart) overlays.closeTopmost();
     }
 
     async openSection(name) {
@@ -561,7 +554,7 @@ class MainWindow extends Window {
         if (name === "add-kanji" || name === "edit-kanji") {
             if (dataManager.currentLanguage === "Japanese" &&
                     dataManager.currentSecondaryLanguage === "English" &&
-                    dataManager.content.isAvailableFor("Japanese", "English")) {
+                    dataManager.content.isLoadedFor("Japanese", "English")) {
                 if (entryName !== undefined) {
                     showSuggestions = true;
                     this.suggestionPanes[name].load(entryName);
@@ -582,8 +575,7 @@ class MainWindow extends Window {
             } else if (entryName !== undefined) {
                 if (dataManager.currentLanguage === "Japanese" &&
                         dataManager.currentSecondaryLanguage === "English" &&
-                        dataManager.content.isAvailableFor("Japanese",
-                                                           "English")) {
+                        dataManager.content.isLoadedFor("Japanese","English")) {
                     dictionaryId = await
                         dataManager.vocab.getAssociatedDictionaryId(entryName);
                     if (dictionaryId === null) {
@@ -672,23 +664,21 @@ class MainWindow extends Window {
     }
 
     updateStatus(text) {
+        if (this.statusFadeOutCallbackId !== null) {
+            window.clearTimeout(this.statusFadeOutCallbackId);
+        }
         this.$("status-text").fadeOut();
         this.$("status-text").textContent = text;
         this.$("status-text").fadeIn();
+        this.statusFadeOutCallbackId = window.setTimeout(() => {
+            this.$("status-text").fadeOut({ distance: 0, easing: "easeInSine",
+                                            duration: 350 })
+        }, this.statusFadeOutDelay);
     }
 
     async updateTestButton() {
         const amount = await
             dataManager.srs.getTotalAmountDueFor(dataManager.currentLanguage);
-        // if (dataManager.settings.test.showProgress) {
-        //     this.$("num-srs-items").innerHTML = `${amount}<br>items`;
-        // } else {
-        //     if (amount > 0) {
-        //         this.$("num-srs-items").innerHTML = `items<br>avail.`;
-        //     } else {
-        //         this.$("num-srs-items").innerHTML = "no<br>items";
-        //     }
-        // }
         this.$("num-srs-items").innerHTML = `${amount}<br>items`;
         this.$("test-button").classList.toggle("no-items", amount === 0);
         return amount;
@@ -774,7 +764,7 @@ class MainWindow extends Window {
     adjustToLanguageContent(language, secondaryLanguage) {
         this.$("find-kanji-button").hide();
         this.$("dictionary-button").hide();
-        if (!dataManager.content.isAvailableFor(language, secondaryLanguage))
+        if (!dataManager.content.isLoadedFor(language, secondaryLanguage))
             return;
         if (language === "Japanese") {
             this.$("find-kanji-button").show();
@@ -792,7 +782,6 @@ class MainWindow extends Window {
         if (this.currentSection !== null) {
             if (!await this.sections[this.currentSection].confirmClose())
                 return false;
-            this.sections[this.currentSection].close();
         }
         const testSessionClosed = await this.sections["test"].abortSession();
         if (!testSessionClosed)
@@ -906,7 +895,6 @@ class MainWindow extends Window {
         if (!confirmed) return false;
         const testSessionClosed = await this.sections["test"].abortSession();
         if (!testSessionClosed) return false;
-        this.sections[this.currentSection].close();
         await this.saveData();
         networkManager.stopAllDownloads();
         networkManager.save();
@@ -1001,16 +989,8 @@ class MainWindow extends Window {
             subtitle = `For ${language} (from ${secondary}).<br>
                         Press button on the right to load the content.`;
             buttonCallback = async () => {
-                overlays.open("loading");
-                await dataManager.content.load(language);
-                if (dataManager.currentLanguage === language) {
-                    dataManager.content.setLanguage(language);
-                }
-                await this.processLanguageContent(language, secondary);
-                this.adjustToLanguageContent(language, secondary);
+                await this.loadLanguageContent(language, secondary);
                 this.deleteNotification(id);
-                await utility.wait();
-                overlays.closeTopmost();
             };
         }
         else if (type === "achievement-unlocked") {

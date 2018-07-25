@@ -9,12 +9,18 @@ class GeneralSettingsSubsection extends SettingsSubsection {
         this.globalSettingsList = [
             "auto-launch-on-startup", "show-srs-notifications",
             "srs-notifications-interval", "do-regular-backup",
-            "regular-backup-interval"
+            "regular-backup-interval", "auto-load-language-content"
         ];
         this.$("auto-launch-on-startup").addEventListener("click", (event) => {
             dataManager.settings.general.autoLaunchOnStartup =
                 event.target.checked;
             this.broadcastGlobalSetting("auto-launch-on-startup");
+        });
+        this.$("auto-load-language-content").addEventListener("click",
+        (event) => {
+            dataManager.settings.general.autoLoadLanguageContent =
+                event.target.checked;
+            this.broadcastGlobalSetting("auto-load-language-content");
         });
         this.$("data-path").textContent = paths.dataPathPrefix;
         this.$("data-path").addEventListener("click", () => {
@@ -64,6 +70,10 @@ class GeneralSettingsSubsection extends SettingsSubsection {
         events.on("settings-general-auto-launch-on-startup", () => {
             this.$("auto-launch-on-startup").checked = 
                 dataManager.settings.general.autoLaunchOnStartup;
+        });
+        events.on("settings-general-auto-load-language-content", () => {
+            this.$("auto-load-language-content").checked = 
+                dataManager.settings.general.autoLoadLanguageContent;
         });
     }
 

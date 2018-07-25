@@ -1,43 +1,69 @@
 "use strict";
 
+const compareVersions = require("compare-versions");
+
 module.exports = function (paths, modules) {
     const content = {};
     const dataMap = {};
     let data;
 
     content.isAvailableFor = (language, secondary) => {
+        const contentPaths = paths.content(language, secondary);
+        return utility.existsDirectory(contentPaths.directory);
+    };
+
+    content.isCompatibleFor = (language, secondary) => {
+        return !content.updateRequired(language, secondary) &&
+               !content.programUpdateRequired(language, secondary);
+    };
+    
+    content.updateRequired = (language, secondary) => {
+        const languagePair = `${language}-${secondary}`;
+        const minVersions = require(paths.minContentVersions)[languagePair];
+        const curVersions = require(paths.content(language, secondary).versions)
+        for (const file in minVersions) {
+            if (!curVersions.hasOwnProperty(file) ||
+                    compareVersions(curVersions[file], minVersions[file]) == -1)
+                return true;
+        }
+        return false;
+    };
+
+    content.programUpdateRequired = (language, secondary) => {
+        const curProgramVersion = require(paths.packageInfo).version;
+        const minProgramVersions =
+            require(paths.content(language, secondary).minProgramVersions);
+        for (const file in minProgramVersions) {
+            if (compareVersions(curProgramVersion,minProgramVersions[file])==-1)
+                return true;
+        }
+        return false;
+    };
+
+    content.isLoadedFor = (language, secondary) => {
         return dataMap.hasOwnProperty(`${language}-${secondary}`);
     };
 
-    content.isAvailable = () => {
+    content.isLoaded = () => {
         const language = modules.currentLanguage;
         const secondaryLanguage = modules.currentSecondaryLanguage;
-        return dataMap.hasOwnProperty(`${language}-${secondaryLanguage}`);
+        return content.isLoadedFor(language, secondaryLanguage);
     };
 
     content.get = (language, secondary) => {
         return dataMap[`${language}-${secondary}`];
     };
 
-    content.load = function (language) {
+    content.load = async function (language) {
         const secondaryLanguage =
             modules.languageSettings.getFor(language, "secondaryLanguage");
+        if (!content.isAvailableFor(language, secondaryLanguage) ||
+            !content.isCompatibleFor(language, secondaryLanguage)) return;
         const contentPaths = paths.content(language, secondaryLanguage);
         const languagePair = `${language}-${secondaryLanguage}`;
-        if (!utility.existsDirectory(contentPaths.directory)) {
-            // Content not available
-            return;
-        }
         const contentModulePath = paths.js.contentModule(languagePair);
-        if (!utility.existsFile(contentModulePath)) {
-            dataMap[languagePair] = {};
-            return Promise.resolve();
-        } else {
-            return require(contentModulePath)(paths, contentPaths, modules)
-            .then((contentModule) => {
-                dataMap[languagePair] = contentModule;
-            });
-        }
+        dataMap[languagePair] = !utility.existsFile(contentModulePath) ? {} :
+            await require(contentModulePath)(paths, contentPaths, modules);
     };
 
     content.unload = function (language) {

@@ -95,6 +95,8 @@ module.exports = function (basePath) {
         programIcon: path.resolve(basePath, "img", "icon.png")
     };
     paths.japaneseIndices = path.resolve(basePath, "japanese-indices.sql");
+    paths.minContentVersions =
+        path.resolve(basePath, "data", "min-content-versions.json");
 
     // JS
     const jsPath = path.resolve(basePath, "js");
@@ -213,6 +215,8 @@ module.exports = function (basePath) {
         }
         resourcePaths.directory = p;
         resourcePaths.versions = path.resolve(p, "versions.json");
+        resourcePaths.minProgramVersions = path.resolve(p,
+            "min-program-versions.json");
         return resourcePaths;
     };
 

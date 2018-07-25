@@ -27,6 +27,7 @@ class Section extends Component {
 
     /**
      *  Called before the section is being closed. Allows cleaning up stuff.
+     *  CAUTION: This is not called on program exit. Don't use to save data.
      */
     close() {
     }

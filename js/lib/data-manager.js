@@ -30,14 +30,14 @@ module.exports = function (paths) {
     };
 
     /**
-     * Load user data and content (if available) for given language.
+     * Load user data for given language.
      * @param {String} language
      * @returns {Promise}
      */
     modules.load = async function (language) {
         const results = [];
         for (const name of components.modules) {
-            if (modules[name].hasOwnProperty("load")) {
+            if (modules[name].hasOwnProperty("load") && name !== "content") {
                 results.push(modules[name].load(language));
             }
         }

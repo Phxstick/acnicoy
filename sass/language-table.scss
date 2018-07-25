@@ -26,7 +26,7 @@ tbody tr {
   padding: 4px;
   height: 40px;
 
-  .content-status-label-frame {
+  .content-load-status-frame, .content-status-label-frame {
     @include center-content;
   }
 
@@ -44,14 +44,6 @@ tbody tr {
     &.error {
       color: $color-negative;
     }
-  }
-
-  .update-required-icon {
-    display: inline-block;
-    margin-left: 5px;
-    color: $warning-icon-color;
-    font-size: 120%;
-    --tooltip-delay: .4s;
   }
 
   .content-download-progress-frame {
@@ -128,15 +120,47 @@ tbody tr {
   }
 }
 
-#add-language-button {
+#button-frame {
   display: flex;
   flex-direction: row;
-  font-size: 120%;
+}
 
+#add-language-button, #update-content-status-button {
+  display: flex;
+  flex-direction: row;
+
+  &:not(:first-child) {
+    margin-left: 20px;
+  }
+  &:hover {
+    .icon::before, .icon::after {
+      background-color: $button-light-icon-color-hover;
+      box-shadow: 0 0 1px $button-light-color;
+    }
+  }
   .icon {
-    @include plus-shape($color: $color-light);
+    @include plus-shape($color: $button-light-icon-color);
     width: 22px;
     height: 22px;
     margin-right: 10px;
   }
+  i {
+    margin-right: 10px;
+  }
 }
+
+.program-update-required-icon, .content-update-required-icon {
+  display: inline-block;
+  color: $warning-icon-color;
+  font-size: 120%;
+  --tooltip-delay: .4s;
+}
+
+.program-update-recommended-icon {
+  display: inline-block;
+  margin-left: 5px;
+  color: $info-icon-color;
+  font-size: 120%;
+  --tooltip-delay: .4s;
+}
+

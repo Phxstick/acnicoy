@@ -4,7 +4,7 @@ class KanjiSection extends Section {
     constructor () {
         super("kanji");
         this.selectedKanji = null;
-        this.contentAvailable = false;
+        this.contentLoaded = false;
         this.addedPerGroupCounters = {};
         this.totalAmountPerGroup = {};
         this.addedAmountPerGroup = {};
@@ -161,7 +161,7 @@ class KanjiSection extends Section {
 
     registerCentralEventListeners() {
         events.on("kanji-added", (kanji) => {
-            if (!this.contentAvailable) return;
+            if (!this.contentLoaded) return;
             this.$(kanji).classList.add("added");
             if (this.overviewSettings.onlyMissing) {
                 this.$(kanji).hide();
@@ -175,7 +175,7 @@ class KanjiSection extends Section {
             }
         });
         events.on("kanji-removed", (kanji) => {
-            if (!this.contentAvailable) return;
+            if (!this.contentLoaded) return;
             this.$(kanji).classList.remove("added");
             if (this.overviewSettings.onlyMissing) {
                 this.$(kanji).show();
@@ -203,8 +203,8 @@ class KanjiSection extends Section {
 
     processLanguageContent(language, secondaryLanguage) {
         if (language === "Japanese") {
-            if (dataManager.content.isAvailableFor(language, secondaryLanguage))
-                this.contentAvailable = true;
+            if (dataManager.content.isLoadedFor(language, secondaryLanguage))
+                this.contentLoaded = true;
             return dataManager.content.get(language, secondaryLanguage)
             .getKanjiLists().then((kanjiList) => {
                 return this.createKanjiOverviewNodes(kanjiList).then(() => {

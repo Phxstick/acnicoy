@@ -1,0 +1,12 @@
+{
+    "Japanese-English": {
+        "Japanese-English.sqlite3": "1.0.0",
+        "counter-kanji.json": "1.0.0",
+        "dict-code-to-text.json": "1.0.0",
+        "example-words-index.json": "1.0.0",
+        "kanji-strokes.json": "1.0.0",
+        "kokuji.txt": "1.0.0",
+        "name-tag-to-text.json": "1.0.0",
+        "numeric-kanji.json": "1.0.0"
+    }
+}
