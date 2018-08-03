@@ -353,7 +353,7 @@ class MigrateSrsOverlay extends Overlay {
         // TODO: Create default connections for new scheme
     }
     
-    migrate() {
+    async migrate() {
         // Check if new scheme was selected (irrelevant for "edit-scheme" mode)
         if (this.$("new-scheme-connectors").children.length === 0) {
             dialogWindow.info("No SRS scheme has been selected.");
@@ -399,36 +399,36 @@ class MigrateSrsOverlay extends Overlay {
                 this.backupInfo.mode === "delete-scheme") {
             this.backupInfo.newSchemeName = this.$("select-new-scheme").value;
         }
-        return dataManager.createBackup(this.backupInfo).then(() => {
-            console.log("Beginning migration...");
-            // Migrate items for all languages affected, according to the plan
-            const migrationPromises = [];
-            const startTime = performance.now();
-            for (const language of this.languagesAffected) {
-                const migrationPromise = dataManager.srs.migrateItems(
-                    language, this.oldSchemeIntervals, this.newSchemeIntervals,
-                    migrationPlan).then(() => {
-                        // After migration, switch language to new scheme
-                        if (this.backupInfo.mode === "switch-scheme" ||
-                                this.backupInfo.mode === "delete-scheme") {
-                            return dataManager.srs.switchScheme(
-                                language, this.backupInfo.newSchemeName)
-                            .then(() => {
-                                if (language === dataManager.currentLanguage) {
-                                    events.emit("current-srs-scheme-edited");
-                                }
-                            });
-                        }
-                    });
-                migrationPromises.push(migrationPromise);
-            }
-            // TODO: Loading screen necessary? Took 1+ sec for ~8000 items
-            return Promise.all(migrationPromises).then(() => {
-                const totalTime = performance.now() - startTime;
-                console.log("Finished migration after %f ms", totalTime);
-                this.resolve(true);
-            });
-        });
+        overlays.open("loading", "Applying changes");
+        await dataManager.createBackup(this.backupInfo);
+        console.log("Beginning migration...");
+        // Migrate items for all languages affected, according to the plan
+        const migrationPromises = [];
+        const startTime = performance.now();
+        for (const language of this.languagesAffected) {
+            const migrationPromise = dataManager.srs.migrateItems(
+                language, this.oldSchemeIntervals, this.newSchemeIntervals,
+                migrationPlan).then(() => {
+                    // After migration, switch language to new scheme
+                    if (this.backupInfo.mode === "switch-scheme" ||
+                            this.backupInfo.mode === "delete-scheme") {
+                        return dataManager.srs.switchScheme(
+                            language, this.backupInfo.newSchemeName)
+                        .then(() => {
+                            events.emit("srs-scheme-edited", language);
+                            if (language === dataManager.currentLanguage) {
+                                events.emit("current-srs-scheme-edited");
+                            }
+                        });
+                    }
+                });
+            migrationPromises.push(migrationPromise);
+        }
+        await Promise.all(migrationPromises);
+        const totalTime = performance.now() - startTime;
+        console.log("Finished migration after %f ms", totalTime);
+        overlays.closeTopmost();
+        this.resolve(true);
     }
 }
 

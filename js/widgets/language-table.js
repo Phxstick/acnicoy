@@ -95,7 +95,7 @@ class LanguageTable extends Widget {
         this.$("table-body").addEventListener("click", (target) => {
             if (!event.target.classList.contains("content-load-status-label"))
                 return;
-            const row = event.target.parentNode.parentNode;
+            const row = event.target.parentNode.parentNode.parentNode;
             const config = this.rowToConfig.get(row);
             const language = config.language;
             const secondary = config.settings.secondary;
@@ -150,6 +150,7 @@ class LanguageTable extends Widget {
                 config.language, "hidden", hidden);
             row.classList.toggle("hidden", hidden);
             this.settingsSubsection.broadcastLanguageSetting("visibility");
+            events.emit("language-visibility-changed", config.language);
         });
         // Remove language if a remove-icon is clicked
         this.$("table-body").addEventListener("click", async (event) => {

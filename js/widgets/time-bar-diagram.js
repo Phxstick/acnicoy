@@ -5,6 +5,7 @@ class TimeBarDiagram extends Widget {
         super("time-bar-diagram");
         this.unitButtons = {};
         this.reverse = false;
+        this.minMaxValue = null;
         this.$("diagram").margin = { top: 30, left: 25, right: 25, bottom: 40 };
         this.$("diagram").barWidth = 20;
         this.$("diagram").barSpacing = 10;
@@ -49,7 +50,11 @@ class TimeBarDiagram extends Widget {
                 utility.getDistantColors(dataList[0].length) : null;
         this.$("diagram").draw(dataList, { descriptions: labels, separators,
             colors, showValueLabels: true, showSmallSeparators: true,
-            stackBars: true, reverse: this.reverse });
+            stackBars: true, reverse: this.reverse,
+            minMaxValue: this.minMaxValue });
+        if (this.reverse && !this.$("diagram").isHidden()) {
+            this.moveViewToRightEnd();
+        }
     }
 
     setLegend(labels) {
@@ -63,6 +68,23 @@ class TimeBarDiagram extends Widget {
 
     showLegend() {
         this.$("diagram").showLegend();
+    }
+
+    toggleLegend(bool) {
+        if (bool) this.showLegend();
+        else this.hideLegend();
+    }
+
+    moveViewToRightEnd() {
+        this.$("diagram").moveViewToRightEnd();
+    }
+
+    incrementLastValue(index) {
+        this.$("diagram").incrementLastValue(index);
+    }
+
+    decrementLastValue(index) {
+        this.$("diagram").decrementLastValue(index);
     }
 }
 

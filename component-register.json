@@ -33,7 +33,7 @@
         "srs-status-table", "language-table", "language-popup",
         "check-box", "example-word-entry", "tabbed-frame",
         "srs-review-schedule", "tree-view", "time-bar-diagram",
-        "srs-status-overview"
+        "srs-status-overview", "general-stats"
     ],
     "extensions": [
         "converter", "array-extensions", "html-element-extensions",

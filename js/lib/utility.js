@@ -1032,6 +1032,24 @@ function handleKeyDownEvent(element, handler) {
     });
 }
 
+/**
+ * Measure the size of an SVG text element even if it's hidden.
+ * Creates a temporary invisible SVG element for this purpose.
+ * @param {SVGElement} element
+ * @returns {Object} - Object of the form { width, height }
+ */
+function measureSvgElementSize(element) {
+    const svg = utility.createSvgNode("svg");
+    svg.style.visibility = "hidden";
+    svg.style.pointerEvents = "none";
+    document.body.appendChild(svg);
+    const clone = element.cloneNode(true);
+    svg.appendChild(clone);
+    const { width, height } = clone.getBBox();
+    svg.remove();
+    return { width, height };
+}
+
 
 // Non DOM-related functions
 module.exports.getTime = getTime;
@@ -1073,3 +1091,4 @@ module.exports.initializeView = initializeView;
 module.exports.makePopupWindow = makePopupWindow;
 module.exports.drawArrowOnCanvas = drawArrowOnCanvas;
 module.exports.handleKeyDownEvent = handleKeyDownEvent;
+module.exports.measureSvgElementSize = measureSvgElementSize;

@@ -62,10 +62,11 @@ class SvgBarDiagram extends Widget {
     }
 
     draw(values, { maxValues=null, descriptions=null, separators=null,
-                   colors=null,
+                   colors=null, minMaxValue=null,
                    showValueLabels=false, showSmallSeparators=false,
                    stackBars=false, splitValueLabels=false, reverse=false }) {
         const numValues = values.length;
+        this.lastValueLabel = undefined;
 
         // =====================================================================
         //    Check values and descriptions
@@ -78,7 +79,8 @@ class SvgBarDiagram extends Widget {
         }
         if (maxValues !== null && numValues !== maxValues.length)
             throw new Error("Arrays for drawing bars must have same length!");
-        // If no maximum values are given, use the maximum of the values array.
+        // If no maximum values are given, use the maximum of the values array,
+        // but make it at least as large as minMaxValue (if not null)
         if (maxValues === null) {
             let maxValue;
             if (numValues === 0) {
@@ -93,6 +95,9 @@ class SvgBarDiagram extends Widget {
                 }
             } else {
                 throw new Error("Values must be numbers or arrays of numbers.");
+            }
+            if (minMaxValue !== null) {
+                maxValue = Math.max(minMaxValue, maxValue); 
             }
             maxValues = [];
             for (let i = 0; i < numValues; ++i) maxValues.push(maxValue);
@@ -141,20 +146,6 @@ class SvgBarDiagram extends Widget {
         const width = totalWidth - this.margin.left - this.margin.right;
         const height = totalHeight - this.margin.bottom - this.margin.top
                        - this.topLineWidth - this.bottomLineWidth;
-        //     const { width: viewWidth, height: viewHeight } =
-        //         this.diagram.getBoundingClientRect();
-        //     const x = event.clientX;
-        //     this.dragOffset = this.dragStartX - x;
-        //     if (this.viewOffsetX + this.dragOffset < 0) {
-        //         this.dragOffset = -this.viewOffsetX;
-        //     }
-        //     const maxViewOffsetX = this.totalWidth - viewWidth;
-        //     if (this.viewOffsetX + this.dragOffset > maxViewOffsetX) {
-        //         this.dragOffset = maxViewOffsetX - this.viewOffsetX;
-        //     }
-        //     const viewOffsetX = this.viewOffsetX + this.dragOffset;
-        //     this.diagram.setAttribute("viewBox",
-        //         `${viewOffsetX} 0 ${totalWidth - viewWidth} ${totalHeight}`);
 
         // =====================================================================
         //    Calculate parameters for drawing bars
@@ -218,6 +209,7 @@ class SvgBarDiagram extends Widget {
                           width: barWidth, height: barHeight });
                 rect.classList.add("bar");
                 this.diagram.appendChild(rect);
+                if (i == 0) this.lastBars = rect;
                 // Also display value label (if flag is set)
                 if (showValueLabels && values[i] > 0) {
                     const valueLabel = utility.createSvgNode("text",
@@ -226,11 +218,14 @@ class SvgBarDiagram extends Widget {
                     valueLabel.classList.add("value-label");
                     valueLabel.textContent = values[i].toString();
                     this.diagram.appendChild(valueLabel);
+                    if (i == 0) this.lastValueLabel = valueLabel;
                 }
             } else if (Array.isArray(fractions[i])) {
                 const numBars = fractions[i].length;
                 let offsetX = 0;
                 let offsetY = 0;
+                if (i == 0) this.lastBars = [];
+                if (i == 0) this.lastValueLabel = [];
                 for (let j = 0; j < numBars; ++j) {
                     const barHeight = height * fractions[i][j];
                     const width = stackBars ? barWidth : barWidth / numBars;
@@ -242,6 +237,7 @@ class SvgBarDiagram extends Widget {
                     }
                     rect.classList.add("bar");
                     this.diagram.appendChild(rect);
+                    if (i == 0) this.lastBars.push(rect);
                     // If bars are not stacked, add label for each
                     if (!stackBars && splitValueLabels && showValueLabels
                             && values[i][j] > 0) {
@@ -251,6 +247,7 @@ class SvgBarDiagram extends Widget {
                         valueLabel.classList.add("value-label");
                         valueLabel.textContent = values[i][j].toString();
                         this.diagram.appendChild(valueLabel);
+                        if (i == 0) this.lastValueLabel.push(valueLabel);
                     }
                     // Update position for the next sub-bar
                     if (stackBars) {
@@ -272,6 +269,7 @@ class SvgBarDiagram extends Widget {
                     valueLabel.classList.add("value-label");
                     valueLabel.textContent = valueSum.toString();
                     this.diagram.appendChild(valueLabel);
+                    if (i == 0) this.lastValueLabel = valueLabel;
                 }
             }
             pos.x += (1-2*reverse) * (barWidth + barSpacing);
@@ -282,7 +280,6 @@ class SvgBarDiagram extends Widget {
         // =====================================================================
         // If numValues descriptions are given, draw them right below the bars.
         // If there are numValues+1, draw them below the gaps between the bars.
-        let firstDescriptionLabel;
         if (descriptions !== null) {
             const linePos = {
                 x: reverse ? totalWidth - this.margin.right + barSpacing / 2
@@ -315,9 +312,6 @@ class SvgBarDiagram extends Widget {
                 label.textContent = descriptions[i];
                 label.classList.add("description-label");
                 this.diagram.appendChild(label);
-                if (firstDescriptionLabel === undefined) {
-                    firstDescriptionLabel = label;
-                }
             }
             // Draw small seperators (if flag is set)
             if (showSmallSeparators) {
@@ -340,8 +334,12 @@ class SvgBarDiagram extends Widget {
                 reverse ?  totalWidth - this.margin.right + barSpacing / 2
                         : this.margin.left - barSpacing / 2;
             const y = totalHeight - this.margin.bottom;
-            for (const index in separators) {
+            for (let index in separators) {
                 const text = separators[index];
+                if (reverse) {
+                    if (parseInt(index) === numValues) continue;
+                    index = parseInt(index) + 1;
+                }
                 const offset =
                     (1-2*reverse) * parseInt(index) * (barWidth + barSpacing);
                 // Draw description text (if not empty)
@@ -354,29 +352,24 @@ class SvgBarDiagram extends Widget {
                     label.classList.add("separator-label");
                     label.textContent = text;
                     this.diagram.appendChild(label);
-                    textHeight = label.getBBox().height;
+                    textHeight = utility.measureSvgElementSize(label).height;
                 }
                 // Extend line as far as possible if there's nothing below
                 let yExtension = 0;
-                if (showSmallSeparators) {
-                    yExtension += this.smallSepBottomHeight;
-                }
+                // No description below?
                 if (descriptions === null ||
                         descriptions.length !== numValues + 1 ||
                         !descriptions[index]) {
-                    if (firstDescriptionLabel !== undefined) {
-                        const { height: labelHeight } =
-                            firstDescriptionLabel.getBBox();
-                        yExtension += labelHeight + this.textMarginTop;
-                    }
+                    // Separator is labelled?
                     if (text.length > 0) {
                         yExtension = this.margin.bottom - textHeight
                                      - this.descMarginBottom
                                      - this.sepDescMarginTop;
-                    } else if (text.length === 0) {
-                        yExtension = this.margin.bottom
-                                     - this.descMarginBottom;
+                    } else {
+                        yExtension = this.margin.bottom - this.descMarginBottom;
                     }
+                } else if (showSmallSeparators) {
+                    yExtension = this.smallSepBottomHeight;
                 }
                 // Draw line
                 const sepLine = utility.createSvgNode("line", 
@@ -386,6 +379,14 @@ class SvgBarDiagram extends Widget {
                 this.diagram.appendChild(sepLine);
             }
         }
+        // =====================================================================
+        //    Store some values in order to be able to redraw the last bar
+        // =====================================================================
+        this.stackBars = stackBars;
+        this.splitValueLabels = splitValueLabels;
+        this.maxBarHeight = height;
+        this.lastValues = values[0];
+        this.lastMaxValue = maxValues[0];
     }
 
     setLegend(labels, colors) {
@@ -413,6 +414,97 @@ class SvgBarDiagram extends Widget {
 
     showLegend() {
         this.legend.show("flex");
+    }
+    
+    moveViewToRightEnd() {
+        const { width: viewWidth, height: viewHeight } =
+            this.diagram.getBoundingClientRect();
+        this.viewOffsetX = this.totalWidth - viewWidth;
+        this.diagram.setAttribute("viewBox",
+            `${this.viewOffsetX} 0 ${this.totalWidth} ${viewHeight}`);
+    }
+
+    /**
+     * Increment the value at the given index for the last bar.
+     * @param {Integer} index
+     */
+    incrementLastValue(index) {
+        if (index === undefined) {
+            this.lastValues += 1;
+            if (this.lastValues > this.lastMaxValue) ++this.lastMaxValue;
+        } else {
+            this.lastValues[index] += 1;
+            if (this.lastValues.sum() > this.lastMaxValue) ++this.lastMaxValue;
+        }
+        this.adjustLastBars();
+    }
+
+    /**
+     * Decrement the value at the given index for the last bar.
+     * @param {Integer} index
+     */
+    decrementLastValue(index) {
+        if (index === undefined) {
+            this.lastValues -= 1;
+            if (this.lastValues < 0) this.lastValues = 0;
+        } else {
+            this.lastValues[index] -= 1;
+            if (this.lastValues[index] < 0) this.lastValues[index] = 0;
+        }
+        this.adjustLastBars();
+    }
+
+    /**
+     * Update the last bar/bars and their labels according to the values stored
+     * in this.lastValues and this.lastMaxValue.
+     */
+    adjustLastBars() {
+        let yPos;
+        if (this.lastMaxValue === 0) {
+            yPos = this.margin.top + this.topLineWidth;
+            this.lastBars.setAttribute("height", this.maxBarHeight);
+            this.lastBars.setAttribute("y", yPos);
+        } else if (typeof this.lastValues === "number") {
+            const fraction = this.lastValues / this.lastMaxValue;
+            yPos = this.margin.top + this.topLineWidth +
+                   this.maxBarHeight * (1 - fraction);
+            this.lastBars.setAttribute("height", this.maxBarHeight * fraction);
+            this.lastBars.setAttribute("y", yPos);
+        } else if (Array.isArray(this.lastValues)) {
+            yPos = this.margin.top + this.topLineWidth + this.maxBarHeight;
+            const fractions = this.lastValues.map((v) => v / this.lastMaxValue);
+            for (let i = 0; i < fractions.length; ++i) {
+                const barHeight = this.maxBarHeight * fractions[i];
+                if (this.stackBars) yPos -= barHeight;
+                else yPos = this.margin.top + this.topLineWidth
+                            + this.maxBarHeight - barHeight;
+                this.lastBars[i].setAttribute("height", barHeight);
+                this.lastBars[i].setAttribute("y", yPos);
+            }
+            if (!this.stackBars) {
+                yPos = this.margin.top + this.topLineWidth +
+                       this.maxBarHeight * (1 - Math.max(...fractions));
+            }
+        }
+        // Update label
+        if (this.lastValueLabel !== undefined) {
+            if (this.stackBars || !this.splitValueLabels) {
+                if (typeof this.lastValues === "number") {
+                    this.lastValueLabel.textContent = this.lastValues;
+                } else if (Array.isArray(this.lastValues)) {
+                    this.lastValueLabel.textContent = this.lastValues.sum();
+                }
+                yPos -= this.valueLabelMarginBottom;
+                this.lastValueLabel.setAttribute("y", yPos);
+            } else {
+                for (let i = 0; i < this.lastValues.length; ++i) {
+                    const fraction = this.lastValues[i] / this.lastMaxValue;
+                    this.lastValueLabel[i].setAttribute("y", this.margin.top +
+                        this.topLineWidth + this.maxBarHeight * (1 - fraction) -
+                        this.valueLabelMarginBottom);
+                }
+            }
+        }
     }
 }
 

@@ -387,7 +387,7 @@ class TestSection extends Section {
     }
 
     async _evaluateAnswer() {
-        const answer = this.$("answer-entry").textContent.trim();
+        const answer = this.$("answer-entry").textContent.trim().toLowerCase();
         const item = this.testInfo.currentItem;
         const part = this.testInfo.currentPart;
         const entry = item.entry;
@@ -404,7 +404,7 @@ class TestSection extends Section {
             let match = false;
             for (const solution of extendedSolutions) {
                 if (part !== "readings" && 
-                        utility.calculateED(answer, solution)
+                        utility.calculateED(answer, solution.toLowerCase())
                         < solution.length / 4)
                     match = true;
             }
@@ -711,6 +711,7 @@ class TestSection extends Section {
                         this.$("score-animation").hide();
                     });
                 }
+                events.emit("item-reviewed");
             } else {
                 this.testInfo.pickedItems.push(item);
             }

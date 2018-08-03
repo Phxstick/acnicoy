@@ -1,27 +1,16 @@
 ### Primary goals
-- Undo operation for deleting and editing notes
-- Finish first version of the stats
-  - Something is wrong: Bunch of Chinese item reviews before even starting
-  - Fix large separators in bar diagrams
-  - Hide legend/"total"-bar everywhere if there is only one language
-  - Find a way to scroll stats-diagrams to the end initially
-  - Update stats regularly (efficiently)
-  - Remove num-items-tested-diagram?
-  - Set lower bound for max value in bar diagrams
 - Rethink what belongs into local storage and what should be shared
   - When using Acnicoy on multiple computers, some notifications are problematic
   - Remove test-stuff on server afterwards (like test-versions etc.)
-- Update SRS stuff after adding/removing items?
 - Move plus-sign into views in edit-panels. Use edit-panel for adding word too?
 - Bunch of conflicting WALs. What's going wrong? Dropbox or SQLite error?
   - Transfer changes and delete WAL on program exit?
-- Make testing case-insensitive
 - Indicate in loading-window that loading content might take a while and
   on-start loading can be disabled in the settings
-
+- Something is wrong: Bunch of Chinese item reviews before even starting
 
 ### Secondary goals
-- Implement undo of note deletion
+- Implement undo of note deletion (and editing?)
 - Add new loading-overlay whereever useful
 - Implement program updating functionality (in general settings)
   - Handle the "update-program-status" event there instead

@@ -1,25 +1,26 @@
 "use strict";
 
-const dateFormat = require("dateformat");
+// const dateFormat = require("dateformat");
+const schedule = require("node-schedule");
 
 class StatsSection extends Section {
     constructor() {
         super("stats");
         const numSteps = { "days": 61, "months": 36 };
         this.$("words-added-timeline").reverse = true;
+        this.$("words-added-timeline").minMaxValue = 20;
         this.$("words-added-timeline").setUnits(["days", "months"], "days");
         this.$("words-added-timeline").setInfoText("Items added in the last");
         this.$("words-added-timeline").setDataCallback((unit) =>
             dataManager.stats.getItemsAddedTimelineFor(
                 dataManager.languages.visible, unit, numSteps[unit]));
         this.$("srs-reviews-timeline").reverse = true;
+        this.$("srs-reviews-timeline").minMaxValue = 50;
         this.$("srs-reviews-timeline").setUnits(["days", "months"], "days");
         this.$("srs-reviews-timeline").setInfoText("Items reviewed in the last")
         this.$("srs-reviews-timeline").setDataCallback((unit) =>
             dataManager.stats.getItemsTestedTimelineFor(
                 dataManager.languages.visible, unit, numSteps[unit]));
-        this.$("words-added-timeline").showLegend();
-        this.$("srs-reviews-timeline").showLegend();
         // this.achievementIdToNode = new Map();
 
         // const globalAchievements = dataManager.achievements.getUnlockedGlobal();
@@ -67,77 +68,59 @@ class StatsSection extends Section {
     }
 
     registerCentralEventListeners() {
-        events.onAll(
-            ["word-added", "word-deleted", "kanji-added", "kanji-removed",
-             "current-srs-scheme-edited", "hanzi-added", "hanzi-removed"],
-        () => {
-            if (this.isHidden()) return;
-            this.updateStats();
+        events.onAll(["language-added", "language-removed",
+                      "language-visibility-changed"], () => {
+            this.initStats();
         });
-        events.onAll(["language-added", "language-removed"], () => {
-            const languages = dataManager.languages.visible;
-            this.$("words-added-timeline").setLegend(languages);
-            this.$("srs-reviews-timeline").setLegend(languages);
+        events.on("word-added", () => {
+            const visibleLanguages = dataManager.languages.visible;
+            this.$("words-added-timeline").incrementLastValue(
+                visibleLanguages.indexOf(dataManager.currentLanguage));
+        });
+        events.on("word-deleted", () => {
+            const visibleLanguages = dataManager.languages.visible;
+            this.$("words-added-timeline").decrementLastValue(
+                visibleLanguages.indexOf(dataManager.currentLanguage));
+        });
+        events.on("item-reviewed", () => {
+            const visibleLanguages = dataManager.languages.visible;
+            this.$("srs-reviews-timeline").incrementLastValue(
+                visibleLanguages.indexOf(dataManager.currentLanguage));
         });
         // events.on("achievement-unlocked", (achievementId) => {
-        //     // TODO
-        //     // TODO: Adjust counter-increment as well
+        //     // Implement, Adjust counter-increment as well
         // });
     }
 
+    open() {
+        if (this.recentlyInitialized) {
+            this.$("words-added-timeline").moveViewToRightEnd();
+            this.$("srs-reviews-timeline").moveViewToRightEnd();
+        }
+        this.recentlyInitialized = false;
+    }
+
     initialize() {
+        this.initStats();
+        // Redraw the diagrams when new day starts (in order to shift diagram)
+        schedule.scheduleJob("0 0 * * *", () => {
+            this.$("words-added-timeline").drawTimeline();
+            this.$("srs-reviews-timeline").drawTimeline();
+            this.$("words-added-timeline").moveViewToRightEnd();
+            this.$("srs-reviews-timeline").moveViewToRightEnd();
+        });
+    }
+
+    initStats() {
+        this.$("general-stats").update();
         const languages = dataManager.languages.visible;
         this.$("words-added-timeline").setLegend(languages);
         this.$("srs-reviews-timeline").setLegend(languages);
-        this.initStats();
-    }
-
-    open() {
-    }
-
-    adjustToLanguage(language, secondary) {
-    }
-
-    async initStats() {
-        const languages = dataManager.languages.visible;
-        // Sort languages by mastery score for general stats
-        languages.sort((l1, l2) => dataManager.stats.getTotalScoreFor(l2) -
-                                   dataManager.stats.getTotalScoreFor(l1));
-        // Fill general stats
-        let scoreTotal = 0;
-        let numTestedTotal = 0;
-        let numAddedTotal = 0;
-        for (const lang of languages) {
-            const score = dataManager.stats.getTotalScoreFor(lang);
-            const numTested = dataManager.stats.getNumberOfItemsTestedFor(lang);
-            const numAdded = await dataManager.vocab.sizeFor(lang);
-            const row = utility.fragmentFromString(
-                `<div class="general-stats-row">
-                   <div class="language-label">${lang}</div>
-                   <div>${numAdded}</div>
-                   <div>${numTested}</div>
-                   <div>${score}</div>
-                 </div>`);
-            this.$("general-stats-per-language").appendChild(row);
-            scoreTotal += score;
-            numTestedTotal += numTested;
-            numAddedTotal += numAdded;
-        }
-        const totalsRow = utility.fragmentFromString(
-            `<div class="general-stats-row">
-               <div></div>
-               <div>${numAddedTotal}</div>
-               <div>${numTestedTotal}</div>
-               <div>${scoreTotal}</div>
-             </div>`);
-        this.$("general-stats-total").appendChild(totalsRow);
-        // Draw daily stats diagrams
+        this.$("words-added-timeline").toggleLegend(languages.length > 1);
+        this.$("srs-reviews-timeline").toggleLegend(languages.length > 1);
         this.$("words-added-timeline").drawTimeline();
         this.$("srs-reviews-timeline").drawTimeline();
-    }
-
-    async updateStats() {
-        // TODO
+        this.recentlyInitialized = true;
     }
 }
 

@@ -45,7 +45,9 @@
 </template>
 
 <template data-target="home-button">
-  <script>main.introTourContext = main</script>
+  <script>
+    main.introTourContext = main;
+  </script>
   <p>
   The <b>home section</b> gives you an overview of the status of your SRS items.
   </p>
@@ -55,7 +57,10 @@
 </template>
 
 <template data-target="srs-status-overview">
-  <script>main.introTourContext = main.sections["home"]</script>
+  <script>
+    main.introTourPromise = main.openSection("home", true);
+    main.introTourContext = main.sections["home"];
+  </script>
   <p>
   The <b>SRS status overview</b> displays the distribution of items among SRS levels for each language.
   The small grey numbers denote the total number of items in a level, while large red numbers below denote the number of items ready for review.
@@ -66,14 +71,19 @@
 </template>
 
 <template data-target="srs-review-schedule">
-  <script>main.introTourContext = main.sections["home"]</script>
+  <script>
+    main.introTourPromise = main.openSection("home", true);
+    main.introTourContext = main.sections["home"];
+  </script>
   <p>
   The <b>SRS schedule</b> is a draggable timeline showing how many vocabulary items are scheduled for review in the near future.</li>
   </p>
 </template>
 
 <template data-target="stats-button">
-  <script>main.introTourContext = main</script>
+  <script>
+    main.introTourContext = main;
+  </script>
   <p>
   View your language learning progress in the <b>stats section</b>.
   </p>

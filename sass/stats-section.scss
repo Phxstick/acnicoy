@@ -11,43 +11,6 @@ body {
   margin: 20px;
 }
 
-.general-stats-row {
-  display: flex;
-  flex-direction: row;
-  font-size: 1.25rem;
-  padding-top: 4px;
-  padding-bottom: 4px;
-
-  > * {
-    flex: 1;
-    text-align: center;
-    font-family: $light-font;
-    &.language-label {
-      font-family: OpenSans-Regular;
-      font-size: 1.1rem;
-    }
-  }
-}
-
-#general-stats-header-row {
-  border-bottom: 1px solid $border-color-dark;
-  > * {
-    font-size: 1.4rem;
-    font-family: $header-font;
-    font-variant: small-caps;
-  }
-}
-
-#general-stats-per-language > * {
-  &:not(:last-child) {
-    border-bottom: 1px solid $border-color-light;
-  }
-}
-
-#general-stats-total-row {
-  border-top: 1px solid $border-color-dark;
-}
-
 // %header {
 //   font-size: 140%;
 //   font-family: $header-font;

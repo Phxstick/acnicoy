@@ -86,6 +86,7 @@ class MainWindow extends Window {
         this.introTourParts = null;
         this.currentPartIndex = -1;
         this.introTourContext = null;
+        this.introTourPromise = null;
         this.barsHidden = false;
         this.statusFadeOutCallbackId = null;
         // Menu button events
@@ -481,7 +482,7 @@ class MainWindow extends Window {
         if (!onStart) overlays.closeTopmost();
     }
 
-    async openSection(name) {
+    async openSection(name, noFading=false) {
         if (this.fadingOutPreviousSection) {
             this.nextSection = name;
             return;
@@ -495,7 +496,7 @@ class MainWindow extends Window {
             return;
         this.nextSection = name;
         await this.sections[currentSection].close();
-        if (dataManager.settings.design.fadeSectionSwitching) {
+        if (dataManager.settings.design.fadeSectionSwitching && !noFading) {
             this.fadingOutPreviousSection = true;
             await Velocity(this.sections[currentSection], "fadeOut",
                 { duration: this.sectionFadeDuration });
@@ -1068,7 +1069,7 @@ class MainWindow extends Window {
         this.displayNextPart();
     }
     
-    displayNextPart() {
+    async displayNextPart() {
         if (this.currentPartIndex === this.introTourParts.length) {
             this.exitIntroTour();
             return;
@@ -1089,6 +1090,7 @@ class MainWindow extends Window {
         const content = document.importNode(currentPart.content, true);
         this.$("intro-tour-textbox-content").innerHTML = "";
         this.$("intro-tour-textbox-content").appendChild(content);
+        if (this.introTourPromise) await this.introTourPromise;
         this.showTextbox(this.introTourContext.$(currentPart.dataset.target));
         this.$("intro-tour-next-button").focus();
     }
