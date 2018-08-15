@@ -28,6 +28,18 @@ module.exports = function (paths, modules) {
         data = dataMap[language];
     };
 
+    database.close = async function (language) {
+        return new Promise((resolve, reject) => {
+            dataMap[language].close((error) => error ? reject(error):resolve());
+        });
+    };
+
+    database.closeAll = async function () {
+        for (const language in dataMap) {
+            await database.close(language);
+        }
+    };
+
     database.query = function (query, ...params) {
         // return new Promise((resolve, reject) => {
         //     data.all(query, ...params, (error, rows) => resolve(rows));

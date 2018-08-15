@@ -133,7 +133,10 @@ class Application {
         // Load and process language content for all languages if not disabled
         if (dataManager.settings.general.autoLoadLanguageContent) {
             start = performance.now();
-            this.openWindow("loading", "Loading language content...");
+            this.openWindow("loading", "Loading language content...",
+                "This might take a few minutes.<br>" +
+                "Content loading on application launch<br>" +
+                "can be disabled in the settings.");
             promises.length = 0;
             for (const language of languages) {
                 const secondary = dataManager.languageSettings.getFor(

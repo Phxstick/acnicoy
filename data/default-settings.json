@@ -34,6 +34,7 @@
         "partOfSpeechInJapanese": false,
         "showFrequencyValues": false,
         "includeProperNameSearch": false,
+        "historySizeLimit": 200,
         "frequencyWeights": {
             "news": 1,
             "book": 0,
@@ -49,9 +50,12 @@
         "showHyougai": false
     },
     "kanjiSearch": {
+        "searchCriterion": "yomi",
+        "historySizeLimit": 100
     },
     "kanjiInfo": {
         "maximized": false
+        "historySizeLimit": 50
     },
     "srs": {
         "intervalModifier": "4 hours"

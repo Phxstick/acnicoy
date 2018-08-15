@@ -14,20 +14,32 @@
   #inner-frame {
     @include center-content;
     flex-direction: column;
-    color: $loading-window-color;
 
-    #spinner {
-      margin-bottom: 25px;
-    }
-    #status-message {
+    #status-text {
       color: $dark-contrast-color;
       font-size: 2rem;
       letter-spacing: 1px;
       font-family: $light-font;
       margin-bottom: 20px;
-      // text-shadow: 0 0 10px $dark-contrast-shadow-color,
-      //              0 0 5px $dark-contrast-shadow-color,
-      //              0 0 2px $dark-contrast-shadow-color;
+      // text-shadow: 0 0 1px $dark-contrast-shadow-color;
+    }
+    #spinner {
+      color: $loading-window-color;
+    }
+    #spinner-frame {
+      position: relative;
+    }
+    #status-details {
+      top: calc(100% + 25px);
+      left: 50%;
+      width: 100vw;
+      transform: translateX(-50%);
+      position: absolute;
+      color: $dark-contrast-color;
+      font-size: 0.8rem;
+      font-family: OpenSans-Regular;
+      text-align: center;
+      // text-shadow: 0 0 1px $dark-contrast-shadow-color;
     }
   }
 }

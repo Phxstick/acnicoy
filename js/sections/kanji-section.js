@@ -225,6 +225,8 @@ class KanjiSection extends Section {
     }
 
     createKanjiOverviewNodes(kanjiList) {
+        this.$("kanji-overview").empty();
+        this.$("kanji-container").empty();
         const promises = [];
         const fragment = document.createDocumentFragment();
         for (const { kanji, added } of kanjiList) {

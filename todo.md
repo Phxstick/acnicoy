@@ -3,22 +3,24 @@
   - When using Acnicoy on multiple computers, some notifications are problematic
   - Remove test-stuff on server afterwards (like test-versions etc.)
 - Move plus-sign into views in edit-panels. Use edit-panel for adding word too?
-- Bunch of conflicting WALs. What's going wrong? Dropbox or SQLite error?
-  - Transfer changes and delete WAL on program exit?
-- Indicate in loading-window that loading content might take a while and
-  on-start loading can be disabled in the settings
-- Something is wrong: Bunch of Chinese item reviews before even starting
+- Write function to calculate n equally spaced colors on color wheel or at
+  least an alternative to allow more than 6 languages
+- Finish first version of Japanese content:
+  - Complete dictionary tag descriptions in Japanese
+  - Make sure content can be downloaded correctly
+    - Content status says "n.a." after successful download -> Fixed?
+  - Use newest version of all files (and test!) right before first release
+- Finish help section
 
 ### Secondary goals
+- Don't attach separate context menu to every node in dict/kanji/vocab-section
 - Implement undo of note deletion (and editing?)
-- Add new loading-overlay whereever useful
-- Implement program updating functionality (in general settings)
-  - Handle the "update-program-status" event there instead
-  - Make sure notifications are removed or updated whenever necessary!
-  - Make sure no additional program file is loaded after start for safe update
-- Remove all kanji nodes in kanji section before recreating them after update
-- Round up download manager with hash checking? Necessary?
-- Add some more achievements and create achievements section
+- Rework fonts in sass: Use gui-font for gui, and content-font for content
+  - Make OpenSans-Regular the main font everywhere?
+  - Also let font-family be inherited, and remove all workarounds (and test!)
+- Extend edit-panels and replace add-panels with edit-panels?
+  - Implement searching for existing and also adding new vocab lists in panels
+- Make kana input not only react to shift, but also caps-lock and caps letters
 - Finish dictionary search:
   - Somehow handle multiple concurrent searches (maybe in utility.js)
   - Implement tags like #words, #names, #jlpt:x, etc.
@@ -28,72 +30,18 @@
   - Implement sorting by a combination of different word frequencies
   - Also prioritize common words not part of the frequency lists?
     (marked with "spec1/2" in JMdict.xml)
-  - Devise a ranking for name search result (or give tags/options to customize)
+- Devise a ranking for name search result, if possible find name frequencies
+- Implement tags/options to customize word/name search
   - In content/database-module, switch query/run-method to one ignoring errors?
   - Use seperate where-clause for each (space-seperated?) word in the query
   - Refined okurigana mapping, such that e.g. searching "作hin" gives "作品"
-  - Write help for dictionary/kanji search
-- Finish first version of Japanese content:
-  - Complete dictionary tag descriptions in Japanese
-  - Make sure all necessary content files are on the server
-  - Make sure content can be downloaded correctly
-  - Remove a bunch of content database indices?
-  - Also parse the remaining fields from the JMdict.xml file
-  - Remove example words index?
-  - Use newest version of all files at the end
-- Refactoring:
-  - Decide whether kanji search should be additive. If so, merge it into the
-    dictionary search function
-  - Switching between additive and non-additive kanji/word/name search
-  - Move Japanese-only stuff in settings to language-settings? Just mark name?
-  - Use JS for exact match search (-> translations table can be deleted)
-  - As soon as everything search-related is generalized, the objects passed to
-    `utility.initializeView` in the dictionary can be a single parameterized obj
-  - Switch to "better-sqlite3" to increase performance and code style?
-- Implement some settings for kanji-info-panel?
-- Also let font-family be inherited, and remove all workarounds (and test!)
-- Don't attach separate context menu to every node in dict/kanji/vocab-section
-- Write function to calculate n equally spaced colors on color wheel
-- Emit event when toggling language visibility, update stats/home-section
-
-### Others
-- Only store number of items tested in stats (get added items from database)?
-  - Necessary to build an index in the userdata database on time added?
-- Completely remove example-word-entry widget/template?
-- Make history view loading more efficient
-- Add functionality for clearing histories
-- Use font-family "Trajan" for roman numerals?
-- Implement label-checkbox widget?
-- Implment simple binding function for checkboxes and settings, or radiobuttons
-  and settings?
-- `text-align: center` impaoirs fadeIn function. How to work around?
-  - Add `text-align` to solution divs again
-- Button to manually check  for content updates (+ "last checked" label)
-- Further refactor Application framework
-  - Implement quit-function of Application class, move controlled closing there
-- Make kana input not only react to shift, but also caps-lock and caps letters
-- Implement program updating
-  - Add update button to settings
-  - Make sure user data is saved before an update
-  - Button to check for program updates (+ "last checked" label)
-- Test on new data instance whether deleting kanji also deletes kanji data
-  (are constraints really applied to database now?)
-- Register content-related shortcuts in adjustToLanguageContent instead
-- Write more sophisticated function to guess whether vocab contains a certain
-  entry from the dictionary
-- Implement searching for existing and also adding new vocab lists in all panels
-- Rework sass: Use gui-font for gui, and content-font for content
-- Display number of notes in each group
-
-### Important fixes
-- Databases should be reloaded after changing data path (else write errors)
-- Labels/separators in stats timelines are party shifted
-- Content status says "n.a." after successful download
-- Opening a panel and switching languages removes background dimming
+- Add some more achievements and create achievements section
+- Content-related tables should be created dynamically when the content is first
+  loaded instead of at creation-time of the database!
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
-- 屈伸 has the wrong meaning in the dictionary?
+- 屈伸 has the wrong meaning in the dictionary? Version update needed?
 - Problem when editing word with dictonary id assigned but a different variant
 - Notifications:
   - Why is "display:flex" added to notifications window when adding notific?
@@ -114,16 +62,8 @@ By category
   visible well. Also consider using thin, rounded scrollbars with margin
 - Improve policy for incorrectly answered SRS items
   - Don't always move down two levels, but one with adjusted review time instead
-- Use "srs-schemes-edited" event instead of "current-srs-scheme-edited"?
 - Also make files for improved on/kun-yomi (or rather put in same file?)
-- Make dark deflt, Solarized (Light/Dark) and Ubuntu (Light/Dark) color schemes
-- Implement global stats somewhere
-- Add "all languages" option to SRS review schedule
-- Differentiate between standard gui-font and "content-font"
 - Implement reverse testing?
-- Adjust kanji-section (and create hanzi-section) to be available as limited
-  version even when no language content is installed (and display notice that
-  language content can be installed to see more).
 - Implement save-on-change mode (add checkbox in settings)?
   - After finishing a test item (and upon finishing test session)
   - Save global/local settings whenever something changes
@@ -138,11 +78,27 @@ By category
 - Define proper interface for global settings to detect modifications?
 - Run `VACUUM` on databases once in a while to clean up? Add button to settings?
 - Initialize json-file in local storage somewhere upon first program start?
-- Make OpenSans-Regular the main font everywhere? (make it a sass variable then)
 - Remove font-awesome from github repo and add as node package instead
 - Select exact folder to store data in? (create it if it doesn't exist yet)
 - For multi-language shortcuts, make sure to adjust text accordingly
 - Implement showing only vocab entries that are not part of a list yet
+- Write more sophisticated function to guess whether vocab contains a certain
+  entry from the dictionary
+- Implement program updating
+  - Add update button to settings
+  - Make sure user data is saved before an update
+  - Button to check for program updates (+ "last checked" label)
+- Make history view loading more efficient
+- Add functionality for clearing histories
+- Implement program updating functionality (in general settings)
+  - Handle the "update-program-status" event there instead
+  - Make sure notifications are removed or updated whenever necessary!
+  - Make sure no additional program file is loaded after start for safe update
+- Display number of notes in each group
+
+### Design
+- Use font-family "Trajan" for roman numerals?
+- Make dark deflt, Solarized (Light/Dark) and Ubuntu (Light/Dark) color schemes
 
 ### Performance
 - Things got slower when reworking sass? Maybe because main window is flex now?
@@ -152,6 +108,9 @@ By category
 - Why the significant performance degradation after doing something?
 - Check if WAL size can exceed original database size. How to save disk space?
 - Consider adding HTML Canvas as option for bar diagram (and rename the widget)
+- Use JS for exact match search? (then translations table can be deleted)
+- Remove example-words-index?
+- Remove a bunch of content database indices?
 
 ### Init window
 - Make init section feel more welcoming and less plain. Consider:
@@ -189,6 +148,10 @@ By category
 - Where to move level-frame?
 - How to make it more convenient to test multiple languages in succession?
   - Implement a test-mode which just tests low-level items for each language?
+- `text-align: center` impairs fadeIn function. How to work around?
+  - Add `text-align` to solution divs again
+- Test-complete-overlay: Try `Element.scrollIntoViewIfNeeded()` for elements
+  with `progress` option of velocity call
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)
@@ -231,6 +194,7 @@ By category
 - Have option to only show a single combined search entry (like in Jisho.org)
   - Otherwise, detect when searching for English term in JA-entry, suggest
     interpreting as ENG-query instead
+- Allow switching between additive and non-additive kanji/word/name search?
 
 ### Kanji section
 - Search customization:
@@ -240,6 +204,7 @@ By category
     Or rather expand search result entry?
   - Strokes being displayed in a single scrollable row
 - Implement different sorting criteria for kanji section overview
+- Also parse the remaining fields from the JMdict.xml file?
 
 ### Migrate-srs-overlay
 - Make migrating SRS items safer by applying changes to a copy of data and
@@ -251,6 +216,7 @@ By category
   to a *consecutive* row of levels (otherwise, disallow connection)?
 
 ### Content downloading
+- Round up download manager with hash checking?
 - Download still tends to only work the first time on a day?
 - Also consider data in memory buffer in download status
   - "currentSizeIncludingBuffered" in downloadsInfo?
@@ -263,7 +229,6 @@ By category
 - Try to split some general network stuff off of content.startDownload
   - Move content-stuff from networkManager into dataManager.content? Partly?
 - Remove all log messages
-- Retry button next to error message in each row
 
 ### Stats
 - Allow switching between showing daily/cumulative progress for each diagram?
@@ -277,6 +242,7 @@ By category
     - [Button] Update program (Do so safely)
   - [Radiobuttons] Choose separator for separating translations/readings
   - [Checkbox] Toggle fullscreen
+  - [Chechbox, default on] Limit size of search history [+ positive integer]
 - Language settings
   - [Checkbox] Automatically update language content if available
     - [Button] Edit SRS schemes
@@ -396,6 +362,18 @@ once? --> Faster loading, centralized resource loading
   (-> if done, then remove separate init-call in data-manager.js)
 - Using font-awesome font in some general widgets (e.g. tree-view), generalize
 - Unify the fadeIn/fadeOut/slideToCurrentPosition functions
+- Completely remove example-word-entry widget/template?
+- Implement label-checkbox widget?
+- Implement data binding function between checkboxes/radiobuttons and settings
+- Only store number of items tested in stats (get added items from database)?
+  - Necessary to build an index in the userdata database on time added?
+- Further refactor Application framework
+  - Implement quit-function of Application class, move controlled closing there
+- Decide whether kanji search should be additive. If so, merge it into the
+  dictionary search function
+- As soon as everything search-related is generalized, the objects passed to
+  `utility.initializeView` in the dictionary can be a single parameterized obj
+- Switch to "better-sqlite3" to increase performance and code style?
 
 ### Adaptions
 - Don't assign font family for every element and let it be inherited instead

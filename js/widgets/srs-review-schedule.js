@@ -13,23 +13,18 @@ class SrsReviewSchedule extends PinwallWidget {
                 dataManager.languages.visible, unit, numSteps[unit]));
     }
 
-    registerCentralEventListeners() {
-        events.onAll(["settings-loaded", "language-added", "language-removed",
-                      "language-visibility-changed"], () => this.update());
-    }
-
     connectedCallback() {
         this.updateListener = () => this.update();
-        events.onAll(["current-srs-scheme-edited", "update-srs-status"],
-            this.updateListener);
+        events.onAll(["settings-loaded", "language-added", "language-removed",
+                      "language-visibility-changed", "srs-scheme-edited",
+                      "update-srs-status"], this.updateListener);
     }
 
     disconnectedCallback() {
-        events.removeAll(["current-srs-scheme-edited", "update-srs-status"],
-            this.updateListener);
-    }
-
-    async adjustToLanguage(language, secondary) {
+        events.removeAll([
+            "settings-loaded", "language-added", "language-removed",
+            "language-visibility-changed", "srs-scheme-edited",
+            "update-srs-status"], this.updateListener);
     }
 
     async update() {

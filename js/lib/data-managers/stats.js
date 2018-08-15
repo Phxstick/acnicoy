@@ -120,29 +120,34 @@ module.exports = function (paths, modules) {
 
     /**
      * Append the days that have passed since the program was last started.
+     * @param {String} [language]
      */
-    function registerPassedDays() {
-        const d = new Date();
+    function registerPassedDays(language) {
+        if (language === undefined) language = modules.currentLanguage;
+        const dailyData = dataMap[language].data["daily"];
         const newItems = [];
+        const d = new Date();
         let currentDate = [d.getFullYear(), d.getMonth() + 1, d.getDate()];
-        if (data.data["daily"].length === 0) {
-            data.data["daily"].push({
+        if (dailyData.length === 0) {
+            dailyData.push({
                 date: currentDate, score: 0, words: 0, kanji: 0, tested: 0 });
+            isModified[language] = true;
             return;
         }
-        const lastDate = data.data["daily"].last().date;
+        const lastDate = dailyData.last().date;
         while (lastDate[0] != currentDate[0] || lastDate[1] != currentDate[1] ||
                lastDate[2] != currentDate[2]) {
             const dailyStatsObject = {
                 date: currentDate, score: 0, words: 0, tested: 0
             };
-            if (modules.currentLanguage === "Japanese") {
+            if (language === "Japanese") {
                 dailyStatsObject.kanji = 0;
             }
-            if (modules.currentLanguage === "Chinese") {
+            if (language === "Chinese") {
                 dailyStatsObject.hanzi = 0;
             }
             newItems.push(dailyStatsObject);
+            isModified[language] = true;
             let [year, month, day] = currentDate;
             if (--day === 0) {
                 if (--month === 0) {
@@ -154,7 +159,7 @@ module.exports = function (paths, modules) {
             currentDate = [year, month, day];
         }
         newItems.reverse();
-        data.data["daily"].push(...newItems);
+        dailyData.push(...newItems);
     }
 
     /* =========================================================================
@@ -244,6 +249,9 @@ module.exports = function (paths, modules) {
      * @returns {Array}
      */
     stats.getItemsAddedTimelineFor = function (languages, unit, numUnits) {
+        for (const language of languages) {
+            registerPassedDays(language);
+        }
         return utility.getTimeline(unit, numUnits, async (startDate, endDate)=>{
             const startSecs = parseInt(startDate.getTime() / 1000);
             const endSecs = parseInt(endDate.getTime() / 1000);
@@ -280,31 +288,39 @@ module.exports = function (paths, modules) {
      * @returns {Array}
      */
     stats.getItemsTestedTimelineFor = function (languages, unit, numUnits) {
+        for (const language of languages) {
+            registerPassedDays(language);
+        }
         const list = new Array(numUnits);
         for (let i = 0; i < numUnits; ++i) {
             list[i] = new Array(languages.length);
         }
         for (let j = 0; j < languages.length; ++j) {
             const dailyData = dataMap[languages[j]].data.daily;
-            const numUnitsNonzero = Math.min(numUnits, dailyData.length);
             if (unit === "days") {
+                const numUnitsNonzero = Math.min(numUnits, dailyData.length);
                 for (let i = 0; i < numUnitsNonzero; ++i) {
                     list[i][j] = dailyData[dailyData.length - i - 1].tested;
+                }
+                for (let i = numUnitsNonzero; i < numUnits; ++i) {
+                    list[i][j] = 0;
                 }
             } else if (unit === "months") {
                 const d = new Date();
                 let offset = 0;
-                for (let i = 0; i < numUnitsNonzero; ++i) {
-                    const start = dailyData.length - offset;
+                for (let i = 0; i < numUnits; ++i) {
+                    const end = dailyData.length - offset;
+                    if (end <= 0) {
+                        list[i][j] = 0;
+                        continue;
+                    }
                     const nDays = utility.daysInMonth(d.getMonth(), d.getYear())
-                    list[i][j] = dailyData.slice(start - nDays, start)
+                    const start = Math.max(0, end - nDays);
+                    list[i][j] = dailyData.slice(start, end)
                         .reduce((total, dayObj) => total += dayObj.tested, 0);
                     offset += nDays;
                     d.setMonth(d.getMonth() - 1);
                 }
-            }
-            for (let i = numUnitsNonzero; i < numUnits; ++i) {
-                list[i][j] = 0;
             }
         }
         return utility.getTimeline(unit, numUnits, (sd,ed,i) => list[i], false);

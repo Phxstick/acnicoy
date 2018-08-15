@@ -1,5 +1,7 @@
 "use strict";
 
+const dateFormat = require("dateformat");
+
 class LanguageTable extends Widget {
 
     static get observedAttributes() {
@@ -242,6 +244,7 @@ class LanguageTable extends Widget {
         config.downloading = networkManager.content.getDownloadStatus(
                 language, secondary) !== null;
         config.downloadReady = false;
+        config.lastUpdateTime = -1;
         this.languageConfigs.push(config);
         this.languageToConfig.set(language, config);
         const template = templates.get("language-table-entry");
@@ -372,14 +375,13 @@ class LanguageTable extends Widget {
                     }
                 }
                 if (storage.has(cacheKey)) {
-                    const { programUpdateRecommended, updateAvailable }
-                        = storage.get(cacheKey);
+                    const { programUpdateRecommended, updateAvailable,
+                        lastUpdateTime } = storage.get(cacheKey);
                     statusLabel.classList.remove("error");
                     if (updateAvailable) {
                         if (contentAvailable) {
                             statusLabel.textContent = "Update";
                         } else {
-                            loadStatusLabel.hide();
                             statusLabel.textContent = "Download";
                         }
                     } else {
@@ -387,7 +389,6 @@ class LanguageTable extends Widget {
                             statusLabel.textContent = "Up to date";
                             statusLabel.classList.add("up-to-date");
                         } else {
-                            loadStatusLabel.hide();
                             statusLabel.textContent = "n.a.";
                         }
                     }
@@ -396,6 +397,16 @@ class LanguageTable extends Widget {
                     config.downloadReady = updateAvailable;
                     programUpdateRecommendedIcon.toggleDisplay(
                         programUpdateRecommended);
+                    config.lastUpdateTime = lastUpdateTime;
+                    // Set last-update-label to the smallest last-update-time
+                    const minLastUpdateTime = Math.min(...
+                        this.languageConfigs.map((c) => c.lastUpdateTime*1000));
+                    if (minLastUpdateTime > 0) {
+                        const lastUpdateString = "Last update:  " + dateFormat(
+                            minLastUpdateTime, "HH:MM:ss, mmm dS, yyyy");
+                        this.$("last-content-status-update-time").textContent =
+                            lastUpdateString;
+                    }
                 }
             }
         } catch (error) {

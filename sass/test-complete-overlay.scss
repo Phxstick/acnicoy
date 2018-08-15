@@ -48,7 +48,6 @@
 }
 
 #mistakes-frame {
-  overflow-y: auto;
 
   #mistakes-header {
     font-family: $header-font;
@@ -57,11 +56,17 @@
     padding-top: 3px;
     padding-bottom: 6px;
     font-size: 140%;
+    border-bottom: 1px solid $border-color-medium;
   }
 
   #mistakes {
+    overflow-y: auto;
+    max-height: 290px;
+
     > div {
-      border-top: 1px solid $border-color-light;
+      &:not(:first-child) {
+        border-top: 1px solid $border-color-light;
+      }
 
       .mistake-info .caret::before {
         content: "\f078";  // chevron down

@@ -211,7 +211,7 @@ class SvgBarDiagram extends Widget {
                 this.diagram.appendChild(rect);
                 if (i == 0) this.lastBars = rect;
                 // Also display value label (if flag is set)
-                if (showValueLabels && values[i] > 0) {
+                if (showValueLabels && (values[i] > 0 || i === 0)) {
                     const valueLabel = utility.createSvgNode("text",
                         { x: pos.x + barWidth / 2,
                           y: pos.y - barHeight - this.valueLabelMarginBottom });
@@ -240,7 +240,7 @@ class SvgBarDiagram extends Widget {
                     if (i == 0) this.lastBars.push(rect);
                     // If bars are not stacked, add label for each
                     if (!stackBars && splitValueLabels && showValueLabels
-                            && values[i][j] > 0) {
+                            && (values[i][j] > 0 || i === 0)) {
                         const valueLabel = utility.createSvgNode("text",
                             { x: pos.x + offsetX + width / 2,
                               y: pos.y-barHeight-this.valueLabelMarginBottom });
@@ -259,7 +259,7 @@ class SvgBarDiagram extends Widget {
                 // If bars are stacked, add single label with sum of all values
                 const valueSum = values[i].sum();
                 if ((stackBars || !splitValueLabels) && showValueLabels
-                        && valueSum > 0) {
+                        && (valueSum > 0 || i === 0)) {
                     if (!stackBars) {
                         offsetY = -Math.max(...fractions[i].map((f)=>f*height));
                     }

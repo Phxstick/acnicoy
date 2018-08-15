@@ -128,10 +128,8 @@ tbody tr {
 #add-language-button, #update-content-status-button {
   display: flex;
   flex-direction: row;
+  margin-right: 18px;
 
-  &:not(:first-child) {
-    margin-left: 20px;
-  }
   &:hover {
     .icon::before, .icon::after {
       background-color: $button-light-icon-color-hover;
@@ -164,3 +162,9 @@ tbody tr {
   --tooltip-delay: .4s;
 }
 
+#last-content-status-update-time {
+  color: $color-light;
+  font-family: $small-font;
+  font-size: 0.8rem;
+  align-self: center;
+}

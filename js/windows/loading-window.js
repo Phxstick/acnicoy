@@ -5,12 +5,13 @@ class LoadingWindow extends Window {
         super("loading", true);
     }
 
-    open(text) {
-        this.setStatus(text);
+    open(text, details) {
+        this.setStatus(text, details);
     }
     
-    setStatus(text) {
-        this.$("status-message").textContent = text;
+    setStatus(text, details) {
+        this.$("status-text").innerHTML = text !== undefined ? text : "";
+        this.$("status-details").innerHTML = details !== undefined ? details:"";
     }
 }
 

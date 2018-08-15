@@ -897,6 +897,8 @@ class MainWindow extends Window {
         const testSessionClosed = await this.sections["test"].abortSession();
         if (!testSessionClosed) return false;
         await this.saveData();
+        await dataManager.database.closeAll();
+        await dataManager.history.closeAll();
         networkManager.stopAllDownloads();
         networkManager.save();
         return true;

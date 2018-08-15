@@ -5,23 +5,17 @@ class SrsStatusOverview extends PinwallWidget {
         super("srs-status-overview");
     }
 
-    registerCentralEventListeners() {
-        events.onAll(["language-added", "language-removed",
-                      "language-visibility-changed"], () => this.update());
-    }
-
     connectedCallback() {
         this.updateListener = () => this.update();
-        events.onAll(["current-srs-scheme-edited", "update-srs-status"],
-            this.updateListener);
+        events.onAll(["current-srs-scheme-edited", "update-srs-status",
+                      "language-added", "language-removed",
+                      "language-visibility-changed"], this.updateListener);
     }
 
     disconnectedCallback() {
-        events.removeAll(["current-srs-scheme-edited", "update-srs-status"],
-            this.updateListener);
-    }
-    
-    async adjustToLanguage(language, secondary) {
+        events.removeAll(["current-srs-scheme-edited", "update-srs-status",
+                          "language-added", "language-removed",
+                          "language-visibility-changed"], this.updateListener);
     }
 
     async update() {

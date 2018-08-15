@@ -97,7 +97,21 @@ class GeneralSettingsSubsection extends SettingsSubsection {
                 `Are you sure you want to overwrite that file?`);
             if (!confirmed) return;
         }
+        // Save changes in databases first
+        const languages = dataManager.languages.all;
+        for (const language of languages) {
+            await dataManager.database.save(language);
+            await dataManager.database.close(language);
+            await dataManager.history.save(language);
+            await dataManager.history.close(language);
+        }
+        // Change path and reload databases at new path
         paths.setDataPath(newPrefix);
+        for (const language of languages) {
+            await dataManager.database.load(language);
+            await dataManager.history.load(language);
+        }
+        // Update view
         this.$("data-path").textContent = newPrefix;
     }
 }
