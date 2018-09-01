@@ -1,9 +1,22 @@
 <div class="settings-list">
-  <div id="data-path-frame">
+  <div id="data-path-frame" class="settings-row">
     <span>Location for user data folder:</span>
     <span id="data-path"></span>
     <button id="choose-data-path" class="light no-shadow">
       <i class="fa fa-folder-open-o"></i>
+    </button>
+  </div>
+  <div id="program-update-frame" class="settings-row">
+    <div>Program version:</div>
+    <div id="current-program-version"></div>
+    <div id="program-version-status">Up to date</div>
+    <button id="update-program-version" class="light no-shadow">
+      <i class="fa fa-download"></i>
+      <span>Update</span>
+    </button>
+    <button id="check-program-update" class="light no-shadow">
+      <i class="fa fa-refresh"></i>
+      <span>Check for update</span>
     </button>
   </div>
   <div>

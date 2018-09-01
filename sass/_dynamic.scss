@@ -35,19 +35,19 @@ $dragging-cursor: var(--dragging-cursor);
   --dragging-cursor: -webkit-grabbing;
 }
 :host(.GLOBAL-cursor-dragging), :root.GLOBAL-cursor-dragging {
-  --auto-cursor: $dragging-cursor;
+  --auto-cursor: #{$dragging-cursor};
   --dragging-cursor: -webkit-grabbing;
-  --default-cursor: $dragging-cursor;
-  --pointer-cursor: $dragging-cursor;
-  --wait-cursor: $dragging-cursor;
-  --grab-cursor: $dragging-cursor;
+  --default-cursor: #{$dragging-cursor};
+  --pointer-cursor: #{$dragging-cursor};
+  --wait-cursor: #{$dragging-cursor};
+  --grab-cursor: #{$dragging-cursor};
 }
 $test-cursor: auto;
 :host(.GLOBAL-cursor-test), :root.GLOBAL-cursor-test {
-  --auto-cursor: $test-cursor;
-  --default-cursor: $test-cursor;
-  --pointer-cursor: $test-cursor;
-  --wait-cursor: $test-cursor;
-  --grab-cursor: $test-cursor;
-  --dragging-cursor: $test-cursor;
+  --auto-cursor: #{$test-cursor};
+  --default-cursor: #{$test-cursor};
+  --pointer-cursor: #{$test-cursor};
+  --wait-cursor: #{$test-cursor};
+  --grab-cursor: #{$test-cursor};
+  --dragging-cursor: #{$test-cursor};
 }

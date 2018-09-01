@@ -136,12 +136,12 @@
     font-family: $header-font;
     color: $button-light-color;
 
-    --label-background-hover: $background-color-dark;
-    --label-color-hover: $button-light-color-hover;
-    --menu-background: $view-background-dark;
-    --menu-color: $view-color;
-    --menu-background-hover: $view-hover-background;
-    --menu-color-hover: $view-hover-color;
-    --menu-separator-color: $border-color-light;
+    --label-background-hover: #{$background-color-dark};
+    --label-color-hover: #{$button-light-color-hover};
+    --menu-background: #{$view-background-dark};
+    --menu-color: #{$view-color};
+    --menu-background-hover: #{$view-hover-background};
+    --menu-color-hover: #{$view-hover-color};
+    --menu-separator-color: #{$border-color-light};
   }
 }

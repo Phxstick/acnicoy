@@ -52,6 +52,16 @@ class GeneralSettingsSubsection extends SettingsSubsection {
                 this.broadcastGlobalSetting("regular-backup-interval");
             }
         );
+        this.$("check-program-update").addEventListener("click", () => {
+            events.emit("update-program-status");
+        });
+        this.$("update-program-version").addEventListener("click", () => {
+            events.emit("start-program-update");
+        });
+    }
+
+    initialize() {
+        this.updateProgramVersionStatusView();
     }
 
     registerCentralEventListeners() {
@@ -74,6 +84,45 @@ class GeneralSettingsSubsection extends SettingsSubsection {
         events.on("settings-general-auto-load-language-content", () => {
             this.$("auto-load-language-content").checked = 
                 dataManager.settings.general.autoLoadLanguageContent;
+        });
+        events.on("update-program-status", async () => {
+            try {
+                const info = await networkManager.program.getLatestVersionInfo()
+                // Cache latest information
+                info.lastUpdateTime = utility.getTime();
+                const cacheKey = "cache.programVersionInfo";
+                const cachedInfo = storage.get(cacheKey);
+                storage.set(cacheKey, info);
+                // If a new version has been released, add a notification
+                if ((cachedInfo === undefined &&
+                     app.version !== info.latestVersion)
+                        || (cachedInfo !== undefined &&
+                            cachedInfo.latestVersion !== info.latestVersion)) {
+                    main.addNotification("program-update-available", info);
+                }
+                // Update view
+                this.updateProgramVersionStatusView();
+            } catch (error) {
+                if (error instanceof networkManager.NoServerConnectionError) {
+                    this.$("program-version-status").textContent =
+                        "Connection error";
+                }
+                if (error instanceof networkManager.ServerRequestFailedError) {
+                    this.$("program-version-status").textContent =
+                        "Server error";
+                }
+                this.$("update-program-version").hide();
+            } finally {
+                // Check for updates periodically
+                window.setTimeout(() => events.emit("update-program-status"),
+                                  main.statusUpdateInterval * 1000);
+            }
+        });
+        events.on("start-program-update", () => {
+            dialogWindow.info(
+                `Automated program updating is not yet implemented.
+                 Please download and install the latest program version
+                 from <a href="${app.homepage + "/releases"}">here</a>.`);
         });
     }
 
@@ -113,6 +162,19 @@ class GeneralSettingsSubsection extends SettingsSubsection {
         }
         // Update view
         this.$("data-path").textContent = newPrefix;
+    }
+
+    updateProgramVersionStatusView() {
+        const info = storage.get("cache.programVersionInfo");
+        if (!info) return;
+        const updateAvailable = app.version !== info.latestVersion;
+        this.$("current-program-version").textContent = app.version;
+        this.$("program-version-status").textContent =
+            updateAvailable ? "Update available" : "Up to date";
+        this.$("update-program-version").toggleDisplay(updateAvailable);
+        this.$("check-program-update").toggleDisplay(!updateAvailable);
+        this.$("program-version-status").classList.toggle(
+            "update-available", updateAvailable);
     }
 }
 

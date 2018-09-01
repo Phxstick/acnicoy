@@ -222,7 +222,7 @@ hr {
   line-height: 150%;
   text-align: center;
 
-  *:not(i, .search-example) {
+  *:not(i):not(.search-example) {
     font-family: $light-font;
   }
   ul {

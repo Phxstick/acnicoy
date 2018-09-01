@@ -309,20 +309,6 @@ class MainWindow extends Window {
                 }
             });
         });
-        events.on("update-program-status", async () => {
-            const info = await networkManager.program.getLatestVersionInfo();
-            info.lastUpdateTime = utility.getTime();
-            const cacheKey = "cache.programVersionInfo";
-            const cachedInfo = storage.get(cacheKey);
-            storage.set(cacheKey, info);
-            if ((cachedInfo === undefined && app.version !== info.latestVersion)
-                    || (cachedInfo !== undefined &&
-                        cachedInfo.latestVersion !== info.latestVersion)) {
-                this.addNotification("program-update-available", info);
-            }
-            window.setTimeout(() => events.emit("update-program-status"),
-                              this.statusUpdateInterval * 1000);
-        });
         events.on("content-download-finished", (info) => {
             this.addNotification("content-download-finished", info);
         });
@@ -938,12 +924,7 @@ class MainWindow extends Window {
             const { latestVersion, releaseDate, description } = data;
             subtitle = `Version ${latestVersion}, released on ${releaseDate}`;
             details = markdown.toHTML(description);
-            buttonCallback = () => {
-                dialogWindow.info(
-                    `Automated program updating is not yet implemented.
-                     Please download and install the latest program version
-                     from <a href="${app.homepage + "/releases"}">here</a>.`)
-            };
+            buttonCallback = () => events.emit("start-program-update");
         }
         else if (type === "program-download-finished") {
             title = "Program download finished";

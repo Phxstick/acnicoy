@@ -418,6 +418,10 @@ class VocabSection extends Section {
         for (const viewName in this.viewStates) {
             this.isViewLoaded[viewName] = false;
         }
+        // Enable pinyin input in search entries if language is Chinese
+        this.$("search-vocab-entry").togglePinyinInput(language === "Chinese");
+        this.$("search-list-contents-entry").togglePinyinInput(
+            language === "Chinese");
     }
 
     open() {

@@ -1,7 +1,6 @@
 "use strict";
 
 const sqlite3 = require("sqlite3");
-const promisifyDatabase = require("sqlite3-promises");
 
 module.exports = function (paths, modules) {
     const history = {};
@@ -9,7 +8,7 @@ module.exports = function (paths, modules) {
     let data;
 
     history.create = async function (language, settings) {
-        const db = promisifyDatabase(
+        const db = utility.promisifyDatabase(
             new sqlite3.Database(paths.languageData(language).history));
         await db.run("PRAGMA journal_mode=WAL");
         await db.run("BEGIN TRANSACTION");
@@ -41,9 +40,8 @@ module.exports = function (paths, modules) {
     history.load = async function (language) {
         const path = paths.languageData(language).history;
         const db = new sqlite3.Database(path);
-        dataMap[language] = promisifyDatabase(db);
-        dataMap[language].close = (callback) => db.close(callback);
-        const dbc = promisifyDatabase(db);
+        dataMap[language] = utility.promisifyDatabase(db);
+        const dbc = utility.promisifyDatabase(db);
         // Cache sizes of the tables
         dataMap[language].sizes = { };
         dataMap[language].sizes["dictionary"] =
@@ -73,9 +71,7 @@ module.exports = function (paths, modules) {
     };
 
     history.close = async function (language) {
-        return new Promise((resolve, reject) => {
-            dataMap[language].close((error) => error ? reject(error):resolve());
-        });
+        await dataMap[language].close();
     };
 
     history.closeAll = async function () {

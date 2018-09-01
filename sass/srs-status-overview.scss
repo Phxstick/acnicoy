@@ -2,13 +2,13 @@
 
 :host {
   display: block;
-  width: fill;
+  width: stretch;
 }
 
 #container {
   display: table;
   border-collapse: collapse;
-  width: fill;
+  width: stretch;
   color: $view-color;
   background-color: $view-background-dark;
 }

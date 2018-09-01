@@ -1,6 +1,6 @@
 # Acnicoy
 
-Acnicoy is a tool for learning Japanese (and other languages) which implements
+Acnicoy is a tool for learning Japanese and other languages. It implements
 a [Spaced Repetition System][SRS] (SRS) for memorizing Vocabulary.
 While the basic features work for every language, the program offers a bunch of
 additional features specifically for learning Japanese.
@@ -12,39 +12,39 @@ Features
 
 The basic features for every language include:
 
-* Create and manage your own vocabulary
-* Organize similar parts of the vocabulary into lists
+* Build up your own vocabulary and organize it into lists
 * Test yourself on the vocabulary using spaced repetition
+* Adjust the spaced repetition system with custom intervals
 * View statistics illustrating your progress
 
 For Japanese language learners, the program additionally offers:
 
-* Create and manage a kanji vocabulary
+* Build up a kanji vocabulary and test yourself on it
 * Look up words in the dictionary (similar to [Jisho] and [Houhou SRS])
 * Kanji overview and cleanly presented kanji information
 
-Features to be implemented:
+Features to be added:
 
-* Earn achievements for learning progress and unlock design settings
-* Many settings to customize design, SRS system, and more
-* ... and other features (the [todo-list](./todo.md) is fairly large)
+* Earning achievements for learning progress
+* Customizing design with color schemes
+* Learning material for Japanese and other languages
+* See the [todo-list](./todo.md) for more
 
 Installation
 ----
 
-The program is still missing a bunch of core features and it's not fully
-stable, so there's no release yet. You can build it from source instead, as
-described below.
+The program is already quite stable and almost ready for a first release.
+If you don't want to wait, you can also build it from source, as described below.
 
 ### Building from source
-Acnicoy requires [Node.js] v7.7+ to run and uses the [npm package manager][npm].
-To get started, run:
+Acnicoy requires [Node.js] v8.11 and uses the [npm package manager][npm].
+The build process is simple:
 ```sh
 $ git clone https://github.com/phxstick/acnicoy
 $ npm install
 $ gulp
 ```
-You can then run the program using `make start`.
+You can then run the program using `npm start`.
 
 License
 ----

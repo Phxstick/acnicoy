@@ -1,6 +1,6 @@
 'use strict';
 
-const { ipcMain, app, BrowserWindow } = require('electron');
+const { ipcMain, app, BrowserWindow, session } = require('electron');
 const path = require("path");
 const url = require("url");
 
@@ -26,6 +26,11 @@ app.on('ready', function() {
       height: 600,
       icon: "./img/icon.png"
   });
+
+  // Content Security Policy: don't allow loading anything at all.
+  // session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+  //     callback({ responseHeaders: "default-src 'self'" });
+  // });
 
   // Load the index.html of the app and execute corresponding script.
   mainWindow.loadURL(url.format({

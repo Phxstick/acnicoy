@@ -1,7 +1,6 @@
 "use strict";
 
 const sqlite3 = require("sqlite3");
-const promisifyDatabase = require("sqlite3-promises");
 const fs = require("fs");
 
 module.exports = async function (paths, contentPaths, modules) {
@@ -695,30 +694,28 @@ module.exports = async function (paths, contentPaths, modules) {
      * @returns {Function} - Function to query the in-memory database.
      */
     async function loadDatabaseIntoMemory() {
-        const db = promisifyDatabase(new sqlite3.Database(":memory:"));
-        // Define function for querying database
-        const query = (query, ...params) => db.all(query, ...params);
+        const db = utility.promisifyDatabase(new sqlite3.Database(":memory:"));
         // Attach content and user data database to in-memory one
-        await query("ATTACH DATABASE ? AS ?",
+        await db.run("ATTACH DATABASE ? AS ?",
             contentPaths.database, "content");
-        await query("ATTACH DATABASE ? AS ?",
+        await db.run("ATTACH DATABASE ? AS ?",
             paths.languageData("Japanese").database, "trainer");
         // Create tables of content database in in-memory database and
         // copy over all data
-        const tablesInfo = await query(
+        const tablesInfo = await db.all(
             "SELECT name, sql FROM content.sqlite_master WHERE type='table'");
         for (const { name, sql } of tablesInfo) {
             console.log(`Creating table ${name}...`);
             await db.exec(sql);
-            await query(`INSERT INTO ${name} SELECT * FROM content.${name}`);
+            await db.run(`INSERT INTO ${name} SELECT * FROM content.${name}`);
         }
         // Create indices of content database in in-memory database
         const createIndicesSql = fs.readFileSync(paths.japaneseIndices, "utf8");
         console.log("Creating indices...");
         await db.exec(createIndicesSql);
         // Detach content database again
-        await query("DETACH DATABASE ?", "content");
-        return query;
+        await db.run("DETACH DATABASE ?", "content");
+        return (query, ...params) => db.all(query, ...params);
     }
 
     const queryFunction = await loadDatabaseIntoMemory();

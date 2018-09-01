@@ -1,4 +1,5 @@
 ### Primary goals
+- Make sure program update notification is removed after a program update
 - Rethink what belongs into local storage and what should be shared
   - When using Acnicoy on multiple computers, some notifications are problematic
   - Remove test-stuff on server afterwards (like test-versions etc.)
@@ -33,7 +34,7 @@
 - Devise a ranking for name search result, if possible find name frequencies
 - Implement tags/options to customize word/name search
   - In content/database-module, switch query/run-method to one ignoring errors?
-  - Use seperate where-clause for each (space-seperated?) word in the query
+  - Use separate where-clause for each (space-separated?) word in the query
   - Refined okurigana mapping, such that e.g. searching "作hin" gives "作品"
 - Add some more achievements and create achievements section
 - Content-related tables should be created dynamically when the content is first
@@ -257,7 +258,7 @@ Future
   - Tamamo's fluffy tail cursor for larger achievement (e.g. 600 kanji)
   - Yona's hairpin cursor for medium achievement (e.g. 300 kanji)
   - Meliodas' dragon handle for small achievement (e.g. 150 kanji)
-- Seperate whole framework into an own NPM package
+- Separate whole framework into an own NPM package
 - Allow converting parts of vocabulary into html/pdf/markdown file
   - Use electrons builtin for pdf (And a fitting media stylesheet?)
 - Correctly assign furigana

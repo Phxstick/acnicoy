@@ -1050,6 +1050,36 @@ function measureSvgElementSize(element) {
     return { width, height };
 }
 
+/**
+ * Return an interface for the given sqlite3 database based on promises.
+ * The interface only contains the functions run, exec, all, close.
+ */
+function promisifyDatabase(db) {
+    const dbInterface = {};
+    dbInterface.run = (statement, ...args) => {
+        return new Promise((resolve, reject) => {
+            db.run(statement, ...args, (err) => err ? reject(err) : resolve());
+        });
+    };
+    dbInterface.exec = (sqlText) => {
+        return new Promise((resolve, reject) => {
+            db.exec(sqlText, (err) => err ? reject(err) : resolve());
+        });
+    };
+    dbInterface.all = (query, ...args) => {
+        return new Promise((resolve, reject) => {
+            db.all(query, ...args, (err, rows) => err ? reject(err) :
+                                                        resolve(rows));
+        });
+    };
+    dbInterface.close = () => {
+        return new Promise((resolve, reject) => {
+            db.close((err) => err ? reject(err) : resolve());
+        });
+    };
+    return dbInterface;
+}
+
 
 // Non DOM-related functions
 module.exports.getTime = getTime;
@@ -1071,6 +1101,7 @@ module.exports.existsDirectory = existsDirectory;
 module.exports.getTimeline = getTimeline;
 module.exports.getTimelineMarkers = getTimelineMarkers;
 module.exports.getDistantColors = getDistantColors;
+module.exports.promisifyDatabase = promisifyDatabase;
 
 // DOM related functions
 module.exports.parseHtmlFile = parseHtmlFile;

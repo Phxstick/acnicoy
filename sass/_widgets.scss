@@ -1,9 +1,9 @@
 popup-list {
-  --label-background: $button-background;
-  --label-color: $button-color;
+  --label-background: #{$button-background};
+  --label-color: #{$button-color};
   --label-padding: 12px;
-  --label-hover-background: $button-background-hover;
-  --label-hover-color: $button-color-hover;
+  --label-hover-background: #{$button-background-hover};
+  --label-hover-color: #{$button-color-hover};
 
   > option {
     color: $button-color;
@@ -54,21 +54,21 @@ svg-bar-diagram {
   --bar-border-width: 0;
   --small-separator-width: 1;
   --large-separator-width: 2;
-  --bar-background: $diagram-graphics-color;
-  --bar-background-hover: $diagram-graphics-color-hover;
-  --top-line-color: $border-color-dark;
-  --bottom-line-color: $border-color-dark;
-  --small-separator-color: $border-color-medium;
-  --large-separator-color: $border-color-medium;
-  --label-color: $diagram-label-color;
-  --value-font: $small-font;
-  --description-font: $small-font;
-  --separator-font: $header-font;
+  --bar-background: #{$diagram-graphics-color};
+  --bar-background-hover: #{$diagram-graphics-color-hover};
+  --top-line-color: #{$border-color-dark};
+  --bottom-line-color: #{$border-color-dark};
+  --small-separator-color: #{$border-color-medium};
+  --large-separator-color: #{$border-color-medium};
+  --label-color: #{$diagram-label-color};
+  --value-font: #{$small-font};
+  --description-font: #{$small-font};
+  --separator-font: #{$header-font};
 }
 
 tabbed-frame {
   background-color: $background-color;
-  --tabs-frame-background: $background-color-dark;
+  --tabs-frame-background: #{$background-color-dark};
 
   &[data-tab-layout="horizontal"] > button[slot="tabs"],
       &:not([data-tab-layout]) > button[slot="tabs"] {
@@ -85,7 +85,7 @@ tabbed-frame {
 
 tree-view {
   font-family: OpenSans-Regular;
-  --indentation-line-color: $border-color-medium;
+  --indentation-line-color: #{$border-color-medium};
   --indentation-padding: 7px;
-  --color-selected: $highlight-background;
+  --color-selected: #{$highlight-background};
 }

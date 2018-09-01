@@ -14,27 +14,27 @@ $scroll-overflow-shadow-size: 25px;
 $fade-color: mix($test-section-background, $test-section-color, 92%);
 
 :host {
-  --test-frame-background: $test-section-background;
+  --test-frame-background: #{$test-section-background};
   &.word-meaning {
-    --test-frame-background: $test-section-item-type-word-meaning;
+    --test-frame-background: #{$test-section-item-type-word-meaning};
   }
   &.word-reading {
-    --test-frame-background: $test-section-item-type-word-reading;
+    --test-frame-background: #{$test-section-item-type-word-reading};
   }
   &.kanji-meaning {
-    --test-frame-background: $test-section-item-type-kanji-meaning;
+    --test-frame-background: #{$test-section-item-type-kanji-meaning};
   }
   &.kanji-on-yomi {
-    --test-frame-background: $test-section-item-type-kanji-on-yomi;
+    --test-frame-background: #{$test-section-item-type-kanji-on-yomi};
   }
   &.kanji-kun-yomi {
-    --test-frame-background: $test-section-item-type-kanji-kun-yomi;
+    --test-frame-background: #{$test-section-item-type-kanji-kun-yomi};
   }
   &.hanzi-meaning {
-    --test-frame-background: $test-section-item-type-hanzi-meaning;
+    --test-frame-background: #{$test-section-item-type-hanzi-meaning};
   }
   &.hanzi-reading {
-    --test-frame-background: $test-section-item-type-hanzi-reading;
+    --test-frame-background: #{$test-section-item-type-hanzi-reading};
   }
 }
 
@@ -503,6 +503,7 @@ $fade-color: mix($test-section-background, $test-section-color, 92%);
     border-bottom: 1px solid $test-section-color-light;
 
     &:empty:not(:focus):before {
+      cursor: text;
       content: "Enter your answer here";
       color: $test-section-color-medium;
     }
@@ -569,6 +570,7 @@ $fade-color: mix($test-section-background, $test-section-color, 92%);
     margin-top: $answer-input-margin;
 
     &:empty:not(:focus):before {
+      cursor: text;
       content: "Enter your answer here";
       color: $color-light;
     }

@@ -1,8 +1,6 @@
 @import "settings";
 
 #data-path-frame {
-  display: flex;
-  flex-direction: row;
   align-items: center;
 
   #data-path {
@@ -28,4 +26,31 @@
 #srs-notifications-intervals, #regular-backup-intervals {
   margin-top: 6px;
   margin-left: 37px;
+}
+
+.settings-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#program-update-frame {
+  margin-top: -10px;
+  margin-bottom: 15px;
+}
+
+#program-version-status {
+  color: $color-positive;
+  &.update-available {
+    color: $color-negative;
+  }
+  font-size: 1.2rem;
+  margin-right: 15px;
+}
+
+#current-program-version {
+  margin-left: 20px;
+  margin-right: 20px;
+  font-family: $header-font;
+  font-size: 1.2rem;
 }

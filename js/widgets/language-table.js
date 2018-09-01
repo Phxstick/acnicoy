@@ -402,10 +402,12 @@ class LanguageTable extends Widget {
                     const minLastUpdateTime = Math.min(...
                         this.languageConfigs.map((c) => c.lastUpdateTime*1000));
                     if (minLastUpdateTime > 0) {
-                        const lastUpdateString = "Last update:  " + dateFormat(
+                        const lastUpdateString = "Last checked:  " + dateFormat(
                             minLastUpdateTime, "HH:MM:ss, mmm dS, yyyy");
                         this.$("last-content-status-update-time").textContent =
                             lastUpdateString;
+                    } else {
+                        this.$("last-content-status-update-time").textContent=""
                     }
                 }
             }
