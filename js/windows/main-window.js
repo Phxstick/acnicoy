@@ -375,18 +375,12 @@ class MainWindow extends Window {
         dataManager.achievements.setEventEmitter(events);
         events.on("achievement-unlocked", (info) => {
             this.updateStatus(`Unlocked achievement '${info.achievementName}'!`)
-            this.addNotification("achievement-unlocked", info);
+            this.addNotification("achievement-unlocked", info, true);
         });
         await dataManager.achievements.checkAll();
         // Load notifications
         const notifications = dataManager.notifications.get();
         for (const notification of notifications) {
-            // Make sure to delete notifications which are useless after restart
-            if (notification.type === "content-download-finished" ||
-                    notification.type === "content-installation-finished") {
-                dataManager.notifications.delete(notification.id);
-                continue;
-            }
             this.displayNotification(notification);
         }
         this.$("selective-dimmer").hide();
@@ -894,8 +888,8 @@ class MainWindow extends Window {
     //    Application-internal notifications
     // ========================================================================
 
-    addNotification(type, data) {
-        const notification = dataManager.notifications.add(type, data);
+    addNotification(type, data, global=false) {
+        const notification = dataManager.notifications.add(type, data, global);
         this.displayNotification(notification);
     }
 
@@ -926,14 +920,14 @@ class MainWindow extends Window {
             details = markdown.toHTML(description);
             buttonCallback = () => events.emit("start-program-update");
         }
-        else if (type === "program-download-finished") {
-            title = "Program download finished";
-            buttonLabel = "Install";
-        }
-        else if (type === "program-installation-finished") {
-            title = "Program installation finished";
-            buttonLabel = "Reload";
-        }
+        // else if (type === "program-download-finished") {
+        //     title = "Program download finished";
+        //     buttonLabel = "Install";
+        // }
+        // else if (type === "program-installation-finished") {
+        //     title = "Program installation finished";
+        //     buttonLabel = "Reload";
+        // }
         else if (type === "content-update-available") {
             title = "New language content available";
             buttonLabel = "Download";

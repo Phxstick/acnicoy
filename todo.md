@@ -1,8 +1,4 @@
 ### Primary goals
-- Make sure program update notification is removed after a program update
-- Rethink what belongs into local storage and what should be shared
-  - When using Acnicoy on multiple computers, some notifications are problematic
-  - Remove test-stuff on server afterwards (like test-versions etc.)
 - Move plus-sign into views in edit-panels. Use edit-panel for adding word too?
 - Write function to calculate n equally spaced colors on color wheel or at
   least an alternative to allow more than 6 languages
@@ -12,6 +8,7 @@
     - Content status says "n.a." after successful download -> Fixed?
   - Use newest version of all files (and test!) right before first release
 - Finish help section
+- Remove test-stuff on server afterwards (like test-versions etc.)
 
 ### Secondary goals
 - Don't attach separate context menu to every node in dict/kanji/vocab-section

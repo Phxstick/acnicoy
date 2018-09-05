@@ -66,7 +66,7 @@ class LanguageTable extends Widget {
             }
         });
         // When a readings checkbox is clicked, update config
-        this.$("table-body").addEventListener("click", (target) => {
+        this.$("table-body").addEventListener("click", (event) => {
             if (!event.target.classList.contains("readings-checkbox")) return;
             const row = event.target.parentNode.parentNode;
             const config = this.rowToConfig.get(row);
