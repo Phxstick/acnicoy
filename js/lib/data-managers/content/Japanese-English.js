@@ -336,37 +336,78 @@ module.exports = async function (paths, contentPaths, modules) {
     }
 
     /**
-     * Given a dictionary entry by its ID, check whether the vocabulary contains
-     * an entry which has this dictionary ID associated.
-     * If no such entry is found, guess if the vocabulary contains this entry by
-     * checking if any word matches this dictionary entry sufficiently.
+     * Given a dictionary entry by its ID (and optionally its associated data),
+     * return the corresponding entry in the vocabulary (or null if no match).
+     * First check whether an entry in the vocabulary has this ID associated.
+     * If not, try to guess which vocabulary entry most likely matches this
+     * dictionary entry by comparing the words, readings and translations.
      * @param {Integer} dictionaryId
      * @param {Object} [dictionaryInfo] If info for this entry has already been
-     *     extracted from the dictionary, pass it in here (Performance boost)
-     * @returns {Boolean}
+     *     extracted from the dictionary, pass it in here (performance boost).
+     * @returns {String|null}
      */
-    async function doesVocabularyContain(dictionaryId, dictionaryInfo) {
+    async function guessAssociatedVocabEntry(dictionaryId, dictionaryInfo) {
         if (dictionaryInfo === undefined) {
             dictionaryInfo = await getDictionaryEntryInfo(dictionaryId);
         }
-        const isInDatabase = await data.query(
-            "SELECT COUNT(*) AS amount FROM trainer.vocabulary " +
-            "WHERE dictionary_id = ?", dictionaryId);
-        // Match dictionary ID
-        if (isInDatabase[0].amount === 1)
-            return true;
-        // Match main word
-        const mainWordMatch = await modules.vocab.contains(
-            dictionaryInfo.wordsAndReadings[0].word);
-        if (mainWordMatch)
-            return true;
-        // Match main reading
-        const mainReadingMatch = await modules.vocab.contains(
-            dictionaryInfo.wordsAndReadings[0].reading);
-        if (mainReadingMatch)
-            return true;
-        // TODO: Try to do some further matching here? Or too slow?
-        return false;
+        // Try to match dictionary ID first
+        const idQueryResult = await data.query(
+            "SELECT word FROM trainer.vocabulary WHERE dictionary_id = ?",
+            dictionaryId);
+        if (idQueryResult.length > 0) return idQueryResult[0].word;
+        // Add kana variants as word variants as well (after kanji variants)
+        const wordsAndReadings = [...dictionaryInfo.wordsAndReadings];
+        const readings = new Set();
+        for (const wordAndReading of wordsAndReadings) {
+            if (wordAndReading.word.length > 0) {
+                readings.add(wordAndReading.reading);
+            }
+        }
+        for (const reading of readings) {
+            wordsAndReadings.push({ word: "", reading });
+        }
+        // Try to match each word variant (starting with main word at index 0)
+        for (const wordAndReading of wordsAndReadings) {
+            const { word, reading } = wordAndReading;
+            const wordContainsKanji = word.length > 0;
+            const wordMatch = await modules.vocab.contains(
+                wordContainsKanji ? word : reading);
+            // If the word variant doesn't match, skip it and try the next one
+            if (!wordMatch) continue;
+            const vocabEntryData =
+                await modules.vocab.getInfo(wordContainsKanji ? word : reading);
+            // If this word variant contains kanji, check whether its reading
+            // is registered as one of the readings of the vocabulary entry
+            if (wordContainsKanji) {
+                let readingMatch = false;
+                for (const registeredReading of vocabEntryData.readings) {
+                    if (registeredReading === reading) {
+                        readingMatch = true;
+                        break;
+                    }
+                }
+                // If a reading matched, consider word matched, else skip
+                if (readingMatch) return word;
+                else continue;
+            }
+            // If this word doesn't contain kanji, check translations instead
+            const translations = new Set();
+            for (const meaning of dictionaryInfo.meanings) {
+                for (const translation of meaning.translations) {
+                    translations.add(translation);
+                }
+            }
+            let translationMatch = false;
+            for (const registeredTranslation of vocabEntryData.translations) {
+                if (translations.has(registeredTranslation)) {
+                    translationMatch = true;
+                    break;
+                }
+            }
+            // If at least one translation matched, consider word as matching
+            if (translationMatch) return word;
+        }
+        return null;
     }
 
     /**
@@ -768,7 +809,7 @@ module.exports = async function (paths, contentPaths, modules) {
         // Dictionary related
         getDictionaryEntryInfo,
         guessDictionaryId,
-        doesVocabularyContain,
+        guessAssociatedVocabEntry,
         searchDictionary,
 
         // Proper names

@@ -332,15 +332,16 @@ HTMLTextAreaElement.prototype.toggleKanaInput = function(bool, type="hiragana"){
 function kanaInputRoot(type, root, event) {
     const input = event.target;
     const { anchorOffset: pos, anchorNode: node } = root.getSelection();
-    let text = input.textContent;
+    let text = input.textContent.toLowerCase();
+    let key = event.key.toLowerCase();
     let replaced = false;
-    if (event.key === "n" && pos > 0 && text[pos - 1] === "n") {
+    if (key === "n" && pos > 0 && text[pos - 1] === "n") {
         text = text.slice(0, pos - 1) +
                (type === "hiragana" ? "ん" : "ン") +
                text.slice(pos);
         replaced = true;
-    } else if (romajiChars.has(event.key)) {
-        text = text.slice(0, pos) + event.key + text.slice(pos);
+    } else if (romajiChars.has(key)) {
+        text = text.slice(0, pos) + key + text.slice(pos);
     } else {
         return;
     }

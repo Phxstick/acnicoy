@@ -95,8 +95,8 @@ class KanjiInfoPanel extends Widget {
                 dataManager.content.getDictionaryEntryInfo(entryId);
             const resultEntry = 
                 document.createElement("dictionary-search-result-entry");
-            info.added = await
-                dataManager.content.doesVocabularyContain(entryId, info);
+            info.associatedVocabEntry = await
+                dataManager.content.guessAssociatedVocabEntry(entryId, info);
             resultEntry.setInfo(info);
             return resultEntry;
         };
@@ -139,9 +139,10 @@ class KanjiInfoPanel extends Widget {
         });
         const updateWordStatus = (word, dictionaryId, isAdded) => {
             for (const searchResultEntry of this.$("example-words").children) {
+                // TODO: if ID not provided, first check if entry really matches
                 if (searchResultEntry.dataset.id === dictionaryId ||
                         searchResultEntry.dataset.mainWord === word) {
-                    searchResultEntry.toggleAdded(isAdded);
+                    searchResultEntry.toggleAdded(isAdded, word);
                     break;
                 }
             }

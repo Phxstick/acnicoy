@@ -94,7 +94,7 @@ class LanguageTable extends Widget {
             });
         });
         // Functionality for loading/unloading language content
-        this.$("table-body").addEventListener("click", (target) => {
+        this.$("table-body").addEventListener("click", (event) => {
             if (!event.target.classList.contains("content-load-status-label"))
                 return;
             const row = event.target.parentNode.parentNode.parentNode;

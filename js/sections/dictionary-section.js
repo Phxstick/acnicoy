@@ -77,8 +77,8 @@ class DictionarySection extends Section {
                     dataManager.content.getDictionaryEntryInfo(entryId);
                 const resultEntry = 
                     document.createElement("dictionary-search-result-entry");
-                info.added = await
-                    dataManager.content.doesVocabularyContain(entryId, info);
+                info.associatedVocabEntry = await
+                    dataManager.content.guessAssociatedVocabEntry(entryId, info)
                 resultEntry.setInfo(info);
                 return resultEntry;
             },
@@ -106,8 +106,6 @@ class DictionarySection extends Section {
                 const resultEntry = 
                     document.createElement("dictionary-search-result-entry");
                 info.properName = true;
-                // info.added = await
-                //     dataManager.content.doesVocabularyContain(entryId, info);
                 resultEntry.setInfo(info);
                 return resultEntry;
             },
@@ -160,7 +158,7 @@ class DictionarySection extends Section {
         // =================================================================
         // Search history
         // =================================================================
-        this.$("history-button").addEventListener("click", () => {
+        this.$("history-button").addEventListener("click", (event) => {
             this.$("history-popup").toggleDisplay();
             event.stopPropagation();
         });
@@ -186,9 +184,10 @@ class DictionarySection extends Section {
                 ...this.$("search-results-names").children
             ];
             for (const searchResultEntry of searchResultEntries) {
+                // TODO: if ID not provided, first check if entry really matches
                 if (searchResultEntry.dataset.id === dictionaryId ||
                         searchResultEntry.dataset.mainWord === word) {
-                    searchResultEntry.toggleAdded(isAdded);
+                    searchResultEntry.toggleAdded(isAdded, word);
                     break;
                 }
             }
@@ -225,6 +224,15 @@ class DictionarySection extends Section {
         this.loadedQuery = query;
         this.loadedQueryType = type;
         this.searchSettingsChanged = false;
+
+        // Make sure entries reflect currently searched query
+        if (type === "meaning") {
+            this.$("meanings-filter").value = query;
+            this.$("words-filter").value = "";
+        } else if (type === "reading") {
+            this.$("words-filter").value = query;
+            this.$("meanings-filter").value = "";
+        }
 
         // If query has changed, reset and hide search results view
         if (!sameQuery) {

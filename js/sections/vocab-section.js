@@ -232,11 +232,11 @@ class VocabSection extends Section {
             if (event.target.parentNode !== this.$("list-contents")) return;
             this.editItem(event.target.textContent, "word");
         });
-        this.$("kanji").addEventListener("click", () => {
+        this.$("kanji").addEventListener("click", (event) => {
             if (event.target.parentNode !== this.$("kanji")) return;
             this.editItem(event.target.textContent, "kanji");
         });
-        this.$("hanzi").addEventListener("click", () => {
+        this.$("hanzi").addEventListener("click", (event) => {
             if (event.target.parentNode !== this.$("hanzi")) return;
             this.editItem(event.target.textContent, "hanzi");
         });

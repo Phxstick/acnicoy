@@ -1,4 +1,5 @@
 ### Primary goals
+- Use only single context menu for kanji/vocab sections
 - Move plus-sign into views in edit-panels. Use edit-panel for adding word too?
 - Write function to calculate n equally spaced colors on color wheel or at
   least an alternative to allow more than 6 languages
@@ -49,6 +50,8 @@
 - Prevent backslash-encoding on server side, newlines should arrive as such
 - Strange error if autostart is not enabled. How to make it work on linux?
 - Don't preload words in vocabulary section - on scroll, given date is outdated
+- If word is renamed, associated vocab entry in dictionary entry gets outdated.
+  Add a listener to dictionary section and method to dictionary entry to solve.
 
 By category
 --------------------------------------------------------------------------------

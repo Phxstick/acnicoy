@@ -331,19 +331,19 @@ HTMLElement.prototype.contextMenu = function (menuItems, itemNames, data) {
     // opening the context menu
     if (typeof itemNames === "function") {
         this.contextMenuCallback = (event) => {
-            contextMenu.displayItems(Promise.resolve(itemNames())
+            contextMenu.displayItems(Promise.resolve(itemNames(event))
             .then((names) => {
                 const items = [];
                 for (const name of names) {
                     const menuItem = menuItems[name];
                     menuItem.currentNode = this;
-                    menuItem.data = data;
+                    menuItem.data = { ...data, event };
                     items.push(menuItem);
                 }
                 return items;
             }));
         };
-    // If itemNames is an Array, directly read the names
+    // If itemNames is an Array, directly display the given items
     } else if (Array.isArray(itemNames)) {
         if (itemNames.length === 0) return;
         this.contextMenuCallback = (event) => {
@@ -351,7 +351,7 @@ HTMLElement.prototype.contextMenu = function (menuItems, itemNames, data) {
             for (const name of itemNames) {
                 const menuItem = menuItems[name];
                 menuItem.currentNode = this;
-                menuItem.data = data;
+                menuItem.data = { ...data, event };
                 items.push(menuItem);
             }
             contextMenu.displayItems(items);
@@ -359,7 +359,8 @@ HTMLElement.prototype.contextMenu = function (menuItems, itemNames, data) {
     } else {
         throw new Error("Parameter 'itemNames' must be an array or function!");
     }
-    this.addEventListener("contextmenu", () => this.contextMenuCallback());
+    this.addEventListener("contextmenu",
+            (event) => this.contextMenuCallback(event));
 }
 
 /**

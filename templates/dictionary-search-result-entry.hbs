@@ -21,13 +21,13 @@
 
     {{! Display main word. If there is only a reading, use it as main word }}
 
-    <div id="main-word">
+    <span id="main-word">
       {{#if wordsAndReadings.[0].word.length}}
         {{eachLetter wordsAndReadings.[0].word}}
       {{else}}
         {{wordsAndReadings.[0].reading}}
       {{/if}}
-    </div>
+    </span>
   </div>
   <div id="meanings-frame">
 
@@ -41,7 +41,13 @@
         {{#ifLargerThanOne ../meanings.length}}
           <span class="number">{{inc @index 1}}.</span>
         {{/ifLargerThanOne}}
-        <span class="translations">{{join translations "; "}}</span>
+        <!--span class="translations">{{join translations "; "}}</span-->
+        <span class="translations">
+          {{#each translations}}
+            <span class="translation">{{this}}</span>
+            <!--{{#unless @last}}<span>;&nbsp;</span>{{/unless}}-->
+          {{/each}}
+        </span>
         {{#each fieldsOfApplication}}<span>{{this}}</span>{{/each}}
         {{#each dialect}}<span>{{this}}</span>{{/each}}
         {{#each miscInfo}}<span>{{this}}</span>{{/each}}
@@ -60,10 +66,10 @@
           {{#if @index}}
             <span class="variant">
               {{#if this.word.length}}
-                <span class="word">
+                <span class="word" data-word="{{this.word}}">
                   {{eachLetter word}}
                 </span>
-                <span class="reading">
+                <span class="reading" data-reading="{{this.reading}}">
                   【{{this.reading}}】{{#unless @last}}、{{/unless}}
                 </span>
               {{else}}
