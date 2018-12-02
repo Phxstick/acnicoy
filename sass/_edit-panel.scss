@@ -1,0 +1,36 @@
+@import "panel";
+
+#partitioned-window > #main-frame {
+  padding-top: 5px;
+  padding-bottom: 10px;
+
+  > *:not(:last-child) {
+    margin-bottom: 3px;
+  }
+}
+
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.detail-row-list-wrapper {
+  flex: 1;
+  overflow: auto;
+}
+
+.detail-row-header {
+  @extend .light-item-view-header;
+}
+
+.detail-row-list {
+  @extend .light-item-view;
+  display: inline-block;
+}
+
+.add-button {
+  @extend button.lightest;
+  @extend button.no-shadow;
+  padding: 3px;
+}

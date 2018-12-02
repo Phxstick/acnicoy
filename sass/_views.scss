@@ -92,5 +92,8 @@
       border-color: $view-edit-border-color;
       color: $view-edit-color;
     }
+    &:empty:before {  // For placeholder text
+      color: $color-lightest;
+    }
   }
 }

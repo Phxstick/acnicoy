@@ -75,6 +75,10 @@ module.exports = function (paths, modules) {
     // Renaming, deleting or adding new lists
     // =====================================================================
 
+    vocabLists.existsList = function (name) {
+        return name in data;
+    };
+
     vocabLists.renameList = function (oldName, newName) {
         // Return false if list with new name already exists
         if (newName in data) return false;

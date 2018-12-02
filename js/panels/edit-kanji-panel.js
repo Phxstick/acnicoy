@@ -17,9 +17,7 @@ const menuItems = contextMenu.registerItems({
     "add-meaning": {
         label: "Add meaning",
         click: ({ data: {section} }) => {
-            const item = section.createListItem("", "meaning");
-            section.$("meanings").scrollToBottom();
-            item.focus();
+            section.createListItem("meaning");
         }
     },
     "delete-meaning": {
@@ -27,7 +25,7 @@ const menuItems = contextMenu.registerItems({
         click: ({ currentNode, data: {section} }) => {
             currentNode.remove();
             if (section.$("meanings").children.length === 0)
-                section.$("srs-level-meanings").disabled = true;
+                section.$("srs-level-meaning").disabled = true;
         }
     },
     "modify-meaning": {
@@ -39,9 +37,7 @@ const menuItems = contextMenu.registerItems({
     "add-on-yomi": {
         label: "Add on-yomi",
         click: ({ data: {section} }) => {
-            const item = section.createListItem("", "on-yomi");
-            section.$("on-yomi").scrollToBottom;
-            item.focus();
+            section.createListItem("on-yomi");
         }
     },
     "delete-on-yomi": {
@@ -61,9 +57,7 @@ const menuItems = contextMenu.registerItems({
     "add-kun-yomi": {
         label: "Add kun-yomi",
         click: ({ data: {section} }) => {
-            const item = section.createListItem("", "kun-yomi");
-            section.$("kun-yomi").scrollToBottom;
-            item.focus();
+            section.createListItem("kun-yomi");
         }
     },
     "delete-kun-yomi": {
@@ -82,36 +76,20 @@ const menuItems = contextMenu.registerItems({
     }
 });
 
-class EditKanjiPanel extends Panel {
+class EditKanjiPanel extends EditPanel {
     constructor() {
-        super("edit-kanji");
-        this.typeToPopup = {
-            "meaning": this.$("srs-level-meanings"),
-            "on-yomi": this.$("srs-level-on-yomi"),
-            "kun-yomi": this.$("srs-level-kun-yomi")
-        };
-        // Create callbacks for adding values
-        this.$("add-meaning-button").addEventListener("click", () => {
-            const item = this.createListItem("", "meaning");
-            item.focus();
-        });
-        this.$("add-on-yomi-button").addEventListener("click", () => {
-            const item = this.createListItem("", "on-yomi");
-            item.focus();
-        });
-        this.$("add-kun-yomi-button").addEventListener("click", () => {
-            const item = this.createListItem("", "kun-yomi");
-            item.focus();
-        });
+        super("edit-kanji", ["meaning", "on-yomi", "kun-yomi"]);
+
         // Configure context menu for static elements
         this.$("kanji").contextMenu(menuItems,
                 ["copy-kanji", "remove-kanji"], { section: this });
-        this.$("meanings").contextMenu(
+        this.$("meanings-wrapper").contextMenu(
                 menuItems, ["add-meaning"], { section: this });
-        this.$("on-yomi").contextMenu(menuItems,
+        this.$("on-yomi-wrapper").contextMenu(menuItems,
                 ["add-on-yomi"], { section: this });
-        this.$("kun-yomi").contextMenu(menuItems,
+        this.$("kun-yomi-wrapper").contextMenu(menuItems,
                 ["add-kun-yomi"], { section: this });
+
         // Create closing and saving callbacks
         this.$("close-button").addEventListener(
             "click", () => main.closePanel("edit-kanji"));
@@ -119,7 +97,7 @@ class EditKanjiPanel extends Panel {
             "click", () => main.closePanel("edit-kanji"));
         this.$("save-button").addEventListener("click", () => this.save());
         this.$("all-srs-levels").callback = (label, value) => {
-            this.$("srs-level-meanings").setByIndex(value - 1);
+            this.$("srs-level-meaning").setByIndex(value - 1);
             this.$("srs-level-on-yomi").setByIndex(value - 1);
             this.$("srs-level-kun-yomi").setByIndex(value - 1);
         };
@@ -131,7 +109,7 @@ class EditKanjiPanel extends Panel {
             const numLevels = dataManager.srs.currentScheme.numLevels;
             const intervalTexts = dataManager.srs.currentScheme.intervalTexts;
             const popups = [
-                this.$("all-srs-levels"), this.$("srs-level-meanings"),
+                this.$("all-srs-levels"), this.$("srs-level-meaning"),
                 this.$("srs-level-kun-yomi"), this.$("srs-level-on-yomi")
             ];
             for (const popup of popups) {
@@ -145,7 +123,7 @@ class EditKanjiPanel extends Panel {
         events.on("settings-design-animate-popup-stacks", () => {
             const animate = dataManager.settings.design.animatePopupStacks;
             this.$("all-srs-levels").animate = animate;
-            this.$("srs-level-meanings").animate = animate;
+            this.$("srs-level-meaning").animate = animate;
             this.$("srs-level-on-yomi").animate = animate;
             this.$("srs-level-kun-yomi").animate = animate;
         });
@@ -158,83 +136,46 @@ class EditKanjiPanel extends Panel {
             this.$("kun-yomi").empty();
             this.$("kanji").textContent = kanji;
             for (const meaning of info.meanings) {
-                this.createListItem(meaning, "meaning");
+                this.createListItem("meaning", meaning);
             }
             for (const onYomi of info.onYomi) {
-                this.createListItem(onYomi, "on-yomi");
+                this.createListItem("on-yomi", onYomi);
             }
             for (const kunYomi of info.kunYomi) {
-                this.createListItem(kunYomi, "kun-yomi");
+                this.createListItem("kun-yomi", kunYomi);
             }
             // Set level popup stacks
             this.$("all-srs-levels").setByIndex(0);
-            this.$("srs-level-meanings").setByIndex(info.meaningsLevel - 1);
+            this.$("srs-level-meaning").setByIndex(info.meaningsLevel - 1);
             this.$("srs-level-on-yomi").setByIndex(info.onYomiLevel - 1);
             this.$("srs-level-kun-yomi").setByIndex(info.kunYomiLevel - 1);
             // Disable level popups if there's no list entry
-            this.$("srs-level-meanings").disabled = info.meanings.length === 0;
+            this.$("srs-level-meaning").disabled = info.meanings.length === 0;
             this.$("srs-level-on-yomi").disabled = info.onYomi.length === 0;
             this.$("srs-level-kun-yomi").disabled = info.kunYomi.length === 0;
         });
     }
 
-    createListItem(text, type) {
-        const node = document.createElement("span");
-        node.textContent = text;
-        // Allow editing details on click
-        node.contentEditable = "true";
+    createListItem(type, text="") {
+        const node = super.createListItem(type, text);
         // If it's a yomi, enable kana input
         node.addEventListener("focusin", () => {
-            if (node.parentNode === this.$("on-yomi")) {
-                node.enableKanaInput("katakana");
-            }
-            if (node.parentNode === this.$("kun-yomi")) {
-                node.enableKanaInput("hiragana");
-            }
+            if (type === "on-yomi") node.enableKanaInput("katakana");
+            if (type === "kun-yomi") node.enableKanaInput("hiragana");
         });
-        // If the node is left empty, remove it upon losing focus
+        // Disable srs-level-selector if there are no items left of this type
         node.addEventListener("focusout", () => {
-            this.root.getSelection().removeAllRanges();
-            const newText = node.textContent.trim();
-            const listNode = node.parentNode;
-            let removeNode = false;
-            // If the node is left empty, remove it
-            if (newText.length === 0) {
-                removeNode = true;
-            }
-            // If the node is a duplicate, remove it
-            for (const otherNode of listNode.children) {
-                if (node === otherNode) continue;
-                if (otherNode.textContent === newText) {
-                    removeNode = true;
-                    break;
-                }
-            }
-            if (removeNode) {
-                node.remove();
-            } else {
-                node.textContent = newText;
-            }
-            // Disable srs-level-selector if there are no items of this type
-            this.typeToPopup[type].disabled = listNode.children.length === 0;
+            this.$(`srs-level-${type}`).disabled =
+                this.viewNodes[type].children.length === 0;
         });
-        // If Enter key is pressed, quit editing
-        node.addEventListener("keypress", (event) => {
-            if (event.key === "Enter") {
-                node.blur();
-            }
-        });
-        // Insert item into DOM and attach a context-menu
+        // Attach a context-menu
         if (type === "meaning") {
-            this.$("meanings").appendChild(node);
             node.contextMenu(menuItems, ["delete-meaning", "modify-meaning"],
                              { section: this });
         } else if (type === "kun-yomi") {
-            this.$("kun-yomi").appendChild(node);
             node.contextMenu(menuItems, ["delete-kun-yomi", "modify-kun-yomi"],
                              { section: this });
         } else if (type === "on-yomi") {
-            this.$("on-yomi").appendChild(node);
             node.contextMenu(menuItems, ["delete-on-yomi", "modify-on-yomi"],
                              { section: this });
         }
@@ -256,7 +197,7 @@ class EditKanjiPanel extends Panel {
     save() {
         const kanji = this.$("kanji").textContent;
         const levels = {
-            meanings: parseInt(this.$("srs-level-meanings").value),
+            meanings: parseInt(this.$("srs-level-meaning").value),
             on_yomi: parseInt(this.$("srs-level-on-yomi").value),
             kun_yomi: parseInt(this.$("srs-level-kun-yomi").value)
         };

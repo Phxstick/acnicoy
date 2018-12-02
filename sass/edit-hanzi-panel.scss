@@ -1,13 +1,4 @@
-@import "panel";
-
-#partitioned-window > #main-frame {
-  padding-top: 5px;
-  padding-bottom: 10px;
-
-  > *:not(:last-child) {
-    margin-bottom: 3px;
-  }
-}
+@import "edit-panel";
 
 #hanzi-frame {
   display: flex;
@@ -21,28 +12,11 @@
   }
 }
 
-#meanings-frame, #readings-frame {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-
-  .detail-row {
-    flex: 1;
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    align-content: stretch;
-  }
+#meanings > *:empty:before {
+  content: "Enter meaning";
 }
-
-#meanings-header, #readings-header {
-  @extend .light-item-view-header;
-}
-
-#meanings, #readings {
-  @extend .light-item-view;
-  overflow-y: auto;
-  flex: 1;
+#readings > *:empty:before {
+  content: "Enter pinyin";
 }
 
 #readings > * {

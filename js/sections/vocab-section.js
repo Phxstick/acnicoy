@@ -325,6 +325,14 @@ class VocabSection extends Section {
             this.$("list-contents-column").toggleDisplay(!noLists, "flex");
             this.$("no-lists-info").toggleDisplay(noLists, "flex");
         });
+        events.on("vocab-list-created", (list, reloadView=false) => {
+            if (reloadView) {
+                if (this.viewStates["vocab-lists"].lastQuery !== null) {
+                    this.viewStates["vocab-lists"].search(
+                        this.viewStates["vocab-lists"].lastQuery);
+                }
+            }
+        });
         events.onAll(
             ["language-changed", "vocab-list-selected",
             "vocab-list-deselected", "added-to-list", "removed-from-list"],

@@ -1,13 +1,4 @@
-@import "panel";
-
-#partitioned-window > #main-frame {
-  padding-top: 5px;
-  padding-bottom: 10px;
-
-  > *:not(:last-child) {
-    margin-bottom: 3px;
-  }
-}
+@import "edit-panel";
 
 #kanji-frame {
   display: flex;
@@ -21,31 +12,17 @@
   }
 }
 
-#meanings-frame, #on-yomi-frame, #kun-yomi-frame {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-
-  .detail-row {
-    flex: 1;
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    align-content: stretch;
-  }
+#meanings > *:empty:before {
+  content: "Enter meaning";
+}
+#on-yomi > *:empty:before {
+  content: "Enter on-yomi";
+}
+#kun-yomi > *:empty:before {
+  content: "Enter kun-yomi";
 }
 
-#meanings-header, #on-yomi-header, #kun-yomi-header {
-  @extend .light-item-view-header;
-}
-
-#meanings, #on-yomi, #kun-yomi {
-  @extend .light-item-view;
-  overflow-y: auto;
-  flex: 1;
-}
-
-#srs-level-meanings, #srs-level-on-yomi, #srs-level-kun-yomi {
+#srs-level-meaning, #srs-level-on-yomi, #srs-level-kun-yomi {
   width: 30px;
   height: 30px;
   font-size: 1rem;

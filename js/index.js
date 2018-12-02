@@ -30,6 +30,7 @@ const Window = require(paths.js.base("window"));
 const Overlay = require(paths.js.base("overlay"));
 const Section = require(paths.js.base("section"));
 const Panel = require(paths.js.base("panel"));
+const EditPanel = require(paths.js.base("edit-panel"));
 const Widget = require(paths.js.base("widget"));
 const PinwallWidget = require(paths.js.base("pinwall-widget"));
 const SettingsSubsection = require(paths.js.base("settings-subsection"));

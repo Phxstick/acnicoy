@@ -7,43 +7,43 @@
     <div id="kanji-frame">
       <span id="kanji"></span>
     </div>
-    <div id="meanings-frame">
-      <div id="meanings-header">
+    <div id="meanings-frame" class="detail-row">
+      <div id="meanings-header" class="detail-row-header">
         <span class="header-text">Meanings</span>
         <hr>
-        <button id="add-meaning-button">
+        <popup-stack id="srs-level-meaning"></popup-stack>
+      </div>
+      <div id="meanings-wrapper" class="detail-row-list-wrapper">
+        <div id="meanings" class="detail-row-list"></div>
+        <button id="add-meaning-button" class="add-button">
           <i class="fa fa-plus"></i>
         </button>
-        <popup-stack id="srs-level-meanings"></popup-stack>
-      </div>
-      <div class="detail-row">
-        <div id="meanings"></div>
       </div>
     </div>
-    <div id="on-yomi-frame">
-      <div id="on-yomi-header">
+    <div id="on-yomi-frame" class="detail-row">
+      <div id="on-yomi-header" class="detail-row-header">
         <span class="header-text">On Yomi</span>
         <hr>
-        <button id="add-on-yomi-button">
-          <i class="fa fa-plus"></i>
-        </button>
         <popup-stack id="srs-level-on-yomi"></popup-stack>
       </div>
-      <div class="detail-row">
-        <div id="on-yomi"></div>
-      </div>
-    </div>
-    <div id="kun-yomi-frame">
-      <div id="kun-yomi-header">
-        <span class="header-text">Kun Yomi</span>
-        <hr>
-        <button id="add-kun-yomi-button">
+      <div id="on-yomi-wrapper" class="detail-row-list-wrapper">
+        <div id="on-yomi" class="detail-row-list"></div>
+        <button id="add-on-yomi-button" class="add-button">
           <i class="fa fa-plus"></i>
         </button>
+      </div>
+    </div>
+    <div id="kun-yomi-frame" class="detail-row">
+      <div id="kun-yomi-header" class="detail-row-header">
+        <span class="header-text">Kun Yomi</span>
+        <hr>
         <popup-stack id="srs-level-kun-yomi"></popup-stack>
       </div>
-      <div class="detail-row">
-        <div id="kun-yomi"></div>
+      <div id="kun-yomi-wrapper" class="detail-row-list-wrapper">
+        <div id="kun-yomi" class="detail-row-list"></div>
+        <button id="add-kun-yomi-button" class="add-button">
+          <i class="fa fa-plus"></i>
+        </button>
       </div>
     </div>
     <div id="all-levels-div">

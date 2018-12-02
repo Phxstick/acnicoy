@@ -1,6 +1,4 @@
 ### Primary goals
-- Use only single context menu for kanji/vocab sections
-- Move plus-sign into views in edit-panels. Use edit-panel for adding word too?
 - Write function to calculate n equally spaced colors on color wheel or at
   least an alternative to allow more than 6 languages
 - Finish first version of Japanese content:
@@ -10,8 +8,13 @@
   - Use newest version of all files (and test!) right before first release
 - Finish help section
 - Remove test-stuff on server afterwards (like test-versions etc.)
+- BUG: scripts in intro-tour not executed anymore!
 
 ### Secondary goals
+- Put completion tooltip into its own widget
+- Rework edit panels, refactor to base class
+- Make searching for vocab lists faster by pre-sorting in datamanger already
+- Removing word from vocabulary lists should be done in datamanager function too
 - Don't attach separate context menu to every node in dict/kanji/vocab-section
 - Implement undo of note deletion (and editing?)
 - Rework fonts in sass: Use gui-font for gui, and content-font for content
@@ -37,6 +40,8 @@
 - Add some more achievements and create achievements section
 - Content-related tables should be created dynamically when the content is first
   loaded instead of at creation-time of the database!
+- Reverse completion list order if it's shown above entry instead of below
+  - Extend the utility view function for this purpose
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)

@@ -28,39 +28,21 @@ class EditVocabSuggestionPane extends VocabSuggestionPane {
     deselectSuggestionNode(node, type) {
         if (!super.deselectSuggestionNode(node, type)) return;
         const editVocabPanel = main.panels["edit-vocab"];
-        const wordLabel = editVocabPanel.$("word");
-        const translationsList = editVocabPanel.$("translations");
-        const readingsList = editVocabPanel.$("readings");
         if (type === "word") {
-            wordLabel.textContent = "";
-        } else if (type === "reading") {
-            for (const readingNode of readingsList.children) {
-                if (readingNode.textContent === node.textContent) {
-                    readingsList.removeChild(readingNode);
-                    break;
-                }
-            }
-        } else if (type === "translation") {
-            for (const translationNode of translationsList.children) {
-                if (translationNode.textContent === node.textContent) {
-                    translationsList.removeChild(translationNode);
-                    break;
-                }
-            }
+            editVocabPanel.setWord(node.textContent);
+        } else {
+            editVocabPanel.removeListItem(type, node.textContent);
         }
     }
 
     selectSuggestionNode(node, type) {
         if (!super.selectSuggestionNode(node, type)) return;
         const editVocabPanel = main.panels["edit-vocab"];
-        const wordLabel = editVocabPanel.$("word");
-        const translationsList = editVocabPanel.$("translations");
-        const readingsList = editVocabPanel.$("readings");
         if (type === "word") {
-            wordLabel.textContent = node.textContent;
+            editVocabPanel.setWord(node.textContent);
             // Mark suggestions for all selected readings as selected
             const chosenReadings = new Set();
-            for (const readingNode of readingsList.children) {
+            for (const readingNode of editVocabPanel.getListItems("reading")) {
                 chosenReadings.add(readingNode.textContent);
             }
             for (const suggestionNode of this.$("readings").children) {
@@ -68,16 +50,8 @@ class EditVocabSuggestionPane extends VocabSuggestionPane {
                     suggestionNode.setAttribute("selected", "");
                 }
             }
-        } else if (type === "reading") {
-            for (const readingNode of readingsList.children) {
-                if (readingNode.textContent === node.textContent) return;
-            }
-            editVocabPanel.createListItem(node.textContent, "reading");
-        } else if (type === "translation") {
-            for (const translationNode of translationsList.children) {
-                if (translationNode.textContent === node.textContent) return;
-            }
-            editVocabPanel.createListItem(node.textContent, "translation");
+        } else {
+            editVocabPanel.createListItem(type, node.textContent);
         }
     }
 

@@ -590,6 +590,9 @@ class MainWindow extends Window {
 
     closePanel(name, noOtherPanelOpening=true) {
         const panel = this.panels[name];
+        if (panel.root.activeElement !== null) {
+            panel.root.activeElement.blur();
+        }
         if (dataManager.settings.design.animateSlidingPanels) {
             Velocity(panel, "stop");
             Velocity(panel, { left: "-400px" },

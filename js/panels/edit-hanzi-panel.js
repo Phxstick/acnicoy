@@ -17,9 +17,7 @@ const menuItems = contextMenu.registerItems({
     "add-meaning": {
         label: "Add meaning",
         click: ({ data: {section} }) => {
-            const item = section.createListItem("", "meaning");
-            section.$("meanings").scrollToBottom();
-            item.focus();
+            section.createListItem("meaning");
         }
     },
     "delete-meaning": {
@@ -39,9 +37,7 @@ const menuItems = contextMenu.registerItems({
     "add-reading": {
         label: "Add reading",
         click: ({ data: {section} }) => {
-            const item = section.createListItem("", "reading");
-            section.$("readings").scrollToBottom;
-            item.focus();
+            section.createListItem("reading");
         }
     },
     "delete-reading": {
@@ -60,29 +56,18 @@ const menuItems = contextMenu.registerItems({
     }
 });
 
-class EditHanziPanel extends Panel {
+class EditHanziPanel extends EditPanel {
     constructor() {
-        super("edit-hanzi");
-        this.typeToPopup = {
-            "meaning": this.$("srs-level-meanings"),
-            "reading": this.$("srs-level-readings")
-        };
-        // Create callbacks for adding values
-        this.$("add-meaning-button").addEventListener("click", () => {
-            const item = this.createListItem("", "meaning");
-            item.focus();
-        });
-        this.$("add-reading-button").addEventListener("click", () => {
-            const item = this.createListItem("", "reading");
-            item.focus();
-        });
+        super("edit-hanzi", ["meaning", "reading"]);
+
         // Configure popup-menu for static elements
         this.$("hanzi").contextMenu(menuItems,
                 ["copy-hanzi", "remove-hanzi"], { section: this });
-        this.$("meanings").contextMenu(
-                menuItems, ["add-meaning"], { section: this });
-        this.$("readings").contextMenu(menuItems,
+        this.$("meanings-wrapper").contextMenu(menuItems,
+                ["add-meaning"], { section: this });
+        this.$("readings-wrapper").contextMenu(menuItems,
                 ["add-reading"], { section: this });
+
         // Create closing and saving callbacks
         this.$("close-button").addEventListener(
             "click", () => main.closePanel("edit-hanzi"));
@@ -127,10 +112,10 @@ class EditHanziPanel extends Panel {
             this.$("readings").empty();
             this.$("hanzi").textContent = hanzi;
             for (const meaning of info.meanings) {
-                this.createListItem(meaning, "meaning");
+                this.createListItem("meaning", meaning);
             }
             for (const reading of info.readings) {
-                this.createListItem(reading, "reading");
+                this.createListItem("reading", reading);
             }
             // Set level popup stacks
             this.$("all-srs-levels").setByIndex(0);
@@ -142,56 +127,22 @@ class EditHanziPanel extends Panel {
         });
     }
 
-    createListItem(text, type) {
-        const node = document.createElement("span");
-        node.textContent = text;
-        // Allow editing details on click
-        node.contentEditable = "true";
+    createListItem(type, text="") {
+        const node = super.createListItem(type, text);
         // If it's a reading, enable pinyin input
         node.addEventListener("focusin", () => {
-            if (node.parentNode === this.$("readings")) {
-                node.enablePinyinInput();
-            }
+            if (type === "reading") node.enablePinyinInput();
         });
-        // If the node is left empty, remove it upon losing focus
+        // Disable srs-level-selector if there are no items of this type
         node.addEventListener("focusout", () => {
-            this.root.getSelection().removeAllRanges();
-            const newText = node.textContent.trim();
-            const listNode = node.parentNode;
-            let removeNode = false;
-            // If the node is left empty, remove it
-            if (newText.length === 0) {
-                removeNode = true;
-            }
-            // If the node is a duplicate, remove it
-            for (const otherNode of listNode.children) {
-                if (node === otherNode) continue;
-                if (otherNode.textContent === newText) {
-                    removeNode = true;
-                    break;
-                }
-            }
-            if (removeNode) {
-                node.remove();
-            } else {
-                node.textContent = newText;
-            }
-            // Disable srs-level-selector if there are no items of this type
-            this.typeToPopup[type].disabled = listNode.children.length === 0;
+            this.$(`srs-level-${type}s`).disabled =
+                this.viewNodes[type].children.length === 0;
         });
-        // If Enter key is pressed, quit editing
-        node.addEventListener("keypress", (event) => {
-            if (event.key === "Enter") {
-                node.blur();
-            }
-        });
-        // Insert item into DOM and attach a context-menu
+        // Attach a context-menu
         if (type === "meaning") {
-            this.$("meanings").appendChild(node);
             node.contextMenu(menuItems, ["delete-meaning", "modify-meaning"],
                              { section: this });
         } else if (type === "reading") {
-            this.$("readings").appendChild(node);
             node.contextMenu(menuItems, ["delete-reading", "modify-reading"],
                              { section: this });
         }

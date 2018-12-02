@@ -1,0 +1,45 @@
+@import "base";
+
+#wrapper {
+  position: fixed;
+  box-shadow: $popup-menu-shadow;
+  border-radius: 6px;
+
+  #items {
+    min-width: 160px;
+    max-height: 350px;
+    overflow-y: auto;
+    background-color: $background-color;
+    color: $color;
+    padding: 4px;
+    text-align: left;
+    border-radius: 6px;
+
+    &:hover {
+      text-shadow: none;
+      color: $color;
+    }
+    > * {
+      &.selected {
+        color: $view-hover-color;
+        background-color: $view-hover-background;
+        border-radius: 5px;
+      }
+      font-size: 1rem;
+      padding-left: 5px;
+      padding: 3px;
+    }
+    &::-webkit-scrollbar {
+      width: 16px;
+    }
+    &::-webkit-scrollbar-track {
+      border-radius: 6px;
+      background-color: $background-color;
+    }
+    &::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      background-clip: padding-box;
+      border: 3px solid transparent;
+    }
+  }
+}

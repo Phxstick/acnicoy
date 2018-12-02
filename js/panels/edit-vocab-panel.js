@@ -24,9 +24,7 @@ const menuItems = contextMenu.registerItems({
     "add-translation": {
         label: "Add translation",
         click: ({ data: {section} }) => {
-            const item = section.createListItem("", "translation");
-            section.$("translations").scrollToBottom();
-            item.focus();
+            section.createListItem("translation");
         }
     },
     "delete-translation": {
@@ -44,9 +42,7 @@ const menuItems = contextMenu.registerItems({
     "add-reading": {
         label: "Add reading",
         click: ({ data: {section} }) => {
-            const item = section.createListItem("", "reading");
-            section.$("readings").scrollToBottom();
-            item.focus();
+            section.createListItem("reading");
         }
     },
     "delete-reading": {
@@ -61,26 +57,25 @@ const menuItems = contextMenu.registerItems({
             currentNode.focus();
         }
     },
+    "add-to-list": {
+        label: "Add to a list",
+        click: ({ currentNode, data: {section} }) => {
+            section.createListItem("vocab-list")
+        }
+    },
     "remove-from-list": {
         label: "Remove from list",
         click: ({ currentNode, data: {section} }) => {
-            const listName = currentNode.textContent;
-            section.listNameToOption.get(listName).show();
             currentNode.remove();
         }
     }
 });
 
-class EditVocabPanel extends Panel {
+class EditVocabPanel extends EditPanel {
     constructor() {
-        super("edit-vocab");
+        super("edit-vocab", ["translation", "reading", "vocab-list"]);
         this.dictionaryId = null;
-        this.listNameToOption = new Map();
-        // Make sure vocablist selector gets hidden when clicking somewhere else
-        this.$("select-vocab-list-wrapper").hide();
-        window.addEventListener("click", () => {
-            this.$("select-vocab-list-wrapper").hide();
-        });
+
         // Allow editing the loaded word
         this.$("word").addEventListener("focusin", () => {
             this.wordBeforeEditing = this.$("word").textContent;
@@ -100,33 +95,51 @@ class EditVocabPanel extends Panel {
                 this.$("word").blur();
             }
         });
-        // Create callbacks for adding values
-        this.$("add-translation-button").addEventListener("click", () => {
-            const item = this.createListItem("", "translation");
-            item.focus();
-        });
-        this.$("add-reading-button").addEventListener("click", () => {
-            const item = this.createListItem("", "reading");
-            item.focus();
-        });
-        this.$("add-vocab-list-button").addEventListener("click", (event) => {
-            this.$("select-vocab-list-wrapper").show();
-            event.stopPropagation();
-        });
+
         // Create closing and saving callbacks
         this.$("close-button").addEventListener(
             "click", () => main.closePanel("edit-vocab"));
         this.$("cancel-button").addEventListener(
             "click", () => main.closePanel("edit-vocab"));
         this.$("save-button").addEventListener("click", () => this.save());
+
         // Create context menus for static elements
         this.$("word").contextMenu(menuItems,
                 ["copy-word", "delete-word", "rename-word"],
                 { section: this });
-        this.$("translations").contextMenu(
+        this.$("translations-wrapper").contextMenu(
                 menuItems, ["add-translation"], { section: this });
-        this.$("readings").contextMenu(
+        this.$("readings-wrapper").contextMenu(
                 menuItems, ["add-reading"], { section: this });
+        this.$("vocab-lists-wrapper").contextMenu(
+                menuItems, ["add-to-list"], { section: this });
+
+        // Create completion tooltip for vocab-list view items
+        this.vocabListCompletionTooltip =
+            document.createElement("completion-tooltip");
+        const addedLists = new Set();
+        this.vocabListCompletionTooltip.setDisplayCallback((node) => {
+            addedLists.clear();
+            for (const childNode of this.$("vocab-lists").children) {
+                if (childNode === node) continue;
+                addedLists.add(childNode.textContent);
+            }
+        });
+        this.vocabListCompletionTooltip.setSelectionCallback((node) => {
+            node.classList.remove("list-not-existing");
+            addedLists.clear();
+        });
+        this.vocabListCompletionTooltip.setData((query) => {
+            const result = dataManager.vocabLists.searchForList(query);
+            const filteredResult = [];
+            for (const listName of result) {
+                if (!addedLists.has(listName)) {
+                    filteredResult.push(listName);
+                }
+            }
+            filteredResult.sort();
+            return filteredResult;
+        });
     }
 
     registerCentralEventListeners() {
@@ -140,14 +153,6 @@ class EditVocabPanel extends Panel {
                 option.dataset.tooltip = intervalTexts[level];
             }
         });
-        events.on("vocab-list-created", (listName) => {
-            const item = this.createVocabListOption(listName);
-            utility.insertNodeIntoSortedList(this.$("select-vocab-list"), item);
-        });
-        events.on("vocab-list-deleted", (listName) => {
-            this.listNameToOption.get(listName).remove();
-            this.listNameToOption.delete(listName);
-        });
         events.on("settings-languages-readings", () => {
             this.$("readings-frame").toggleDisplay(
                 dataManager.languageSettings.get("readings"));
@@ -159,15 +164,6 @@ class EditVocabPanel extends Panel {
     }
 
     adjustToLanguage(language, secondary) {
-        // Fill vocab list selector
-        this.$("select-vocab-list").empty();
-        this.listNameToOption.clear();
-        const allVocabLists = dataManager.vocabLists.getLists();
-        allVocabLists.sort();
-        for (const listName of allVocabLists) {
-            this.$("select-vocab-list").appendChild(
-                    this.createVocabListOption(listName));
-        }
         // If language is Japanese, allow editing the word with kana
         this.$("word").toggleKanaInput(language === "Japanese");
         this.$("readings").classList.toggle("pinyin", language === "Chinese");
@@ -178,16 +174,10 @@ class EditVocabPanel extends Panel {
         this.originalWord = word;
         this.$("word").textContent = word;
         // Load names of vocab-lists this word is added to
-        const previouslyAddedLists = this.$("vocab-lists").children;
-        for (const { textContent: listName } of previouslyAddedLists) {
-            if (this.listNameToOption.has(listName)) {
-                this.listNameToOption.get(listName).show();
-            }
-        }
         this.$("vocab-lists").empty();
         const addedLists = dataManager.vocabLists.getListsForWord(word);
         for (const listName of addedLists) {
-            this.createListItem(listName, "list");
+            this.createListItem("vocab-list", listName);
         }
         // Load translations, readings and SRS level for this word
         return dataManager.vocab.getInfo(word)
@@ -195,78 +185,46 @@ class EditVocabPanel extends Panel {
             this.dictionaryId = dictionaryId;
             this.$("translations").empty();
             for (const translation of translations) {
-                this.createListItem(translation, "translation");
+                this.createListItem("translation", translation);
             }
             this.$("readings").empty();
             for (const reading of readings) {
-                this.createListItem(reading, "reading");
+                this.createListItem("reading", reading);
             }
             this.$("srs-level").set(this.$("srs-level").children[level - 1]);
         });
     }
 
-    createListItem(text, type) {
-        const node = document.createElement("span");
-        node.textContent = text;
-        // Allow editing translations and readings on click
-        if (type !== "list") {
-            node.contentEditable = "true";
-            node.addEventListener("focusout", () => {
-                this.root.getSelection().removeAllRanges();
-                const newText = node.textContent.trim();
-                // If the node is left empty, remove it
-                if (newText.length === 0) {
-                    node.remove();
-                    return;
-                }
-                // If the node is a duplicate, remove it
-                for (const otherNode of node.parentNode.children) {
-                    if (node === otherNode) continue;
-                    if (otherNode.textContent === newText) {
-                        node.remove();
-                        return;
-                    }
-                }
-                node.textContent = newText;
-            });
-            // If Enter key is pressed, quit editing
-            node.addEventListener("keypress", (event) => {
-                if (event.key === "Enter") {
-                    node.blur();
-                }
-            });
-        }
-        // Insert item into DOM and attach a context-menu
+    createListItem(type, text="") {
+        const node = super.createListItem(type, text);
         if (type === "reading") {
-            this.$("readings").appendChild(node);
-            node.contextMenu(menuItems, ["delete-reading", "modify-reading"],
+            node.contextMenu(menuItems,
+                    ["delete-reading", "modify-reading"],
                     { section: this });
             // Enable special input methods if necessary
             node.toggleKanaInput(dataManager.currentLanguage === "Japanese");
             node.togglePinyinInput(dataManager.currentLanguage === "Chinese");
         } else if (type === "translation") {
-            this.$("translations").appendChild(node);
             node.contextMenu(menuItems,
                     ["delete-translation", "modify-translation"],
                     { section: this });
-        } else if (type === "list") {
-            this.$("vocab-lists").appendChild(node);
-            node.contextMenu(menuItems, ["remove-from-list"], { section: this });
+        } else if (type === "vocab-list") {
+            node.contextMenu(menuItems,
+                    ["add-to-list", "remove-from-list"],
+                    { section: this })
+            // Color node according to whether list exists or not
+            node.addEventListener("input", (event) => {
+                const text = event.target.textContent;
+                node.classList.toggle("list-not-existing",
+                    !dataManager.vocabLists.existsList(text));
+            });
+            this.vocabListCompletionTooltip.attachTo(node);
         }
         return node;
     }
 
-    createVocabListOption(listName) {
-        const option = document.createElement("div");
-        option.textContent = listName;
-        option.addEventListener("click", (event) => {
-            this.$("select-vocab-list-wrapper").hide();
-            this.addToVocabList(listName);
-            this.$("add-vocab-list-button").blur();
-            event.stopPropagation();
-        });
-        this.listNameToOption.set(listName, option);
-        return option;
+    setWord(text) {
+        this.$("word").textContent = text;
     }
 
     async deleteWord() {
@@ -285,14 +243,6 @@ class EditVocabPanel extends Panel {
         return true;
     }
 
-    addToVocabList(listName) {
-        const node = document.createElement("span");
-        node.textContent = listName;
-        this.$("vocab-lists").appendChild(node);
-        this.listNameToOption.get(listName).hide();
-        node.contextMenu(menuItems, ["remove-from-list"], { section: this });
-    }
-
     async save() {
         // Assemble all the necessary data
         const originalWord = this.originalWord;
@@ -307,6 +257,7 @@ class EditVocabPanel extends Panel {
             readings.push(item.textContent);
         for (const item of this.$("vocab-lists").children)
             lists.push(item.textContent);
+
         // If the word was renamed, apply this change first
         if (originalWord !== word) {
             await dataManager.vocab.rename(originalWord, word);
@@ -316,20 +267,38 @@ class EditVocabPanel extends Panel {
         // Apply changes to database
         const newStatus = await dataManager.vocab.edit(
                 word, translations, readings, level);
-        // Apply changes to vocab-lists
-        const oldLists = dataManager.vocabLists.getListsForWord(word);
-        const listsChanged = !utility.setEqual(new Set(oldLists),
-                                               new Set(lists));
-        for (const list of oldLists) {
-            dataManager.vocabLists.removeWordFromList(originalWord, list);
-            events.emit("removed-from-list", originalWord, list);
-        }
-        if (newStatus !== "removed") {
-            for (const list of lists) {
-                dataManager.vocabLists.addWordToList(word, list);
-                events.emit("added-to-list", word, list);
+
+        // Create vocabulary lists which do not exist yet (confirm first)
+        const oldLists = new Set(dataManager.vocabLists.getListsForWord(word));
+        const newLists = new Set(lists);
+        for (const list of newLists) {
+            if (!dataManager.vocabLists.existsList(list)) {
+                const confirmed = await dialogWindow.confirm(
+                    `There exists no list with the name '${list}'. ` +
+                    `Do you want to create it now?`);
+                if (confirmed) {
+                    dataManager.vocabLists.createList(list);
+                    events.emit("vocab-list-created", list, true);
+                }
             }
         }
+
+        // Apply changes to vocab-lists
+        for (const list of oldLists) {
+            if (!newLists.has(list)) {
+                dataManager.vocabLists.removeWordFromList(originalWord, list);
+                events.emit("removed-from-list", originalWord, list);
+            }
+        }
+        if (newStatus !== "removed") {
+            for (const list of newLists) {
+                if (!oldLists.has(list)) {
+                    dataManager.vocabLists.addWordToList(word, list);
+                    events.emit("added-to-list", word, list);
+                }
+            }
+        }
+
         // Emit events and change status message
         if (newStatus === "removed") {
             events.emit("word-deleted", originalWord, this.dictionaryId);
@@ -337,7 +306,7 @@ class EditVocabPanel extends Panel {
         } else if (newStatus === "updated" || originalWord !== word) {
             events.emit("vocab-changed", word);
             main.updateStatus("The vocabulary entry has been updated.");
-        } else if (listsChanged) {
+        } else if (!utility.setEqual(oldLists, newLists)) {
             main.updateStatus("Vocabulary lists have been updated.")
         }
         main.closePanel("edit-vocab");

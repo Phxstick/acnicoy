@@ -41,7 +41,7 @@ class KanjiInfoPanel extends Widget {
         this.$("maximize-button").addEventListener("click",
             () => this.setMaximized(!this.maximized));
         this.$("history-button").tooltip("Open kanji history");
-        this.$("history-button").addEventListener("click", () => {
+        this.$("history-button").addEventListener("click", (event) => {
             this.$("history").toggleDisplay();
             event.stopPropagation();
         });
