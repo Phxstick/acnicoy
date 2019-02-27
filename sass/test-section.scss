@@ -11,31 +11,47 @@ $item-fade-distance: 200px;
 $solution-fade-distance: 10px;
 
 $scroll-overflow-shadow-size: 25px;
-$fade-color: mix($test-section-background, $test-section-color, 92%);
+$fade-color: var(--test-frame-fade-color);
 
 :host {
   --test-frame-background: #{$test-section-background};
-  &.word-meaning {
-    --test-frame-background: #{$test-section-item-type-word-meaning};
-  }
-  &.word-reading {
-    --test-frame-background: #{$test-section-item-type-word-reading};
-  }
-  &.kanji-meaning {
-    --test-frame-background: #{$test-section-item-type-kanji-meaning};
-  }
-  &.kanji-on-yomi {
-    --test-frame-background: #{$test-section-item-type-kanji-on-yomi};
-  }
-  &.kanji-kun-yomi {
-    --test-frame-background: #{$test-section-item-type-kanji-kun-yomi};
-  }
-  &.hanzi-meaning {
-    --test-frame-background: #{$test-section-item-type-hanzi-meaning};
-  }
-  &.hanzi-reading {
-    --test-frame-background: #{$test-section-item-type-hanzi-reading};
-  }
+  --test-frame-fade-color: #{mix($test-section-background,
+                                 $test-section-color, 80%)};
+}
+:host(.colored-background.word-meaning) {
+  --test-frame-background: #{$test-section-item-type-word-meaning};
+  --test-frame-fade-color: #{mix($test-section-item-type-word-meaning,
+                                 $test-section-color, 80%)};
+}
+:host(.colored-background.word-reading) {
+  --test-frame-background: #{$test-section-item-type-word-reading};
+  --test-frame-fade-color: #{mix($test-section-item-type-word-reading,
+                                 $test-section-color, 80%)};
+}
+:host(.colored-background.kanji-meaning) {
+  --test-frame-background: #{$test-section-item-type-kanji-meaning};
+  --test-frame-fade-color: #{mix($test-section-item-type-kanji-meaning,
+                                 $test-section-color, 80%)};
+}
+:host(.colored-background.on-yomi) {
+  --test-frame-background: #{$test-section-item-type-kanji-on-yomi};
+  --test-frame-fade-color: #{mix($test-section-item-type-kanji-on-yomi,
+                                 $test-section-color, 80%)};
+}
+:host(.colored-background.kun-yomi) {
+  --test-frame-background: #{$test-section-item-type-kanji-kun-yomi};
+  --test-frame-fade-color: #{mix($test-section-item-type-kanji-kun-yomi,
+                                 $test-section-color, 80%)};
+}
+:host(.colored-background.hanzi-meaning) {
+  --test-frame-background: #{$test-section-item-type-hanzi-meaning};
+  --test-frame-fade-color: #{mix($test-section-item-type-hanzi-meaning,
+                                 $test-section-color, 80%)};
+}
+:host(.colored-background.hanzi-reading) {
+  --test-frame-background: #{$test-section-item-type-hanzi-reading};
+  --test-frame-fade-color: #{mix($test-section-item-type-hanzi-reading,
+                                 $test-section-color, 80%)};
 }
 
 #top {
@@ -43,7 +59,7 @@ $fade-color: mix($test-section-background, $test-section-color, 92%);
   height: 60%;
   display: flex;
   flex-direction: column;
-  background-color: $test-section-background;
+  background-color: var(--test-frame-background);
   color: $test-section-color;
   align-items: center;
   padding-left: 12%;
@@ -55,7 +71,6 @@ $fade-color: mix($test-section-background, $test-section-color, 92%);
     transition-timing-function: $item-fade-timing;
     transition-duration: $item-fade-duration;
   }
-  background-color: var(--test-frame-background);
 }
 
 #bottom {
@@ -224,7 +239,7 @@ $fade-color: mix($test-section-background, $test-section-color, 92%);
 #new-level > option {
   font-size: 100%;
   font-family: $font;
-  background-color: $test-section-background;
+  background-color: var(--test-frame-background);
   color: $test-section-color;
   border: 1px solid transparent;
   &:hover {
@@ -269,7 +284,8 @@ $fade-color: mix($test-section-background, $test-section-color, 92%);
   #score {
     font-size: 140%;
     font-family: $light-font;
-    color: mix($test-section-background, $test-section-color, 30%);
+    opacity: 0.7;
+    color: $test-section-color;
     margin-top: -10px;
   }
   #score-animation {
@@ -357,7 +373,6 @@ $fade-color: mix($test-section-background, $test-section-color, 92%);
     }
 
     // Make button light up with gradient upon hovering
-    $fade-color: mix($test-section-background, $test-section-color, 80%);
     &:not(:disabled):hover, &:not(:disabled):focus {
       color: $test-section-color;
       text-shadow: 0 0 0.5px $test-section-color-medium;
@@ -400,7 +415,7 @@ $fade-color: mix($test-section-background, $test-section-color, 92%);
     background-color: $background-color-dark;
   }
   &::-webkit-progress-value {
-    background-color: $test-section-background;
+    background-color: var(--test-frame-background);
   }
   &::-webkit-progress-inner-element {
     border: 0;
@@ -458,7 +473,7 @@ $fade-color: mix($test-section-background, $test-section-color, 92%);
   #progress {
     border-top: 1px solid $test-section-color-light;
     &::-webkit-progress-bar {
-      background-color: $test-section-background;
+      background-color: var(--test-frame-background);
     }
     &::-webkit-progress-value {
       background-color: $test-section-color-light;

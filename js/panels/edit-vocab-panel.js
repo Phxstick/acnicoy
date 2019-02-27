@@ -16,7 +16,7 @@ const menuItems = contextMenu.registerItems({
         }
     },
     "rename-word": {
-        label: "Rename word",
+        label: "Edit word",
         click: ({ currentNode }) => {
             currentNode.focus();
         }
@@ -75,24 +75,30 @@ class EditVocabPanel extends EditPanel {
     constructor() {
         super("edit-vocab", ["translation", "reading", "vocab-list"]);
         this.dictionaryId = null;
+        this.originalWord = null;
 
-        // Allow editing the loaded word
-        this.$("word").addEventListener("focusin", () => {
-            this.wordBeforeEditing = this.$("word").textContent;
-        });
-        this.$("word").addEventListener("focusout", () => {
-            this.root.getSelection().removeAllRanges();
-            if (this.$("word").textContent.trim().length === 0) {
-                this.deleteWord().then((confirmed) => {
-                    if (!confirmed) {
-                        this.$("word").textContent = this.wordBeforeEditing;
-                    }
-                });
+        // Check if the entered word is already added and load its data if so
+        this.$("word").addEventListener("focusout", async () => {
+            const newWord = this.$("word").textContent.trim();
+            if (this.originalWord === null && newWord.length > 0) {
+                const isAlreadyAdded = await dataManager.vocab.contains(newWord)
+                if (isAlreadyAdded) {
+                    await this.load(newWord);
+                    this.originalWord = null;
+                } else {
+                    this.$("header").textContent = "Add word";
+                }
             }
         });
+        // Jump to translations when typing in a new word and pressing enter
         this.$("word").addEventListener("keypress", (event) => {
             if (event.key === "Enter") {
-                this.$("word").blur();
+                if (this.originalWord === null) {
+                    this.createListItem("translation");
+                } else {
+                    this.$("word").blur();
+                }
+                event.preventDefault();
             }
         });
 
@@ -104,9 +110,9 @@ class EditVocabPanel extends EditPanel {
         this.$("save-button").addEventListener("click", () => this.save());
 
         // Create context menus for static elements
-        this.$("word").contextMenu(menuItems,
-                ["copy-word", "delete-word", "rename-word"],
-                { section: this });
+        this.$("word").contextMenu(menuItems, () =>
+            this.originalWord === null ? ["copy-word", "rename-word"] :
+                ["copy-word", "delete-word", "rename-word"], { section: this });
         this.$("translations-wrapper").contextMenu(
                 menuItems, ["add-translation"], { section: this });
         this.$("readings-wrapper").contextMenu(
@@ -169,30 +175,61 @@ class EditVocabPanel extends EditPanel {
         this.$("readings").classList.toggle("pinyin", language === "Chinese");
     }
 
-    load(word) {
-        // Set word
-        this.originalWord = word;
-        this.$("word").textContent = word;
+    open() {
+        if (this.originalWord === null) {
+            this.$("word").focus();
+        }
+    }
+
+    async load(word, givenDictionaryId=null) {
+        // Check if the word is already in the vocabulary
+        const alreadyAdded = await dataManager.vocab.contains(word);
+        if (alreadyAdded) {
+            this.originalWord = word;
+        } else {
+            this.originalWord = null;
+        }
+
+        // If a new word is getting added, just clear all fields
+        if (this.originalWord === null) {
+            this.$("word").textContent = "";
+            this.$("translations").empty();
+            this.$("readings").empty();
+            this.$("vocab-lists").empty();
+            this.$("header").textContent = "Add word";
+            this.$("srs-level").setByIndex(0);
+            this.dictionaryId = givenDictionaryId;
+            return;
+        }
+        this.$("header").textContent = "Edit word";
+
         // Load names of vocab-lists this word is added to
         this.$("vocab-lists").empty();
         const addedLists = dataManager.vocabLists.getListsForWord(word);
         for (const listName of addedLists) {
             this.createListItem("vocab-list", listName);
         }
-        // Load translations, readings and SRS level for this word
-        return dataManager.vocab.getInfo(word)
-        .then(({ translations, readings, level, dictionaryId }) => {
+
+        // Load existing data for this word, possibly including a dictionary ID
+        const wordInfo = await dataManager.vocab.getInfo(word);
+        const { translations, readings, level, dictionaryId } = wordInfo;
+        if (dictionaryId === null && givenDictionaryId !== null) {
+            this.dictionaryId = givenDictionaryId;
+        } else {
             this.dictionaryId = dictionaryId;
-            this.$("translations").empty();
-            for (const translation of translations) {
-                this.createListItem("translation", translation);
-            }
-            this.$("readings").empty();
-            for (const reading of readings) {
-                this.createListItem("reading", reading);
-            }
-            this.$("srs-level").set(this.$("srs-level").children[level - 1]);
-        });
+        }
+
+        // Display the word, translations, readings and the SRS level
+        this.$("word").textContent = word;
+        this.$("translations").empty();
+        for (const translation of translations) {
+            this.createListItem("translation", translation);
+        }
+        this.$("readings").empty();
+        for (const reading of readings) {
+            this.createListItem("reading", reading);
+        }
+        this.$("srs-level").setByIndex(level - 1);
     }
 
     createListItem(type, text="") {
@@ -220,6 +257,9 @@ class EditVocabPanel extends EditPanel {
             });
             this.vocabListCompletionTooltip.attachTo(node);
         }
+        if (text.length === 0) {
+            node.focus();
+        }
         return node;
     }
 
@@ -240,6 +280,7 @@ class EditVocabPanel extends EditPanel {
         events.emit("word-deleted", word, this.dictionaryId);
         events.emit("vocab-changed");
         main.closePanel("edit-vocab");
+        main.updateStatus(`The vocabulary entry '${word}' has been removed.`);
         return true;
     }
 
@@ -258,15 +299,38 @@ class EditVocabPanel extends EditPanel {
         for (const item of this.$("vocab-lists").children)
             lists.push(item.textContent);
 
-        // If the word was renamed, apply this change first
-        if (originalWord !== word) {
+        // Display error messages if something is missing
+        if (word.length === 0) {
+            if (originalWord === null) {
+                dialogWindow.info("The word to be added is missing.");
+            } else {
+                // If the word was already added, ask whether to remove it
+                this.deleteWord();
+            }
+            return;
+        }
+        if (translations.length === 0) {
+            dialogWindow.info("No translations have been entered.");
+            return;
+        }
+
+        // If the word already existed and was renamed, apply this change first
+        if (originalWord !== null && originalWord !== word) {
             await dataManager.vocab.rename(originalWord, word);
             events.emit("word-deleted", originalWord, this.dictionaryId);
             events.emit("word-added", word, this.dictionaryId);
         }
-        // Apply changes to database
-        const newStatus = await dataManager.vocab.edit(
-                word, translations, readings, level);
+
+        // Apply other changes to the database
+        const isAlreadyAdded = await dataManager.vocab.contains(word);
+        let dataChanged = false;
+        if (isAlreadyAdded) {
+            dataChanged = await dataManager.vocab.edit(
+                    word, translations, readings, level);
+        } else {
+            await dataManager.vocab.add(
+                    word, translations, readings, level, this.dictionaryId);
+        }
 
         // Create vocabulary lists which do not exist yet (confirm first)
         const oldLists = new Set(dataManager.vocabLists.getListsForWord(word));
@@ -290,9 +354,9 @@ class EditVocabPanel extends EditPanel {
                 events.emit("removed-from-list", originalWord, list);
             }
         }
-        if (newStatus !== "removed") {
-            for (const list of newLists) {
-                if (!oldLists.has(list)) {
+        for (const list of newLists) {
+            if (!oldLists.has(list)) {
+                if (dataManager.vocabLists.existsList(list)) {
                     dataManager.vocabLists.addWordToList(word, list);
                     events.emit("added-to-list", word, list);
                 }
@@ -300,15 +364,22 @@ class EditVocabPanel extends EditPanel {
         }
 
         // Emit events and change status message
-        if (newStatus === "removed") {
-            events.emit("word-deleted", originalWord, this.dictionaryId);
-            main.updateStatus("The vocabulary entry has been removed.");
-        } else if (newStatus === "updated" || originalWord !== word) {
-            events.emit("vocab-changed", word);
-            main.updateStatus("The vocabulary entry has been updated.");
-        } else if (!utility.setEqual(oldLists, newLists)) {
-            main.updateStatus("Vocabulary lists have been updated.")
+        if (isAlreadyAdded) {
+            if (dataChanged || (originalWord !== null && originalWord!==word)) {
+                events.emit("vocab-changed", word);
+                main.updateStatus("The vocabulary entry has been updated.");
+            } else if (!utility.setEqual(oldLists, newLists)) {
+                main.updateStatus("Vocabulary lists have been updated.");
+            } else if (this.originalWord === null) {
+                main.updateStatus("The vocabulary entry has not been changed.");
+            }
+        } else {
+            const pluralSuffix = translations.length !== 1 ? "s" : "";
+            events.emit("word-added", word, this.dictionaryId);
+            main.updateStatus(`The word '${word}' and ${translations.length} ` +
+                              `translation${pluralSuffix} have been added.`);
         }
+
         main.closePanel("edit-vocab");
     }
 }

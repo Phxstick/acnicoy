@@ -30,6 +30,7 @@ class TestSection extends Section {
     constructor() {
         super("test");
         this.testInfo = null;
+        this.currentBackgroundClass = null;
         this.$("show-solutions-button").hide();
         this.$("answer-entry").hide();
         this.$("levels-frame").style.visibility = "hidden";
@@ -176,16 +177,8 @@ class TestSection extends Section {
             this.$("test-item").classList.add(newSize);
         });
         events.on("settings-test-use-background-colors", () => {
-            if (dataManager.settings.test.useBackgroundColors) {
-                if (this.testInfo !== null) {
-                    const mode = this.testInfo.currentItem.mode;
-                    const part = this.testInfo.currentPart;
-                    this._applyColors(mode, part);
-                }
-            } else {
-                this.$("top").className =
-                    dataManager.settings.test.animate ? "animate" : "";
-            }
+            this.classList.toggle("colored-background",
+                dataManager.settings.test.useBackgroundColors);
         });
         events.on("settings-test-enable-ignore-shortcut", () => {
             if (this.testInfo !== null && this.testInfo.inEvalStep
@@ -599,9 +592,7 @@ class TestSection extends Section {
                 text = `How do you read the following hanzi?`;
             this.$("status").textContent = text;
         }
-        if (dataManager.settings.test.useBackgroundColors) {
-            this._applyColors(mode, part);
-        }
+        this._applyColors(mode, part);
         if (this.$("status").style.visibility === "hidden") {
             if (dataManager.settings.test.animate) {
                 Velocity(this.$("status"), "fadeIn", { display: "block",
@@ -627,9 +618,12 @@ class TestSection extends Section {
             case modes.HANZI_MEANINGS: className = "hanzi-meaning"; break;
             case modes.HANZI_READINGS: className = "hanzi-reading"; break;
         }
-        this.$("top").className = className;
-        if (dataManager.settings.test.animate) {
-            this.$("top").classList.add("animate");
+        if (this.currentBackgroundClass !== className) {
+            if (this.currentBackgroundClass !== null) {
+                this.classList.remove(this.currentBackgroundClass);
+            }
+            this.currentBackgroundClass = className;
+            this.classList.add(this.currentBackgroundClass);
         }
     }
 

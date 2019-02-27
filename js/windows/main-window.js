@@ -132,7 +132,7 @@ class MainWindow extends Window {
         });
         // Sidebar button events
         this.$("add-vocab-button").addEventListener("click",
-                () => this.openPanel("add-vocab"));
+                () => this.openPanel("edit-vocab", { entryName: null }));
         this.$("add-kanji-button").addEventListener("click",
                 () => this.openPanel("add-kanji"));
         this.$("add-hanzi-button").addEventListener("click",
@@ -162,7 +162,7 @@ class MainWindow extends Window {
         this.autoLauncher = new AutoLaunch({ name: app.name, isHidden: true });
         // Shortcut callbacks
         this.shortcutMap = {
-            "add-word": () => this.openPanel("add-vocab"),
+            "add-word": () => this.openPanel("edit-vocab", { entryName: null }),
             "add-kanji": () => {
                 if (dataManager.currentLanguage === "Japanese") {
                     this.openPanel("add-kanji");
@@ -499,6 +499,8 @@ class MainWindow extends Window {
     }
 
     async openPanel(name, { dictionaryId, entryName }={}) {
+
+        // If a different panel is already open, close it first
         const currentPanel = this.currentPanel;
         if (currentPanel !== null) {
             this.closePanel(currentPanel, currentPanel === name);
@@ -515,6 +517,19 @@ class MainWindow extends Window {
         }
         this.panels[name].style.zIndex = layers["panel"];
         this.currentPanel = name;
+        let showSuggestions = false;
+
+        // Load the given entry
+        if (name === "edit-vocab" || name === "edit-kanji" ||
+                name === "edit-hanzi") {
+            if (entryName === undefined) {
+                throw new Error(
+                    "A vocab entry to load must be provided for edit panels!");
+            }
+            await this.panels[name].load(entryName, dictionaryId);
+        }
+
+        // Open the panel
         this.panels[name].open();
         if (dataManager.settings.design.animateSlidingPanels) {
             Velocity(this.panels[name], "stop");
@@ -523,15 +538,8 @@ class MainWindow extends Window {
         } else {
             this.panels[name].style.left = "0";
         }
-        let showSuggestions = false;
-        if (name === "edit-vocab" || name === "edit-kanji" ||
-                name === "edit-hanzi") {
-            if (entryName === undefined) {
-                throw new Error(
-                    "A vocab entry to load must be provided for edit panels!");
-            }
-            this.panels[name].load(entryName);
-        }
+
+        // Only load suggestions for kanji if languages are Japanese-English
         if (name === "add-kanji" || name === "edit-kanji") {
             if (dataManager.currentLanguage === "Japanese" &&
                     dataManager.currentSecondaryLanguage === "English" &&
@@ -542,7 +550,10 @@ class MainWindow extends Window {
                 }
             }
         }
+
         if (name === "add-vocab" || name === "edit-vocab") {
+
+            // Load suggestions by dictionary ID if one is given
             if (dictionaryId !== undefined) {
                 if (entryName === undefined) {
                     throw new Error("If a dictionary ID is provived, " +
@@ -553,7 +564,10 @@ class MainWindow extends Window {
                 }
                 showSuggestions = true;
                 this.suggestionPanes[name].load(dictionaryId, entryName);
-            } else if (entryName !== undefined) {
+            }
+
+            // If no dictionary ID is given, look it up or guess an ID
+            else if (entryName !== undefined) {
                 if (dataManager.currentLanguage === "Japanese" &&
                         dataManager.currentSecondaryLanguage === "English" &&
                         dataManager.content.isLoadedFor("Japanese","English")) {
@@ -568,10 +582,9 @@ class MainWindow extends Window {
                         this.suggestionPanes[name].load(dictionaryId, entryName)
                     }
                 }
-            
             }
-
         }
+
         // Display loaded suggestion panel (unless panel is already closed)
         if (this.currentPanel === null) return;
         this.$("filter").classList.toggle("dark", showSuggestions);
@@ -651,12 +664,12 @@ class MainWindow extends Window {
         if (this.statusFadeOutCallbackId !== null) {
             window.clearTimeout(this.statusFadeOutCallbackId);
         }
-        this.$("status-text").fadeOut();
+        if (!this.barsHidden) this.$("status-text").fadeOut();
         this.$("status-text").textContent = text;
-        this.$("status-text").fadeIn();
+        if (!this.barsHidden) this.$("status-text").fadeIn();
         this.statusFadeOutCallbackId = window.setTimeout(() => {
-            this.$("status-text").fadeOut({ distance: 0, easing: "easeInSine",
-                                            duration: 350 })
+            if (!this.barsHidden) this.$("status-text").fadeOut({
+                    distance: 0, easing: "easeInSine", duration: 350 });
         }, this.statusFadeOutDelay);
     }
 

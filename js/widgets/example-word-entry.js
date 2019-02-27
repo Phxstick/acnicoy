@@ -11,7 +11,6 @@ const menuItems = contextMenu.registerItems({
         label: "Edit vocabulary item",
         click: ({ currentNode }) => {
             main.openPanel("edit-vocab", {
-                dictionaryId: currentNode.dataset.wordId,
                 entryName: currentNode.dataset.word
             });
         }
@@ -19,7 +18,7 @@ const menuItems = contextMenu.registerItems({
     "add-word": {
         label: "Add word to vocabulary",
         click: ({ currentNode }) => {
-            main.openPanel("add-vocab", {
+            main.openPanel("edit-vocab", {
                 dictionaryId: currentNode.dataset.wordId,
                 entryName: currentNode.dataset.word
             });

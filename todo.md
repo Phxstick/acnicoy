@@ -9,10 +9,11 @@
 - Finish help section
 - Remove test-stuff on server afterwards (like test-versions etc.)
 - BUG: scripts in intro-tour not executed anymore!
+- BUG: Fix remaining artifacts in the test section
+- Put cursor at end of items in edit panel upon focus
 
 ### Secondary goals
-- Put completion tooltip into its own widget
-- Rework edit panels, refactor to base class
+- Also replace add-kanji panels with edit-kanji panels
 - Make searching for vocab lists faster by pre-sorting in datamanger already
 - Removing word from vocabulary lists should be done in datamanager function too
 - Don't attach separate context menu to every node in dict/kanji/vocab-section
@@ -20,8 +21,6 @@
 - Rework fonts in sass: Use gui-font for gui, and content-font for content
   - Make OpenSans-Regular the main font everywhere?
   - Also let font-family be inherited, and remove all workarounds (and test!)
-- Extend edit-panels and replace add-panels with edit-panels?
-  - Implement searching for existing and also adding new vocab lists in panels
 - Make kana input not only react to shift, but also caps-lock and caps letters
 - Finish dictionary search:
   - Somehow handle multiple concurrent searches (maybe in utility.js)
@@ -42,6 +41,7 @@
   loaded instead of at creation-time of the database!
 - Reverse completion list order if it's shown above entry instead of below
   - Extend the utility view function for this purpose
+- Remove the "default language" concept, select language which was selected last
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)

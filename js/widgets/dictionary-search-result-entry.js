@@ -152,7 +152,7 @@ class DictionarySearchResultEntry extends Widget {
     }
 
     addWord() {
-        main.openPanel("add-vocab", {
+        main.openPanel("edit-vocab", {
             dictionaryId: this.dataset.id,
             entryName: this.dataset.mainWord
         });

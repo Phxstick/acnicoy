@@ -85,9 +85,6 @@ class EditPanel extends Panel {
         // Insert item into DOM and attach a context-menu
         viewNode.appendChild(node);
         viewNode.scrollToBottom();
-        if (text.length === 0) {
-            node.focus();
-        }
 
         return node;
     }

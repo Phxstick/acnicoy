@@ -14,6 +14,10 @@
         border: 1px solid transparent;
         background-color: transparent;
       }
+      &:empty:before {
+        cursor: text;
+        content: "Enter new word";
+      }
     }
   }
   #level-header {

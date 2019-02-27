@@ -72,6 +72,7 @@ module.exports = function (paths, modules) {
         const args = [matchString, multiFieldMatchString, multiFieldMatchString]
         const conditions = ["word LIKE ?",
             "(';'||translations||';') LIKE ?", "(';'||readings||';') LIKE ?"];
+        // Include searching for kana versions of readings
         if (modules.currentLanguage === "Japanese") {
             conditions.push("word LIKE ?", "word LIKE ?",
                 "(';'||readings||';') LIKE ?", "(';'||readings||';') LIKE ?");
@@ -79,6 +80,28 @@ module.exports = function (paths, modules) {
                       matchString.toKana("katakana"),
                       multiFieldMatchString.toKana("hiragana"),
                       multiFieldMatchString.toKana("katakana"));
+        }
+        // For english verbs, search both with and without the leading "to "
+        if (!matchString.startsWith("%")) {
+            if (modules.currentLanguage === "English") {
+                conditions.push("word LIKE ?");
+                if (matchString.startsWith("to ")) {
+                    args.push(matchString.substr(3));
+                } else {
+                    args.push("to " + matchString);
+                }
+            }
+            if (modules.currentSecondaryLanguage === "English") {
+                conditions.push("(';'||translations||';') LIKE ?");
+                if (matchString.startsWith("to ")) {
+                    args.push("%;" + matchString.substr(3));
+                } else {
+                    args.push("%;to " + matchString);
+                }
+                if (!matchString.endsWith("%")) {
+                    args[args.length - 1] += ";%";
+                }
+            }
         }
         const rows = await modules.database.query(
             `SELECT word FROM vocabulary
@@ -152,22 +175,14 @@ module.exports = function (paths, modules) {
      * Edit given word in the vocabulary using given details. Old translations
      * and readings are replaced with new ones. If a different SRS level is
      * given, review date gets adjusted, otherwise stays the same.
-     * Status information about the process is returned in form of a string
-     * which can take the values "removed", "updated" or "no-change".
+     * Returns true if the a change has been made to the data.
      * @param {String} word
      * @param {Array[String]} translations
      * @param {Array[String]} readings
      * @param {Integer} level
-     * @returns {Promise[String]}
+     * @returns {Promise[Boolean]}
      */
     vocab.edit = async function (word, translations, readings, level) {
-        // If there are no translations, completely remove the word
-        if (!translations.length) {
-            const oldLevel = await getSrsLevel(word);
-            modules.stats.updateScore(modules.test.mode.WORDS, oldLevel, 0);
-            await vocab.remove(word);
-            return "removed";
-        }
         // Get old values
         const rows = await modules.database.query(
             "SELECT * FROM vocabulary WHERE word = ?", word);
@@ -188,12 +203,10 @@ module.exports = function (paths, modules) {
             WHERE word = ?`,
             translations.join(";"), readings.join(";"), level,
             newReviewDate, word);
-        // Report whether anything has changed
-        const updated =
-            !utility.setEqual(new Set(oldTranslations), new Set(translations))
+        // Return true if anything has changed
+        return !utility.setEqual(new Set(oldTranslations), new Set(translations))
             || !utility.setEqual(new Set(oldReadings), new Set(readings))
             || oldLevel !== level;
-        return updated ? "updated" : "no-change";
     }
 
     /**

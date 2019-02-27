@@ -146,6 +146,9 @@ class EditHanziPanel extends EditPanel {
             node.contextMenu(menuItems, ["delete-reading", "modify-reading"],
                              { section: this });
         }
+        if (text.length === 0) {
+            node.focus();
+        }
         return node;
     }
 

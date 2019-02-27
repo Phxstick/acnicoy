@@ -182,8 +182,8 @@ $test-section-status-shadow-color: rgba(0, 0, 0, 0.2);
 $test-section-test-item-shadow-color: rgba(0, 0, 0, 0.1);
 
 // Test section item type colors
-$test-section-item-type-word-meaning: darkorchid;
-$test-section-item-type-word-reading: darkorchid;  //mediumvioletred;
+$test-section-item-type-word-meaning: darken(darkorchid, 10%);
+$test-section-item-type-word-reading: darken(darkorchid, 10%);  //mediumvioletred;
 $test-section-item-type-kanji-meaning: indianred;
 $test-section-item-type-kanji-on-yomi: darkslateblue;
 $test-section-item-type-kanji-kun-yomi: darkolivegreen;

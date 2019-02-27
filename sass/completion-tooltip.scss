@@ -15,6 +15,12 @@
     text-align: left;
     border-radius: 6px;
 
+    &:empty::after {
+      color: $color-light;
+      content: "No matching lists.";
+      padding: 3px;
+    }
+
     &:hover {
       text-shadow: none;
       color: $color;

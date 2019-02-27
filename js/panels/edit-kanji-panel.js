@@ -179,6 +179,9 @@ class EditKanjiPanel extends EditPanel {
             node.contextMenu(menuItems, ["delete-on-yomi", "modify-on-yomi"],
                              { section: this });
         }
+        if (text.length === 0) {
+            node.focus();
+        }
         return node;
     }
 
