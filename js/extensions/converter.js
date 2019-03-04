@@ -468,7 +468,7 @@ const accentPositions = {
     "uo": 1,
     "ui": 1,
     "un": 0,
-    "üe": 0,
+    "üe": 1,
     "ün": 0,
     "ang": 0,
     "eng": 0,

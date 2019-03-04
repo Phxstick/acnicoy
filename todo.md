@@ -8,9 +8,8 @@
   - Use newest version of all files (and test!) right before first release
 - Finish help section
 - Remove test-stuff on server afterwards (like test-versions etc.)
-- BUG: scripts in intro-tour not executed anymore!
-- BUG: Fix remaining artifacts in the test section
-- Put cursor at end of items in edit panel upon focus
+- BUG: scripts in intro-tour are not executed anymore!
+- Make sure currently edited note is saved whenever necessary
 
 ### Secondary goals
 - Also replace add-kanji panels with edit-kanji panels
@@ -42,6 +41,7 @@
 - Reverse completion list order if it's shown above entry instead of below
   - Extend the utility view function for this purpose
 - Remove the "default language" concept, select language which was selected last
+- In edit-vocab-panel, load suggestions if content is available (see TODOs)
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
@@ -57,6 +57,8 @@
 - Don't preload words in vocabulary section - on scroll, given date is outdated
 - If word is renamed, associated vocab entry in dictionary entry gets outdated.
   Add a listener to dictionary section and method to dictionary entry to solve.
+- Implement undo for custom pasting using handler in onlyAllowPastingRawText
+
 
 By category
 --------------------------------------------------------------------------------

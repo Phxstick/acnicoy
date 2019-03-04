@@ -69,22 +69,17 @@ class NotesSection extends Section {
             this.notesFrameHovered = false;
         });
 
-        // Leave edit mode when focussing out of note, pressing escape or
-        // pressing the shortcut for saving
-        this.$("notes").addEventListener("focusout", (event) => {
-            if (!event.target.classList.contains("note-content")) return;
-            this.saveNote(event.target.parentNode);
-        });
+        // Leave edit mode when pressing escape or using shortcut for saving
         window.addEventListener("keydown", (event) => {
             if (event.key !== "Escape") return;
             if (this.noteBeingEdited === null) return;
             const contentNode = this.noteToContentNode.get(this.noteBeingEdited)
-            contentNode.blur();
+            this.saveNote(this.noteBeingEdited);
         });
         shortcuts.bindCallback("save-input", () => {
             if (this.noteBeingEdited === null) return;
             const contentNode = this.noteToContentNode.get(this.noteBeingEdited)
-            contentNode.blur();
+            this.saveNote(this.noteBeingEdited);
         });
 
         // Enter edit mode when double clicking a note
@@ -335,6 +330,7 @@ class NotesSection extends Section {
         const contentNode = document.createElement("div");
         contentNode.classList.add("note-content");
         contentNode.innerHTML = markdown.toHTML(markdownText);
+        contentNode.onlyAllowPastingRawText(this.root);
         note.appendChild(contentNode);
         if (appendAtEnd) {
             notesContainer.appendChild(note);
@@ -346,10 +342,10 @@ class NotesSection extends Section {
         // Display control buttons when hovering over an (unfocused) note
         note.addEventListener("mouseenter", () => {
             this.currentlyHoveredNote = note;
-            if (!this.draggingNote) {
-                note.appendChild(this.controlButtons);
-                this.controlButtons.show();
-            }
+            // if (!this.draggingNote) {
+            //     note.appendChild(this.controlButtons);
+            //     this.controlButtons.show();
+            // }
         });
         note.addEventListener("mouseleave", () => {
             this.currentlyHoveredNote = null;
@@ -368,10 +364,10 @@ class NotesSection extends Section {
                     }
                 }
             }
-            if (!this.draggingNote && this.controlButtons.parentNode === note) {
-                note.removeChild(this.controlButtons);
-                this.controlButtons.hide();
-            }
+            // if (!this.draggingNote && this.controlButtons.parentNode === note) {
+            //     note.removeChild(this.controlButtons);
+            //     this.controlButtons.hide();
+            // }
         });
         note.contextMenu(menuItems, ["edit-note", "delete-note"],
                          { section: this });

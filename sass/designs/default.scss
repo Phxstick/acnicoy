@@ -182,13 +182,14 @@ $test-section-status-shadow-color: rgba(0, 0, 0, 0.2);
 $test-section-test-item-shadow-color: rgba(0, 0, 0, 0.1);
 
 // Test section item type colors
-$test-section-item-type-word-meaning: darken(darkorchid, 10%);
-$test-section-item-type-word-reading: darken(darkorchid, 10%);  //mediumvioletred;
-$test-section-item-type-kanji-meaning: indianred;
+$test-section-item-type-word-meaning: $test-section-background;
+// #75054b; // darken(mediumvioletred, 10%); // darken(darkorchid, 10%);
+$test-section-item-type-word-reading: #7b0853;
+$test-section-item-type-kanji-meaning: darkslateblue;
 $test-section-item-type-kanji-on-yomi: darkslateblue;
 $test-section-item-type-kanji-kun-yomi: darkolivegreen;
-$test-section-item-type-hanzi-meaning: indianred;
-$test-section-item-type-hanzi-reading: darkslateblue;
+$test-section-item-type-hanzi-meaning: $test-section-item-type-kanji-meaning;
+$test-section-item-type-hanzi-reading: $test-section-item-type-kanji-on-yomi;
 
 // Kanji stroke SVGs
 $kanji-strokes-color: #888;

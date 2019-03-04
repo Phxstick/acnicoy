@@ -76,6 +76,8 @@ class EditVocabPanel extends EditPanel {
         super("edit-vocab", ["translation", "reading", "vocab-list"]);
         this.dictionaryId = null;
         this.originalWord = null;
+        this.$("word").onlyAllowPastingRawText(this.root);
+        this.$("word").putCursorAtEndOnFocus(this.root);
 
         // Check if the entered word is already added and load its data if so
         this.$("word").addEventListener("focusout", async () => {
@@ -88,6 +90,23 @@ class EditVocabPanel extends EditPanel {
                 } else {
                     this.$("header").textContent = "Add word";
                 }
+                // If language content is available, load suggestions as well
+                if (dataManager.currentLanguage === "Japanese" &&
+                        dataManager.currentSecondaryLanguage === "English" &&
+                        dataManager.content.isLoadedFor("Japanese","English")) {
+                    let dictionaryId = null;
+                    if (isAlreadyAdded) {
+                        dictionaryId = await
+                            dataManager.vocab.getAssociatedDictionaryId(newWord)
+                    }
+                    if (dictionaryId === null) {
+                        // TODO: Guess a dictionary ID by word only
+                    }
+                    if (dictionaryId !== null) {
+                        this.suggestionPanes[name].load(dictionaryId, newWord);
+                        // TODO: Show suggestion pane
+                    }
+                }
             }
         });
         // Jump to translations when typing in a new word and pressing enter
@@ -99,6 +118,14 @@ class EditVocabPanel extends EditPanel {
                     this.$("word").blur();
                 }
                 event.preventDefault();
+            }
+        });
+
+        // SRS level selector shouldn't be accessible using tab, only shortcuts
+        this.$("srs-level").setAttribute("tabindex", "-1");
+        this.root.addEventListener("keydown", (event) => {
+            if ("1" <= event.key && event.key <= "9" && event.ctrlKey) {
+                this.$("srs-level").setByIndex(parseInt(event.key) - 1);
             }
         });
 
@@ -158,6 +185,7 @@ class EditVocabPanel extends EditPanel {
                 const option = this.$("srs-level").addOption(level);
                 option.dataset.tooltip = intervalTexts[level];
             }
+            this.$("srs-level").setByIndex(0);
         });
         events.on("settings-languages-readings", () => {
             this.$("readings-frame").toggleDisplay(
@@ -173,6 +201,10 @@ class EditVocabPanel extends EditPanel {
         // If language is Japanese, allow editing the word with kana
         this.$("word").toggleKanaInput(language === "Japanese");
         this.$("readings").classList.toggle("pinyin", language === "Chinese");
+        // Close panel if language changes while a vocabulary item is loaded
+        if (main.currentPanel === "edit-vocab" && this.originalWord !== null) {
+            main.closePanel("edit-vocab");
+        }
     }
 
     open() {

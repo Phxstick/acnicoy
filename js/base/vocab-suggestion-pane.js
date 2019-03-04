@@ -34,93 +34,91 @@ class VocabSuggestionPane extends Widget {
         });
     }
 
-    load(id, chosenWordVariant) {
-        return dataManager.content.getDictionaryEntryInfo(id).then((info) => {
-            this.wordVariantToReadings.clear();
-            // Map word variants to array of readings
-            for (const { word, reading } of info.wordsAndReadings) {
-                if (word.length > 0) {
-                    if (!this.wordVariantToReadings.has(word)) {
-                        this.wordVariantToReadings.set(word, []);
-                    }
-                    this.wordVariantToReadings.get(word).push(reading);
-                // If reading is also the word itself, use it as word instead
-                } else {
-                    if (!this.wordVariantToReadings.has(reading)) {
-                        this.wordVariantToReadings.set(reading, []);
-                    }
+    async load(id, chosenWordVariant) {
+        const info = await dataManager.content.getDictionaryEntryInfo(id);
+        this.wordVariantToReadings.clear();
+        // Map word variants to array of readings
+        for (const { word, reading } of info.wordsAndReadings) {
+            if (word.length > 0) {
+                if (!this.wordVariantToReadings.has(word)) {
+                    this.wordVariantToReadings.set(word, []);
+                }
+                this.wordVariantToReadings.get(word).push(reading);
+            // If reading is also the word itself, use it as word instead
+            } else {
+                if (!this.wordVariantToReadings.has(reading)) {
+                    this.wordVariantToReadings.set(reading, []);
                 }
             }
-            // Create translation suggestions for each meaning
-            this.$("translations").empty();
-            this.restrictedMeaningsToWords.clear();
-            for (const { translations, restrictedTo,
-                         miscInfo } of info.meanings) {
-                // Create a container element for this meaning
-                const meaningFrame = document.createElement("div");
-                meaningFrame.classList.add("suggestion-group-frame");
-                // Create frame holding translations for this meaning
-                const translationGroup = document.createElement("div");
-                translationGroup.classList.add("suggestion-group");
-                meaningFrame.appendChild(translationGroup);
-                // Create element for selecting all translations for meaning
-                const translationGroupSelector = document.createElement("div");
-                translationGroupSelector.classList.add(
-                    "suggestion-group-selector")
-                meaningFrame.appendChild(translationGroupSelector);
-                // Select all on left click
-                translationGroupSelector.addEventListener("click", () => {
-                    for (const node of translationGroup.children) {
-                        this.selectSuggestionNode(node, "translation")
-                    }
-                });
-                // Deselect all on right click
-                translationGroupSelector.addEventListener("contextmenu", () => {
-                    for (const node of translationGroup.children) {
-                        this.deselectSuggestionNode(node, "translation")
-                    }
-                });
-                // Fill frame with translation suggestions
-                for (const translation of translations) {
-                    const translationNode = 
-                        this.createSuggestionNode(translation, "translation");
-                    translationGroup.appendChild(translationNode);
+        }
+        // Create translation suggestions for each meaning
+        this.$("translations").empty();
+        this.restrictedMeaningsToWords.clear();
+        for (const { translations, restrictedTo, miscInfo } of info.meanings) {
+            // Create a container element for this meaning
+            const meaningFrame = document.createElement("div");
+            meaningFrame.classList.add("suggestion-group-frame");
+            // Create frame holding translations for this meaning
+            const translationGroup = document.createElement("div");
+            translationGroup.classList.add("suggestion-group");
+            meaningFrame.appendChild(translationGroup);
+            // Create element for selecting all translations for meaning
+            const translationGroupSelector = document.createElement("div");
+            translationGroupSelector.classList.add(
+                "suggestion-group-selector")
+            meaningFrame.appendChild(translationGroupSelector);
+            // Select all on left click
+            translationGroupSelector.addEventListener("click", () => {
+                for (const node of translationGroup.children) {
+                    this.selectSuggestionNode(node, "translation")
                 }
-                // Register restrictions for this meaning
-                if (restrictedTo.length > 0) {
-                    this.restrictedMeaningsToWords.set(
-                        translationGroup, new Set());
-                    for (const word of restrictedTo) {
-                        this.restrictedMeaningsToWords.get(translationGroup)
-                                                      .add(word);
-                    }
+            });
+            // Deselect all on right click
+            translationGroupSelector.addEventListener("contextmenu", () => {
+                for (const node of translationGroup.children) {
+                    this.deselectSuggestionNode(node, "translation")
                 }
-                this.$("translations").appendChild(meaningFrame);
-                // Register kana word variants for words usually written as kana
-                if (miscInfo.includes("Usually written using kana alone")) {
-                    const setOfWordsRestrictedTo = new Set(restrictedTo);
-                    for (const { word, reading } of info.wordsAndReadings) {
-                        if (setOfWordsRestrictedTo.size === 0 ||
-                                setOfWordsRestrictedTo.has(word) ||
-                                setOfWordsRestrictedTo.has(reading)) {
-                            if (!this.wordVariantToReadings.has(reading)) {
-                                this.wordVariantToReadings.set(reading, []);
-                            }
+            });
+            // Fill frame with translation suggestions
+            for (const translation of translations) {
+                const translationNode = 
+                    this.createSuggestionNode(translation, "translation");
+                translationGroup.appendChild(translationNode);
+            }
+            // Register restrictions for this meaning
+            if (restrictedTo.length > 0) {
+                this.restrictedMeaningsToWords.set(
+                    translationGroup, new Set());
+                for (const word of restrictedTo) {
+                    this.restrictedMeaningsToWords.get(translationGroup)
+                                                  .add(word);
+                }
+            }
+            this.$("translations").appendChild(meaningFrame);
+            // Register kana word variants for words usually written as kana
+            if (miscInfo.includes("Usually written using kana alone")) {
+                const setOfWordsRestrictedTo = new Set(restrictedTo);
+                for (const { word, reading } of info.wordsAndReadings) {
+                    if (setOfWordsRestrictedTo.size === 0 ||
+                            setOfWordsRestrictedTo.has(word) ||
+                            setOfWordsRestrictedTo.has(reading)) {
+                        if (!this.wordVariantToReadings.has(reading)) {
+                            this.wordVariantToReadings.set(reading, []);
                         }
                     }
                 }
             }
-            // Display word variants and select the chosen one already
-            this.$("word-variants").empty();
-            this.$("readings-row").hide();
-            for (const [word, readings] of this.wordVariantToReadings) {
-                const node = this.createSuggestionNode(word, "word");
-                this.$("word-variants").appendChild(node);
-                if (word === chosenWordVariant) {
-                    this.selectSuggestionNode(node, "word");
-                }
+        }
+        // Display word variants and select the chosen one already
+        this.$("word-variants").empty();
+        this.$("readings-row").hide();
+        for (const [word, readings] of this.wordVariantToReadings) {
+            const node = this.createSuggestionNode(word, "word");
+            this.$("word-variants").appendChild(node);
+            if (word === chosenWordVariant) {
+                this.selectSuggestionNode(node, "word");
             }
-        });
+        }
     }
 
     createSuggestionNode(content, type) {

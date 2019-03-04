@@ -515,9 +515,6 @@ class MainWindow extends Window {
                 this.$("filter").show();
             }
         }
-        this.panels[name].style.zIndex = layers["panel"];
-        this.currentPanel = name;
-        let showSuggestions = false;
 
         // Load the given entry
         if (name === "edit-vocab" || name === "edit-kanji" ||
@@ -530,6 +527,8 @@ class MainWindow extends Window {
         }
 
         // Open the panel
+        this.panels[name].style.zIndex = layers["panel"];
+        this.currentPanel = name;
         this.panels[name].open();
         if (dataManager.settings.design.animateSlidingPanels) {
             Velocity(this.panels[name], "stop");
@@ -539,6 +538,7 @@ class MainWindow extends Window {
             this.panels[name].style.left = "0";
         }
 
+        let showSuggestions = false;
         // Only load suggestions for kanji if languages are Japanese-English
         if (name === "add-kanji" || name === "edit-kanji") {
             if (dataManager.currentLanguage === "Japanese" &&
@@ -551,8 +551,8 @@ class MainWindow extends Window {
             }
         }
 
-        if (name === "add-vocab" || name === "edit-vocab") {
-
+        if (name === "add-vocab" || (name === "edit-vocab" &&
+                                     entryName !== null)) {
             // Load suggestions by dictionary ID if one is given
             if (dictionaryId !== undefined) {
                 if (entryName === undefined) {
@@ -585,8 +585,8 @@ class MainWindow extends Window {
             }
         }
 
-        // Display loaded suggestion panel (unless panel is already closed)
-        if (this.currentPanel === null) return;
+        // Display loaded suggestion pane (unless the panel was already closed)
+        if (this.currentPanel !== name) return;
         this.$("filter").classList.toggle("dark", showSuggestions);
         if (showSuggestions) {
             this.suggestionsShown = true;

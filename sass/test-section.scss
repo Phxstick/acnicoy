@@ -65,7 +65,7 @@ $fade-color: var(--test-frame-fade-color);
   padding-left: 12%;
   padding-right: 12%;
 
-  &.animate {
+  &.animate, &.animate #new-level > option {
     // Timing function is ease-out-sine
     transition-property: background-color;
     transition-timing-function: $item-fade-timing;
@@ -242,6 +242,7 @@ $fade-color: var(--test-frame-fade-color);
   background-color: var(--test-frame-background);
   color: $test-section-color;
   border: 1px solid transparent;
+
   &:hover {
     border-color: $test-section-color;
   }
@@ -463,6 +464,13 @@ $fade-color: var(--test-frame-fade-color);
 :host(:not(.old-design)) {
   #bottom {
     background-color: var(--test-frame-background);
+
+    &.animate {
+      // Timing function is ease-out-sine
+      transition-property: background-color;
+      transition-timing-function: $item-fade-timing;
+      transition-duration: $item-fade-duration;
+    }
   }
   #session-info-bar {
     color: $test-section-color-light;

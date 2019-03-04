@@ -152,6 +152,8 @@ class TestSection extends Section {
         events.on("settings-test-animate", () => {
             this.$("top").classList.toggle(
                 "animate", dataManager.settings.test.animate);
+            this.$("bottom").classList.toggle(
+                "animate", dataManager.settings.test.animate);
         });
         events.on("settings-test-show-progress", () => {
             this.$("progress").toggleDisplay(

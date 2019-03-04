@@ -3,6 +3,21 @@
 class EditPanel extends Panel {
     constructor(name, itemTypes) {
         super(name);
+        this.nextElementToFocus = null;
+
+        // Dummy element which holds focus if no other element has it
+        this.focusHolder = document.createElement("div");
+        this.focusHolder.setAttribute("tabindex", "-1");
+        this.root.appendChild(this.focusHolder);
+        this.focusHolder.addEventListener("keydown", (event) => {
+            if (event.key !== "Tab") return;
+            // If focus leaves dummy, it should go to the next element in order
+            if (this.nextElementToFocus.offsetParent !== null) {
+                event.preventDefault();
+                this.nextElementToFocus.focus();
+            }
+            this.nextElementToFocus = null;
+        });
 
         this.viewNodes = {};
         for (const type of itemTypes) {
@@ -29,6 +44,8 @@ class EditPanel extends Panel {
         }
 
         const node = document.createElement("span");
+        node.onlyAllowPastingRawText(this.root);
+        node.putCursorAtEndOnFocus(this.root);
         node.textContent = text;
 
         // Allow editing items on click
@@ -37,16 +54,30 @@ class EditPanel extends Panel {
             this.$(`add-${type}-button`).show();
             this.root.getSelection().removeAllRanges();
             const newText = node.textContent.trim();
+            // If focus will be lost, focus the dummy element
+            if (event.relatedTarget === null) {
+                this.nextElementToFocus = node;
+                this.focusHolder.focus();
+            }
+            // Callback for removing node and determining next item to focus
+            const removeNode = () => {
+                if (node.nextSibling !== null) {
+                    this.nextElementToFocus = node.nextSibling;
+                } else {
+                    this.nextElementToFocus = this.$(`add-${type}-button`);
+                }
+                node.remove();
+            };
             // If the node is left empty, remove it
             if (newText.length === 0) {
-                node.remove();
+                removeNode();
                 return;
             }
             // If the node is a duplicate, remove it
             for (const otherNode of node.parentNode.children) {
                 if (node === otherNode) continue;
                 if (otherNode.textContent === newText) {
-                    node.remove();
+                    removeNode();
                     return;
                 }
             }
@@ -57,11 +88,13 @@ class EditPanel extends Panel {
         node.addEventListener("keypress", (event) => {
             if (event.key === "Enter") {
                 event.preventDefault();
-                node.blur();
                 const text = node.textContent.trim();
                 // If this is the last item (and not empty), create a new one
-                if (text.length !== 0 && node.nextSibling === null) {
+                if (text.length !== 0 && node.nextSibling === null
+                        && !event.ctrlKey) {
                     this.createListItem(type);
+                } else {
+                    node.blur();
                 }
             }
         });

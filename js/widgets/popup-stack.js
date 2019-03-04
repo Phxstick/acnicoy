@@ -127,6 +127,7 @@ class PopupStack extends Widget {
     }
 
     setByIndex(index) {
+        if (index < 0 || index >= this.children.length) return;
         this.set(this.children[index]);
     }
 

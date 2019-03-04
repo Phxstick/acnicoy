@@ -502,3 +502,37 @@ document.addEventListener("mousedown", (event) => {
             event.path[2].tagName === "BUTTON")
         event.preventDefault();
 });
+
+// To prevent pasting whole HTML into elements with contenteditable enabled
+HTMLElement.prototype.onlyAllowPastingRawText = function(root) {
+    this.addEventListener("paste", (event) => {
+        event.preventDefault();
+        const { anchorOffset: pos, anchorNode: node } = root.getSelection();
+        // Put text from clipboard at the position of the cursor
+        const toBePasted = event.clipboardData.getData("Text");
+        const text = node.textContent;
+        node.textContent = text.substr(0, pos) + toBePasted + text.substr(pos);
+        // Put cursor after the pasted text
+        const range = document.createRange();
+        range.setStart(node.firstChild, pos + toBePasted.length);
+        range.setEnd(node.firstChild, pos + toBePasted.length);
+        const selection = root.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        // TODO: Somehow add this action to the undo-stack if possible
+    });
+}
+
+// When this element gets focussed, put the cursor at the end of first text node
+HTMLElement.prototype.putCursorAtEndOnFocus = function(root) {
+    this.addEventListener("focusin", () => {
+        if (this.firstChild === null) return;
+        if (this.firstChild.nodeType !== Node.TEXT_NODE) return;
+        const range = document.createRange();
+        range.setStart(this.firstChild, this.textContent.length);
+        range.setEnd(this.firstChild, this.textContent.length);
+        const selection = root.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+    });
+}
