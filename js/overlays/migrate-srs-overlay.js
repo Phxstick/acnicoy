@@ -33,8 +33,7 @@ class MigrateSrsOverlay extends Overlay {
             this.migrate();
         });
         this.$("help-link").addEventListener("click", () => {
-            dialogWindow.info("Not yet implemented.");
-            // TODO: Link to open help
+            overlays.open("help", ["Components", "SRS", "Migrating Schemes"]);
         });
         // Display intervals for selected scheme
         this.$("select-new-scheme").addEventListener("change", () => {
@@ -47,28 +46,11 @@ class MigrateSrsOverlay extends Overlay {
         const previousSchemeConnectors = this.$("previous-scheme-connectors");
         previousSchemeConnectors.addEventListener("mousedown", (event) => {
             if (event.target.parentNode === previousSchemeConnectors) {
-                // Create a line starting from clicked connector
-                const connector = event.target;
-                const startX = connector.getAttribute("cx");
-                const startY = connector.getAttribute("cy");
-                const connection = utility.createSvgNode("line", {
-                    x1: startX, y1: startY, x2: startX, y2: startY
-                });
-                // Create a triangle to make line into an arrow
-                connection.classList.add("connection");
-                const arrowBottomWidth = 14;
-                const arrowHeight = 18;
-                const arrowTriangle = utility.createSvgNode("polygon", {
-                    points: `${-arrowBottomWidth / 2},${arrowHeight / 3}
-                             ${arrowBottomWidth / 2},${arrowHeight / 3}
-                             ${0},${-2 * arrowHeight / 3}`,
-                    transform: `translate(${startX} ${startY}) rotate(90)`
-                });
-                arrowTriangle.classList.add("connection-arrow");
-                this.$("scheme-connections").appendChild(connection);
-                this.$("connection-arrow-triangles").appendChild(arrowTriangle);
+                const startConnector = event.target;
+                const connection = this.createConnectionLine(startConnector);
+                const arrowTriangle = this.createConnectionArrow(startConnector)
                 // Start dragging operation by setting variables
-                this.startConnector = connector;
+                this.startConnector = startConnector;
                 this.draggedConnection = connection;
                 this.arrowTriangle = arrowTriangle;
                 this.draggingConnection = true;
@@ -96,111 +78,17 @@ class MigrateSrsOverlay extends Overlay {
                     `translate(${endX} ${endY}) rotate(${90 + degrees})`);
             }
         });
-        // Add a connection when dragging on a connector at new scheme
+        // Add a connection when dropping arrow on a connector at new scheme
         window.addEventListener("mouseup", (event) => {
             if (this.draggingConnection) {
                 this.draggingConnection = false;
                 if (this.hoveringOverConnector) {
                     this.hoveringOverConnector = false;
-                    // Only add connection if it doesn't exist already
-                    if (!this.connections.get(this.startConnector)
-                                         .has(this.connectorHoveredOver)) {
-                        const connection = this.draggedConnection;
-                        const startConnector = this.startConnector;
-                        const endConnector = this.connectorHoveredOver;
-                        const oldLevel =
-                            this.connectorToLevel.get(startConnector);
-                        const newLevel =
-                            this.connectorToLevel.get(endConnector);
-                        const x1 = parseInt(startConnector.getAttribute("cx"));
-                        const y1 = parseInt(startConnector.getAttribute("cy"));
-                        const x2 = parseInt(endConnector.getAttribute("cx"));
-                        const y2 = parseInt(endConnector.getAttribute("cy"));
-                        // Don't allow connection to cross another
-                        const connList = this.$("scheme-connections").children;
-                        for (const otherConnection of connList) {
-                            const otherOldLevel =
-                                this.connectionToOldLevel.get(otherConnection);
-                            const otherNewLevel =
-                                this.connectionToNewLevel.get(otherConnection);
-                            if ((otherOldLevel < oldLevel &&
-                                    otherNewLevel > newLevel) ||
-                                   (otherOldLevel > oldLevel &&
-                                    otherNewLevel < newLevel)) {
-                                this.draggedConnection.remove();
-                                this.arrowTriangle.remove();
-                                dialogWindow.info("Connection lines may not " +
-                                    "cross each other!");
-                                return;
-                            }
-                        }
-                        // Connect line to endpoint and register connection
-                        connection.setAttribute("x2", x2);
-                        connection.setAttribute("y2", y2);
-                        this.connections.get(startConnector).add(endConnector);
-                        this.connectionToOldLevel.set(connection, oldLevel);
-                        this.connectionToNewLevel.set(connection, newLevel);
-                        // Add a little sign for choosing modifier in the middle
-                        const xMiddle = x1 + (x2 - x1) / 2;
-                        const yMiddle = y1 + (y2 - y1) / 2;
-                        const modifierLabel = utility.createSvgNode("g");
-                        modifierLabel.setAttribute("transform",
-                            `translate(${xMiddle} ${yMiddle})`);
-                        modifierLabel.classList.add("modifier-label");
-                        const modifierCircle = utility.createSvgNode("circle", {
-                            r: this.levelItemHeight / 4, cx: 0, cy: 0
-                        });
-                        modifierLabel.appendChild(modifierCircle);
-                        this.connectionToModifierLabel.set(
-                            connection, modifierLabel);
-                        this.$("modifier-labels").appendChild(modifierLabel);
-                        // Remove connection when right clicking it or its label
-                        const remove = () => {
-                            this.connections.get(startConnector)
-                                            .delete(endConnector);
-                            connection.remove();
-                            modifierLabel.remove();
-                        };
-                        connection.addEventListener("contextmenu", remove);
-                        modifierLabel.addEventListener("contextmenu", remove);
-                        // Create textnode for modifier symbol
-                        const modifierSymbol = utility.createSvgNode("text", {
-                            x: 0, y: 0, transform: "translate(-0.5 -0.5)"
-                        });
-                        modifierSymbol.classList.add("modifier-symbol");
-                        modifierLabel.appendChild(modifierSymbol);
-                        // Find fitting modifiers for this connection
-                        const oldLevelInterval =
-                            this.connectorToInterval.get(startConnector);
-                        const newLevelInterval =
-                            this.connectorToInterval.get(endConnector);
-                        let modifierIndex;
-                        const modifiers = ["="];
-                        if (oldLevelInterval === newLevelInterval) {
-                            modifierIndex = 0;
-                        } else if (oldLevelInterval < newLevelInterval) {
-                            modifiers.push("+");
-                            modifierIndex = 1;
-                        } else if (oldLevelInterval > newLevelInterval ){
-                            modifiers.push("-", "\u223c");
-                            modifierIndex = 1;
-                        }
-                        modifierSymbol.textContent = modifiers[modifierIndex];
-                        // Allow cycling through modifiers on left click
-                        modifierLabel.addEventListener("click", () => {
-                            modifierIndex =
-                                (modifierIndex + 1) % modifiers.length;
-                            const nextModifier = modifiers[modifierIndex];
-                            modifierSymbol.textContent = nextModifier;
-                            if (nextModifier === "\u223c") {
-                                modifierSymbol.classList.add("small");
-                            } else {
-                                modifierSymbol.classList.remove("small");
-                            }
-                        });
-                    } else {
-                        this.draggedConnection.remove();
-                    }
+                    const connection = this.draggedConnection;
+                    const startConnector = this.startConnector;
+                    const endConnector = this.connectorHoveredOver;
+                    this.finishConnection(
+                        connection, startConnector, endConnector);
                 } else {
                     this.draggedConnection.remove();
                 }
@@ -226,7 +114,7 @@ class MigrateSrsOverlay extends Overlay {
         });
     }
 
-    open(mode, info) {
+    async open(mode, info) {
         if (mode === "edit-scheme") {
             this.languagesAffected =
                 dataManager.srs.getLanguagesUsingScheme(info.schemeName);
@@ -252,7 +140,7 @@ class MigrateSrsOverlay extends Overlay {
                 + "specify how to migrate all SRS items to the new scheme.";
             this.$("select-new-scheme-frame").show();
         }
-        this.displayPreviousScheme(
+        await this.displayPreviousScheme(
             dataManager.srs.getIntervalTextsForScheme(info.schemeName));
         this.$("previous-scheme-connectors").style.display = "none";
         this.$("select-new-scheme").empty();
@@ -286,34 +174,175 @@ class MigrateSrsOverlay extends Overlay {
         this.$("modifier-labels").empty();
     }
 
-    displayPreviousScheme(intervalTexts) {
+    createConnectionLine(startConnector) {
+        const startX = startConnector.getAttribute("cx");
+        const startY = startConnector.getAttribute("cy");
+        const connection = utility.createSvgNode("line", {
+            x1: startX, y1: startY, x2: startX, y2: startY
+        });
+        connection.classList.add("connection");
+        this.$("scheme-connections").appendChild(connection);
+        return connection;
+    }
+
+    createConnectionArrow(startConnector) {
+        const startX = startConnector.getAttribute("cx");
+        const startY = startConnector.getAttribute("cy");
+        const arrowBottomWidth = 14;
+        const arrowHeight = 18;
+        const arrowTriangle = utility.createSvgNode("polygon", {
+            points: `${-arrowBottomWidth / 2},${arrowHeight / 3}
+                     ${arrowBottomWidth / 2},${arrowHeight / 3}
+                     ${0},${-2 * arrowHeight / 3}`,
+            transform: `translate(${startX} ${startY}) rotate(90)`
+        });
+        arrowTriangle.classList.add("connection-arrow");
+        this.$("connection-arrow-triangles").appendChild(arrowTriangle);
+        return arrowTriangle;
+    }
+
+    finishConnection(connection, startConnector, endConnector) {
+        // Only add connection if it doesn't exist already
+        if (this.connections.get(startConnector).has(endConnector)) {
+            connection.remove();
+            return false;
+        }
+
+        // Get levels and positions of the given connectors
+        const oldLevel = this.connectorToLevel.get(startConnector);
+        const newLevel = this.connectorToLevel.get(endConnector);
+        const x1 = parseInt(startConnector.getAttribute("cx"));
+        const y1 = parseInt(startConnector.getAttribute("cy"));
+        const x2 = parseInt(endConnector.getAttribute("cx"));
+        const y2 = parseInt(endConnector.getAttribute("cy"));
+
+        // Don't allow connection to cross another
+        const connList = this.$("scheme-connections").children;
+        for (const otherConnection of connList) {
+            const otherOldLevel = this.connectionToOldLevel.get(otherConnection)
+            const otherNewLevel = this.connectionToNewLevel.get(otherConnection)
+            if ((otherOldLevel < oldLevel && otherNewLevel > newLevel) ||
+                   (otherOldLevel > oldLevel && otherNewLevel < newLevel)) {
+                connection.remove();
+                dialogWindow.info("Connection lines may not cross each other!");
+                return false;
+            }
+        }
+
+        // Connect line to endpoint and register connection
+        connection.setAttribute("x2", x2);
+        connection.setAttribute("y2", y2);
+        this.connections.get(startConnector).add(endConnector);
+        this.connectionToOldLevel.set(connection, oldLevel);
+        this.connectionToNewLevel.set(connection, newLevel);
+
+        // Add a little sign for choosing modifier in the middle
+        const xMiddle = x1 + (x2 - x1) / 2;
+        const yMiddle = y1 + (y2 - y1) / 2;
+        const modifierLabel = utility.createSvgNode("g");
+        modifierLabel.setAttribute("transform",
+            `translate(${xMiddle} ${yMiddle})`);
+        modifierLabel.classList.add("modifier-label");
+        const modifierCircle = utility.createSvgNode("circle", {
+            r: this.levelItemHeight / 4, cx: 0, cy: 0
+        });
+        modifierLabel.appendChild(modifierCircle);
+        this.connectionToModifierLabel.set(connection, modifierLabel);
+        this.$("modifier-labels").appendChild(modifierLabel);
+
+        // Remove connection when right clicking it or its label
+        const remove = () => {
+            this.connections.get(startConnector).delete(endConnector);
+            connection.remove();
+            modifierLabel.remove();
+        };
+        connection.addEventListener("contextmenu", remove);
+        modifierLabel.addEventListener("contextmenu", remove);
+
+        // Create textnode for modifier symbol
+        const modifierSymbol = utility.createSvgNode("text", {
+            x: 0, y: 0, transform: "translate(-0.5 -0.5)"
+        });
+        modifierSymbol.classList.add("modifier-symbol");
+        modifierLabel.appendChild(modifierSymbol);
+
+        // Find fitting modifiers for this connection
+        const oldLevelInterval = this.connectorToInterval.get(startConnector);
+        const newLevelInterval = this.connectorToInterval.get(endConnector);
+        let modifierIndex;
+        const modifiers = ["="];
+        if (oldLevelInterval === newLevelInterval) {
+            modifierIndex = 0;
+        } else if (oldLevelInterval < newLevelInterval) {
+            modifiers.push("+");
+            modifierIndex = 1;
+        } else if (oldLevelInterval > newLevelInterval ){
+            modifiers.push("-", "\u223c");
+            modifierIndex = 1;
+        }
+        modifierSymbol.textContent = modifiers[modifierIndex];
+
+        // Allow cycling through modifiers on left click
+        modifierLabel.addEventListener("click", () => {
+            modifierIndex = (modifierIndex + 1) % modifiers.length;
+            const nextModifier = modifiers[modifierIndex];
+            modifierSymbol.textContent = nextModifier;
+            if (nextModifier === "\u223c") {
+                modifierSymbol.classList.add("small");
+            } else {
+                modifierSymbol.classList.remove("small");
+            }
+        });
+
+        return true;
+    }
+
+    async displayPreviousScheme(intervalTexts) {
         this.$("previous-scheme").empty();
         this.$("previous-scheme-connectors").empty();
         this.connections.clear();
         this.oldSchemeIntervals.clear();
+
+        // Get number of items per SRS level for all affected languages
+        const numItemsPerLevel = new Map();
+        for (const language of this.languagesAffected) {
+            const numItemsPerLevelForLanguage =
+                await dataManager.srs.getAmountOfItemsPerLevel(language);
+            for (const [level, amount] of numItemsPerLevelForLanguage) {
+                if (!numItemsPerLevel.has(level))
+                    numItemsPerLevel.set(level, 0);
+                numItemsPerLevel.set(level, numItemsPerLevel.get(level)+amount);
+            }
+        }
+
         for (let level = 1; level < intervalTexts.length; ++level) {
             const intervalText = intervalTexts[level];
             const interval = utility.timeSpanStringToSeconds(intervalText)
                              - utility.timeSpanStringToSeconds(
                                  dataManager.settings.srs.intervalModifier);
             this.oldSchemeIntervals.push(interval);
+
             // Display interval text
             const levelItem = document.createElement("div");
             levelItem.textContent = intervalText;
             this.$("previous-scheme").appendChild(levelItem);
-            // Create connector circle for setting migration plan
-            const offset = level - 1;
-            const connector = utility.createSvgNode("circle", {
-                r: this.connectorRadius,
-                cx: 0,
-                cy: this.levelItemHeight * offset +
-                    this.levelItemHeight / 2 - offset
-            });
-            this.$("previous-scheme-connectors").appendChild(connector);
-            // Register connector
-            this.connections.set(connector, new Set());
-            this.connectorToInterval.set(connector, interval);
-            this.connectorToLevel.set(connector, level);
+
+            if (numItemsPerLevel.has(level) && numItemsPerLevel.get(level) > 0){
+                // Create connector circle for setting migration plan
+                const offset = level - 1;
+                const connector = utility.createSvgNode("circle", {
+                    r: this.connectorRadius,
+                    cx: 0,
+                    cy: this.levelItemHeight * offset +
+                        this.levelItemHeight / 2 - offset
+                });
+                this.$("previous-scheme-connectors").appendChild(connector);
+
+                // Register connector
+                this.connections.set(connector, new Set());
+                this.connectorToInterval.set(connector, interval);
+                this.connectorToLevel.set(connector, level);
+            } 
         }
     }
 
@@ -331,10 +360,12 @@ class MigrateSrsOverlay extends Overlay {
                              - utility.timeSpanStringToSeconds(
                                  dataManager.settings.srs.intervalModifier);
             this.newSchemeIntervals.push(interval);
+
             // Display interval text
             const levelItem = document.createElement("div");
             levelItem.textContent = intervalText;
             this.$("new-scheme").appendChild(levelItem);
+
             // Create connector circle for setting migration plan
             const offset = level - 1;
             const connector = utility.createSvgNode("circle", {
@@ -344,13 +375,34 @@ class MigrateSrsOverlay extends Overlay {
                     this.levelItemHeight / 2 - offset
             });
             this.$("new-scheme-connectors").appendChild(connector);
+
             // Register connector
             this.connectorToInterval.set(connector, interval);
             this.connectorToLevel.set(connector, level);
         }
         this.resetConnections();
         this.$("previous-scheme-connectors").style.display = "block";
-        // TODO: Create default connections for new scheme
+
+        // Create default connections for the new scheme
+        const oldSchemeConnectors =
+            this.$("previous-scheme-connectors").children;
+        const newSchemeConnectors = this.$("new-scheme-connectors").children;
+        let oldSchemeIndex = 0;
+        let newSchemeIndex = 0;
+        while (oldSchemeIndex < oldSchemeConnectors.length) {
+            const startConnector = oldSchemeConnectors[oldSchemeIndex];
+            const endConnector = newSchemeConnectors[newSchemeIndex];
+            const oldInterval = this.connectorToInterval.get(startConnector);
+            const newInterval = this.connectorToInterval.get(endConnector);
+            if (newInterval < oldInterval &&
+                    newSchemeIndex < newSchemeConnectors.length) {
+                ++newSchemeIndex;
+                continue;
+            }
+            const connection = this.createConnectionLine(startConnector);
+            this.finishConnection(connection, startConnector, endConnector);
+            ++oldSchemeIndex;
+        }
     }
     
     async migrate() {
@@ -359,6 +411,7 @@ class MigrateSrsOverlay extends Overlay {
             dialogWindow.info("No SRS scheme has been selected.");
             return;
         }
+
         // Check if all levels from the old scheme have at least one connection
         for (const newLevelConnectorSet of this.connections.values()) {
             if (newLevelConnectorSet.size === 0) {
@@ -368,10 +421,10 @@ class MigrateSrsOverlay extends Overlay {
                 return;
             }
         }
+
         // Parse connection information to get a migration plan
         const migrationPlan = new Map();
-        const numLevelsOldScheme =
-            this.$("previous-scheme-connectors").children.length;
+        const numLevelsOldScheme = this.oldSchemeIntervals.length;
         for (let level = 1; level <= numLevelsOldScheme; ++level) {
             migrationPlan.set(level, []);
         }
@@ -382,10 +435,12 @@ class MigrateSrsOverlay extends Overlay {
                 this.connectionToModifierLabel.get(connection).textContent;
             migrationPlan.get(oldLevel).push([newLevel, modifier]);
         }
+
         // Sort arrays in migration plan by new level
         for (const [,newLevelsArray] of migrationPlan) {
             newLevelsArray.sort(([lvl1, mod1], [lvl2, mod2]) => lvl1 - lvl2);
         }
+
         // Create user data backup before migrating
         this.backupInfo.oldSchemeIntervals = this.oldSchemeIntervals;
         this.backupInfo.newSchemeIntervals = this.newSchemeIntervals;
@@ -402,6 +457,7 @@ class MigrateSrsOverlay extends Overlay {
         overlays.open("loading", "Applying changes");
         await dataManager.createBackup(this.backupInfo);
         console.log("Beginning migration...");
+
         // Migrate items for all languages affected, according to the plan
         const migrationPromises = [];
         const startTime = performance.now();

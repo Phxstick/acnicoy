@@ -74,17 +74,19 @@ class NotesSection extends Section {
             if (event.key !== "Escape") return;
             if (this.noteBeingEdited === null) return;
             const contentNode = this.noteToContentNode.get(this.noteBeingEdited)
-            this.saveNote(this.noteBeingEdited);
+            this.saveNoteBeingEdited();
         });
         shortcuts.bindCallback("save-input", () => {
             if (this.noteBeingEdited === null) return;
             const contentNode = this.noteToContentNode.get(this.noteBeingEdited)
-            this.saveNote(this.noteBeingEdited);
+            this.saveNoteBeingEdited();
         });
 
         // Enter edit mode when double clicking a note
         this.$("notes").addEventListener("dblclick", (event) => {
-            if (this.noteBeingEdited !== null) return;
+            if (this.noteBeingEdited !== null) {
+                this.saveNoteBeingEdited();
+            }
             if (this.controlButtons.contains(event.target)) return;
             let node = event.target;
             while (node.parentNode !== this.currentNotesContainer) {
@@ -258,6 +260,9 @@ class NotesSection extends Section {
         });
         // When deselecting a group, hide all notes and the add-button
         this.$("structure-tree").setOnDeselect((node) => {
+            if (this.noteBeingEdited !== null) {
+                this.saveNoteBeingEdited();
+            }
             this.currentNotesContainer.remove();
             this.currentNotesContainer = null;
             this.selectedGroupNode = null;
@@ -308,12 +313,18 @@ class NotesSection extends Section {
         });
     }
 
+    close() {
+        if (this.noteBeingEdited !== null) {
+            this.saveNoteBeingEdited();
+        }
+    }
+
     /**
      * Write the current state of the notes to the data manager.
      */
     saveData() {
         if (this.noteBeingEdited !== null) {
-            this.saveNote(this.noteBeingEdited);
+            this.saveNoteBeingEdited();
         }
         const data = this.$("structure-tree").toJsonObject((notesContainer) => {
             const markdownArray = []
@@ -326,6 +337,9 @@ class NotesSection extends Section {
     }
 
     addNote(markdownText, notesContainer, appendAtEnd=false) {
+        if (this.noteBeingEdited !== null) {
+            this.saveNoteBeingEdited();
+        }
         const note = document.createElement("div");
         const contentNode = document.createElement("div");
         contentNode.classList.add("note-content");
@@ -379,6 +393,9 @@ class NotesSection extends Section {
     }
 
     editNote(note) {
+        if (this.noteBeingEdited !== null) {
+            this.saveNoteBeingEdited();
+        }
         this.noteBeingEdited = note;
         const contentNode = this.noteToContentNode.get(note);
         contentNode.innerHTML = "";
@@ -388,7 +405,8 @@ class NotesSection extends Section {
         note.classList.add("editing");
     }
 
-    saveNote(note) {
+    saveNoteBeingEdited() {
+        const note = this.noteBeingEdited;
         this.noteBeingEdited = null;
         const contentNode = this.noteToContentNode.get(note);
         const trimmedContent = contentNode.innerText.trim();

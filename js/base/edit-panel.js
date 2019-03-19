@@ -1,7 +1,7 @@
 "use strict";
 
 class EditPanel extends Panel {
-    constructor(name, itemTypes) {
+    constructor(name, itemTypes, mainItem) {
         super(name);
         this.nextElementToFocus = null;
 
@@ -35,7 +35,7 @@ class EditPanel extends Panel {
         }
     }
 
-    createListItem(type, text="") {
+    createListItem(type, text="", createNewItemOnEnter=true) {
         const viewNode = this.viewNodes[type];
 
         // Check if an item with this text already exists
@@ -84,14 +84,14 @@ class EditPanel extends Panel {
             node.textContent = newText;
         });
 
-        // If Enter key is pressed, quit editing
+        // If Enter or semicolon key is pressed, quit editing
         node.addEventListener("keypress", (event) => {
-            if (event.key === "Enter") {
+            if (event.key === "Enter" || event.key === ";") {
                 event.preventDefault();
                 const text = node.textContent.trim();
                 // If this is the last item (and not empty), create a new one
                 if (text.length !== 0 && node.nextSibling === null
-                        && !event.ctrlKey) {
+                        && !event.ctrlKey && createNewItemOnEnter) {
                     this.createListItem(type);
                 } else {
                     node.blur();
@@ -128,7 +128,7 @@ class EditPanel extends Panel {
         if (text !== undefined) {
             for (const node of viewNode.children) {
                 if (node.textContent === text) {
-                    viewNode.remove(node);
+                    viewNode.removeChild(node);
                     break;
                 }
             }

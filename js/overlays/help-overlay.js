@@ -117,6 +117,12 @@ class HelpOverlay extends Overlay {
         });
         this.$("tree").selectByPath(["Overview"]);
     }
+
+    open(path) {
+        if (path !== undefined) {
+            this.$("tree").selectByPath(path);
+        }
+    }
 }
 
 customElements.define("help-overlay", HelpOverlay);

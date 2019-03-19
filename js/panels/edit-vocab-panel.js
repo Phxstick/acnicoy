@@ -126,6 +126,8 @@ class EditVocabPanel extends EditPanel {
         this.root.addEventListener("keydown", (event) => {
             if ("1" <= event.key && event.key <= "9" && event.ctrlKey) {
                 this.$("srs-level").setByIndex(parseInt(event.key) - 1);
+                event.preventDefault();
+                event.stopPropagation();
             }
         });
 
@@ -265,7 +267,8 @@ class EditVocabPanel extends EditPanel {
     }
 
     createListItem(type, text="") {
-        const node = super.createListItem(type, text);
+        const createNewItemOnEnter = type !== "vocab-list";
+        const node = super.createListItem(type, text, createNewItemOnEnter);
         if (type === "reading") {
             node.contextMenu(menuItems,
                     ["delete-reading", "modify-reading"],
@@ -280,7 +283,7 @@ class EditVocabPanel extends EditPanel {
         } else if (type === "vocab-list") {
             node.contextMenu(menuItems,
                     ["add-to-list", "remove-from-list"],
-                    { section: this })
+                    { section: this });
             // Color node according to whether list exists or not
             node.addEventListener("input", (event) => {
                 const text = event.target.textContent;

@@ -27,9 +27,13 @@
     }
     > * {
       &.selected {
-        color: $view-hover-color;
-        background-color: $view-hover-background;
+        color: $view-select-color;
+        background-color: $view-select-background;
         border-radius: 5px;
+      }
+      &:hover {
+        background-color: $view-hover-background;
+        color: $view-hover-color;
       }
       font-size: 1rem;
       padding-left: 5px;

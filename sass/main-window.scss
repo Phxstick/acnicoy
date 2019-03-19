@@ -171,6 +171,9 @@
 }
 
 #side-bar {
+  // TODO: sometimes causes white border at bottom or neighboring section div
+  // +1px to hide bottom border of last element if it reaches end of the sidebar
+  // height: calc(100% + 1px);
   width: $side-bar-width;
   display: flex;
   flex-direction: column;

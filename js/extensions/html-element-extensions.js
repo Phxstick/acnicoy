@@ -514,8 +514,8 @@ HTMLElement.prototype.onlyAllowPastingRawText = function(root) {
         node.textContent = text.substr(0, pos) + toBePasted + text.substr(pos);
         // Put cursor after the pasted text
         const range = document.createRange();
-        range.setStart(node.firstChild, pos + toBePasted.length);
-        range.setEnd(node.firstChild, pos + toBePasted.length);
+        range.setStart(this.firstChild, pos + toBePasted.length);
+        range.setEnd(this.firstChild, pos + toBePasted.length);
         const selection = root.getSelection();
         selection.removeAllRanges();
         selection.addRange(range);

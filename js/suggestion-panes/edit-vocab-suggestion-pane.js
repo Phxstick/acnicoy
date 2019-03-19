@@ -42,7 +42,7 @@ class EditVocabSuggestionPane extends VocabSuggestionPane {
         const editVocabPanel = main.panels["edit-vocab"];
         if (type === "word") {
             editVocabPanel.setWord(node.textContent);
-            if (!autoSelect) {
+            if (!this.autoSelect) {
                 // Mark suggestions for all selected readings as selected
                 const chosenReadings = new Set();
                 const readingNodes = editVocabPanel.getListItems("reading");

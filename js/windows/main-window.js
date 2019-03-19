@@ -246,6 +246,25 @@ class MainWindow extends Window {
             ++this.currentPartIndex;
             this.displayNextPart();
         });
+        // Keyboard shortcuts for intro tour (only active during a tour)
+        this.tourShortcutsHandler = (event) => {
+            if (event.key === "Escape") {
+                this.exitIntroTour();
+            } else if (event.key === "ArrowLeft" || event.key === "ArrowUp"
+                       || event.key === "Backspace") {
+                if (this.currentPartIndex > 0) {
+                    --this.currentPartIndex;
+                    this.displayNextPart();
+                }
+            } else if (event.key === "ArrowRight" || event.key === "ArrowDown"
+                       || event.key === "Enter" || event.key === " ") {
+                ++this.currentPartIndex;
+                this.displayNextPart();
+            }
+            // Disable all other keyboard shortcuts during a tour
+            event.preventDefault();
+            event.stopPropagation();
+        };
     }
 
     registerCentralEventListeners() {
@@ -1053,13 +1072,29 @@ class MainWindow extends Window {
     exitIntroTour() {
         this.$("selective-dimmer").hide();
         this.$("intro-tour-textbox").hide();
+        window.removeEventListener("keydown", this.tourShortcutsHandler,
+                                   { capture: true });
     }
 
     startIntroTour(name) {
-        this.introTourParts =
-            utility.parseHtmlFile(paths.introTour(name)).children;
+        this.introTourParts = [];
+        const parts = utility.parseHtmlFile(paths.introTour(name)).children;
+        // Separate the script from the rest of the content for each step
+        for (const part of parts) {
+            const content = document.importNode(part.content, true);
+            const target = part.dataset.target;
+            let script = null;
+            if (content.firstElementChild !== null
+                    && content.firstElementChild.tagName === "SCRIPT") {
+                script = content.firstElementChild.textContent;
+                content.removeChild(content.firstElementChild);
+            }
+            this.introTourParts.push({ script, content, target });
+        }
         this.currentPartIndex = 0;
         this.displayNextPart();
+        window.addEventListener("keydown", this.tourShortcutsHandler,
+                                { capture: true });
     }
     
     async displayNextPart() {
@@ -1067,6 +1102,7 @@ class MainWindow extends Window {
             this.exitIntroTour();
             return;
         }
+        // Toggle button visibility depending on if it's the first or last part
         if (this.currentPartIndex === this.introTourParts.length - 1) {
             this.$("intro-tour-exit-button").hide();
             this.$("intro-tour-next-button").textContent = "Finish tour";
@@ -1079,12 +1115,16 @@ class MainWindow extends Window {
         } else {
             this.$("intro-tour-back-button").show();
         }
-        const currentPart = this.introTourParts[this.currentPartIndex];
-        const content = document.importNode(currentPart.content, true);
+        // Execute script to set context, then insert content into the textbox
+        const { script, content, target } =
+            this.introTourParts[this.currentPartIndex];
+        if (script !== null) {
+            eval(script);
+        }
         this.$("intro-tour-textbox-content").innerHTML = "";
-        this.$("intro-tour-textbox-content").appendChild(content);
+        this.$("intro-tour-textbox-content").appendChild(content.cloneNode(1));
         if (this.introTourPromise) await this.introTourPromise;
-        this.showTextbox(this.introTourContext.$(currentPart.dataset.target));
+        this.showTextbox(this.introTourContext.$(target));
         this.$("intro-tour-next-button").focus();
     }
 

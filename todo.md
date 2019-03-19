@@ -1,22 +1,20 @@
 ### Primary goals
 - Write function to calculate n equally spaced colors on color wheel or at
-  least an alternative to allow more than 6 languages
+  least an alternative to allow for more than 6 languages
 - Finish first version of Japanese content:
   - Complete dictionary tag descriptions in Japanese
   - Make sure content can be downloaded correctly
     - Content status says "n.a." after successful download -> Fixed?
   - Use newest version of all files (and test!) right before first release
 - Finish help section
-- Remove test-stuff on server afterwards (like test-versions etc.)
-- BUG: scripts in intro-tour are not executed anymore!
-- Make sure currently edited note is saved whenever necessary
+- Remove test-stuff from server afterwards (like test-versions etc.)
+- Remove the "default language" concept, select language which was selected last
 
 ### Secondary goals
 - Also replace add-kanji panels with edit-kanji panels
 - Make searching for vocab lists faster by pre-sorting in datamanger already
 - Removing word from vocabulary lists should be done in datamanager function too
 - Don't attach separate context menu to every node in dict/kanji/vocab-section
-- Implement undo of note deletion (and editing?)
 - Rework fonts in sass: Use gui-font for gui, and content-font for content
   - Make OpenSans-Regular the main font everywhere?
   - Also let font-family be inherited, and remove all workarounds (and test!)
@@ -40,12 +38,12 @@
   loaded instead of at creation-time of the database!
 - Reverse completion list order if it's shown above entry instead of below
   - Extend the utility view function for this purpose
-- Remove the "default language" concept, select language which was selected last
 - In edit-vocab-panel, load suggestions if content is available (see TODOs)
+- Add control bar to notes sections to access search, open help or add new group
+- Implement undo for custom pasting using handler in onlyAllowPastingRawText?
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
-- 屈伸 has the wrong meaning in the dictionary? Version update needed?
 - Problem when editing word with dictonary id assigned but a different variant
 - Notifications:
   - Why is "display:flex" added to notifications window when adding notific?
@@ -57,7 +55,6 @@
 - Don't preload words in vocabulary section - on scroll, given date is outdated
 - If word is renamed, associated vocab entry in dictionary entry gets outdated.
   Add a listener to dictionary section and method to dictionary entry to solve.
-- Implement undo for custom pasting using handler in onlyAllowPastingRawText
 
 
 By category
@@ -218,8 +215,6 @@ By category
 - Make migrating SRS items safer by applying changes to a copy of data and
   replacing old data only after migration has finished successfully?
   - Or rather use SQLITE3 transactions/savepoints/rollbacks
-- Find algorithm to create reasonable default SRS scheme migration connections
-- Remove connectors for old scheme levels which have no items associated
 - Make sure that connections starting from the same level are always connected
   to a *consecutive* row of levels (otherwise, disallow connection)?
 

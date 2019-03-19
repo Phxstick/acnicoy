@@ -22,23 +22,23 @@ class CompletionTooltip extends Widget {
             this.selectionCallback(this.activeNode);
         });
 
-        // Highlight items when hovering over them
-        this.items.addEventListener("mouseover", (event) => {
-            if (event.target.parentNode !== this.items) return;
-            if (this.selectedItem !== null) {
-                this.selectedItem.classList.remove("selected");
-            }
-            this.selectedItem = event.target;
-            this.selectedItem.classList.add("selected");
-        });
+        // // Highlight items when hovering over them
+        // this.items.addEventListener("mouseover", (event) => {
+        //     if (event.target.parentNode !== this.items) return;
+        //     if (this.selectedItem !== null) {
+        //         this.selectedItem.classList.remove("selected");
+        //     }
+        //     this.selectedItem = event.target;
+        //     this.selectedItem.classList.add("selected");
+        // });
 
-        // Unhighlight highlighted item when mouse leaves tooltip
-        this.items.addEventListener("mouseout", (event) => {
-            if (this.selectedItem !== null) {
-                this.selectedItem.classList.remove("selected");
-            }
-            this.selectedItem = null;
-        });
+        // // Unhighlight highlighted item when mouse leaves tooltip
+        // this.items.addEventListener("mouseout", (event) => {
+        //     if (this.selectedItem !== null) {
+        //         this.selectedItem.classList.remove("selected");
+        //     }
+        //     this.selectedItem = null;
+        // });
     }
 
     setData(data) {
@@ -91,8 +91,13 @@ class CompletionTooltip extends Widget {
             this.updateView(node);
         });
 
-        // Move the selection when pressing up/down arrow keys
+        // Move the selection when pressing up/down arrow keys, close with Esc
         node.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                node.blur();
+                event.stopPropagation();
+                return;
+            }
             if (this.selectedItem !== null) {
                 this.selectedItem.classList.remove("selected");
             }
@@ -116,16 +121,21 @@ class CompletionTooltip extends Widget {
         });
     }
 
-    updateView(node) {
+    async updateView(node) {
         // Fill list completion tooltip
         const text = node.textContent.trim();
-        this.viewState.search(text);
+        await this.viewState.search(text);
 
-        // Deselect any selected vocab list
+        // Deselect any selected vocab list and select the first list by default
         if (this.selectedItem !== null) {
             this.selectedItem.classList.remove("selected");
         }
-        this.selectedItem = null;
+        if (this.items.firstChild !== null) {
+            this.selectedItem = this.items.firstChild;
+            this.selectedItem.classList.add("selected");
+        } else {
+            this.selectedItem = null;
+        }
 
         // Position list selection wrapper
         const { left, top } = node.getBoundingClientRect();

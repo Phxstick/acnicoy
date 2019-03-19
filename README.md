@@ -1,40 +1,51 @@
 # Acnicoy
 
 Acnicoy is a tool for learning Japanese and other languages. It implements
-a [Spaced Repetition System][SRS] (SRS) for memorizing Vocabulary.
-While the basic features work for every language, the program offers a bunch of
+a [Spaced Repetition System][SRS] (SRS) to help with the memorization of vocabulary.
+While the basic features work for every language, the program offers a few
 additional features specifically for learning Japanese.
 
-![Screenshot of Kanji Section](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-kanji-section.png)
+The following screenshot shows an example of a dictionary search result
+and how kanji details are displayed. More screenshots are linked below,
+see [here](http://acnicoy.netai.net/screenshots.php) for the full list.
+
+![Screenshot of Dictionary Section](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-dictionary.png)
+
 
 Features
 ----
 
 The basic features for every language include:
 
-* Build up your own vocabulary and organize it into lists
-* Test yourself on the vocabulary using spaced repetition
-* Adjust the spaced repetition system with custom intervals
-* View statistics illustrating your progress
+* Add words to your vocabulary and organize them into lists.
+  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-vocab-section.png))
+* Review your vocabulary according to a spaced repetition scheduler.
+  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-test-section-1.png))
+* Customize the review sessions, e.g. by switching to flashcard-mode.
+  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-test-settings.png))
+* Get an overview over scheduled reviews and items ready for review.
+  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-home-section.png))
+* Adjust the spaced repetition system with custom intervals.
+  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-srs-schemes.png))
+* View statistics illustrating your learning progress.
+  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-stats-section.png))
+* Write notes using Markdown syntax and organize them into groups.
+  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-notes-section.png))
+* Use shortcuts to speed up frequently used procedures.
+  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-shortcut-settings.png))
 
-For Japanese language learners, the program additionally offers:
+For learners of the Japanese language, the program additionally offers:
 
-* Build up a kanji vocabulary and test yourself on it
-* Look up words in the dictionary (similar to [Jisho] and [Houhou SRS])
-* Kanji overview and cleanly presented kanji information
-
-Features to be added:
-
-* Earning achievements for learning progress
-* Customizing design with color schemes
-* Learning material for Japanese and other languages
-* See the [todo-list](./todo.md) for more
+* Look up words in the dictionary (similar to [Jisho] and [Houhou SRS]).
+  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-dictionary.png))
+* Conveniently edit vocabulary items using suggestions from the dictionary.
+  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-edit-word-suggestions.png))
+* Get an overview over all kanji and look up details for single kanji.
+  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-kanji-overview.png))
+* Separately add kanji to your vocabulary and review meanings and readings.
 
 Installation
 ----
-
-The program is already quite stable and almost ready for a first release.
-If you don't want to wait, you can also build it from source, as described below.
 
 ### Building from source
 Acnicoy requires [Node.js] v8.11 and uses the [npm package manager][npm].
@@ -59,8 +70,8 @@ See the [list of resources](./data/resources.md).
 Contact
 ----
 
-I'd be glad if you tried out the program and gave me some feedback.
-You can contact me at:  Phxsticks [at] gmail.com
+I'll be glad if you try out the program and give me some feedback.  
+You can open a Github issue or contact me at:  Phxsticks [at] gmail.com
 
 
    [SRS]: <https://en.wikipedia.org/wiki/Spaced_repetition>
