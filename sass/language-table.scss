@@ -125,7 +125,11 @@ tbody tr {
   flex-direction: row;
 }
 
-#add-language-button, #update-content-status-button {
+#button-frame {
+  font-size: 90%;
+}
+
+#button-frame > button {
   display: flex;
   flex-direction: row;
   margin-right: 18px;
@@ -138,8 +142,8 @@ tbody tr {
   }
   .icon {
     @include plus-shape($color: $button-light-icon-color);
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     margin-right: 10px;
   }
   i {

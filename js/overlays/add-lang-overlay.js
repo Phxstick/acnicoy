@@ -22,6 +22,11 @@ class AddLangOverlay extends Overlay {
                     "You need to select a language for translations.");
                 return;
             }
+            if (!this.$("srs-scheme").value) {
+                dialogWindow.info(
+                    "You need to select a spaced repetition scheme.");
+                return;
+            }
             this.resolve({
                 language: this.$("language").value,
                 settings: {
@@ -50,8 +55,6 @@ class AddLangOverlay extends Overlay {
             this.$("language").appendChild(option1);
             this.$("secondary-language").appendChild(option2);
         }
-        this.$("srs-scheme").appendChild(
-            utility.createDefaultOption("Select SRS scheme"));
         this.$("edit-srs-schemes").addEventListener("click", () => {
             overlays.open("srs-schemes");
         });
@@ -67,9 +70,10 @@ class AddLangOverlay extends Overlay {
         this.loadSrsSchemes();
     }
 
-    // Fill <select> with list of SRS schemes
     loadSrsSchemes() {
         this.$("srs-scheme").empty();
+        this.$("srs-scheme").appendChild(
+            utility.createDefaultOption("Select spaced repetition scheme"));
         for (const { name } of dataManager.srs.schemes) {
             const option = document.createElement("option");
             option.textContent = name;

@@ -355,7 +355,7 @@ class VocabSection extends Section {
         // ====================================================================
         // Kanji view updates
         // ====================================================================
-        events.on("kanji-deleted", (kanji) => {
+        events.on("kanji-removed", (kanji) => {
             if (!this.isViewLoaded["kanji"]) return;
             this.removeEntryFromSortedView("kanji", kanji);
         });
@@ -365,7 +365,7 @@ class VocabSection extends Section {
             if (!this.isViewLoaded["kanji"]) return;
             this.insertEntryIntoSortedView("kanji", kanji);
         });
-        events.onAll(["language-changed", "kanji-added", "kanji-deleted"],
+        events.onAll(["language-changed", "kanji-added", "kanji-removed"],
         () => { 
             if (dataManager.currentLanguage !== "Japanese") return;
             dataManager.kanji.getAmountAdded().then((amountAdded) => {
@@ -376,7 +376,7 @@ class VocabSection extends Section {
         // ====================================================================
         // Hanzi view updates
         // ====================================================================
-        events.on("hanzi-deleted", (hanzi) => {
+        events.on("hanzi-removed", (hanzi) => {
             if (!this.isViewLoaded["hanzi"]) return;
             this.removeEntryFromSortedView("hanji", hanzi);
         });
@@ -386,7 +386,7 @@ class VocabSection extends Section {
             if (!this.isViewLoaded["hanzi"]) return;
             this.insertEntryIntoSortedView("hanzi", hanzi);
         });
-        events.onAll(["language-changed", "hanzi-added", "hanzi-deleted"],
+        events.onAll(["language-changed", "hanzi-added", "hanzi-removed"],
         () => { 
             if (dataManager.currentLanguage !== "Chinese") return;
             dataManager.hanzi.getAmountAdded().then((amountAdded) => {

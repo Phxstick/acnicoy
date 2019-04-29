@@ -6,28 +6,29 @@
     "children": [
       { "name": "SRS",
         "children": [
-          { "name": "Editing schemes" },
-          { "name": "Migrating schemes" }
+          { "name": "Creating schemes" },
+          { "name": "Switching schemes" }
+
         ]
       },
       { "name": "Vocabulary",
         "children": [
-          { "name": "Editing" },
-          { "name": "Lists" }
+          { "name": "Adding words" },
+          { "name": "Managing lists" }
         ]
       },
       { "name": "Testing" },
       { "name": "Notes" },
-      { "name": "Home" },
-      { "name": "Settings",
-        "children": [
-            { "name": "General" },
-            { "name": "Languages" },
-            { "name": "Testing" },
-            { "name": "Design" },
-            { "name": "Shortcuts" }
-        ]
-      }
+      { "name": "Home" }
+    ]
+  },
+  { "name": "Settings",
+    "children": [
+        { "name": "General" },
+        { "name": "Languages" },
+        { "name": "Testing" },
+        { "name": "Design" },
+        { "name": "Shortcuts" }
     ]
   },
   { "name": "Languages",

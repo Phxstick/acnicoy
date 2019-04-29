@@ -37,7 +37,8 @@ class TreeView extends Widget {
             canDrop: (node, dragData) => false,
             onDrop: (node, dragData) => { },
             onSelect: (node) => { },
-            onDeselect: (node) => { }
+            onDeselect: (node) => { },
+            onModify: () => { }
         };
         this.selectedNode = null;
         this.rootNode = null;
@@ -266,7 +267,7 @@ class TreeView extends Widget {
 
     /**
      * Set the callback which is invoked when clicking a node label.
-     * @param {Function} callback - A callback, the node is passed as argument.
+     * @param {Function} callback - A function, the node is passed as argument.
      */
     setOnSelect(callback) {
         this.callbacks.onSelect = callback;
@@ -274,7 +275,7 @@ class TreeView extends Widget {
 
     /**
      * Set the callback which is invoked when the selected node is deselected.
-     * @param {Function} callback - A callback, the node is passed as argument.
+     * @param {Function} callback - A function, the node is passed as argument.
      */
     setOnDeselect(callback) {
         this.callbacks.onDeselect = callback;
@@ -283,7 +284,7 @@ class TreeView extends Widget {
     /**
      * Set the callback which is invoked when dragging an item over the label
      * of a node. The callback should return true if the item can be dropped.
-     * @param {Function} callback - A callback which gets the node and drag
+     * @param {Function} callback - A function which gets the node and drag
      *     data store passed as arguments.
      */
     setCanDrop(callback) {
@@ -293,11 +294,20 @@ class TreeView extends Widget {
     /**
      * Set the callback which is invoked when a compatible item is dropped on
      * the name label of a node.
-     * @param {Function} callback - A callback which gets the node and drag
+     * @param {Function} callback - A function which gets the node and drag
      *     data store passed as arguments.
      */
     setOnDrop(callback) {
         this.callbacks.onDrop = callback;
+    }
+
+    /**
+     * Set the callback which is invoked when the tree view has been modified
+     * by adding, deleting or removing tree nodes.
+     * @param {Function} callback - A callback function without any arguments.
+     */
+    setOnModify(callback) {
+        this.callbacks.onModify = callback;
     }
 
     // =========================================================================
@@ -355,6 +365,7 @@ const menuItems = contextMenu.registerItems({
                                                 treeView.rootNode);
                 treeView.$("root").appendChild(node.domNode);
                 inputNode.blur();
+                treeView.callbacks.onModify();
             });
             treeView.$("root").appendChild(inputContainer);
             inputNode.focus();
@@ -406,6 +417,7 @@ const menuItems = contextMenu.registerItems({
                     node.open = true;
                 }
                 inputNode.blur();
+                treeView.callbacks.onModify();
             });
             node.childrenContainer.show();
             node.openButton.classList.remove("hidden");
@@ -432,6 +444,7 @@ const menuItems = contextMenu.registerItems({
                 node.parent.open = false;
                 node.parent.openButton.classList.add("hidden");
             }
+            treeView.callbacks.onModify();
         }
     },
     "rename-group": {
@@ -476,6 +489,7 @@ const menuItems = contextMenu.registerItems({
                     node.parent.children[oldGroupName];
                 delete node.parent.children[oldGroupName];
                 node.name = newGroupName;
+                treeView.callbacks.onModify();
             };
             // Escape cancels renaming (keep old name)
             cancelCallback = (event) => {

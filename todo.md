@@ -1,6 +1,4 @@
 ### Primary goals
-- Write function to calculate n equally spaced colors on color wheel or at
-  least an alternative to allow for more than 6 languages
 - Finish first version of Japanese content:
   - Complete dictionary tag descriptions in Japanese
   - Make sure content can be downloaded correctly
@@ -8,9 +6,10 @@
   - Use newest version of all files (and test!) right before first release
 - Finish help section
 - Remove test-stuff from server afterwards (like test-versions etc.)
-- Remove the "default language" concept, select language which was selected last
 
 ### Secondary goals
+- Info-boxes when using add-panel or suggestions for the first time (permanent?)
+- Add separate functionality for choosing custom background colors for reviews?
 - Also replace add-kanji panels with edit-kanji panels
 - Make searching for vocab lists faster by pre-sorting in datamanger already
 - Removing word from vocabulary lists should be done in datamanager function too
@@ -39,8 +38,10 @@
 - Reverse completion list order if it's shown above entry instead of below
   - Extend the utility view function for this purpose
 - In edit-vocab-panel, load suggestions if content is available (see TODOs)
-- Add control bar to notes sections to access search, open help or add new group
+- Add control bar to notes sections: search, show help, add group, undo delete
 - Implement undo for custom pasting using handler in onlyAllowPastingRawText?
+- Hand-pick better colors for less than 6 languages
+- Implement dynamic update of kanji/hanzi stats? Maybe make own widget for it?
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
@@ -55,6 +56,8 @@
 - Don't preload words in vocabulary section - on scroll, given date is outdated
 - If word is renamed, associated vocab entry in dictionary entry gets outdated.
   Add a listener to dictionary section and method to dictionary entry to solve.
+- Adding a word and creating a new list simultaneously throws error (textContent
+  of amountLabel is undefined), but everything still works nonetheless.
 
 
 By category
@@ -234,7 +237,7 @@ By category
 - Remove all log messages
 
 ### Stats
-- Allow switching between showing daily/cumulative progress for each diagram?
+- Line diagram which shows cumulative growth of vocabulary over diff. periods
 - Implement selecting specific languages to show stats for
 - Possibly use D3.js for diagrams?
 
@@ -306,6 +309,7 @@ Future
 - Implement changelog-widget (for changelogs saved in local storage somewhere)?
 - Create a custom menu bar?
 - Find open dictionaries for English, Spanish, Chinese and Russian
+  - Implement detailed hanzi stats (just like the kanji stats)
 - Create stylable `<select>` alternative
 - Somehow display frequencies for specific words and readings in dictionary?
 - Upgrade to Font Awesome 5

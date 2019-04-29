@@ -182,8 +182,13 @@ module.exports = function (paths, modules) {
      * @param {String} hanzi
      * @returns {Promise}
      */
-    hanziModule.remove = function (hanzi) {
-        return modules.database.run("DELETE FROM hanzi WHERE hanzi = ?", hanzi);
+    hanziModule.remove = async function (hanzi) {
+        await modules.database.run("DELETE FROM hanzi WHERE hanzi = ?", hanzi);
+        // The following might not be necessary, if DB constraints work properly
+        await modules.database.run(
+            "DELETE FROM hanzi_meanings WHERE hanzi = ?", hanzi);
+        await modules.database.run(
+            "DELETE FROM hanzi_readings WHERE hanzi = ?", hanzi);
     };
 
     /**
@@ -263,8 +268,8 @@ module.exports = function (paths, modules) {
      * @returns {Promise[Integer]}
      */
     hanziModule.getAmountAdded = function () {
-        return modules.database.query("SELECT COUNT(*) AS amount FROM hanzi")
-               .then(([{amount}]) => amount);
+        return modules.database.queryLanguage("Chinese",
+            "SELECT COUNT(*) AS amount FROM hanzi").then(([{amount}]) => amount)
     };
 
     /**

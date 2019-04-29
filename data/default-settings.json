@@ -7,9 +7,6 @@
         "doRegularBackup": false,
         "regularBackupInterval": "604800"
     },
-    "languages": {
-        "default": ""
-    },
     "test": {
         "useFlashcardMode": false,
         "makeContinuous": true,
@@ -54,7 +51,7 @@
         "historySizeLimit": 100
     },
     "kanjiInfo": {
-        "maximized": false
+        "maximized": false,
         "historySizeLimit": 50
     },
     "srs": {

@@ -5,9 +5,9 @@ class LanguagePopup extends Widget {
         super("language-popup", true);
         this.setAttribute("tabIndex", "0");
         this.callback = (language) => { };
-        this.onOpen = (languages) => { };
+        this.onOpen = () => { };
         this.isOpen = false;
-        this.focussedItem = null;
+        this.selectedItem = null;
         // Close list when clicking outside, open list when clicking label
         window.addEventListener("click", () => this.close());
         this.$("label").addEventListener("click", (event) => {
@@ -26,60 +26,21 @@ class LanguagePopup extends Widget {
             event.stopPropagation();
         });
         this.close();
-        // Focus item upon hovering over it
-        let hoveredElement = null;
-        this.$("popup-window").addEventListener("mouseover", (event) => {
-            hoveredElement = event.target.parentNode;
-            if (this.focussedItem !== null) {
-                this.focussedItem.classList.remove("focussed");
-            }
-            this.focussedItem = hoveredElement;
-            this.focussedItem.classList.add("focussed");
-        });
-        this.$("popup-window").addEventListener("mousemove", (event) => {
-            if (hoveredElement != this.focussedItem) {
-                if (this.focussedItem !== null) {
-                    this.focussedItem.classList.remove("focussed");
-                }
-                this.focussedItem = hoveredElement;
-                this.focussedItem.classList.add("focussed");
-            }
-        });
         // Enable selecting items with up/down arrow keys
         utility.handleKeyDownEvent(this, (event) => {
             if (!this.isOpen) return;
             if (event.key === "ArrowUp") {
-                if (this.focussedItem !== null) {
-                    this.focussedItem.classList.remove("focussed");
-                }
-                if (this.focussedItem === null) {
-                    this.focussedItem = this.$("popup-window").lastElementChild;
-                } else if (this.focussedItem.previousElementSibling === null) {
-                    this.focussedItem = this.$("popup-window").lastElementChild;
-                } else {
-                    this.focussedItem = this.focussedItem.previousElementSibling
-                }
-                this.focussedItem.classList.add("focussed");
+                this.selectPreviousItem();
             } else if (event.key === "ArrowDown") {
-                if (this.focussedItem !== null) {
-                    this.focussedItem.classList.remove("focussed");
-                }
-                if (this.focussedItem === null) {
-                    this.focussedItem = this.$("popup-window").firstElementChild
-                } else if (this.focussedItem.nextElementSibling === null) {
-                    this.focussedItem = this.$("popup-window").firstElementChild
-                } else {
-                    this.focussedItem = this.focussedItem.nextElementSibling;
-                }
-                this.focussedItem.classList.add("focussed");
+                this.selectNextItem();
             }
         });
-        // Select focussed item when pressing enter/space (if the list is open)
+        // Select selected item when pressing enter/space (if the list is open)
         this.addEventListener("keypress", (event) => {
             if (event.key !== "Enter" && event.key !== " ") return;
             if (!this.isOpen) return;
-            if (this.focussedItem === null) return;
-            this.invoke(this.focussedItem.dataset.language);
+            if (this.selectedItem === null) return;
+            this.invokeSelectedItem();
             this.close();
             event.stopPropagation();
         });
@@ -89,12 +50,19 @@ class LanguagePopup extends Widget {
         });
     }
     
-    add(language) {
-        this.$("popup-window").innerHTML += `
-            <div data-language="${language}">
-              <div>${language}</div>
-              <div id="amount-due-${language}"></div>
-            </div>`;
+    add(language, selected=false) {
+        const newItem = document.createElement("div");
+        newItem.dataset.language = language;
+        newItem.innerHTML = `<div>${language}</div>
+                             <div id="amount-due-${language}"></div>`;
+        this.$("popup-window").appendChild(newItem);
+        if (selected) {
+            if (this.selectedItem !== null) {
+                this.selectedItem.classList.remove("selected");
+            }
+            this.selectedItem = newItem;
+            this.selectedItem.classList.add("selected");
+        }
     }
 
     setAmountDue(language, amount) {
@@ -103,8 +71,13 @@ class LanguagePopup extends Widget {
         amountLabel.classList.toggle("highlight", amount > 0);
     }
 
+    invokeSelectedItem() {
+        this.invoke(this.selectedItem.dataset.language);
+    }
+
     clear() {
         this.$("popup-window").innerHTML = "";
+        this.selectedItem = null;
     }
 
     set(language) {
@@ -112,13 +85,41 @@ class LanguagePopup extends Widget {
         const items = this.$("popup-window").children;
         for (const item of items) {
             if (item.dataset.language === language) {
-                if (this.focussedItem !== null) {
-                    this.focussedItem.classList.remove("focussed");
+                if (this.selectedItem !== null) {
+                    this.selectedItem.classList.remove("selected");
                 }
-                this.focussedItem = item;
-                this.focussedItem.classList.add("focussed");
+                this.selectedItem = item;
+                this.selectedItem.classList.add("selected");
             }
         }
+    }
+
+    selectPreviousItem() {
+        if (this.selectedItem !== null) {
+            this.selectedItem.classList.remove("selected");
+        }
+        if (this.selectedItem === null) {
+            this.selectedItem = this.$("popup-window").lastElementChild;
+        } else if (this.selectedItem.previousElementSibling === null) {
+            this.selectedItem = this.$("popup-window").lastElementChild;
+        } else {
+            this.selectedItem = this.selectedItem.previousElementSibling;
+        }
+        this.selectedItem.classList.add("selected");
+    }
+
+    selectNextItem() {
+        if (this.selectedItem !== null) {
+            this.selectedItem.classList.remove("selected");
+        }
+        if (this.selectedItem === null) {
+            this.selectedItem = this.$("popup-window").firstElementChild;
+        } else if (this.selectedItem.nextElementSibling === null) {
+            this.selectedItem = this.$("popup-window").firstElementChild;
+        } else {
+            this.selectedItem = this.selectedItem.nextElementSibling;
+        }
+        this.selectedItem.classList.add("selected");
     }
 
     async invoke(language) {
@@ -133,15 +134,10 @@ class LanguagePopup extends Widget {
 
     open() {
         this.isOpen = true;
+        this.$("popup-window").style.top = `${this.offsetHeight}px`;
         this.$("popup-window").show();
         this.classList.add("open");
-        this.$("popup-window").style.top = `${this.offsetHeight}px`;
-        const languages = [];
-        const options = this.$("popup-window").children;
-        for (const option of options) {
-            languages.push(option.children[0].textContent);
-        }
-        this.onOpen(languages);
+        this.onOpen();
     }
 
     close() {

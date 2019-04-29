@@ -184,8 +184,15 @@ module.exports = function (paths, modules) {
      * @param {String} kanji
      * @returns {Promise}
      */
-    kanjiModule.remove = function (kanji) {
-        return modules.database.run("DELETE FROM kanji WHERE kanji = ?", kanji);
+    kanjiModule.remove = async function (kanji) {
+        await modules.database.run("DELETE FROM kanji WHERE kanji = ?", kanji);
+        // The following might not be necessary, if DB constraints work properly
+        await modules.database.run(
+            "DELETE FROM kanji_meanings WHERE kanji = ?", kanji);
+        await modules.database.run(
+            "DELETE FROM kanji_on_yomi WHERE kanji = ?", kanji);
+        await modules.database.run(
+            "DELETE FROM kanji_kun_yomi WHERE kanji = ?", kanji);
     };
 
     /**
@@ -288,8 +295,8 @@ module.exports = function (paths, modules) {
      * @returns {Promise[Integer]}
      */
     kanjiModule.getAmountAdded = function () {
-        return modules.database.query("SELECT COUNT(*) AS amount FROM kanji")
-               .then(([{amount}]) => amount);
+        return modules.database.queryLanguage("Japanese",
+            "SELECT COUNT(*) AS amount FROM kanji").then(([{amount}]) => amount)
     };
 
     /**

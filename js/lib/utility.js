@@ -989,6 +989,7 @@ function getTimelineMarkers(intervals, unit) {
  * @returns {Array}
  */
 function getDistantColors(n) {
+    // Good-looking colors for a small amount of languages
     const colors = [
         ["#b56262"],
         ["#b56262", "#62b562"],
@@ -998,7 +999,23 @@ function getDistantColors(n) {
         ["#b56262", "#6262b5", "#b5b562", "#ba956d", "#b56ab0"],
         ["#b56262", "#6262b5", "#b5b562", "#ba956d", "#b56ab0", "#6ab573"]
     ];
-    return colors[n - 1];
+    if (n <= colors.length) 
+        return colors[n - 1];
+
+    // 21 colors taken from here: https://stackoverflow.com/a/309193
+    // Not very aesthetically pleasing, but sufficiently distinguishable
+    const alternativeColors = [
+        "#FF0000","#00FF00","#0000FF","#FFFF00","#FF00FF","#00FFFF","#000000", 
+        "#800000","#008000","#000080","#808000","#800080","#008080","#808080", 
+        "#C00000","#00C000","#0000C0","#C0C000","#C000C0","#00C0C0","#C0C0C0"
+    ];
+    if (n <= alternativeColors.length) 
+        return alternativeColors.slice(0, n);
+
+    // More than 21 colors are not supported, return array filled with #000000
+    const blackArray = [];
+    for (let i = 0; i < n; ++i) blackArray.push("#000000");
+    return blackArray;
 }
 
 

@@ -1,6 +1,11 @@
 $font: var(--main-font);
 $serif-font: var(--main-font-serif);
 
+:host, :root {
+  --main-font: OpenSans-Regular;
+  --main-font-serif: RobotoSlab-Regular;
+}
+
 :host(.GLOBAL-main-font-Japanese), :root.GLOBAL-main-font-Japanese {
   --main-font: TakaoPGothic;
   --main-font-serif: TakaoPMincho;

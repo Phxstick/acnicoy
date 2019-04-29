@@ -14,14 +14,14 @@ to a customizable [SRS system](help#Components#SRS). To test yourself on those
 items, click the "Test" button (which displays the amount of items which are
 ready to be reviewed for the currently selected language).
 
-If you are learning several languages, you can switch your current language
+If you are learning several languages, you can switch to another language
 by clicking the language label located at the top left of the window.
 You can access additional features by clicking the buttons next to the label,
 such as:
 
-- view your vocabulary and organize it into lists
-- view statistics of your learning progress
-- customize the program using various settings
+- Viewing your vocabulary and organizing it into lists
+- Viewing statistics of your learning progress
+- Customizing the program using various settings
 
 For additional information on certain [components](help#Components) or
 [language support](help#Languages), you can open the [help](help#Overview)

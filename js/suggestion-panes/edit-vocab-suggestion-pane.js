@@ -7,10 +7,10 @@ class EditVocabSuggestionPane extends VocabSuggestionPane {
     }
 
     async load(id, chosenWordVariant) {
-        await super.load(id, chosenWordVariant);
         // Change behavior depending on whether word is already the vocabulary
         const alreadyAdded = await dataManager.vocab.contains(chosenWordVariant)
         this.autoSelect = !alreadyAdded;
+        await super.load(id, chosenWordVariant);
         if (!alreadyAdded) return;
         // Mark suggestions for all selected translations as selected
         const info = await dataManager.vocab.getInfo(chosenWordVariant);

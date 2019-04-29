@@ -3,6 +3,12 @@
 const markdown = require("markdown").markdown;
 
 const menuItems = contextMenu.registerItems({
+    "save-note": {
+        label: "Save note",
+        click: ({ data: { section } }) => {
+            section.saveNoteBeingEdited();
+        }
+    },
     "edit-note": {
         label: "Edit note",
         click: ({ currentNode, data: { section } }) => {
@@ -14,6 +20,17 @@ const menuItems = contextMenu.registerItems({
         click: ({ currentNode, data: { section } }) => {
             section.deleteNote(currentNode);
         }
+    },
+    "insert-note-below": {
+        label: "Insert note below",
+        click: ({ currentNode, data: { section } }) => {
+            const note = section.addNote("", section.currentNotesContainer);
+            currentNode.parentNode.insertBefore(note, currentNode.nextSibling);
+            section.editNote(note);
+            if (note.nextSibling === null) {
+                note.scrollIntoView(false);
+            }
+        }
     }
 });
 
@@ -23,6 +40,7 @@ class NotesSection extends Section {
         this.$("add-button").hide();
         this.noteToMarkdown = new WeakMap();
         this.noteToContentNode = new WeakMap();
+        this.modified = false;
 
         // State variables
         this.noteBeingEdited = null;
@@ -84,14 +102,15 @@ class NotesSection extends Section {
 
         // Enter edit mode when double clicking a note
         this.$("notes").addEventListener("dblclick", (event) => {
-            if (this.noteBeingEdited !== null) {
-                this.saveNoteBeingEdited();
-            }
             if (this.controlButtons.contains(event.target)) return;
             let node = event.target;
             while (node.parentNode !== this.currentNotesContainer) {
                 node = node.parentNode;
             }
+            if (this.noteBeingEdited === node)
+                return;
+            if (this.noteBeingEdited !== null)
+                this.saveNoteBeingEdited();
             this.editNote(node);
         });
 
@@ -193,6 +212,7 @@ class NotesSection extends Section {
 
         // Function which terminates dragging of a note
         const dropNote = () => {
+            this.modified = true;
             this.draggingNote = false;
             this.draggedNote.classList.remove("dragged-note");
             this.draggedNote.style.left = "0px";
@@ -250,6 +270,10 @@ class NotesSection extends Section {
         //   Set callbacks for the structure tree
         // ====================================================================
 
+        // Register modifications in the structure tree (so changes get saved)
+        this.$("structure-tree").setOnModify(() => {
+            this.modified = true;
+        });
         // When selecting a group, display all notes contained in there
         this.$("structure-tree").setOnSelect((node) => {
             this.selectedGroupNode = node;
@@ -323,9 +347,11 @@ class NotesSection extends Section {
      * Write the current state of the notes to the data manager.
      */
     saveData() {
-        if (this.noteBeingEdited !== null) {
+        if (this.noteBeingEdited !== null)
             this.saveNoteBeingEdited();
-        }
+        if (!this.modified)
+            return;
+        this.modified = false;
         const data = this.$("structure-tree").toJsonObject((notesContainer) => {
             const markdownArray = []
             for (const note of notesContainer.children) {
@@ -383,13 +409,15 @@ class NotesSection extends Section {
             //     this.controlButtons.hide();
             // }
         });
-        note.contextMenu(menuItems, ["edit-note", "delete-note"],
-                         { section: this });
+        note.contextMenu(menuItems, () => this.noteBeingEdited !== note ?
+            ["edit-note", "delete-note", "insert-note-below"] : ["save-note"],
+            { section: this });
         return note;
     }
 
     deleteNote(note) {
         this.currentNotesContainer.removeChild(note);
+        this.modified = true;
     }
 
     editNote(note) {
@@ -418,6 +446,7 @@ class NotesSection extends Section {
         contentNode.setAttribute("contenteditable", "false");
         note.classList.remove("editing");
         this.noteToMarkdown.set(note, trimmedContent);
+        this.modified = true;
     }
 }
 

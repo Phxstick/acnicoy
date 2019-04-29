@@ -3,6 +3,8 @@
 class TestCompleteOverlay extends Overlay {
     constructor() {
         super("test-complete");
+        this.opened = false;
+        this.moreLanguagesReady = false;
         this.$("close-button").addEventListener("click", () => {
             this.resolve(false);
         });
@@ -40,6 +42,33 @@ class TestCompleteOverlay extends Overlay {
             await main.setLanguage(language);
             this.resolve(true);
         };
+        // Choosing a language using Ctrl+Tab (like in the main-window class)
+        let choosingNextLanguage = false;
+        window.addEventListener("keydown", (event) => {
+            if (!this.opened) return;
+            if (!this.moreLanguagesReady) return;
+            if (!choosingNextLanguage && event.key === "Tab" && event.ctrlKey) {
+                choosingNextLanguage = true;
+                this.$("languages-ready-for-testing").open();
+            }
+            if (choosingNextLanguage && event.key === "Tab") {
+                event.stopPropagation();
+                event.preventDefault();
+                if (event.shiftKey) {
+                    this.$("languages-ready-for-testing").selectPreviousItem();
+                } else {
+                    this.$("languages-ready-for-testing").selectNextItem();
+                }
+            }
+        }, true);
+        window.addEventListener("keyup", (event) => {
+            if (!this.opened) return;
+            if (choosingNextLanguage && !event.ctrlKey) {
+                choosingNextLanguage = false;
+                this.$("languages-ready-for-testing").invokeSelectedItem();
+                this.$("languages-ready-for-testing").close();
+            }
+        }, true);
     }
 
     open(testInfo) {
@@ -98,24 +127,30 @@ class TestCompleteOverlay extends Overlay {
             promises.push(dataManager.srs.getTotalAmountDueFor(language)
             .then((amount) => ({ language, amount })));
         }
+        this.moreLanguagesReady = false;
         Promise.all(promises).then((languageAndAmount) => {
             // Display languages with large amount of due items first
             languageAndAmount.sort((lA1, lA2) => lA2.amount - lA1.amount);
+            let numLanguagesLeft = 0;
             for (const { language, amount } of languageAndAmount) {
                 if (amount === 0) break;
+                if (dataManager.currentLanguage === language) break;
                 this.$("languages-ready-for-testing").add(language);
                 this.$("languages-ready-for-testing").setAmountDue(language,
                                                                    amount);
+                ++numLanguagesLeft;
             }
             this.$("languages-ready-for-testing").set("Choose a language");
             // Hide this frame if there are no languages with due items
-            this.$("start-new-test-frame").toggleDisplay(
-                languageAndAmount[0].amount > 0);
+            this.moreLanguagesReady = numLanguagesLeft > 0;
+            this.$("start-new-test-frame").toggleDisplay(numLanguagesLeft > 0);
         });
+        this.opened = true;
     }
 
     close() {
         this.$("mistakes").innerHTML = "";
+        this.opened = false;
     }
 }
 

@@ -507,16 +507,28 @@ document.addEventListener("mousedown", (event) => {
 HTMLElement.prototype.onlyAllowPastingRawText = function(root) {
     this.addEventListener("paste", (event) => {
         event.preventDefault();
-        const { anchorOffset: pos, anchorNode: node } = root.getSelection();
+        // Get the selection and remove the selected part
+        let selection = root.getSelection();
+        let { anchorOffset: pos, anchorNode: node } = selection;
+        selection.deleteFromDocument();
+
         // Put text from clipboard at the position of the cursor
         const toBePasted = event.clipboardData.getData("Text");
         const text = node.textContent;
         node.textContent = text.substr(0, pos) + toBePasted + text.substr(pos);
+
         // Put cursor after the pasted text
+        selection = root.getSelection();
+        // pos = selection.anchorOffset;
+        node = selection.anchorNode;
         const range = document.createRange();
-        range.setStart(this.firstChild, pos + toBePasted.length);
-        range.setEnd(this.firstChild, pos + toBePasted.length);
-        const selection = root.getSelection();
+        if (node.nodeType === Node.TEXT_NODE) {
+            range.setStart(node, pos + toBePasted.length);
+            range.setEnd(node, pos + toBePasted.length);
+        } else {
+            range.setStart(node, 0);
+            range.setEnd(node, 1);
+        }
         selection.removeAllRanges();
         selection.addRange(range);
         // TODO: Somehow add this action to the undo-stack if possible

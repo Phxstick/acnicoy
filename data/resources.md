@@ -3,6 +3,8 @@
 [Spinners](https://tobiasahlin.com/spinkit/)
 from Tobias Ahlin
 
+Used librares are listed as dependencies in the [package.json](https://github.com/Phxstick/acnicoy/blob/master/package.json) file.
+
 
 ### Japanese language data
 

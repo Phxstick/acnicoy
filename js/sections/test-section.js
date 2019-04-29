@@ -323,7 +323,7 @@ class TestSection extends Section {
             numCorrect: 0,
             numIncorrect: 0,
             numFinished: 0,
-            inEvalStep: false,
+            inEvalStep: true,
             skipNextEvaluation: false,
             wrappingUp: false
         };
@@ -382,18 +382,26 @@ class TestSection extends Section {
     }
 
     async _evaluateAnswer() {
-        const answer = this.$("answer-entry").textContent.trim().toLowerCase();
+        // Prevent multiple consecutive invocations of this function
+        if (this.testInfo.inEvalStep)
+            return;
+        this.testInfo.inEvalStep = true;
+
+        // Get item data and mark item if previously answered incorrectly
         const item = this.testInfo.currentItem;
         const part = this.testInfo.currentPart;
         const entry = item.entry;
-        if (item.lastAnswerIncorrect) {
+        if (item.lastAnswerIncorrect)
             item.marked = true;
-        }
-        this.testInfo.inEvalStep = true;
+
+        // Gather solutions
         const [solutions, extendedSolutions] = await Promise.all([
             dataManager.test.getSolutions(entry, item.mode, part),
             dataManager.test.getExtendedSolutions(entry, item.mode, part)
         ]);
+
+        // Check whether the answer counts as correct
+        const answer = this.$("answer-entry").textContent.trim().toLowerCase();
         let answerCorrect = true;
         if (!extendedSolutions.has(answer)) {
             let match = false;
@@ -410,11 +418,13 @@ class TestSection extends Section {
         }
         item.lastAnswerIncorrect = !answerCorrect;
         const itemCorrect = !item.marked && !item.lastAnswerIncorrect;
-        // If item is finished, determine new level for this item
+
+        // If item is finished, determine new level for it
         let newLevel;
         if (item.parts.length === 0) {
-            newLevel = dataManager.test.getNewLevel(item.level,itemCorrect);
+            newLevel = dataManager.test.getNewLevel(item.level, itemCorrect);
         }
+
         // Update status label, unless evaluations for correct answers are
         // skipped without animation and a correct answer was given
         if (!dataManager.settings.test.skipEvaluationOnCorrect ||
@@ -424,47 +434,51 @@ class TestSection extends Section {
             this.$("status").classList.toggle("correct", answerCorrect);
             this.$("status").classList.toggle("incorrect", !answerCorrect);
         }
+
         // Skip evaluation for correct answer if corresponding flag is set
         if (dataManager.settings.test.skipEvaluationOnCorrect &&
                 answerCorrect) {
             this._createQuestion(newLevel);
-        } else {
-            this._displaySolutions(
-                solutions, dataManager.settings.test.animate);
-            // Update rest of view
-            if (item.parts.length === 0 && !this.testInfo.vocabListMode) {
-                this.$("new-level").setByIndex(newLevel - 1);
-                this.$("old-level").textContent = item.level;
-                this.$("level-arrow").classList.toggle("correct",
-                                                       itemCorrect);
-                this.$("level-arrow").classList.toggle("incorrect",
-                                                       !itemCorrect);
-                if (dataManager.settings.test.animate) {
-                    Velocity(this.$("levels-frame"), "fadeIn", { display:"flex",
-                        visibility:"visible",duration:this.evalFadeInDuration});
-                } else {
-                    this.$("levels-frame").style.opacity = "1";
-                }
-            }
-            if (dataManager.settings.test.enableIgnoreShortcut) {
-                shortcuts.enable("ignore-answer");
-            }
-            this.$("answer-entry").hide();
-            this.$("continue-button").show();
-            this.$("continue-button").focus();
-            this.$("ignore-answer").removeAttribute("disabled");
-            this.$("modify-item").removeAttribute("disabled");
-            if (!answerCorrect)
-                this.$("add-answer").removeAttribute("disabled");
-            this.$("ignore-answer").show();
-            this.$("add-answer").toggleDisplay(!answerCorrect, "flex");
+            return;
+        }
+
+        this._displaySolutions(solutions, dataManager.settings.test.animate);
+
+        // Update the level indicators
+        if (item.parts.length === 0 && !this.testInfo.vocabListMode) {
+            this.$("new-level").setByIndex(newLevel - 1);
+            this.$("old-level").textContent = item.level;
+            this.$("level-arrow").classList.toggle("correct",
+                                                   itemCorrect);
+            this.$("level-arrow").classList.toggle("incorrect",
+                                                   !itemCorrect);
             if (dataManager.settings.test.animate) {
-                Velocity(this.$("button-bar"), "fadeIn", { display: "flex",
-                    visibility: "visible", duration: this.evalFadeInDuration });
+                Velocity(this.$("levels-frame"), "fadeIn", { display:"flex",
+                    visibility:"visible",duration:this.evalFadeInDuration});
             } else {
-                this.$("button-bar").style.visibility = "visible";
-                this.$("button-bar").style.opacity = "1";
+                this.$("levels-frame").style.opacity = "1";
             }
+        }
+        if (dataManager.settings.test.enableIgnoreShortcut) {
+            shortcuts.enable("ignore-answer");
+        }
+
+        // Update the button bar
+        this.$("answer-entry").hide();
+        this.$("continue-button").show();
+        this.$("continue-button").focus();
+        this.$("ignore-answer").removeAttribute("disabled");
+        this.$("modify-item").removeAttribute("disabled");
+        if (!answerCorrect)
+            this.$("add-answer").removeAttribute("disabled");
+        this.$("ignore-answer").show();
+        this.$("add-answer").toggleDisplay(!answerCorrect, "flex");
+        if (dataManager.settings.test.animate) {
+            Velocity(this.$("button-bar"), "fadeIn", { display: "flex",
+                visibility: "visible", duration: this.evalFadeInDuration });
+        } else {
+            this.$("button-bar").style.visibility = "visible";
+            this.$("button-bar").style.opacity = "1";
         }
     }
 
@@ -552,7 +566,8 @@ class TestSection extends Section {
     _prepareMode(mode, part) {
         this.$("status").classList.remove("correct");
         this.$("status").classList.remove("incorrect");
-        // Choose right input method (for translations or readings)
+
+        // Choose the right input method (for translations or readings)
         if (dataManager.currentLanguage === "Japanese") {
             if (mode === dataManager.test.mode.KANJI_KUN_YOMI)
                 this.$("answer-entry").enableKanaInput("hiragana");
@@ -574,7 +589,8 @@ class TestSection extends Section {
             this.$("answer-entry").classList.remove("pinyin");
             this.$("answer-entry").disablePinyinInput();
         }
-        // Choose the right status label
+
+        // Choose the right text for the status message
         if (part === "readings") {
             this.$("status").textContent = "How do you read this word?";
         } else {
@@ -594,7 +610,10 @@ class TestSection extends Section {
                 text = `How do you read the following hanzi?`;
             this.$("status").textContent = text;
         }
+
         this._applyColors(mode, part);
+
+        // Animate status label if needed
         if (this.$("status").style.visibility === "hidden") {
             if (dataManager.settings.test.animate) {
                 Velocity(this.$("status"), "fadeIn", { display: "block",
@@ -630,7 +649,11 @@ class TestSection extends Section {
     }
 
     async _createQuestion(newLevel) {
+        // Prevent multiple consecutive invocations of this function
+        if (!this.testInfo.inEvalStep)
+            return;
         this.testInfo.inEvalStep = false;
+
         // Immediately disable all buttons and shortcuts to prevent bugs
         this.$("ignore-answer").setAttribute("disabled", "");
         this.$("add-answer").setAttribute("disabled", "");
@@ -638,10 +661,12 @@ class TestSection extends Section {
         if (dataManager.settings.test.enableIgnoreShortcut) {
             shortcuts.disable("ignore-answer");
         }
+
         // Process previously answered item
         if (this.testInfo.currentItem !== null &&
                 !this.testInfo.skipNextEvaluation) {
             const item = this.testInfo.currentItem;
+
             // Remember mistakes (for display in test-complete-overlay)
             if (item.lastAnswerIncorrect) {
                 let mistakeAlreadyRegistered = false;
@@ -660,11 +685,14 @@ class TestSection extends Section {
                     });
                 }
             }
+
+            // If this item is finished (all parts answered correctly)
             if (item.parts.length === 0) {
                 if (newLevel === undefined && !this.testInfo.vocabListMode) {
                     newLevel = this.$("new-level").value;
                 }
                 let scoreGain;
+
                 // Update SRS system, daily stats, testInfo and counters
                 if (!this.testInfo.vocabListMode) {
                     dataManager.stats.incrementTestedCounter(item.mode);
@@ -684,6 +712,7 @@ class TestSection extends Section {
                         item.entry, item.mode);
                     this.testInfo.numIncorrect++;
                 }
+
                 // Animate label with gained score
                 if (dataManager.settings.test.showScore &&
                         !this.testInfo.vocabListMode) {
@@ -713,6 +742,7 @@ class TestSection extends Section {
             }
         }
         this.testInfo.skipNextEvaluation = false;
+
         // Display score and update progress
         this.$("progress").max = this.testInfo.numTotal;
         this.$("progress").value = this.testInfo.numFinished;
@@ -722,6 +752,7 @@ class TestSection extends Section {
             this.$("score").textContent = this.testInfo.score.toFixed();
             main.updateTestButton();
         }
+
         // If "continuous" flag is set, add new items ready for review
         if (dataManager.settings.test.makeContinuous &&
                 !this.testInfo.vocabListMode && !this.testInfo.wrappingUp) {
@@ -735,10 +766,12 @@ class TestSection extends Section {
             }
             this.testInfo.numTotal += newItems.length;
         }
-        // Pick new items until threshold amount
+
+        // Pick new items until threshold amount is reached
         let level = -1;
         while (this.testInfo.pickedItems.length < this.pickedItemsLimit &&
                 this.testInfo.items.size > 0) {
+
             // Choose an SRS level according to settings
             if (!dataManager.settings.test.sortByLevel) {
                 let number = random.integer(0, this.testInfo.numTotal
@@ -756,6 +789,7 @@ class TestSection extends Section {
                 level = Math.min(...this.testInfo.items.keys());
             }
             const itemsForLevel = this.testInfo.items.get(level);
+
             // Randomly choose an item with this SRS level
             const index = random.integer(0, itemsForLevel.length - 1);
             this.testInfo.pickedItems.push(itemsForLevel[index]);
@@ -765,6 +799,7 @@ class TestSection extends Section {
                 level = -1;
             }
         }
+
         // Check if test is completed (no items left)
         if (this.testInfo.pickedItems.length === 0) {
             if (!this.testInfo.vocabListMode) {
@@ -774,15 +809,18 @@ class TestSection extends Section {
             this.closeSession();
             return;
         }
+
         // Randomly choose one of the picked items for reviewing
         const index = random.integer(0, this.testInfo.pickedItems.length - 1);
         const newItem = this.testInfo.pickedItems[index];
         const previousItem = this.testInfo.currentItem;
         this.testInfo.pickedItems.quickRemoveAt(index);
+
         // Randomly choose a part of the item (e.g. meaning or reading)
         const partIndex = random.integer(0, newItem.parts.length - 1);
         const part = newItem.parts[partIndex];
         newItem.parts.splice(partIndex, 1);
+
         // Check if new item has solutions (if not, remove and skip it)
         const solutions = await
             dataManager.test.getSolutions(newItem.entry, newItem.mode, part);
@@ -796,11 +834,12 @@ class TestSection extends Section {
             await this._createQuestion();
             return;
         }
+
         // If item has solutions, finally assign it as current item
         this.testInfo.currentItem = newItem;
         this.testInfo.currentPart = part;
         // TODO: If frequent saving activated, save database+stats here
-        // == Update view ==
+
         // If animate flag is set, fade away previous item and solutions
         if (dataManager.settings.test.animate && previousItem !== null) {
             const solutionNodes = [];
@@ -810,6 +849,7 @@ class TestSection extends Section {
             const { top: solutionFrameTop, bottom: solutionFrameBottom,
                     left: solutionFrameLeft, right: solutionFrameRight }
                 = this.$("solutions").getBoundingClientRect();
+
             // Animate all solution nodes which are visible
             for (const solutionNode of solutionNodes) {
                 const { top: solutionNodeTop,
@@ -823,6 +863,7 @@ class TestSection extends Section {
                         easing: this.testItemEasing })
                 }
             }
+
             // Animate test item
             this.$("test-item").fadeOut({
                 duration: this.itemFadeDuration,
@@ -843,6 +884,7 @@ class TestSection extends Section {
                 this.$("solutions-wrapper").style.top = "0";
                 this.$("solutions-wrapper").style.position = "relative";
             });
+
             // Keep shape of solution containers and stretch shadows
             const rootOffsets = this.$("solutions").getRoot().host
                                 .getBoundingClientRect();
@@ -863,6 +905,7 @@ class TestSection extends Section {
             this.$("solutions-wrapper").style.width = `${solutionsWidth}px`;
             this.$("solutions-wrapper").style.height = `${solutionsHeight}px`;
             this.$("solutions-wrapper").style.position = "fixed";
+
             // Empty solution container
             for (const solutionNode of solutionNodes) {
                 this.$("solutions").removeChild(solutionNode);
@@ -872,13 +915,17 @@ class TestSection extends Section {
         }
         this.$("test-item").style.marginBottom = "0px";
         this.$("test-item").textContent = newItem.entry;
+
         // If animation flag is set, fade in new item
         if (dataManager.settings.test.animate && previousItem !== null) {
             this.$("test-item").fadeIn({ duration: this.itemFadeDuration,
                                          distance: this.itemFadeDistance,
                                          easing: this.testItemEasing });
         }
+
         this._prepareMode(newItem.mode, part);
+
+        // Adjust button bar and level indicator
         if (previousItem !== null && dataManager.settings.test.animate) {
             Velocity(this.$("button-bar"), "fadeOut", { display: "flex",
                 visibility: "hidden", duration: this.evalFadeOutDuration });
@@ -940,6 +987,7 @@ class TestSection extends Section {
 
     _getTestItems(since=0) {
         const itemPromises = [];
+
         // Assemble vocabulary part of the testitem list
         const vocabPart = dataManager.srs.getDueVocab(since).then((words) => {
             for (const word of words) {
@@ -947,6 +995,7 @@ class TestSection extends Section {
                     this._createTestItem(word, dataManager.test.mode.WORDS));
             }
         });
+
         // Assemble kanji part of the testitem list if the language is Japanese
         let kanjiParts = [];
         if (dataManager.currentLanguage === "Japanese") {
@@ -961,6 +1010,7 @@ class TestSection extends Section {
                 }));
             }
         }
+
         // Assemble hanzi part of the testitem list if the language is Chinese
         let hanziParts = [];
         if (dataManager.currentLanguage === "Chinese") {

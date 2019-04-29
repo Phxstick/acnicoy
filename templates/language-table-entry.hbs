@@ -45,9 +45,9 @@ A program update is required to download these.">
         </span>
       </div>
     </td>
-    <td><check-box class="default-language-checkbox radio-button-style"
-         {{#if default}}checked{{/if}}></check-box></td>
+    {{#if interactiveMode}}
     <td class="hide-button-cell"><button class="hide-button light no-shadow"><i class="fa fa-eye"></i></button></td>
+    {{/if}}
   {{/if}}
   <td><button class="remove-button red-icon"><i class="fa fa-remove"></i></button></td>
 </tr>

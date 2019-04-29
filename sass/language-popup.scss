@@ -32,9 +32,14 @@
     display: table-row;
     background-color: var(--menu-background);
 
-    &.focussed {
+    &:hover {
       background-color: var(--menu-background-hover);
       color: var(--menu-color-hover);
+    }
+
+    &.selected {
+      background-color: var(--menu-background-selected);
+      color: var(--menu-color-selected);
     }
 
     > div {

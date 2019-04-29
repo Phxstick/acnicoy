@@ -22,7 +22,6 @@ class LanguagesSettingsSubsection extends SettingsSubsection {
                     },
                     hidden: languageSettings.hidden
                 },
-                default: dataManager.settings.languages.default === language,
                 interactiveMode: true
             });
         }

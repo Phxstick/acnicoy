@@ -137,6 +137,15 @@ class DictionarySearchResultEntry extends Widget {
                 const query = target.textContent.trim();
                 main.sections["dictionary"].search(query, "reading");
             }
+            // If the dictionary is not opened, open it
+            if (main.currentSection !== "dictionary") {
+                main.openSection("dictionary");
+            }
+            // If the kanji info panel is open and maximized, minimize it
+            const kanjiPanel = main.$("kanji-info-panel");
+            if (kanjiPanel.isOpen && kanjiPanel.maximized) {
+                kanjiPanel.setMaximized(false);
+            }
         });
 
         // Attach event listeners to button to add/edit word in the vocabulary

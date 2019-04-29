@@ -151,23 +151,6 @@ class Application {
         this.closeWindow("loading");
     }
 
-    async initDefaultLang() {
-        const languages = dataManager.languages.all;
-        let defaultLanguage = dataManager.settings["languages"]["default"];
-        if (!defaultLanguage || !languages.includes(defaultLanguage)) {
-            if (languages.length === 1) {
-                defaultLanguage = languages[0];
-            } else {
-                this.closeWindow("loading");
-                const newDefaultLang =
-                    await this.openWindow("init-default-lang", languages);
-                defaultLanguage = newDefaultLang;
-            }
-            dataManager.settings["languages"]["default"] = defaultLanguage;
-            await dataManager.settings.saveGlobal();
-        }
-    }
-
     async initialize() {
         await new Promise((resolve) => { window.onload = resolve; });
         document.title = this.name;
@@ -201,10 +184,6 @@ class Application {
 
         // Load registered languages. If none exist, let user register new ones
         await this.initLanguages();
-
-        // Let user choose a default language if there's more than one and
-        // default is not set yet or the current default one is not available
-        await this.initDefaultLang();
 
         // Initialize stuff in main-window
         this.openWindow("main");

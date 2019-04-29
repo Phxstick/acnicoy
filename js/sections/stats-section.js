@@ -21,6 +21,13 @@ class StatsSection extends Section {
         this.$("srs-reviews-timeline").setDataCallback((unit) =>
             dataManager.stats.getItemsTestedTimelineFor(
                 dataManager.languages.visible, unit, numSteps[unit]));
+        const settingsLinks = this.$$(".settings-link");
+        for (const link of settingsLinks) {
+            link.addEventListener("click", () => {
+                main.openSection("settings");
+                main.sections["settings"].openSubsection("languages");
+            });
+        }
         // this.achievementIdToNode = new Map();
 
         // const globalAchievements = dataManager.achievements.getUnlockedGlobal();
@@ -111,6 +118,14 @@ class StatsSection extends Section {
         });
     }
 
+    processLanguageContent(language, secondaryLanguage) {
+        if (language === "Japanese") {
+            this.updateKanjiStats();
+        } else if (language === "Chinese") {
+            this.updateHanziStats();
+        }
+    }
+
     initStats() {
         this.$("general-stats").update();
         const languages = dataManager.languages.visible;
@@ -120,7 +135,77 @@ class StatsSection extends Section {
         this.$("srs-reviews-timeline").toggleLegend(languages.length > 1);
         this.$("words-added-timeline").drawTimeline();
         this.$("srs-reviews-timeline").drawTimeline();
+        this.updateKanjiStats();
+        this.updateHanziStats();
         this.recentlyInitialized = true;
+    }
+
+    async updateKanjiStats() {
+        if (dataManager.languages.visible.includes("Japanese")) {
+            this.$("kanji-stats").show();
+            dataManager.kanji.getAmountAdded().then((amount) => {
+                this.$("kanji-count").textContent = amount;
+            });
+            if (dataManager.content.isLoadedFor("Japanese", "English")) {
+                const content = dataManager.content.get("Japanese", "English");
+                this.$("kanji-stats-detailed").show();
+                this.$("kanji-data-not-loaded").hide();
+                const kanjiPerLevel = await
+                        dataManager.kanji.getAmountsAddedPerJlptLevel();
+                const kanjiPerGrade = await
+                        dataManager.kanji.getAmountsAddedPerGrade();
+                this.$("kanji-by-jlpt").empty();
+                this.$("kanji-by-grade").empty();
+                const makeLabel = (text, numAdded, numTotal) => {
+                    const div = document.createElement("div");
+                    div.innerHTML =
+`<div>
+    <div class="detail-label">${text}</div>
+    <div>${numAdded}</div>
+    <div class="detail-total">of ${numTotal}</div>
+</div>`;
+                    return div;
+                };
+                for (let level = 5; level >= 1; --level) {
+                    const numAdded = kanjiPerLevel[level];
+                    const numTotal = content.numKanjiPerJlptLevel[level];
+                    this.$("kanji-by-jlpt").appendChild(
+                        makeLabel(`JLPT ${level}`, numAdded, numTotal));
+                }
+                for (let grade = 1; grade <= 6; ++grade) {
+                    const numAdded = kanjiPerGrade[grade];
+                    const numTotal = content.numKanjiPerGrade[grade];
+                    this.$("kanji-by-grade").appendChild(
+                        makeLabel(`Grade ${grade}`, numAdded, numTotal));
+                }
+                this.$("kanji-by-grade").appendChild(makeLabel(
+                    `Grade 7+`, kanjiPerGrade[8], content.numKanjiPerGrade[8]));
+            } else {
+                this.$("kanji-stats-detailed").hide();
+                this.$("kanji-data-not-loaded").show();
+            }
+        } else {
+            this.$("kanji-stats").hide();
+        }
+    }
+
+    updateHanziStats() {
+        if (dataManager.languages.visible.includes("Chinese")) {
+            this.$("hanzi-stats").show();
+            dataManager.hanzi.getAmountAdded().then((amount) => {
+                this.$("hanzi-count").textContent = amount;
+            });
+            if (dataManager.content.isLoadedFor("Chinese", "English")) {
+                this.$("hanzi-stats-detailed").show();
+                this.$("hanzi-data-not-loaded").hide();
+                // TODO
+            } else {
+                this.$("hanzi-stats-detailed").hide();
+                this.$("hanzi-data-not-loaded").show();
+            }
+        } else {
+            this.$("hanzi-stats").hide();
+        }
     }
 }
 

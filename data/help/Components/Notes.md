@@ -18,7 +18,7 @@ managers let you do with the file system:
 
 The notes in the currently selected group are displayed in the right part of the
 screen. To add a new note to this group, click the button on the top, type in
-the desired text, and press `Ctrl + Enter` or `Escape` to save the changes.
+the desired text, and press **Ctrl + Enter** or **Escape** to save the changes.
 
 There are three things you can do with already existing notes:
 

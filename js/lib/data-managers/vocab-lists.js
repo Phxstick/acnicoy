@@ -140,11 +140,13 @@ module.exports = function (paths, modules) {
 
     vocabLists.searchForList = function (query) {
         query = query.toLowerCase();
-        const searchResult = [];
+        const startMatches = [];
+        const otherMatches = [];
         for (const name in data) {
-            if (name.toLowerCase().includes(query)) searchResult.push(name);
+            if (name.toLowerCase().startsWith(query)) startMatches.push(name);
+            else if (name.toLowerCase().includes(query)) otherMatches.push(name)
         }
-        return searchResult;
+        return [...startMatches, ...otherMatches];
     };
 
     vocabLists.searchList = async function (listName, query) {

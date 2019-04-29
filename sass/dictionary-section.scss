@@ -162,3 +162,7 @@ body {
 #search-spinner {
   align-self: center;
 }
+
+#no-search-results-info {
+  @include center-content;
+}

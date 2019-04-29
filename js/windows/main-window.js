@@ -152,12 +152,36 @@ class MainWindow extends Window {
         this.$("language-popup").onOpen = () => {
             this.$("language-popup").clear();
             for (const language of dataManager.languages.visible) {
-                this.$("language-popup").add(language);
+                this.$("language-popup").add(
+                    language, dataManager.currentLanguage === language);
                 dataManager.srs.getTotalAmountDueFor(language).then((amount)=>{
                     this.$("language-popup").setAmountDue(language, amount);
                 });
             }
         }
+        // Switching language using Ctrl+Tab
+        let switchingLanguage = false;
+        window.addEventListener("keydown", (event) => {
+            if (!switchingLanguage && event.key === "Tab" && event.ctrlKey) {
+                switchingLanguage = true;
+                this.$("language-popup").open();
+            }
+            if (switchingLanguage && event.key === "Tab") {
+                event.preventDefault();
+                if (event.shiftKey) {
+                    this.$("language-popup").selectPreviousItem();
+                } else {
+                    this.$("language-popup").selectNextItem();
+                }
+            }
+        });
+        window.addEventListener("keyup", (event) => {
+            if (switchingLanguage && !event.ctrlKey) {
+                switchingLanguage = false;
+                this.$("language-popup").invokeSelectedItem();
+                this.$("language-popup").close();
+            }
+        });
         // Auto launch functionality
         this.autoLauncher = new AutoLaunch({ name: app.name, isHidden: true });
         // Shortcut callbacks
@@ -350,8 +374,11 @@ class MainWindow extends Window {
         for (const shortcutName in this.shortcutMap) {
             shortcuts.enable(shortcutName);
         }
-        // Set language and adjust to global settings
-        await this.setLanguage(dataManager.settings.languages.default);
+        // Open the language which was open when the program was closed last
+        const lastOpenedLanguage = storage.get("last-opened-language");
+        await this.setLanguage(lastOpenedLanguage !== undefined ?
+            lastOpenedLanguage : dataManager.languages.all[0]);
+        // Apply global settings
         this.sections["settings"].broadcastGlobalSettings();
         events.emit("settings-loaded");  // Allow other widgets to adjust
         // Only display home section
@@ -689,6 +716,7 @@ class MainWindow extends Window {
         this.statusFadeOutCallbackId = window.setTimeout(() => {
             if (!this.barsHidden) this.$("status-text").fadeOut({
                     distance: 0, easing: "easeInSine", duration: 350 });
+            else this.$("status-text").style.visibility = "hidden";
         }, this.statusFadeOutDelay);
     }
 
@@ -802,6 +830,7 @@ class MainWindow extends Window {
         const testSessionClosed = await this.sections["test"].abortSession();
         if (!testSessionClosed)
             return false;
+        this.sections["notes"].saveData();
         await dataManager.setLanguage(language);
         this.adjustToLanguage(dataManager.currentLanguage,
                               dataManager.currentSecondaryLanguage);
@@ -911,6 +940,7 @@ class MainWindow extends Window {
         if (!confirmed) return false;
         const testSessionClosed = await this.sections["test"].abortSession();
         if (!testSessionClosed) return false;
+        storage.set("last-opened-language", dataManager.currentLanguage);
         await this.saveData();
         await dataManager.database.closeAll();
         await dataManager.history.closeAll();

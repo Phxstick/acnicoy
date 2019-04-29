@@ -105,14 +105,12 @@ $offset-arrow: calc(100% + #{$spacing});
   // Fade and slide tooltip window on hovering
   &[data-tooltip-pos="top"]:hover:after, &:not([data-tooltip-pos]):hover:after {
     animation-name: fade, slide-tooltip-down;
-    transform: translateX(-60%);
   }
   &[data-tooltip-pos="right"]:hover:after {
     animation-name: fade, slide-tooltip-to-left;
   }
   &[data-tooltip-pos="bottom"]:hover:after {
     animation-name: fade, slide-tooltip-up;
-    transform: translateX(-60%);
   }
   &[data-tooltip-pos="left"]:hover:after {
     animation-name: fade, slide-tooltip-to-right;

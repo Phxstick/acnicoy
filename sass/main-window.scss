@@ -35,6 +35,8 @@
     --menu-color: #{$button-color};
     --menu-background-hover: #{$button-background-hover};
     --menu-color-hover: #{$button-color-hover};
+    --menu-background-selected: #{$highlight-background};
+    --menu-color-selected: #{$highlight-color};
     --menu-separator-color: #{$button-border-color};
     --highlight-text-shadow: 0 0 1px var(--menu-color);
     &:focus {
@@ -47,6 +49,7 @@
     flex-direction: row;
 
     > button {
+      @include center-content("horizontal");
       box-sizing: border-box;
       width: 45px;
       font-size: 140%;

@@ -28,8 +28,8 @@ class GeneralStats extends Widget {
                 parseInt(this.$("num-tested-total").textContent) + 1;
         });
         events.onAll(["word-added", "word-deleted", "vocab-changed",
-                      "kanji-added", "kanji-deleted", "kanji-changed",
-                      "hanzi-added", "hanzi-deleted", "hanzi-changed",
+                      "kanji-added", "kanji-removed", "kanji-changed",
+                      "hanzi-added", "hanzi-removed", "hanzi-changed",
                       "item-reviewed"], () => {
             const language = dataManager.currentLanguage;
             const newScore = dataManager.stats.getTotalScoreFor(language);

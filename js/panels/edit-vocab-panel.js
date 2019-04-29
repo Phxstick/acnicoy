@@ -103,7 +103,7 @@ class EditVocabPanel extends EditPanel {
                         // TODO: Guess a dictionary ID by word only
                     }
                     if (dictionaryId !== null) {
-                        this.suggestionPanes[name].load(dictionaryId, newWord);
+                        main.suggestionPanes["edit-vocab"].load(dictionaryId, newWord);
                         // TODO: Show suggestion pane
                     }
                 }
@@ -320,6 +320,9 @@ class EditVocabPanel extends EditPanel {
     }
 
     async save() {
+        // Prevent empty item getting added as translation/reading/list
+        if (this.root.activeElement !== null)
+            this.root.activeElement.blur();
         // Assemble all the necessary data
         const originalWord = this.originalWord;
         const word = this.$("word").textContent;
