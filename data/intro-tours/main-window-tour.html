@@ -6,21 +6,34 @@
   This includes <em>adding new words</em> to your vocabulary and <em>testing yourself</em> on previously added words.
   </p>
   <p>
-  If additional language content (such as a <em>dictionary</em>) has been installed, it will also become accessible from here.
+  If additional language data (such as a <em>dictionary</em>) has been installed, it will also become accessible from here.
   </p>
 </template>
 
 <template data-target="language-popup">
   <p>
-  The currently <b>active language</b> is displayed in the top left corner. If you are learning multiple languages, you can switch between them here.
+  The currently <b>active language</b> is displayed in the top left corner. If you are learning multiple languages, you can switch between them here
+  or using the shortcut <b>Ctrl + Tab</b>.
+  </p>
+</template>
+
+<template data-target="add-vocab-button">
+  <p>
+  The <b>word button</b> can be used to add new words to your vocabulary.
+  </p>
+  <p>
+  Since this is one of the most frequently used features, it's recommended
+  to access it with its shortcut, which by default is <b>Ctrl + A</b>.
   </p>
 </template>
 
 <template data-target="test-button">
   <p>
-  The <b>test button</b> displays the number of vocabulary items which are currently available for review.
+  The <b>test button</b> can be used to test yourself on previously added vocabulary items.
+  (default shortcut <b>Ctrl + T</b>).
   </p>
   <p>
+  It displays the number of vocabulary items that are currently available for review.
   Items get scheduled periodically according to your chosen <em>SRS scheme</em>.
   </p>
 </template>
@@ -64,11 +77,11 @@
     main.introTourContext = main.sections["home"];
   </script>
   <p>
-  The <b>SRS status overview</b> displays the distribution of items among SRS levels for each language.
-  The small grey numbers denote the total number of items in a level, while large red numbers below denote the number of items ready for review.
+  The <b>SRS status overview</b> displays the distribution of items across SRS levels for each language.
+  Small grey numbers denote the total number of items in a level, while large red numbers denote the number of items ready for review.
   </p>
   <p>
-  If you're short on time, it's recommended to at least review items in lower SRS levels, as these are more likely to slip out of your memory!
+  If you're short on time, it's recommended to at least review items in lower SRS levels, as these are more likely to slip out of your memory.
   </p>
 </template>
 
@@ -78,7 +91,7 @@
     main.introTourContext = main.sections["home"];
   </script>
   <p>
-  The <b>SRS schedule</b> is a draggable timeline showing how many vocabulary items are scheduled for review in the near future.</li>
+  The <b>SRS schedule</b> is a draggable timeline which shows the number of vocabulary items that are scheduled for review in the near future.</li>
   </p>
 </template>
 
@@ -87,7 +100,7 @@
     main.introTourContext = main;
   </script>
   <p>
-  View your language learning progress in the <b>stats section</b>.
+  View statistics of your language learning progress in the <b>stats section</b>.
   </p>
 </template>
 

@@ -122,7 +122,6 @@
   flex-direction: row;
 
   &.edit-mode {
-    cursor: $auto-cursor;
     position: relative;
     background-color: $input-background-focus;
     box-shadow: $input-highlight-shadow;
@@ -143,6 +142,11 @@
     &[contenteditable]:focus {
       outline: none;
       color: $view-edit-color;
+
+      &:empty:before {
+        content: "Enter name for list";
+        color: $color-light;
+      }
     }
   }
 

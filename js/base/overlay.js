@@ -3,8 +3,8 @@
 class Overlay extends Component {
     constructor(name, {
             mode = "slide-down",
-            speed = 300,
-            distance = 60 } = {}) {
+            speed = 220,
+            distance = 30 } = {}) {
         super(name + "-overlay", false, true);
         this.name = name;
         this.displayOptions = { mode, speed, distance };

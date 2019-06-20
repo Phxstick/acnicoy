@@ -9,6 +9,7 @@ class InitLangWindow extends Window {
                 dialogWindow.info("You need to add at least one language.");
                 return;
             }
+            this.$("language-table").clear();
             this.resolve(configs);
         });
     }

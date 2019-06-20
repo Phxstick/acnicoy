@@ -1,6 +1,6 @@
 "use strict";
 
-const markdown = require("markdown").markdown;
+const marked = require("marked");
 
 const menuItems = contextMenu.registerItems({
     "save-note": {
@@ -167,6 +167,16 @@ class NotesSection extends Section {
         // Start dragging a note when pressing the move button
         this.$("move-button").addEventListener("mousedown", startDraggingNote);
         
+        // this.$("notes-frame").addEventListener("mousewheel", (event) => {
+        //     if (!this.draggingNote) return;
+        //     if (!event.ctrlKey) return;
+        //     event.preventDefault();  // Default is to not scroll 
+        //     const offset = (event.wheelDeltaY * 53) / 120;
+        //     this.$("notes-frame").scrollBy({ top: offset, behavior: "smooth" });
+        //     const start = this.$("notes-frame").scrollTop;
+        //     const offset = start - (event.wheelDeltaY / 120) * 53;
+        //     this.$("notes-frame").scrollTo({ top: offset, behavior: "smooth" });
+        // });
         // Highlight new position for the dragged note
         window.addEventListener("mousemove", (event) => {
             if (!this.draggingNote) return;
@@ -369,7 +379,7 @@ class NotesSection extends Section {
         const note = document.createElement("div");
         const contentNode = document.createElement("div");
         contentNode.classList.add("note-content");
-        contentNode.innerHTML = markdown.toHTML(markdownText);
+        contentNode.innerHTML = marked(markdownText);
         contentNode.onlyAllowPastingRawText(this.root);
         note.appendChild(contentNode);
         if (appendAtEnd) {
@@ -442,7 +452,7 @@ class NotesSection extends Section {
             this.deleteNote(note);
             return;
         }
-        contentNode.innerHTML = markdown.toHTML(trimmedContent);
+        contentNode.innerHTML = marked(trimmedContent);
         contentNode.setAttribute("contenteditable", "false");
         note.classList.remove("editing");
         this.noteToMarkdown.set(note, trimmedContent);

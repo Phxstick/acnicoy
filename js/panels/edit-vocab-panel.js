@@ -166,14 +166,7 @@ class EditVocabPanel extends EditPanel {
         });
         this.vocabListCompletionTooltip.setData((query) => {
             const result = dataManager.vocabLists.searchForList(query);
-            const filteredResult = [];
-            for (const listName of result) {
-                if (!addedLists.has(listName)) {
-                    filteredResult.push(listName);
-                }
-            }
-            filteredResult.sort();
-            return filteredResult;
+            return result.filter((listName) => !addedLists.has(listName));
         });
     }
 
@@ -217,8 +210,7 @@ class EditVocabPanel extends EditPanel {
 
     async load(word, givenDictionaryId=null) {
         // Check if the word is already in the vocabulary
-        const alreadyAdded = await dataManager.vocab.contains(word);
-        if (alreadyAdded) {
+        if (word !== undefined && await dataManager.vocab.contains(word)) {
             this.originalWord = word;
         } else {
             this.originalWord = null;

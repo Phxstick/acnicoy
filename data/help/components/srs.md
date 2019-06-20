@@ -4,5 +4,5 @@ In order to implement such a spaced repetition system (SRS), every vocabulary it
 
 The following sections will explain how to customize the spaced repetition system in Acnicoy:
 
-- [Creating schemes](help#Components#SRS#Creating schemes)
-- [Switching schemes](help#Components#SRS#Switching schemes)
+- [Creating schemes](help#Components#SRS#Creating_schemes)
+- [Switching schemes](help#Components#SRS#Switching_schemes)

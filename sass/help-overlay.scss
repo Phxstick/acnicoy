@@ -62,7 +62,7 @@
     padding-right: 10px;
     overflow-y: auto;
 
-    * {
+    *:not(i) {
       font-family: OpenSans-Regular;
     }
 

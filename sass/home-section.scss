@@ -1,5 +1,9 @@
 @import "base";
 
+body {
+  background-color: $section-background;
+}
+
 #pinwall {
   position: absolute;
   top: 0;

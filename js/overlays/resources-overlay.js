@@ -1,6 +1,6 @@
 "use strict";
 
-const markdown = require("markdown").markdown;
+const marked = require("marked");
 const fs = require("fs");
 
 class ResourcesOverlay extends Overlay {
@@ -13,7 +13,7 @@ class ResourcesOverlay extends Overlay {
             this.resolve(null);
         });
         this.$("main-frame").innerHTML =
-            markdown.toHTML(fs.readFileSync(paths.resourcesList, "utf8"));
+            marked(fs.readFileSync(paths.resourcesList, "utf8"));
     }
 }
 

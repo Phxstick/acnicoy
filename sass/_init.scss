@@ -7,10 +7,11 @@
 }
 
 #partitioned-window {
-  width: 80%;
+  width: 550px;
   padding: 10px;
   background-color: $background-color;
   box-shadow: $wide-shadow;
+  border-radius: 5px;
 }
 
 #button-frame {
@@ -18,6 +19,7 @@
   padding: 10px;
   
   > button {
-    padding: 5px;
+    padding: 8px;
+    font-size: 1.2rem;
   }
 }

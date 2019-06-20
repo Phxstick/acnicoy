@@ -4,6 +4,7 @@ $control-bar-height: 40px;
 
 body {
   color: $section-color;
+  background-color: $section-background;
 }
 
 #kanji-container {
@@ -154,6 +155,9 @@ dd {
 #history {
   flex: 1;
   font-size: 1.1rem;
+  > * {
+    cursor: $pointer-cursor;
+  }
 }
 
 #history-header {
@@ -168,5 +172,5 @@ dd {
 }
 
 #no-search-results-info {
-  align-self: center;
+  @include center-content;
 }

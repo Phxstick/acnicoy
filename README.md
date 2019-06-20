@@ -70,8 +70,8 @@ See the [list of resources](./data/resources.md).
 Contact
 ----
 
-I'll be glad if you try out the program and give me some feedback.  
-You can open a Github issue or contact me at:  Phxsticks [at] gmail.com
+I gladly accept feedback and suggestions. You can open a Github issue or contact
+me at: Phxstick [at] gmail.com
 
 
    [SRS]: <https://en.wikipedia.org/wiki/Spaced_repetition>

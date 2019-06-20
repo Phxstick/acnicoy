@@ -1,5 +1,7 @@
 "use strict";
 
+const isValidPath = require("is-valid-path");
+
 class InitPathWindow extends Window {
     constructor() {
         super("init-path");
@@ -9,18 +11,16 @@ class InitPathWindow extends Window {
         });
         this.$("continue-button").addEventListener("click", () => {
             const path = this.$("data-path").value.trim();
-            if (!utility.existsDirectory(path)) {
-                dialogWindow.info("Given path is not a directory.");
+            if (!isValidPath(path)) {
+                dialogWindow.info("The entered path is not valid.");
                 return;
             }
             this.resolve(path);
         });
-        this.$("program-name").textContent = app.name;
-        this.$("data-folder-name").textContent = `${app.name}Data`;
     }
 
     open() {
-        this.$("data-path").value = paths.standardDataPathPrefix;
+        this.$("data-path").value = paths.getDefaultDataPath();
     }
 }
 

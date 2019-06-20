@@ -19,6 +19,7 @@ thead tr {
     padding-right: 14px;
     font-weight: normal;
     font-family: $header-font;
+    white-space: nowrap;
   }
 }
 
@@ -46,6 +47,10 @@ tbody tr {
     }
   }
 
+  .content-load-status-label {
+    margin-bottom: 3px;
+  }
+
   .content-download-progress-frame {
     position: relative;
   }
@@ -57,7 +62,7 @@ tbody tr {
       appearance: none;
       &::-webkit-progress-inner-element {
         border: 1px solid $border-color-dark;
-        border-radius: 11px;
+        border-radius: 4px;
         overflow: hidden;
       }
       &::-webkit-progress-bar {
@@ -171,4 +176,14 @@ tbody tr {
   font-family: $small-font;
   font-size: 0.8rem;
   align-self: center;
+}
+
+#info-on-hiding-languages {
+  --tooltip-width: 400px;
+  --tooltip-whitespace: pre-line;
+  display: inline-block;
+  > i {
+    width: 5px;  // Make it take up less space to squeeze it in
+    color: $color-light;
+  }
 }

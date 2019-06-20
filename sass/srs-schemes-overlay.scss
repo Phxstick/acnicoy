@@ -5,7 +5,7 @@
 }
 
 #partitioned-window > #main-frame {
-  min-height: 500px;
+  height: 460px;
   display: flex;
   flex-direction: row;
 
@@ -107,6 +107,7 @@
         overflow: auto;
         padding: 3px;
         margin-bottom: 10px;
+        flex-shrink: 0;
       }
       #scheme-description {
         border: 1px solid transparent;
@@ -119,6 +120,7 @@
         flex-grow: 1;
 
         #scheme-levels {
+          height: 290px;
           overflow-y: auto;
         }
         #scheme-levels > div {
@@ -127,6 +129,7 @@
           &:first-child {
             border-top-width: 1px;
           }
+          height: 30px;
           display: flex;
           position: relative;
           flex-direction: row;
@@ -136,7 +139,7 @@
             @include center-content;
             content: counter(level);
             width: 60px;
-            font-size: 150%;
+            font-size: 140%;
             font-family: $light-font;
             border-right: 1px solid $border-color-light;
             padding-right: 8px;
@@ -170,10 +173,11 @@
     margin-top: 10px;
 
     #add-level-input {
-      // flex: 1;
       width: 200px;
     }
     #add-level-button {
+      padding: 0;
+      padding-left: 10px;
       white-space: nowrap;
     }
   }

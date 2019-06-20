@@ -22,7 +22,7 @@ class GeneralSettingsSubsection extends SettingsSubsection {
                 event.target.checked;
             this.broadcastGlobalSetting("auto-load-language-content");
         });
-        this.$("data-path").textContent = paths.dataPathPrefix;
+        this.$("data-path").textContent = paths.getDataPath();
         this.$("data-path").addEventListener("click", () => {
             this.chooseDataPath();
         });
@@ -87,7 +87,13 @@ class GeneralSettingsSubsection extends SettingsSubsection {
         });
         events.on("update-program-status", async () => {
             try {
-                const info = await networkManager.program.getLatestVersionInfo()
+                this.$("check-program-update-spinner").show();
+                this.$("program-version-status").hide();
+                this.$("check-program-update").style.visibility = "hidden";
+                const infoProm = networkManager.program.getLatestVersionInfo()
+                const minDelay = new Promise((resolve) =>
+                    window.setTimeout(() => resolve(), 1200));
+                const [_, info] = await Promise.all([minDelay, infoProm]);
                 // Cache latest information
                 info.lastUpdateTime = utility.getTime();
                 const cacheKey = "cache.programVersionInfo";
@@ -106,10 +112,12 @@ class GeneralSettingsSubsection extends SettingsSubsection {
                 if (error instanceof networkManager.NoServerConnectionError) {
                     this.$("program-version-status").textContent =
                         "Connection error";
-                }
+                } else
                 if (error instanceof networkManager.ServerRequestFailedError) {
                     this.$("program-version-status").textContent =
                         "Server error";
+                } else {
+                    throw error;
                 }
                 this.$("update-program-version").hide();
             } finally {
@@ -127,26 +135,27 @@ class GeneralSettingsSubsection extends SettingsSubsection {
     }
 
     async chooseDataPath() {
-        const previousPrefix = this.$("data-path").textContent;
-        const newPrefix = dialogWindow.chooseDataPath(previousPrefix);
-        const previousPath = path.resolve(
-            previousPrefix, paths.dataPathBaseName);
-        const newPath = path.resolve(newPrefix, paths.dataPathBaseName);
+        const previousPath = paths.dataPath;
+        const newPath = dialogWindow.chooseDataPath(previousPath);
         if (previousPath === newPath)
             return;
+
+        // Check if new path is valid
         if (newPath.startsWith(previousPath)) {
             dialogWindow.info(
                 `The new location must not be a subfolder of the previous one.`)
             return;
         }
-        if (fs.existsSync(newPath)) {
+        
+        // If new path exists, get confirmation that it can be overwritten
+        if (fs.existsSync(newPath) && fs.readdirSync(newPath).length > 0) {
             const confirmed = await dialogWindow.confirm(
-                `The specified location '${newPrefix}' already contains a ` +
-                `file named '${paths.dataPathBaseName}'. ` +
-                `Are you sure you want to overwrite that file?`);
+                `The specified directory '${newPath}' is not empty. ` +
+                `Are you sure you want to overwrite its content?`);
             if (!confirmed) return;
         }
-        // Save changes in databases first
+
+        // Save changes in databases and close them
         const languages = dataManager.languages.all;
         for (const language of languages) {
             await dataManager.database.save(language);
@@ -154,14 +163,16 @@ class GeneralSettingsSubsection extends SettingsSubsection {
             await dataManager.history.save(language);
             await dataManager.history.close(language);
         }
+
         // Change path and reload databases at new path
-        paths.setDataPath(newPrefix);
+        paths.setDataPath(newPath);
         for (const language of languages) {
             await dataManager.database.load(language);
             await dataManager.history.load(language);
         }
+
         // Update view
-        this.$("data-path").textContent = newPrefix;
+        this.$("data-path").textContent = newPath;
     }
 
     updateProgramVersionStatusView() {
@@ -172,9 +183,12 @@ class GeneralSettingsSubsection extends SettingsSubsection {
         this.$("program-version-status").textContent =
             updateAvailable ? "Update available" : "Up to date";
         this.$("update-program-version").toggleDisplay(updateAvailable);
-        this.$("check-program-update").toggleDisplay(!updateAvailable);
+        this.$("check-program-update").style.visibility =
+            updateAvailable ? "hidden" : "visible";
         this.$("program-version-status").classList.toggle(
             "update-available", updateAvailable);
+        this.$("check-program-update-spinner").hide();
+        this.$("program-version-status").show();
     }
 }
 

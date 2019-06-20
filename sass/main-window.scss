@@ -112,13 +112,13 @@
     position: absolute;
     right: 0;
     top: 100%;
-    height: 250px;
-    width: 400px;
+    height: 280px;
+    width: 420px;
     display: block;
     overflow: auto;
+    box-sizing: border-box;
 
     &:empty {
-      @include center-content;
       padding: 40px;
       &::after {
         content: "There are currently no notifications.";
@@ -126,14 +126,29 @@
         font-size: 1.5rem;
         font-family: $light-font;
         color: $color-light;
+
+        // Need to do it here instead of one level above, otherwise the
+        // "display:flex" will be overridden with "block" when un-/redisplaying
+        height: 100%;
+        @include center-content;
       }
     }
 
     > .notification {
       border-bottom: 1px solid $border-color-medium;
-      padding: 8px;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      padding-left: 4px;
+      padding-right: 4px;
+      margin-left: 8px;
+      margin-right: 8px;
+
       &.highlighted {
-        background-color: $highlight-background-light;
+        // background-color: $highlight-background-light;
+        .title {
+          font-weight: bold;
+          // color: $highlight-background;
+        }
       }
       // &:hover {
       //   background-color: $view-background-medium;
@@ -146,13 +161,13 @@
         flex: 1;
         padding-right: 8px;
         .title {
-          font-weight: bold;
-          font-family: $light-font;
+          font-family: $text-font;
           font-size: 1.2rem;
-          margin-bottom: 8px;
         }
         .subtitle {
-          font-family: $header-font;
+          margin-top: 4px;
+          color: $color-light;
+          font-family: $text-font;
         }
       }
       .action {
@@ -160,6 +175,7 @@
         border-left: 1px solid $border-color-light;
         padding: 0;
         padding-left: 8px;
+        width: 100px;
       }
       .details {
         padding-top: 10px;
@@ -174,9 +190,8 @@
 }
 
 #side-bar {
-  // TODO: sometimes causes white border at bottom or neighboring section div
   // +1px to hide bottom border of last element if it reaches end of the sidebar
-  // height: calc(100% + 1px);
+  height: calc(100% + 1px);
   width: $side-bar-width;
   display: flex;
   flex-direction: column;
@@ -227,7 +242,7 @@
 }
 
 #section-frame {
-  background-color: $section-background;
+  background-color: $background-color;
   position: relative;
   contain: strict;
 }
@@ -331,5 +346,57 @@
   }
   #intro-tour-next-button, #intro-tour-back-button {
     margin-left: 15px;
+  }
+}
+
+#panel-shortcuts-info {
+  #panel-shortcuts-info-wrapper {
+    color: $suggestions-window-color;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .header {
+    font-size: 165%;
+    font-family: $light-font;
+    @include fading-border($suggestions-window-color, "to right");
+    border-width: 0;
+    border-bottom-width: 1px;
+    width: 100%;
+    padding-left: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    height: 48px;  // TODO: Better way without hard-coding?
+    box-sizing: border-box;
+  }
+
+  .content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    font-size: 120%;
+    flex-direction: column;
+    * {
+      font-family: $light-font;
+      flex: 1;
+    }
+  }
+
+  .shortcut {
+    font-weight: bold;
+  }
+
+  #hide-panel-shortcuts-info {
+    @include fading-border($suggestions-window-color, "horizontal");
+    padding: 5px;
+    border-top: 1px solid $suggestions-window-color;
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+      text-shadow: 0 0 1px $suggestions-window-color;
+      box-shadow: 0 0 1px $suggestions-window-color;
+    }
   }
 }

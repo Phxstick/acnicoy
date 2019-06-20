@@ -1,6 +1,6 @@
 <div class="settings-list">
   <div id="data-path-frame" class="settings-row">
-    <span>Location for user data folder:</span>
+    <span>Location of user data:</span>
     <span id="data-path"></span>
     <button id="choose-data-path" class="light no-shadow">
       <i class="fa fa-folder-open-o"></i>
@@ -10,6 +10,11 @@
     <div>Program version:</div>
     <div id="current-program-version"></div>
     <div id="program-version-status">Up to date</div>
+    <div id="check-program-update-spinner" class="pulsating-triple-dots">
+      <div class="bounce1"></div>
+      <div class="bounce2"></div>
+      <div class="bounce3"></div>
+    </div>
     <button id="update-program-version" class="light no-shadow">
       <i class="fa fa-download"></i>
       <span>Update</span>
@@ -19,13 +24,13 @@
       <span>Check for update</span>
     </button>
   </div>
-  <div>
+  <div style="display:none">
     <check-box id="auto-launch-on-startup"></check-box>
     <span>Automatically launch application on startup</span>
   </div>
   <div>
     <check-box id="auto-load-language-content"></check-box>
-    <span>Automatically load all language content on application launch</span>
+    <span>Load all language data on application launch</span>
   </div>
   <div id="srs-notifications-frame">
     <div>

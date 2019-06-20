@@ -9,5 +9,5 @@ Since adding words is one of the most frequent procedures, it's advised to use s
 - Press **tab** to jump between sections in the pane. Hold shift while pressing tab to jump backwards.
 - When adding multiple translations, type a **semicolon** (";") or press **enter** to finalize the currently typed translation and add a new one.
 - When picking a vocab list, use the up & down **arrow keys** to move the selection and press **enter** to choose the selected list.
-- Press **ctrl + a number** between 1 and 9 to select a fitting SRS level (1 by default).
+- Press **ctrl + [number]** between 1 and 9 to select a fitting SRS level (1 by default).
 - Press **ctrl + enter** to finally add the word along with all the entered details.

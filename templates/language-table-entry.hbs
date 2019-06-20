@@ -2,8 +2,12 @@
   <td>{{language}}</td>
   <td>{{settings.secondary}}</td>
   <td>
-    <check-box class="readings-checkbox"
-     {{#if settings.readings}}checked{{/if}}></check-box>
+    {{#if interactiveMode}}
+      <check-box class="readings-checkbox"
+       {{#if settings.readings}}checked{{/if}}></check-box>
+    {{else}}
+      {{#if settings.readings}}Yes{{else}}No{{/if}}
+    {{/if}}
   </td>
   <td>
     {{#if interactiveMode}}

@@ -26,8 +26,6 @@ def create_dictionary_tables(cursor):
         CREATE TABLE IF NOT EXISTS dictionary (
             id INTEGER PRIMARY KEY,
             words TEXT,
-            readings TEXT,
-            translations TEXT,
             news_freq INTEGER,
             net_freq INTEGER,
             book_freq INTEGER
@@ -127,10 +125,14 @@ def create_radicals_table(cursor):
                 details TEXT)""")
 
 
-def parse_dictionary_entry(ID, entry, cursor, text_to_code):
+LANG_ATTR = "{http://www.w3.org/XML/1998/namespace}lang"
+
+
+def parse_dictionary_entry(entry, cursor, text_to_code):
     """ Parse dictionary entry given as an XML node.
-    Insert it into the database referenced by given cursor under given ID.
+    Insert it into the database referenced by given cursor.
     """
+    ID = int(entry.find("ent_seq").text)
     # Create function for getting the code for a text. Create a new
     # code and register it if there's none for this text yet.
     def get_code(text):
@@ -183,6 +185,12 @@ def parse_dictionary_entry(ID, entry, cursor, text_to_code):
             reading_restricted_to[reading].append(restr_element.text)
     # Parse meanings (in form of translations) and a information about them
     for sense_element in entry.findall("sense"):
+        # NOTE: In newer versions of the dictionary, the translations for each
+        #       language are packed into *separate* <sense> elements, so
+        #       immediately check whether first child's lang-attribute is 'eng'
+        glosses = sense_element.findall("gloss")
+        if len(glosses) == 0 or glosses[0].attrib[LANG_ATTR] != "eng":
+            continue
         translations = []
         part_of_speech.append([])
         field_of_application.append([])
@@ -209,22 +217,12 @@ def parse_dictionary_entry(ID, entry, cursor, text_to_code):
             meaning_restricted_to[-1]["readings"].append(
                     reading_restr_element.text)
         # Get translations corresponding to this meaning
-        for gloss_element in sense_element.findall("gloss"):
-            if gloss_element.attrib[
-                    "{http://www.w3.org/XML/1998/namespace}lang"] == "eng":
-                translation = gloss_element.text
-                # # Remove any non-ASCII characters
-                # if len(translation) != len(translation.encode()):
-                #     translation = \
-                #         "".join(filter(lambda c: ord(c) < 128, translation))
-                # assert(all(ord(c) < 128 for c in translation))
-                translations.append(translation)
+        for gloss_element in glosses:
+            translations.append(gloss_element.text)
         meanings.append(translations)
     # Insert entry into the database
-    meaning_strings = [";".join(meaning) for meaning in meanings]
-    cursor.execute("INSERT INTO dictionary VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (ID, ";".join(words), ";".join(readings), ";".join(meaning_strings),
-         entry_news_freq, 0, 0))
+    cursor.execute("INSERT INTO dictionary VALUES (?, ?, ?, ?, ?)",
+        (ID, ";".join(words), entry_news_freq, 0, 0))
     for word in words:
         cursor.execute("INSERT INTO words (id, word) VALUES (?, ?)", (ID, word))
     for reading in readings:
@@ -366,9 +364,9 @@ def parse_dictionary(filename, cursor, code_to_text_output_path):
     text_to_code = dict()
 
     print("Inserting dict entries into database... 0%", end="\r")
-    for ID, entry in enumerate(root):
-        parse_dictionary_entry(ID, entry, cursor, text_to_code)
-        perc = ((ID + 1) / len(root)) * 100
+    for i, entry in enumerate(root):
+        parse_dictionary_entry(entry, cursor, text_to_code)
+        perc = ((i + 1) / len(root)) * 100
         print("Inserting dict entries into database... %d%%" % perc, end="\r")
     print("Inserting dict entries into database... 100%")
 
@@ -388,12 +386,19 @@ def parse_improved_dictionary_texts(code_to_text_path, improved_texts_path):
         improved_texts = json.load(f2)
         code_to_new_text = { "English": dict(), "Japanese": dict() }
         for code in code_to_old_text:
-            if code_to_old_text[code] in improved_texts["English"]:
+            old_text = code_to_old_text[code]
+            if old_text in improved_texts["English"]:
                 code_to_new_text["English"][code] = \
-                    improved_texts["English"][code_to_old_text[code]]
-            if code_to_old_text[code] in improved_texts["Japanese"]:
+                    improved_texts["English"][old_text]
+            else:
+                print("Couldn't find improved EN text for '%s'."%old_text)
+                code_to_new_text["English"][code] = old_text
+            if old_text in improved_texts["Japanese"]:
                 code_to_new_text["Japanese"][code] = \
-                    improved_texts["Japanese"][code_to_old_text[code]]
+                    improved_texts["Japanese"][old_text]
+            else:
+                print("Couldn't find improved JP text for '%s'." % old_text)
+                code_to_new_text["Japanese"][code] = old_text
         f.seek(0)
         f.write(json.dumps(code_to_new_text, sort_keys=True, indent=4,
                            ensure_ascii=False))

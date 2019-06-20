@@ -108,12 +108,10 @@ module.exports = function (paths, modules) {
                 const language = userData.global.hasOwnProperty(achievement) ?
                     undefined : modules.currentLanguage;
                 const level = userData.global.hasOwnProperty(achievement) ?
-                    userData.global[achievement].length - 1 :
-                    userData.local[language][achievement].length - 1;
-                const achievementName =
-                    achievements.definitions[achievement].levels[level].name;
+                    userData.global[achievement].length :
+                    userData.local[language][achievement].length;
                 eventEmitter.emit(`achievement-unlocked`,
-                    { achievement, achievementName, language });
+                    { achievement, level, language });
             }
         }
         if (anyUnlocked) saveGlobal();
@@ -205,13 +203,11 @@ module.exports = function (paths, modules) {
         return getUnlockedAchievements(achievementIds, userData.local[language])
     };
 
-    achievementInterface.getDescription = function (achievement, language) {
-        let level;
-        if (userData.global.hasOwnProperty(achievement)) {
-            level = userData.global[achievement].length;
-        } else if (language !== undefined) {
-            level = userData.local[language][achievement].length;
-        }
+    achievementInterface.getName = function (achievement, level) {
+        return achievements.definitions[achievement].levels[level-1].name;
+    };
+
+    achievementInterface.getDescription = function (achievement, level) {
         const val = achievements.definitions[achievement].levels[level-1].value;
         const description = achievements.definitions[achievement].description;
         return description.replace("{X}", val);

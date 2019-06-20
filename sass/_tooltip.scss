@@ -3,6 +3,8 @@
  * --tooltip-font-size  (Default: 1rem)
  * --tooltip-speed      (Default: 0.4s)
  * --tooltip-delay      (Default: 0s)
+ * --tooltip-width      (Default: initial)
+ * --tooltip-whitespace (Default: pre)
  *
  * A pure CSS tooltip is not always a good choice because:
  * - It can become a memory hog and pollute DOM when used on many elements
@@ -73,11 +75,12 @@ $offset-arrow: calc(100% + #{$spacing});
     pointer-events: none;
   }
   &:after {
+    width: var(--tooltip-width, initial);
     content: attr(data-tooltip);
     font-family: $tooltip-font;
     font-size: var(--tooltip-font-size, 1rem);
     background-color: $tooltip-background;
-    white-space: pre;
+    white-space: var(--tooltip-whitespace, pre);
     color: $tooltip-color;
     padding: 5px 10px;
     border-radius: 10px; 

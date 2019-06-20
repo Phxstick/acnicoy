@@ -16,7 +16,7 @@
       }
       &:empty:before {
         cursor: text;
-        content: "Enter new word";
+        content: "Enter word";
       }
     }
   }
@@ -51,6 +51,6 @@
 }
 
 #srs-level {
-  height: 40px;
-  width: 40px;
+  height: 34px;
+  width: 34px;
 }

@@ -118,7 +118,7 @@ class DictionarySection extends Section {
         // =================================================================
         this.$("settings-button").addEventListener("click", (event) => {
             this.$("settings-popup").toggleDisplay();
-            event.stopPropagation();
+            this.$("settings-popup").closeInThisIteration = false;
         });
         utility.makePopupWindow(this.$("settings-popup"));
         const labeledCheckboxes = this.$$(".labeled-checkbox");
@@ -139,17 +139,17 @@ class DictionarySection extends Section {
                             [this.selectedSearchResultCategory]);
             }
         };
-        this.$("show-word-frequencies").checked =
-            dataManager.settings.dictionary.showFrequencyValues;
-        this.$("show-word-frequencies").callback = (value) => {
-            dataManager.settings.dictionary.showFrequencyValues = value;
-            this.searchSettingsChanged = true;
-            if (this.loadedQuery !== null &&
-                    this.selectedSearchResultCategory !== null) {
-                this.search(this.loadedQuery, this.loadedQueryType,
-                            [this.selectedSearchResultCategory]);
-            }
-        };
+        // this.$("show-word-frequencies").checked =
+        //     dataManager.settings.dictionary.showFrequencyValues;
+        // this.$("show-word-frequencies").callback = (value) => {
+        //     dataManager.settings.dictionary.showFrequencyValues = value;
+        //     this.searchSettingsChanged = true;
+        //     if (this.loadedQuery !== null &&
+        //             this.selectedSearchResultCategory !== null) {
+        //         this.search(this.loadedQuery, this.loadedQueryType,
+        //                     [this.selectedSearchResultCategory]);
+        //     }
+        // };
         this.$("include-proper-name-search").checked =
             dataManager.settings.dictionary.includeProperNameSearch;
         this.$("include-proper-name-search").callback = (value) => {
@@ -160,7 +160,7 @@ class DictionarySection extends Section {
         // =================================================================
         this.$("history-button").addEventListener("click", (event) => {
             this.$("history-popup").toggleDisplay();
-            event.stopPropagation();
+            this.$("history-popup").closeInThisIteration = false;
         });
         utility.makePopupWindow(this.$("history-popup"));
         this.historyViewState = utility.initializeView({
@@ -185,7 +185,7 @@ class DictionarySection extends Section {
             ];
             for (const searchResultEntry of searchResultEntries) {
                 // TODO: if ID not provided, first check if entry really matches
-                if (searchResultEntry.dataset.id === dictionaryId ||
+                if (parseInt(searchResultEntry.dataset.id) === dictionaryId ||
                         searchResultEntry.dataset.mainWord === word) {
                     searchResultEntry.toggleAdded(isAdded, word);
                     break;

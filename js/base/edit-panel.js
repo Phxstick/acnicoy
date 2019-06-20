@@ -115,6 +115,11 @@ class EditPanel extends Panel {
             }
         });
 
+        // Don't change to edit mode on right-click
+        node.addEventListener("contextmenu", () => {
+            node.blur();
+        });
+
         // Insert item into DOM and attach a context-menu
         viewNode.appendChild(node);
         viewNode.scrollToBottom();

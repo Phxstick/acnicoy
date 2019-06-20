@@ -2,7 +2,9 @@
   <div class="upper">
     <div class="info-frame">
       <div class="title">{{{title}}}</div>
-      <div class="subtitle">{{{subtitle}}}</div>
+      {{#if subtitle.length}}
+        <div class="subtitle">{{{subtitle}}}</div>
+      {{/if}}
     </div>
     {{#if buttonLabel.length}}
        <button class="action">{{{buttonLabel}}}</button>

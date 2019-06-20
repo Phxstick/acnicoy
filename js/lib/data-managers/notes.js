@@ -2,6 +2,27 @@
 
 const fs = require("fs");
 
+const defaultNotes = [
+    {
+        "name": "General",
+        "children": [],
+        "open": false,
+        "data": []
+    },
+    {
+        "name": "Grammar",
+        "children": [],
+        "open": false,
+        "data": []
+    },
+    {
+        "name": "Resources",
+        "children": [],
+        "open": false,
+        "data": []
+    }
+];
+
 module.exports = function(paths, modules) {
     const notes = {};
     const dataMap = {};
@@ -10,7 +31,7 @@ module.exports = function(paths, modules) {
 
     notes.create = function (language, settings) {
         const path = paths.languageData(language).notes;
-        fs.writeFileSync(path, JSON.stringify([], null, 4));
+        fs.writeFileSync(path, JSON.stringify(defaultNotes, null, 4));
     };
 
     notes.load = function (language) {

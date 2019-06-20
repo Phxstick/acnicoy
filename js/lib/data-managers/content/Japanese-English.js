@@ -304,21 +304,22 @@ module.exports = async function (paths, contentPaths, modules) {
         const existingTranslations = new Set(existingInfo.translations);
         const existingReadings = new Set(existingInfo.readings);
         const promises = [];
-        for (const candidateId of candidateIds) {
-            promises.push(data.query(`
-                SELECT readings, translations FROM dictionary
-                WHERE id = ?
-            `, candidateId).then((rows) => {
+        for (const cId of candidateIds) {
+            promises.push(Promise.all([
+                data.query(`SELECT reading FROM readings WHERE id = ?`, cId),
+                data.query(`SELECT translations FROM meanings WHERE id=?`, cId),
+            ]).then(([dictionaryReadings, dictionaryMeanings]) => {
                 // TODO: Consider reading/translation restrictions here?
                 let score = 0;
-                const dictionaryTranslations = rows[0].translations.split(";");
-                const dictionaryReadings = rows[0].readings.split(";");
-                for (const translation of dictionaryTranslations) {
-                    if (existingTranslations.has(translation)) score++;
+                for (const row of dictionaryMeanings) {
+                    const dictionaryTranslations = row.translations.split(";");
+                    for (const translation of dictionaryTranslations) {
+                        if (existingTranslations.has(translation)) score++;
+                    }
                 }
                 // TODO: Only compare readings if word is associated
-                for (const reading of dictionaryReadings) {
-                    if (existingReadings.has(reading)) score++;
+                for (const row of dictionaryReadings) {
+                    if (existingReadings.has(row.reading)) score++;
                 }
                 return score;
             }));
@@ -625,14 +626,20 @@ module.exports = async function (paths, contentPaths, modules) {
                   .join(" AND ") + ")");
             queryArguments.push(...query.translations);
         }
+
+        // Sort IDs by news frequency and extract corresponding translations
         const rows = await data.query(
             `WITH matched_ids AS ${selectClauses.join(" INTERSECT ")}
-             SELECT d.id, d.translations
-             FROM matched_ids m JOIN dictionary d ON m.id = d.id
+             SELECT d.id, GROUP_CONCAT(t.translations, ';') AS translations
+             FROM matched_ids m INNER JOIN dictionary d ON m.id = d.id
+                                INNER JOIN meanings t ON m.id = t.id
+             GROUP BY d.id
              ORDER BY d.news_freq DESC`, ...queryArguments);
         return rows;
     }
 
+    // NOTE: this only works if the "dictionary" table contains translations
+    //       (which is not the case for the current version of the dictionary)
     async function searchDictionaryVariant2(query, options) {
         if (query.readings.length === 0 && query.translations.length === 0)
             return [];
@@ -746,13 +753,11 @@ module.exports = async function (paths, contentPaths, modules) {
         const tablesInfo = await db.all(
             "SELECT name, sql FROM content.sqlite_master WHERE type='table'");
         for (const { name, sql } of tablesInfo) {
-            console.log(`Creating table ${name}...`);
             await db.exec(sql);
             await db.run(`INSERT INTO ${name} SELECT * FROM content.${name}`);
         }
         // Create indices of content database in in-memory database
         const createIndicesSql = fs.readFileSync(paths.japaneseIndices, "utf8");
-        console.log("Creating indices...");
         await db.exec(createIndicesSql);
         // Detach content database again
         await db.run("DETACH DATABASE ?", "content");
@@ -807,6 +812,7 @@ module.exports = async function (paths, contentPaths, modules) {
         searchKanji,
 
         // Dictionary related
+        dictionaryAvailable: true,
         getDictionaryEntryInfo,
         guessDictionaryId,
         guessAssociatedVocabEntry,

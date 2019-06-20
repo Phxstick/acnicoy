@@ -3,7 +3,11 @@
   <div class="subrows-frame">
     <div class="subrow all-items">
       {{#each amounts}}
-        <div>{{total}}</div>
+        {{#if @index}}
+          <div>{{#if total}}{{total}}{{/if}}</div>
+        {{else}}
+          <div>{{total}}</div>
+        {{/if}}
       {{/each}}
     </div>
     <div class="subrow">

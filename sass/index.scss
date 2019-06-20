@@ -1,11 +1,14 @@
 @import "base";
 
 body {
-  position: relative;
+  position: fixed;
   overflow: hidden;
-  height: 100vh;
   margin: 0;
   padding: 0;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
   > .window {
     display: none;
     height: 100%;
@@ -57,7 +60,7 @@ body {
   opacity: 0;
   transition-property: all;
   transition-duration: .15s;
-  transition-delay: .3s;
+  transition-delay: .2s;
   transition-timing-function: ease;
 
   &.visible {

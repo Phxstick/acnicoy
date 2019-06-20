@@ -1,18 +1,18 @@
 PYTHON = python3
-DATA_SCRIPT_PATH = ./createJapaneseData.py
-RESOURCE_PATH = ~/Dropbox/AcnicoyResources
-OUTPUT_PATH = ~/Documents/AcnicoyData/Content/Japanese-English
+DATA_SCRIPT_PATH = ./generate-japanese-data.py
+RESOURCE_PATH = ~/Dropbox/Acnicoy/Resources
+OUTPUT_PATH = ./Japanese-English
 ELECTRON_PATH = ./node_modules/.bin/electron
 
-DICTIONARY_PATH = $(RESOURCE_PATH)/JMdict.xml
+DICTIONARY_PATH = $(RESOURCE_PATH)/JMdict
 DICT_TEXTS_PATH = $(RESOURCE_PATH)/improved-dictionary-texts.json
 PROPER_NAMES_PATH = $(RESOURCE_PATH)/enamdict
 NAME_TAG_TEXTS_PATH = $(RESOURCE_PATH)/name-tag-to-text.json
-KANJI_PATH = $(RESOURCE_PATH)/kanjidic.txt
+KANJI_PATH = $(RESOURCE_PATH)/kanjidic
 KANJI_MEANINGS_PATH = $(RESOURCE_PATH)/improved-kanji-meanings.json
 KANJI_RADICALS_PATH = $(RESOURCE_PATH)/radical.utf8.txt
 KANJI_PARTS_PATH = $(RESOURCE_PATH)/kradfile
-KANJI_STROKES_PATH = $(RESOURCE_PATH)/kanjivg-20150615-2.xml
+KANJI_STROKES_PATH = $(RESOURCE_PATH)/kanjivg.xml
 KANJI_NUMERALS_PATH = $(RESOURCE_PATH)/numeric-kanji.json
 KANJI_COUNTERS_PATH = $(RESOURCE_PATH)/counter-kanji.json
 KANJI_KOKUJI_PATH = $(RESOURCE_PATH)/kokuji.txt

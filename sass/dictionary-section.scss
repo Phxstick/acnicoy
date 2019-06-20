@@ -82,6 +82,7 @@ body {
     display: flex;
     flex-direction: row;
     background-color: $background-color-dark;
+    cursor: $pointer-cursor;
     
     &:not(:first-child) {
       border-left: 1px solid $border-color-light;
@@ -146,6 +147,9 @@ body {
 #history {
   flex: 1;
   font-size: 1.1rem;
+  > * {
+    cursor: $pointer-cursor;
+  }
 }
 
 #history-header {

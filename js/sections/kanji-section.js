@@ -95,9 +95,9 @@ class KanjiSection extends Section {
                 this.displayKanji();
         });
         utility.makePopupWindow(this.$("settings-popup"));
-        this.$("settings-button").addEventListener("click", (event) => {
+        this.$("settings-button").addEventListener("click", () => {
             this.$("settings-popup").toggleDisplay();
-            event.stopPropagation();
+            this.$("settings-popup").closeInThisIteration = false;
         });
         const labeledCheckboxes = this.$$(".labeled-checkbox");
         for (const labeledCheckbox of labeledCheckboxes) {
@@ -141,7 +141,7 @@ class KanjiSection extends Section {
         // =================================================================
         this.$("history-button").addEventListener("click", () => {
             this.$("history-popup").toggleDisplay();
-            event.stopPropagation();
+            this.$("history-popup").closeInThisIteration = false;
         });
         utility.makePopupWindow(this.$("history-popup"));
         this.historyViewState = utility.initializeView({
@@ -156,6 +156,7 @@ class KanjiSection extends Section {
             if (event.target.parentNode !== this.$("history")) return;
             this.kanjiSearchViewState.search(
                 event.target.textContent, event.target.dataset.type);
+            this.showSearchResults();
         });
     }
 

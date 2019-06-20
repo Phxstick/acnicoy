@@ -160,8 +160,16 @@ class KanjiInfoPanel extends Widget {
 
     async open() {
         if (this.isOpen) return;
-        if (!this.maximized) {
-            Velocity(this, "slideDown", { duration: 200 });
+        if (dataManager.settings.design.animateSlidingPanels) {
+            if (!this.maximized) {
+                Velocity(this, "slideDown",
+                    { duration: main.kanjiInfoPanelSlideDuration });
+            } else {
+                // Animation is too chunky, prob. because example words load
+                // Velocity(this, "fadeIn",
+                //     { duration: main.kanjiInfoPanelSlideDuration });
+                this.show();
+            }
         } else {
             this.show();
         }
@@ -170,8 +178,16 @@ class KanjiInfoPanel extends Widget {
 
     close() {
         if (!this.isOpen) return;
-        if (!this.maximized) {
-            Velocity(this, "slideUp", { duration: 200 });
+        if (dataManager.settings.design.animateSlidingPanels) {
+            if (!this.maximized) {
+                Velocity(this, "slideUp",
+                    { duration: main.kanjiInfoPanelSlideDuration });
+            } else {
+                // Animation is too chunky, prob. because example words load
+                // Velocity(this, "fadeOut",
+                //     { duration: main.kanjiInfoPanelSlideDuration });
+                this.hide();
+            }
         } else {
             this.hide();
         }

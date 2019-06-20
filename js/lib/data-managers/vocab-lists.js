@@ -146,6 +146,8 @@ module.exports = function (paths, modules) {
             if (name.toLowerCase().startsWith(query)) startMatches.push(name);
             else if (name.toLowerCase().includes(query)) otherMatches.push(name)
         }
+        startMatches.sort();
+        otherMatches.sort();
         return [...startMatches, ...otherMatches];
     };
 

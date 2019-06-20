@@ -52,7 +52,7 @@ for (const name of components.widgets) require(paths.js.widget(name));
 for (const name of components.extensions) require(paths.js.extension(name));
 
 const totalTime = performance.now() - startTime;
-console.log("Loaded all required modules after %f ms", totalTime);
+// console.log("Loaded all required modules after %f ms", totalTime);
 
 
 class Application {
@@ -120,7 +120,9 @@ class Application {
                 languages.push(language);
             }
             await Promise.all(promises);
+            storage.set("last-opened-language", languages[0]);
         }
+
         // Load user data for all languages
         this.openWindow("loading", "Loading user data...");
         let start = performance.now();
@@ -130,7 +132,8 @@ class Application {
         }
         await Promise.all(promises);
         let total = performance.now() - start;
-        console.log("Loaded all language data after %f ms", total);
+        // console.log("Loaded all language data after %f ms", total);
+
         // Load and process language content for all languages if not disabled
         if (dataManager.settings.general.autoLoadLanguageContent) {
             start = performance.now();
@@ -146,7 +149,7 @@ class Application {
             }
             await Promise.all(promises);
             total = performance.now() - start;
-            console.log("Loaded all language content after %f ms", total);
+            // console.log("Loaded all language content after %f ms", total);
         }
         this.closeWindow("loading");
     }

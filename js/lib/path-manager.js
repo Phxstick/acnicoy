@@ -7,34 +7,29 @@ const { remote } = require("electron");
 
 module.exports = function (basePath) {
     const paths = {};
-
-    paths.standardDataPathPrefix = path.resolve(os.homedir(), "Documents");
-    paths.dataPathPrefix = null;
-    paths.base = basePath;
-    paths.dataPathBaseName = `AcnicoyData`;
     let dataPath = null;
     let langPath = null;
 
-    // Return true if location for user data is set
+    paths.getDefaultDataPath = function () {
+        return path.resolve(os.homedir(), "AcnicoyData");
+    };
     paths.existsDataPath = function () {
         return storage.get("data-path") !== undefined;
     };
-    // Set location for folder to store user data in
-    paths.setDataPath = function (prefix) { 
-        storage.set("data-path", prefix);
+    paths.setDataPath = function (newDataPath) { 
+        storage.set("data-path", newDataPath);
         paths.init();
+    };
+    paths.getDataPath = function () { 
+        return dataPath;
     };
 
     // Initialize paths for user data
     paths.init = function() {
         if (!paths.existsDataPath())
             throw Error("Path for user data has not been set!");
-        let prefix = storage.get("data-path");
-        if (prefix[prefix.length - 1] == "\n")
-            prefix = prefix.slice(0, prefix.length - 1);
+        const newPath = storage.get("data-path");
         const previousPath = dataPath;
-        const newPath = path.resolve(prefix, paths.dataPathBaseName);
-        paths.dataPathPrefix = prefix;
         paths.data = dataPath = newPath;
         paths.languages = langPath = path.resolve(dataPath, "Languages");
         paths.globalSettings = path.resolve(dataPath, "settings.json");
@@ -43,14 +38,11 @@ module.exports = function (basePath) {
         paths.notifications = path.resolve(dataPath, "notifications.json");
         if (previousPath === null) {
             // Create folders if they do not exist yet
-            if (!fs.existsSync(dataPath)) fs.mkdirSync(dataPath);
-            if (!fs.existsSync(langPath)) fs.mkdirSync(langPath);
+            if (!fs.existsSync(dataPath)) fs.ensureDirSync(dataPath);
+            if (!fs.existsSync(langPath)) fs.ensureDirSync(langPath);
         } else {
-            // Copy previous data to new location
-            if (fs.existsSync(newPath)) {
-                fs.removeSync(newPath);
-            }
-            fs.renameSync(previousPath, newPath);
+            // Move previous data to new location
+            fs.moveSync(previousPath, newPath, { overwrite: true });
         }
     };
 
@@ -84,9 +76,11 @@ module.exports = function (basePath) {
     paths.achievements = path.resolve(basePath, "data", "achievements.json");
     paths.helpStructure = path.resolve(basePath, "data", "help-structure.json");
     paths.helpSection = (nodes) =>
-        path.resolve(basePath, "data", "help", ...nodes) + ".md";
+        path.resolve(basePath, "data", "help",
+            ...nodes.map((name)=>name.replace(" ", "-").toLowerCase())) + ".md";
     paths.helpSubdir = (nodes) =>
-        path.resolve(basePath, "data", "help", ...nodes);
+        path.resolve(basePath, "data", "help",
+            ...nodes.map((name)=>name.replace(" ", "-").toLowerCase()));
     paths.introTour = (name) =>
         path.resolve(basePath, "data", "intro-tours", name + "-tour.html");
     paths.componentRegister = path.resolve(basePath, "component-register.json");
@@ -221,16 +215,14 @@ module.exports = function (basePath) {
     };
 
     // Download related
-    paths.downloadDataPart = (filename) => {
-        return path.resolve(downloadsPath, filename + ".part");
+    paths.downloadSubdirectory = (downloadName) => {
+        return path.resolve(downloadsPath, downloadName); 
     };
-    paths.downloadData = (filename) => {
-        return path.resolve(downloadsPath, filename); 
+    paths.downloadFile = (downloadName, filename) => {
+        return path.resolve(paths.downloadSubdirectory(downloadName), filename);
     };
-    paths.downloadDataUnzipped = (filename) => {
-        if (filename.slice(-4) !== ".zip")
-            throw new Error(`File '${filename}' is not a zip file!`);
-        return path.resolve(downloadsPath, filename.slice(0, -4));
+    paths.downloadArchive = (downloadName, filename) => {
+        return paths.downloadFile(downloadName, filename) + ".zip";
     };
 
     return paths;

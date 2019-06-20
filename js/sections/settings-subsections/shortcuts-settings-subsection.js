@@ -13,7 +13,7 @@ class ShortcutsSettingsSubsection extends SettingsSubsection {
 
             "quit", "force-quit", "close-sliding-panels",
             "toggle-bars-visibility", "refresh",
-            "ignore-answer", "save-input"
+            "ignore-answer", "save-input", "open-dev-tools"
         ];
         const shortcutLabels = this.$$("#shortcuts-list .keyboard-shortcut");
         for (const label of shortcutLabels) {

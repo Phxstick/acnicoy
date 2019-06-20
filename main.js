@@ -22,7 +22,9 @@ app.on('window-all-closed', function() {
 app.on('ready', function() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-      width: 1050,  // 810
+      minWidth: 600,
+      minHeight: 500,
+      width: 810,  // 1050
       height: 600,
       icon: "./img/icon.png"
   });
@@ -38,7 +40,7 @@ app.on('ready', function() {
       protocol: "file:",
       slashes: true
   }));
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
   // mainWindow.setAutoHideMenuBar(true);
   mainWindow.setMenu(null);
   let forceQuit = true;

@@ -50,6 +50,13 @@ module.exports = function (paths, modules) {
         return content.isLoadedFor(language, secondaryLanguage);
     };
 
+    content.isDictionaryAvailable = () => {
+        const language = modules.currentLanguage;
+        const secondaryLanguage = modules.currentSecondaryLanguage;
+        return content.isLoadedFor(language, secondaryLanguage) &&
+               !!content.get(language, secondaryLanguage).dictionaryAvailable;
+    };
+
     content.get = (language, secondary) => {
         return dataMap[`${language}-${secondary}`];
     };
@@ -66,9 +73,7 @@ module.exports = function (paths, modules) {
             await require(contentModulePath)(paths, contentPaths, modules);
     };
 
-    content.unload = function (language) {
-        const secondaryLanguage =
-            modules.languageSettings.getFor(language, "secondaryLanguage");
+    content.unload = function (language, secondaryLanguage) {
         const languagePair = `${language}-${secondaryLanguage}`;
         if (dataMap.hasOwnProperty(languagePair)) {
             delete dataMap[languagePair];

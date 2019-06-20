@@ -306,8 +306,9 @@ HTMLTextAreaElement.prototype.enableKanaInput = function (type="hiragana") {
         this.removeEventListener("keypress", this.currentInputHandler);
     this.currentInputMethod = type;
     const otherType = type === "hiragana" ? "katakana" : "hiragana";
-    this.currentInputHandler =
-        (event) => kanaInput(event.shiftKey ? otherType : type, event);
+    this.currentInputHandler = (event) =>
+            kanaInput(event.shiftKey ^ event.getModifierState("CapsLock") ?
+                      otherType : type, event);
     this.addEventListener("keypress", this.currentInputHandler);
 }
 
@@ -364,8 +365,9 @@ HTMLElement.prototype.enableKanaInput = function (type="hiragana") {
     this.currentInputMethod = type;
     const otherType = type === "hiragana" ? "katakana" : "hiragana";
     const root = this.getRoot();
-    this.currentInputHandler =
-        (event) => kanaInputRoot(event.shiftKey ? otherType : type, root, event)
+    this.currentInputHandler = (event) =>
+        kanaInputRoot(event.shiftKey ^ event.getModifierState("CapsLock") ?
+            otherType : type, root, event)
     this.addEventListener("keypress", this.currentInputHandler);
 }
 

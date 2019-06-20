@@ -315,11 +315,9 @@ hr {
     }
   }
 
-  > *:not(.group, hr) {
+  .menu-item {
     padding: 5px;
-  }
-
-  *:not(.header, .group, .group-header, hr) {
+    cursor: $pointer-cursor;
     &:hover {
       background-color: $view-hover-background;
       color: $view-hover-color;

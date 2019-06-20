@@ -37,8 +37,11 @@ class TestSection extends Section {
         this.$("button-bar").style.visibility = "hidden";
         this.$("new-level").removeAttribute("tabindex"); // Use shortcut instead
         // Set some constants
-        this.itemFadeDuration = 400;  // Set in scss as well!
-        this.itemFadeDistance = 200;  // Set in scss as well!
+        this.itemFadeInDuration = 250;  // Set in scss as well!
+        this.itemFadeInDistance = 25;  // Set in scss as well!
+        this.itemFadeInDelay = 80;  // Set in scss as well!
+        this.itemFadeOutDuration = 230;  // Set in scss as well!
+        this.itemFadeOutDistance = 25;  // Set in scss as well!
         this.solutionFadeDuration = 150;
         this.evalFadeInDuration = 225;
         this.evalFadeOutDuration = 225;
@@ -183,13 +186,11 @@ class TestSection extends Section {
                 dataManager.settings.test.useBackgroundColors);
         });
         events.on("settings-test-enable-ignore-shortcut", () => {
-            if (this.testInfo !== null && this.testInfo.inEvalStep
-                    && !dataManager.settings.test.useFlashcardMode){
-                if (dataManager.settings.test.enableIgnoreShortcut) {
-                    shortcuts.enable("ignore-answer");
-                } else {
-                    shortcuts.disable("ignore-answer");
-                }
+            if (!dataManager.settings.test.enableIgnoreShortcut) {
+                shortcuts.disable("ignore-answer");
+            } else if (this.testInfo !== null && this.testInfo.inEvalStep
+                    && !dataManager.settings.test.useFlashcardMode) {
+                shortcuts.enable("ignore-answer");
             }
         });
         events.on("settings-test-use-flashcard-mode", () => {
@@ -269,6 +270,7 @@ class TestSection extends Section {
             if (this.testInfo.inEvalStep &&
                    !dataManager.settings.test.useFlashcardMode &&
                    dataManager.settings.test.enableIgnoreShortcut) {
+                shortcuts.enable("ignore-answer");
             }
             // Put focus on correct element
             if (dataManager.settings.test.useFlashcardMode) {
@@ -670,6 +672,7 @@ class TestSection extends Section {
             // Remember mistakes (for display in test-complete-overlay)
             if (item.lastAnswerIncorrect) {
                 let mistakeAlreadyRegistered = false;
+                // TODO: Linear runtime might be bad for long review sessions
                 for (const { name, mode, part } of this.testInfo.mistakes) {
                     if (name === item.entry && mode === item.mode &&
                             part === this.testInfo.currentPart) {
@@ -698,17 +701,18 @@ class TestSection extends Section {
                     dataManager.stats.incrementTestedCounter(item.mode);
                     scoreGain = dataManager.stats.updateScore(
                         item.mode, item.level, newLevel);
-                    dataManager.srs.setLevel(item.entry, newLevel, item.mode);
+                    await dataManager.srs.setLevel(
+                        item.entry, newLevel, item.mode);
                     this.testInfo.score += scoreGain;
                 }
                 this.testInfo.numFinished++;
                 const itemCorrect = !item.marked && !item.lastAnswerIncorrect;
                 if (itemCorrect) {
-                    dataManager.test.incrementCorrectCounter(
+                    await dataManager.test.incrementCorrectCounter(
                         item.entry, item.mode);
                     this.testInfo.numCorrect++;
                 } else {
-                    dataManager.test.incrementMistakesCounter(
+                    await dataManager.test.incrementMistakesCounter(
                         item.entry, item.mode);
                     this.testInfo.numIncorrect++;
                 }
@@ -858,20 +862,19 @@ class TestSection extends Section {
                 if (solutionNodeBottom >= solutionFrameTop &&
                         solutionNodeTop < solutionFrameBottom) {
                     solutionNode.fadeOut({
-                        duration: this.itemFadeDuration, zIndex: "-1",
-                        distance: this.itemFadeDistance,
+                        duration: this.itemFadeOutDuration, zIndex: "-1",
+                        distance: this.itemFadeOutDistance,
                         easing: this.testItemEasing })
                 }
             }
 
             // Animate test item
             this.$("test-item").fadeOut({
-                duration: this.itemFadeDuration,
-                distance: this.itemFadeDistance,
+                duration: this.itemFadeOutDuration,
+                distance: this.itemFadeOutDistance,
                 easing: this.testItemEasing
             }).then(() => {
-                // Reset test item and solution containers afterwards
-                this.$("test-item").style.visibility = "visible";
+                // Reset solution containers afterwards
                 this.$("solutions").classList.remove("stretch-shadows");
                 this.$("solutions").style.width = "auto";
                 this.$("solutions").style.height = "auto";
@@ -918,9 +921,13 @@ class TestSection extends Section {
 
         // If animation flag is set, fade in new item
         if (dataManager.settings.test.animate && previousItem !== null) {
-            this.$("test-item").fadeIn({ duration: this.itemFadeDuration,
-                                         distance: this.itemFadeDistance,
-                                         easing: this.testItemEasing });
+            this.$("test-item").fadeIn({ duration: this.itemFadeInDuration,
+                                         distance: this.itemFadeInDistance,
+                                         easing: this.testItemEasing,
+                                         delay: this.itemFadeInDelay })
+            .then(() => {
+                this.$("test-item").style.visibility = "visible";
+            });
         }
 
         this._prepareMode(newItem.mode, part);

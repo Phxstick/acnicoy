@@ -2,9 +2,9 @@
     "general": {
         "autoLaunchOnStartup": false,
         "autoLoadLanguageContent": false,
-        "showSrsNotifications": true,
+        "showSrsNotifications": false,
         "srsNotificationsInterval": 900,
-        "doRegularBackup": false,
+        "doRegularBackup": true,
         "regularBackupInterval": "604800"
     },
     "test": {
@@ -55,7 +55,7 @@
         "historySizeLimit": 50
     },
     "srs": {
-        "intervalModifier": "4 hours"
+        "intervalModifier": "0 hours"
     },
     "add": {
         "separator": ","
@@ -71,6 +71,7 @@
         "toggle-bars-visibility": "F11",
         "refresh": "CmdOrCtrl+R",
         "save-data": "CmdOrCtrl+S",
+        "open-dev-tools": "F12",
 
         "add-word": "CmdOrCtrl+A",
         "add-kanji": "CmdOrCtrl+Shift+A",

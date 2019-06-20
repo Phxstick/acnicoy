@@ -4,6 +4,7 @@
   { "name": "Components",
     "open": true,
     "children": [
+      { "name": "Home section" },
       { "name": "SRS",
         "children": [
           { "name": "Creating schemes" },
@@ -11,24 +12,14 @@
 
         ]
       },
+      { "name": "Reviewing" },
       { "name": "Vocabulary",
         "children": [
           { "name": "Adding words" },
           { "name": "Managing lists" }
         ]
       },
-      { "name": "Testing" },
-      { "name": "Notes" },
-      { "name": "Home" }
-    ]
-  },
-  { "name": "Settings",
-    "children": [
-        { "name": "General" },
-        { "name": "Languages" },
-        { "name": "Testing" },
-        { "name": "Design" },
-        { "name": "Shortcuts" }
+      { "name": "Notes" }
     ]
   },
   { "name": "Languages",

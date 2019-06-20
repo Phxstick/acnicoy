@@ -162,7 +162,7 @@ class DictionarySearchResultEntry extends Widget {
 
     addWord() {
         main.openPanel("edit-vocab", {
-            dictionaryId: this.dataset.id,
+            dictionaryId: parseInt(this.dataset.id),
             entryName: this.dataset.mainWord
         });
     }

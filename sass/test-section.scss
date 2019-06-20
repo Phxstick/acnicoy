@@ -5,9 +5,15 @@ $answer-input-max-width: 500px;
 $answer-input-font-size: 1.3rem;
 $answer-input-padding: 5px;
 
-$item-fade-timing: cubic-bezier(0.390, 0.575, 0.565, 1.000);  // Ease-out-sine
-$item-fade-duration: .4s;
-$item-fade-distance: 200px;
+$item-fade-in-timing: cubic-bezier(0.390, 0.575, 0.565, 1.000);  // Ease-out-sine
+$item-fade-in-duration: .25;
+$item-fade-in-distance: 25px;
+$item-fade-in-delay: .08;
+
+$item-fade-out-timing: cubic-bezier(0.390, 0.575, 0.565, 1.000);  // Ease-out-sine
+$item-fade-out-duration: .23;
+$item-fade-out-distance: 25px;
+
 $solution-fade-distance: 10px;
 
 $scroll-overflow-shadow-size: 25px;
@@ -68,8 +74,9 @@ $fade-color: var(--test-frame-fade-color);
   &.animate, &.animate #new-level > option {
     // Timing function is ease-out-sine
     transition-property: background-color;
-    transition-timing-function: $item-fade-timing;
-    transition-duration: $item-fade-duration;
+    transition-timing-function: $item-fade-in-timing;
+    transition-duration: $item-fade-in-duration;
+    transition-delay: $item-fade-in-delay;
   }
 }
 
@@ -130,13 +137,13 @@ $fade-color: var(--test-frame-fade-color);
     %scroll-overflow-bar {
       position: absolute;
       left: -$solution-fade-distance;
-      right: -$item-fade-distance;
+      right: -$item-fade-out-distance;
       background-color: var(--test-frame-background);
       content: "";
       z-index: 2;
       transition-property: background-color;
-      transition-timing-function: $item-fade-timing;
-      transition-duration: $item-fade-duration;
+      transition-timing-function: $item-fade-out-timing;
+      transition-duration: $item-fade-out-duration;
     }
     &::before {
       @extend %scroll-overflow-bar;
@@ -172,8 +179,8 @@ $fade-color: var(--test-frame-fade-color);
       left: -$solution-fade-distance;
       right: $scrollbar-light-width;
       transition-property: background;
-      transition-timing-function: $item-fade-timing;
-      transition-duration: $item-fade-duration;
+      transition-timing-function: $item-fade-out-timing;
+      transition-duration: $item-fade-out-duration;
     }
     &::before {
       @extend %scroll-overflow-shadow;
@@ -193,10 +200,10 @@ $fade-color: var(--test-frame-fade-color);
     &.stretch-shadows {
       overflow: visible;
       &::before { 
-        right: -$item-fade-distance;
+        right: -$item-fade-in-distance;  // Or should it be fade-out-distance?
       }
       &::after { 
-        right: -$item-fade-distance;
+        right: -$item-fade-in-distance;  // Or should it be fade-out-distance?
       }
     }
 
@@ -468,8 +475,9 @@ $fade-color: var(--test-frame-fade-color);
     &.animate {
       // Timing function is ease-out-sine
       transition-property: background-color;
-      transition-timing-function: $item-fade-timing;
-      transition-duration: $item-fade-duration;
+      transition-timing-function: $item-fade-in-timing;
+      transition-duration: $item-fade-in-duration;
+      transition-delay: $item-fade-in-delay;
     }
   }
   #session-info-bar {

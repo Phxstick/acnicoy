@@ -46,9 +46,11 @@ module.exports = function (paths, modules) {
             throw new Error(`Language '${language}' is not registered.`);
         }
         languageList.remove(language);
+        const secondaryLanguage =  // Needed to unload language content
+            modules.languageSettings.getFor(language, "secondaryLanguage");
         for (const name in modules) {
             if (modules[name].hasOwnProperty("unload")) {
-                modules[name].unload(language);
+                modules[name].unload(language, secondaryLanguage);
             }
         }
         await fs.remove(paths.languageData(language).directory)

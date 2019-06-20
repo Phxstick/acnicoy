@@ -799,18 +799,18 @@ function initializeView({ view, getData, createViewItem, initialDisplayAmount,
  * @param {Function} [callback]
  */
 function makePopupWindow(node, callback) {
-    let nodeClicked = false;
+    node.closeInThisIteration = true;
     node.addEventListener("click", (event) => {
-        nodeClicked = true;
+        node.closeInThisIteration = false;
     });
     window.addEventListener("click", (event) => {
-        if (!node.isHidden() && !nodeClicked) {
+        if (!node.isHidden() && node.closeInThisIteration) {
             node.hide();
             if (callback !== undefined) {
                 callback();
             }
         }
-        nodeClicked = false;
+        node.closeInThisIteration = true;
     });
     node.hide();
 }
@@ -990,14 +990,19 @@ function getTimelineMarkers(intervals, unit) {
  */
 function getDistantColors(n) {
     // Good-looking colors for a small amount of languages
+    const red = "#b56262";
+    const green = "#6ab673";  // #62b562
+    const blue = "#6262b5";
+    const yellow = "#b5b562";
+    const brown = "#ba956d";
+    const pink = "#b56ab0";
     const colors = [
-        ["#b56262"],
-        ["#b56262", "#62b562"],
-        ["#b56262", "#6262b5", "#b5b562"],
-        ["#b56262", "#62b562", "#6262b5", "#b58b62"],
-        // TODO: Improve colors for n > 4
-        ["#b56262", "#6262b5", "#b5b562", "#ba956d", "#b56ab0"],
-        ["#b56262", "#6262b5", "#b5b562", "#ba956d", "#b56ab0", "#6ab573"]
+        [red],
+        [red, green],
+        [red, green, blue],
+        [red, green, blue, yellow],
+        [red, green, blue, yellow, pink],
+        [red, green, blue, yellow, pink, brown]
     ];
     if (n <= colors.length) 
         return colors[n - 1];

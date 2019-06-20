@@ -1,7 +1,7 @@
 "use strict";
 
 const fs = require("fs");
-const markdown = require("markdown").markdown;
+const marked = require("marked");
 
 class HelpOverlay extends Overlay {
     constructor() {
@@ -22,8 +22,8 @@ class HelpOverlay extends Overlay {
             // If there's a markdown file for given path, render it to html
             if (fs.existsSync(helpSectionPath)) {
                 if (!this.loadedTreePath.equals(treePath)) {
-                    this.$("content").innerHTML = markdown.toHTML(
-                        fs.readFileSync(helpSectionPath, "utf8"));
+                    this.$("content").innerHTML =
+                        marked(fs.readFileSync(helpSectionPath, "utf8"));
                     this.loadedTreePath = treePath;
                     newSectionLoaded = true;
                 }
@@ -49,8 +49,8 @@ class HelpOverlay extends Overlay {
             // whose textContent is equal to the last element in the path
             } else if (fs.existsSync(helpSectionSubpath)) {
                 if (!this.loadedTreePath.equals(treeSubpath)) {
-                    this.$("content").innerHTML = markdown.toHTML(
-                        fs.readFileSync(helpSectionSubpath, "utf8"));
+                    this.$("content").innerHTML =
+                        marked(fs.readFileSync(helpSectionSubpath, "utf8"));
                     this.loadedTreePath = treeSubpath;
                     newSectionLoaded = true;
                 }
@@ -96,7 +96,9 @@ class HelpOverlay extends Overlay {
                     // 'help#' -> local link pointing to other help sections.
                     if (linkPath[0] === "help") {
                         link.addEventListener("click", () => {
-                            this.$("tree").selectByPath(linkPath.splice(1));
+                            this.$("tree").selectByPath(
+                                linkPath.splice(1).map(
+                                    (label) => label.replace("_", " ")));
                         });
                         link.removeAttribute("href");
                     // 'tour#' -> button to start an introduction tour

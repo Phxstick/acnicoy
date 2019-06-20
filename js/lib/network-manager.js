@@ -7,135 +7,63 @@ const EventEmitter = require("events");
 const extract = require("extract-zip");
 
 // =============================================================================
-// Functions for communicating with the server.
+// Functions and variables for communicating with the server.
 // =============================================================================
 
 const HOSTNAME = "http://acnicoy.netai.net";
-const SCRIPT_URI = "/download.php";
-const TIMEOUT_DURATION = 20000;
+const SCRIPT_URI = "/backend.php";
+const TIMEOUT_DURATION = 10000;
+
+const requestOptions = {
+    baseUrl: HOSTNAME,
+    url: SCRIPT_URI,
+    timeout: TIMEOUT_DURATION,
+    method: "POST",
+    headers: { "Cache-Control": "no-cache, no-store, no-transform",
+               "Accept-Encoding": "identity" },
+    json: true
+};
 
 class ServerRequestFailedError extends Error {
-    constructor(statusCode, statusMessage) {
-        super(`Error ${statusCode}: ${statusMessage}`);
+    constructor(statusCode, statusMessage, responseBody=null) {
+        if (responseBody === null)
+            responseBody = "";
+        super(`Error ${statusCode}: ${statusMessage}\n\n${responseBody}`);
+        this.name = "Server error";
         this.statusCode = statusCode;
         this.statusMessage = statusMessage;
     }
 }
+
 class NoServerConnectionError extends Error {
     constructor(message) {
+        this.name = "Connection error";
         super(message);
     }
 }
 
 /**
- *  Send HTTP POST request to server. Return server response.
+ *  Send HTTP POST request to server and return the response body.
  *  @param {Object} query - JSON object to send as body of the POST request.
- *  @returns {http.IncomingMessage} - Response of the server.
+ *  @returns {Promise[Object]} - JSON object from response body.
  */
-function requestFromServer(query) {
-    const options = {
-        baseUrl: HOSTNAME,
-        url: SCRIPT_URI,
-        method: "POST",
-        headers: { "Content-Type": "application/json",
-                   "Accept-Encoding": "identity",
-                   "Cache-Control": "no-cache, no-store, no-transform" },
-        body: JSON.stringify(query),
-        encoding: null,
-        timeout: TIMEOUT_DURATION
-    };
+function queryServer(query) {
     return new Promise((resolve, reject) => {
-        let dataCounter = 0;
-        const stream = request(options, (err, response, body) => {
-            if (err) {
-                console.log("Error:", err);
-                return;
-            }
-            console.log("body.length:", body.length);
-        }).on("response", (response) => {
-            if (response.statusCode !== 200 && response.statusCode !== 201) {
-                reject(new ServerRequestFailedError(
-                    response.statusCode, response.statusMessage));
-                return;
-            }
-            // console.log(response);
-            stream.headers = response.headers;
-            // stream.destroy = () => response.destroy();
-            stream.destroy = () => {
-                console.log("'stream.destroy' is called!");
-                response.destroy();
-            };
-            resolve(stream);
-            console.log("Data gathered before response event: ", dataCounter);
-        }).on("error", (error) => {
-            console.log("STREAM ERROR: ", error);
-            reject(new NoServerConnectionError(error.message));
-        });
-        // console.log(stream);
-        // console.log("Stream state: ", stream._readableState);
-        // console.log("Stream highWaterMark: ", stream.readableHighWaterMark);
-        stream.on("data", (chunk) => {
-            dataCounter += chunk.length;
-        });
-        stream.on("end", () => {
-            console.log("Data amount received in direct data listener:", dataCounter);
-        });
-    });
-}
-
-/**
- *  Send HTTP POST request to server. Return completeBody of server response.
- *  @param {Object} query - JSON object to send as body of the POST request.
- *  @returns {Object} - JSON object from response body.
- */
-function requestFromServerFull(query) {
-    const options = {
-        baseUrl: HOSTNAME,
-        url: SCRIPT_URI,
-        method: "POST",
-        headers: { "Cache-Control": "no-cache" },
-        timeout: TIMEOUT_DURATION,
-        json: true,
-        body: query
-    };
-    return new Promise((resolve, reject) => {
-        request(options, (error, response, body) => {
+        request({ body: query, ...requestOptions }, (error, response, body) => {
             if (error) {
                 reject(new NoServerConnectionError(error.message));
-                return;
-            }
-            if (response.statusCode !== 200 && response.statusCode !== 201) {
+            } else if (response.statusCode !== 200) {
                 reject(new ServerRequestFailedError(
-                    response.statusCode, response.statusMessage));
-                return;
+                    response.statusCode, response.statusMessage, body));
+            } else {
+                resolve(body);
             }
-            resolve(body);
         });
     });
 }
 
 module.exports.ServerRequestFailedError = ServerRequestFailedError;
 module.exports.NoServerConnectionError = NoServerConnectionError;
-
-
-// =============================================================================
-// Functions handling file IO.
-// =============================================================================
-
-/**
- * @param {String} filename - Name of file to write fragment to.
- * @param {Integer} fileOffset - Position (bytes) in file to copy fragment to.
- * @param {Buffer} dataFragment - Buffer containing data to be copied.
- * @param {Integer} [dataLength] - Amount of data in buffer to be copied.
- */
-function saveFragmentToDisk(filename, fileOffset, dataFragment, dataLength) {
-    if (dataLength === undefined)
-        dataLength = dataFragment.length;
-    const handle = fs.openSync(paths.downloadDataPart(filename), "r+");
-    fs.writeSync(handle, dataFragment, 0, dataLength, fileOffset);
-    fs.closeSync(handle);
-}
-
 
 // =============================================================================
 // Functions and state information for downloading files.
@@ -144,11 +72,11 @@ function saveFragmentToDisk(filename, fileOffset, dataFragment, dataLength) {
 // Size of data fragments written to the hard disk.
 const FRAGMENT_SIZE = 500000;  // 0.5MB
 
-// Map download name to info such as total filesize, current size and versions.
+// Map download name to object containing associated information
 const downloadsInfo = new Map();
 
-// Map download name to http.IncomingMessage stream emitting downloaded data.
-const downloadStreams = new Map();
+// Map download name to emitter generating events as the download progresses
+const progressEmitters = new Map();
 
 function loadDownloadsInfo() {
     downloadsInfo.clear();
@@ -167,17 +95,21 @@ function saveDownloadsInfo() {
 }
 
 /**
- * Download data from open data stream for given download name.
- * @returns {Promise} - Resolves when download has successfully finished.
+ * Download a file specified by the given query to the server.
+ * @returns {Promise[Boolean]} - Evaluated to true if the download has finished.
  */
-function handleDownload(downloadName, stream) {
+function downloadFile(downloadName, query) {
     const downloadInfo = downloadsInfo.get(downloadName);
-    const { filename, currentSize } = downloadInfo;
-    const buffer = Buffer.alloc(FRAGMENT_SIZE);
+    const emitter = progressEmitters.get(downloadName);
+    // "encoding: null" is necessary to interpret data as binary instead of utf8
+    const stream = request({ body: query, encoding: null, ...requestOptions });
+
+    let fileHandle;
+    let buffer;
     let bufferOffset = 0;
-    let fileOffset = currentSize;
-    // Fill fragment buffer with received data chunks until full
     let totalChunkSize = 0;
+
+    // Fill buffer with received data chunks, write to disk whenever it's full
     stream.on("data", (chunk) => {
         let chunkOffset = 0;
         let chunkRestSize = chunk.length;
@@ -192,69 +124,93 @@ function handleDownload(downloadName, stream) {
             chunkRestSize -= copySize;
             // If buffer has been filled, write fragment to disk
             if (bufferOffset === FRAGMENT_SIZE) {
-                saveFragmentToDisk(filename, fileOffset, buffer);
-                fileOffset += FRAGMENT_SIZE;
-                downloadInfo.currentSize = fileOffset;
+                fs.writeSync(fileHandle, buffer);
                 bufferOffset = 0;
-                stream.emit("progressing", getDownloadStatus(downloadName));
+                downloadInfo.currentlyDownloading.offset += FRAGMENT_SIZE;
+                emitter.emit("progressing", getDownloadStatus(downloadName));
             }
         }
     });
-    const cleanUp = () => {
-        // Write final chunk to the disk
+
+    // Callback for when stream is closed, writes final chunk and closes file
+    const concludeDownload = () => {
         if (bufferOffset > 0) {
-            saveFragmentToDisk(filename, fileOffset, buffer, bufferOffset);
-            downloadInfo.currentSize = fileOffset + bufferOffset;
-            bufferOffset = 0;
+            fs.writeSync(fileHandle, buffer, 0, bufferOffset);
+            downloadInfo.currentlyDownloading.offset += bufferOffset;
         }
-        // Delete download stream object
-        if (downloadStreams.has(downloadName)) {
-            downloadStreams.delete(downloadName);
-        }
+        fs.closeSync(fileHandle);
     };
-    // If download is stopped (e.g. connection lost), save last data chunk
-    stream.on("close", () => {
-        console.log("STREAM HAS BEEN CLOSED!");
-        cleanUp();
-        const { totalSize: total, currentSize: current } = 
-            downloadsInfo.get(downloadName);
-        console.log("Downloaded %d of %d bytes.", current, total);
-        stream.emit("progressing", getDownloadStatus(downloadName));
-        if (total !== current) {
-            stream.emit("connection-lost");
-        }
-    });
-    stream.on("error", (error) => {
-        console.log("ERROR OCCURRED IN STREAM!");
-        cleanUp();
-        stream.emit("connection-lost");
-    });
-    // If all data has been received
+
     return new Promise((resolve, reject) => {
-        stream.on("end", () => {
-            console.log("STREAM HAS ENDED!");
-            cleanUp();
-            const { totalSize: total, currentSize: current } = 
-                downloadsInfo.get(downloadName);
-            console.log("Downloaded %d of %d bytes.", current, total);
-            console.log("Total chunk size: ", totalChunkSize);
-            stream.emit("progressing", getDownloadStatus(downloadName));
-            if (total !== current) return;
-            fs.renameSync(
-                paths.downloadDataPart(filename), paths.downloadData(filename));
-            resolve();
+        let responseReceived = false;
+        let streamEnded = false;
+        let errorEncountered = false;
+
+        stream.on("response", (response) => {
+            responseReceived = true;
+
+            // Consider all codes but 200 as server errors and resolve to false
+            if (response.statusCode !== 200) {
+                emitter.emit("error", "Server error");
+                resolve(false);
+                return;
+            }
+
+            // Add function to the emitter that allows interrupting the download
+            // TODO: this assumes that destroy calls "close" listener; does it?
+            emitter.stop = () => {
+                response.destroy();
+                // TODO: emit abort-event here (or in close-listener)
+            };
+
+            // Initialize buffer and open file for appending
+            const filename = downloadInfo.currentlyDownloading.filename;
+            const downloadPath = paths.downloadArchive(downloadName, filename);
+            fileHandle = fs.openSync(downloadPath, "a");
+            buffer = Buffer.alloc(FRAGMENT_SIZE);
+        });
+
+        stream.on("close", () => {
+            if (streamEnded) return;
+            if (errorEncountered) return;
+            if (!responseReceived) return;  // Is this necessary here?
+            concludeDownload();
+            emitter.emit("progressing", getDownloadStatus(downloadName));
+            resolve(false);
+        });
+
+        stream.on("error", (error) => {
+            if (streamEnded) return;
+            errorEncountered = true;
+            if (!responseReceived) {
+                emitter.emit("error", "Connection error");
+            } else {
+                concludeDownload();
+                // TODO: this can actually be a "parse error" as well, what else
+                emitter.emit("error", "Connection lost");
+            }
+            resolve(false);
+        });
+
+        // Resolve to true if download is complete
+        stream.on("end", async () => {
+            streamEnded = true;
+            concludeDownload();
+            emitter.emit("progressing", getDownloadStatus(downloadName));
+            resolve(true);
         });
     });
 }
 
 /**
  * Get status information for download with given name in form of an object
- * { isActive, downloaded, remaining, total }.
+ * { totalSize, downloaded, remaining, percentage }.
  */
 function getDownloadStatus(downloadName) {
-    const { currentSize, totalSize } = downloadsInfo.get(downloadName);
+    const { totalSize, downloaded, currentlyDownloading }
+        = downloadsInfo.get(downloadName);
+    const currentSize = downloaded + currentlyDownloading.offset;
     return {
-        isActive: downloadStreams.has(downloadName),
         totalSize: totalSize,
         downloaded: currentSize,
         remaining: totalSize - currentSize,
@@ -277,14 +233,14 @@ function stopDownload(downloadName) {
     if (!downloadsInfo.has(downloadName)) {
         throw new Error(`Could not find download with name "${downloadName}".`);
     }
-    if (!downloadStreams.has(downloadName)) {
+    if (!progressEmitters.has(downloadName)) {
         throw new Error(`Download "${downloadName}" is currently not running.`);
     }
-    downloadStreams.get(downloadName).destroy();
+    progressEmitters.get(downloadName).stop();
 }
 
 function stopAllDownloads() {
-    for (const [downloadName, downloadStream] of downloadStreams) {
+    for (const [downloadName, progressEmitter] of progressEmitters) {
         stopDownload(downloadName);
     }
 }
@@ -299,22 +255,27 @@ module.exports.stopAllDownloads = stopAllDownloads;
 
 const content = {};
 
-function getContentDownloadName (language, secondary) {
-    return `CONTENT-${language}-${secondary}`;
+function getContentDownloadName(language, secondary) {
+    return `Content-${language}-${secondary}`;
 }
 
-function getContentFileVersions (language, secondary) {
+function getContentFileVersions(language, secondary) {
     return utility.existsFile(paths.content(language, secondary).versions) ?
         require(paths.content(language, secondary).versions) : {};
 }
 
 content.getStatus = async function (language, secondary) {
-    return await requestFromServerFull({
-        target: "content",
+    return await queryServer({
         action: "info",
-        languagePair: `${language}-${secondary}`,
-        currentProgramVersion: app.version,
-        currentFileVersions: getContentFileVersions(language, secondary)
+        target: {
+            type: "content",
+            language,
+            secondary
+        },
+        clientVersions: {
+            program: app.version,
+            content: getContentFileVersions(language, secondary)
+        }
     });
 }
 
@@ -325,93 +286,150 @@ content.getDownloadStatus = function (language, secondary) {
     return getDownloadStatus(downloadName);
 }
 
+async function finishContentDownload(downloadName) {
+    const { language, secondary, minProgramVersions, fileVersions }
+             = downloadsInfo.get(downloadName).details;
+    const contentPaths = paths.content(language, secondary);
+
+    // Create subdirectory in content directory if it doesn't exist yet
+    if (!utility.existsDirectory(contentPaths.directory)) {
+        fs.mkdirSync(contentPaths.directory);
+    }
+
+    // Get content of version registers (create them if they don't exist yet)
+    const versionsReg = utility.existsFile(contentPaths.versions) ?
+        require(contentPaths.versions) : {};
+    const minProgramVersionsReg =
+        utility.existsFile(contentPaths.minProgramVersions) ?
+        require(contentPaths.minProgramVersions) : {};
+
+    // Unzip downloaded files into the content subdirectory
+    const extractionPromises = [];
+    for (const filename in fileVersions) {
+        const downloadPath = paths.downloadArchive(downloadName, filename);
+        extractionPromises.push(new Promise((resolve, reject) => {
+            extract(downloadPath, { dir: contentPaths.directory }, (error) => {
+                fs.unlinkSync(downloadPath);
+                if (error) {
+                    reject(error);
+                } else {
+                    minProgramVersionsReg[filename]=minProgramVersions[filename]
+                    versionsReg[filename] = fileVersions[filename];
+                    resolve();
+                }
+            });
+        }));
+    }
+
+    // Save version registers to disk and return true if no error occurred
+    try {
+        await Promise.all(extractionPromises);
+    } catch (error) {
+        return false;
+    } finally {
+        fs.writeFileSync(contentPaths.versions,
+            JSON.stringify(versionsReg, null, 4));
+        fs.writeFileSync(contentPaths.minProgramVersions,
+            JSON.stringify(minProgramVersionsReg, null, 4));
+    }
+    return true;
+}
+
+async function conductContentDownload(downloadName) {
+    const progressEmitter = progressEmitters.get(downloadName);
+    const downloadInfo = downloadsInfo.get(downloadName);
+    const { filesPending, currentlyDownloading, details } = downloadInfo;
+
+    while (filesPending.length > 0) {
+        // Get the next file if the last one finished downloading
+        if (currentlyDownloading.filename === null) {
+            currentlyDownloading.filename = filesPending[filesPending.length-1];
+        }
+
+        // Download the file
+        const complete = await downloadFile(downloadName, {
+            action: "download",
+            offset: currentlyDownloading.offset,
+            target: {
+                type: "content",
+                filename: currentlyDownloading.filename,
+                language: details.language,
+                secondary: details.secondary,
+                version: details.fileVersions[currentlyDownloading.filename]
+            }
+        });
+        
+        // If the file hasn't been downloaded completely, put download on hold
+        if (!complete) {
+            progressEmitters.delete(downloadName);
+            saveDownloadsInfo();
+            return;
+        }
+
+        // Otherwise, remove it from the list of pending files
+        downloadInfo.downloaded += currentlyDownloading.offset;
+        currentlyDownloading.filename = null;
+        currentlyDownloading.offset = 0;
+        filesPending.pop();
+        saveDownloadsInfo();
+    }
+
+    // Process the downloaded data
+    progressEmitter.emit("starting-data-processing");
+    const successful = await finishContentDownload(downloadName);
+
+    // Delete download info and emitter from registers and remove subdirectory
+    downloadsInfo.delete(downloadName);
+    saveDownloadsInfo();
+    progressEmitters.delete(downloadName);
+    fs.rmdirSync(paths.downloadSubdirectory(downloadName));
+
+    // Signal that the download was finished and whether it was successful
+    progressEmitter.emit("finished", successful);
+}
+
 content.startDownload = async function (language, secondary) {
     const downloadName = getContentDownloadName(language, secondary);
-    const downloadAlreadyExists = downloadsInfo.has(downloadName);
-    // If download is already running, just return the download stream
-    if (downloadStreams.has(downloadName)) {
-        return downloadStreams.get(downloadName);
+
+    // If a download is already running, just return the corresponding emitter
+    if (progressEmitters.has(downloadName)) {
+        return progressEmitters.get(downloadName);
     }
-    let currentSize;
-    let totalSize;
-    let requestedFileVersions;
-    let minProgramVersions;
-    let filename;
-    if (!downloadAlreadyExists) {
-        // If download doesn't exist yet, get latest file versions from server
+
+    // If download doesn't exist yet, get latest file versions from server first
+    if (!downloadsInfo.has(downloadName)) {
         const contentStatus = await content.getStatus(language, secondary);
         if (!contentStatus.updateAvailable)
             throw `Content for language pair '${language}-${secondary}' is ` +
                   `already up to date.`;
-        filename = `${language}-${secondary}.zip`;
-        requestedFileVersions = contentStatus.latestFileVersions;
-        minProgramVersions = contentStatus.minProgramVersions;
-        currentSize = 0;
-    } else {
-        ({ currentSize, totalSize, requestedFileVersions, minProgramVersions,
-           filename } = downloadsInfo.get(downloadName));
-    }
-    // TODO: Don't request data from server if 100% downloaded
-    const response = await requestFromServer({
-        target: "content",
-        action: "download",
-        offset: currentSize,
-        languagePair: `${language}-${secondary}`,
-        requestedFileVersions
-    });
-    if (!downloadAlreadyExists) {
-        totalSize = parseInt(response.headers["content-length"]);
-        // Create empty file to write downloaded data to
-        fs.writeFileSync(
-            paths.downloadDataPart(filename), Buffer.alloc(totalSize));
-        // Create download info object for this download
+
+        // Register the download and store all associated information
         downloadsInfo.set(downloadName, {
-            currentSize, totalSize, filename, requestedFileVersions,
-            minProgramVersions
+            filesPending: Object.keys(contentStatus.latestFileVersions),
+            fileSizes: contentStatus.fileSizes,
+            currentlyDownloading: {
+                filename: null,
+                offset: 0
+            },
+            totalSize: contentStatus.totalSize,
+            downloaded: 0,
+            details: {
+                fileVersions: contentStatus.latestFileVersions,
+                minProgramVersions: contentStatus.minProgramVersions,
+                language,
+                secondary
+            }
         });
         saveDownloadsInfo();
+        fs.mkdirSync(paths.downloadSubdirectory(downloadName));
     }
-    // Check again if a download is already running under this name
-    if (downloadStreams.has(downloadName)) {
-        return downloadStreams.get(downloadName);
-    }
-    downloadStreams.set(downloadName, response);
-    // Start downloading data and process downloaded data afterwards
-    handleDownload(downloadName, response).then(() => {
-        const contentPaths = paths.content(language, secondary);
-        // Create directory in content directory if it doesn't exist yet
-        if (!utility.existsDirectory(contentPaths.directory)) {
-            fs.mkdirSync(contentPaths.directory);
-        }
-        // Unzip new files into content directory
-        extract(paths.downloadData(filename), { dir: contentPaths.directory },
-        async (error) => {
-            // TODO: Handle errors during unzip or the following procedures
-            // Update content version register
-            const versions = utility.existsFile(contentPaths.versions) ?
-                require(contentPaths.versions) : {};
-            for (const filename in requestedFileVersions) {
-                versions[filename] = requestedFileVersions[filename];
-            }
-            fs.writeFileSync(
-                contentPaths.versions, JSON.stringify(versions, null, 4));
-            // Update minimum program version register
-            const minProgramVersionsReg =
-                utility.existsFile(contentPaths.minProgramVersions) ?
-                require(contentPaths.minProgramVersions) : {};
-            for (const filename in minProgramVersions) {
-                minProgramVersionsReg[filename] = minProgramVersions[filename];
-            }
-            fs.writeFileSync(contentPaths.minProgramVersions,
-                JSON.stringify(minProgramVersionsReg, null, 4));
-            // Delete entry from downloads-register and delete the ZIP archive
-            downloadsInfo.delete(downloadName);
-            saveDownloadsInfo();
-            fs.unlinkSync(paths.downloadData(filename));
-            response.emit("finished");
-        });
-    });
-    return response;
+
+    // Start the download and create an emitter which will report its progress
+    const progressEmitter = new EventEmitter();
+    progressEmitter.stop = () => {}; // Set a flag, check in conduct-function
+    progressEmitters.set(downloadName, progressEmitter);
+    window.setTimeout(() => conductContentDownload(downloadName), 0);
+    return progressEmitter;
 }
 
 content.pauseDownload = function (language, secondary) {
@@ -428,82 +446,7 @@ module.exports.content = content;
 const program = {}
 
 program.getLatestVersionInfo = async function () {
-    return await requestFromServerFull({ target: "program", action: "info" });
+    return await queryServer({ target: { type: "program" }, action: "info" });
 };
 
 module.exports.program = program;
-
-// =============================================================================
-// TODO TODO TODO Delete this later TODO TODO TODO
-// =============================================================================
-module.exports.content.testDownload = async function () {
-    const requestedFileVersions = require("/home/daniel/Documents/AcnicoyData/Content/Japanese-English-1/versions.json")
-    const query = {
-        target: "content",
-        action: "download",  // "info"
-        languagePair: `Japanese-English`,
-        offset: 0,
-        requestedFileVersions
-    };
-    // const contentStatus = await requestFromServerFull({
-    //     target: "content",
-    //     action: "info",
-    //     languagePair: `Japanese-English`,
-    //     currentProgramVersion: app.version,
-    //     currentFileVersions: {}
-    // });
-    const options = {
-        baseUrl: HOSTNAME,
-        url: SCRIPT_URI,
-        method: "POST",
-        timeout: TIMEOUT_DURATION,
-        headers: { "Content-Type": "application/json",
-                   "Accept-Encoding": "identity",
-                   "Cache-Control": "no-cache, no-store, no-transform" },
-        encoding: null,
-        body: JSON.stringify(query)
-    };
-    const stream = request(options, (error, response, body) => {
-        if (error) {
-            console.log("Error: ", error);
-            return;
-        }
-        // console.log("Status code:", response.statusCode);
-        // console.log("Content type", response.headers["content-type"]);
-        // console.log("Received response of size:",
-        //         parseInt(response.headers["content-length"]));
-        console.log("Full body size: ", body.length);
-        // if (response.headers["content-type"] == "application/json") {
-        //     console.log("Body: ", body.toString());
-        // } else {
-        //     console.log("Body: ", body);
-        // }
-    }).on("response", (response) => {
-        if (response.statusCode !== 200 && response.statusCode !== 201) {
-            console.log("DAFUQ");
-            return;
-        }
-        console.log(response);
-        stream.headers = response.headers;
-        stream.destroy = () => {
-            console.log("'stream.destroy' is called!");
-            response.destroy();
-        };
-        let sumChuckSizes = 0;
-        let numChunksReceived = 0;
-        const sleep = require("sleep");
-        stream.on("data", (chunk) => {
-            sumChuckSizes += chunk.length;
-            ++numChunksReceived;
-            if (numChunksReceived % 3000 === 0) {
-                console.log(`Sum of chunk sizes: ${sumChuckSizes}`);
-            }
-        });
-        stream.on("error", (error) => {
-            console.log("Error: ", error);
-        });
-        stream.on("end", (chunk) => {
-            console.log(`Sum of chunk sizes: ${sumChuckSizes}`);
-        });
-    });
-};

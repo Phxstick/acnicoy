@@ -3,13 +3,15 @@
 [Spinners](https://tobiasahlin.com/spinkit/)
 from Tobias Ahlin
 
-Used librares are listed as dependencies in the [package.json](https://github.com/Phxstick/acnicoy/blob/master/package.json) file.
+Icons from [Font Awesome 4.7](https://fontawesome.com/v4.7.0/)
+
+Used librares are listed as dependencies in the [package.json](https://github.com/Phxstick/acnicoy/blob/master/package.json).
 
 
 ### Japanese language data
 
-[Dictionary data (JMdict.xml)](http://www.edrdg.org/jmdict/edict_doc.html),  
-[Kanji data (kanjidic.txt)](http://www.edrdg.org/kanjidic/kanjidic.html),  
+[Dictionary data (JMdict)](http://www.edrdg.org/jmdict/edict_doc.html),  
+[Kanji data (kanjidic)](http://www.edrdg.org/wiki/index.php/KANJIDIC_Project),  
 [Kanji decomposition data (kradfile)](http://nihongo.monash.edu/kradinf.html),  
 [Japanese Proper Name Dictionary File (enamdict)](http://ftp.monash.edu.au/pub/nihongo/enamdict.gz),  
 [Newspaper word frequency list (wordfreq)](http://ftp.monash.edu.au/pub/nihongo/wordfreq.zip)  

@@ -2,8 +2,8 @@
 
 const { ipcRenderer, remote } = require("electron");
 const mainBrowserWindow = remote.getCurrentWindow();
-const AutoLaunch = require("auto-launch");
-const markdown = require("markdown").markdown;
+// const AutoLaunch = require("auto-launch");
+const marked = require("marked");
 
 const menuItems = contextMenu.registerItems({
     "copy-kanji": {
@@ -39,8 +39,12 @@ const menuItems = contextMenu.registerItems({
     "delete-notification": {
         label: "Delete notification",
         click: ({ currentNode }) => {
-            dataManager.notifications.delete(parseInt(currentNode.dataset.id));
+            dataManager.notifications.delete(currentNode.dataset.id);
             main.$("notifications").removeChild(currentNode);
+            // A text node might remain which disables the CSS selector ":empty"
+            if (main.$("notifications").children.length === 0) {
+                main.$("notifications").innerHTML = "";
+            }
         }
     },
     "delete-all-notifications": {
@@ -59,11 +63,13 @@ const menuItems = contextMenu.registerItems({
 class MainWindow extends Window {
     constructor () {
         super("main");
+        this.$("panel-shortcuts-info").hide();
         // Constants
         this.sideBarWidth = "80px";  // Keep consistent with scss
         this.menuBarHeight = "42px";  // Keep consistent with scss
         this.panelSlideDuration = 350;
-        this.sectionFadeDuration = 200;
+        this.kanjiInfoPanelSlideDuration = 200;
+        this.sectionFadeDuration = 150;
         this.statusUpdateInterval = utility.timeSpanStringToSeconds("3 hours");
         this.dataSavingInterval = utility.timeSpanStringToSeconds("10 minutes");
         this.srsStatusUpdateInterval = utility.timeSpanStringToSeconds("5 min");
@@ -132,7 +138,7 @@ class MainWindow extends Window {
         });
         // Sidebar button events
         this.$("add-vocab-button").addEventListener("click",
-                () => this.openPanel("edit-vocab", { entryName: null }));
+                () => this.openPanel("edit-vocab"));
         this.$("add-kanji-button").addEventListener("click",
                 () => this.openPanel("add-kanji"));
         this.$("add-hanzi-button").addEventListener("click",
@@ -183,10 +189,10 @@ class MainWindow extends Window {
             }
         });
         // Auto launch functionality
-        this.autoLauncher = new AutoLaunch({ name: app.name, isHidden: true });
+        // this.autoLauncher = new AutoLaunch({ name: app.name, isHidden: true });
         // Shortcut callbacks
         this.shortcutMap = {
-            "add-word": () => this.openPanel("edit-vocab", { entryName: null }),
+            "add-word": () => this.openPanel("edit-vocab"),
             "add-kanji": () => {
                 if (dataManager.currentLanguage === "Japanese") {
                     this.openPanel("add-kanji");
@@ -245,7 +251,21 @@ class MainWindow extends Window {
                     this.panels[this.currentPanel].save();
                 }
             },
-            "save-data": () => this.saveData()
+            "save-data": () => this.saveData(),
+            "open-dev-tools": () => {
+                // Open dev tools and stretch window to accomodate them
+                const browserWindow = remote.getCurrentWindow();
+                const [width, height] = browserWindow.getSize();
+                const webContents = remote.getCurrentWebContents();
+                if (webContents.isDevToolsOpened()) {
+                    webContents.closeDevTools();
+                    browserWindow.setSize(Math.max(600, width - 240), height);
+                } else {
+                    webContents.openDevTools();
+                    browserWindow.setSize(
+                        Math.min(screen.width, width + 240), height);
+                }
+            }
         };
         // Register all shortcut callbacks
         for (const shortcutName in this.shortcutMap) {
@@ -289,6 +309,11 @@ class MainWindow extends Window {
             event.preventDefault();
             event.stopPropagation();
         };
+        this.$("hide-panel-shortcuts-info").addEventListener("click", () => {
+            this.$("panel-shortcuts-info").hide();
+            storage.set("show-panel-shortcuts-info", false);
+            this.$("filter").classList.remove("dark");
+        });
     }
 
     registerCentralEventListeners() {
@@ -343,15 +368,15 @@ class MainWindow extends Window {
                 createBackupIfDue();
             }
         });
-        events.on("settings-general-auto-launch-on-startup", () => {
-            this.autoLauncher.isEnabled().then((isEnabled) => {
-                if (dataManager.settings.general.autoLaunchOnStartup) {
-                    if (!isEnabled) this.autoLauncher.enable();
-                } else {
-                    this.autoLauncher.disable();
-                }
-            });
-        });
+        // events.on("settings-general-auto-launch-on-startup", () => {
+        //     this.autoLauncher.isEnabled().then((isEnabled) => {
+        //         if (dataManager.settings.general.autoLaunchOnStartup) {
+        //             if (!isEnabled) this.autoLauncher.enable();
+        //         } else {
+        //             this.autoLauncher.disable();
+        //         }
+        //     });
+        // });
         events.on("content-download-finished", (info) => {
             this.addNotification("content-download-finished", info);
         });
@@ -387,10 +412,8 @@ class MainWindow extends Window {
             this.sections["home"].open();
         });
         this.currentSection = "home";
-        // Load any character in kanji info panel to render stuff there
-        // (Prevents buggy animation when first opening the panel)
+        // Load search history in kanji info panel
         if (dataManager.content.isLoadedFor("Japanese", "English")) {
-            this.$("kanji-info-panel").load("字", true);
             this.$("kanji-info-panel").loadHistory();
         }
         // Regularly update SRS info
@@ -563,12 +586,7 @@ class MainWindow extends Window {
         }
 
         // Load the given entry
-        if (name === "edit-vocab" || name === "edit-kanji" ||
-                name === "edit-hanzi") {
-            if (entryName === undefined) {
-                throw new Error(
-                    "A vocab entry to load must be provided for edit panels!");
-            }
+        if (name.startsWith("edit")) {
             await this.panels[name].load(entryName, dictionaryId);
         }
 
@@ -584,39 +602,21 @@ class MainWindow extends Window {
             this.panels[name].style.left = "0";
         }
 
+        // Load suggestions (if available)
         let showSuggestions = false;
-        // Only load suggestions for kanji if languages are Japanese-English
-        if (name === "add-kanji" || name === "edit-kanji") {
-            if (dataManager.currentLanguage === "Japanese" &&
-                    dataManager.currentSecondaryLanguage === "English" &&
-                    dataManager.content.isLoadedFor("Japanese", "English")) {
-                if (entryName !== undefined) {
-                    showSuggestions = true;
-                    this.suggestionPanes[name].load(entryName);
-                }
-            }
-        }
-
-        if (name === "add-vocab" || (name === "edit-vocab" &&
-                                     entryName !== null)) {
-            // Load suggestions by dictionary ID if one is given
-            if (dictionaryId !== undefined) {
-                if (entryName === undefined) {
-                    throw new Error("If a dictionary ID is provived, " +
-                        "the chosen word variant must be provided as well.");
-                }
-                if (name === "add-vocab") {
-                    this.panels["add-vocab"].setDictionaryId(dictionaryId);
-                }
+        const dictionaryAvailable = dataManager.content.isDictionaryAvailable();
+        if (entryName !== undefined && dictionaryAvailable) {
+            if (name.endsWith("kanji")) {
                 showSuggestions = true;
-                this.suggestionPanes[name].load(dictionaryId, entryName);
-            }
-
-            // If no dictionary ID is given, look it up or guess an ID
-            else if (entryName !== undefined) {
-                if (dataManager.currentLanguage === "Japanese" &&
-                        dataManager.currentSecondaryLanguage === "English" &&
-                        dataManager.content.isLoadedFor("Japanese","English")) {
+                this.suggestionPanes[name].load(entryName);
+            } else if (name.endsWith("vocab")) {
+                // Load suggestions by dictionary ID if one is given
+                if (dictionaryId !== undefined) {
+                    showSuggestions = true;
+                    this.suggestionPanes[name].load(dictionaryId, entryName);
+                }
+                // If no dictionary ID is given, look it up or guess an ID
+                else {
                     dictionaryId = await
                         dataManager.vocab.getAssociatedDictionaryId(entryName);
                     if (dictionaryId === null) {
@@ -631,10 +631,14 @@ class MainWindow extends Window {
             }
         }
 
+
+        let showPanelShortcuts = storage.get("show-panel-shortcuts-info");
+        if (showPanelShortcuts === undefined) showPanelShortcuts = true;
+
         // Display loaded suggestion pane (unless the panel was already closed)
         if (this.currentPanel !== name) return;
-        this.$("filter").classList.toggle("dark", showSuggestions);
         if (showSuggestions) {
+            this.$("filter").classList.add("dark");
             this.suggestionsShown = true;
             if (dataManager.settings.design.animateSlidingPanels) {
                 Velocity(this.suggestionPanes[name], "stop");
@@ -644,6 +648,15 @@ class MainWindow extends Window {
                 this.suggestionPanes[name].style.opacity = "1";
                 this.suggestionPanes[name].show();
             }
+        // If no suggestion pane is shown, display available shortcuts instead
+        } else if (name.startsWith("edit") && showPanelShortcuts) {
+            this.$("filter").classList.add("dark");
+            this.panelShortcutsInfoShown = true;
+            Velocity(this.$("panel-shortcuts-info"), "stop");
+            Velocity(this.$("panel-shortcuts-info"), "fadeIn",
+                { duration: this.panelSlideDuration });
+        } else {
+            this.$("filter").classList.remove("dark");
         }
     }
 
@@ -670,6 +683,12 @@ class MainWindow extends Window {
             } else {
                 this.$("filter").hide();
             }
+        }
+        if (this.panelShortcutsInfoShown) {
+            this.panelShortcutsInfoShown = false;
+            Velocity(this.$("panel-shortcuts-info"), "stop");
+            Velocity(this.$("panel-shortcuts-info"), "fadeOut",
+                { duration: this.panelSlideDuration });
         }
         if (this.suggestionsShown) {
             this.suggestionsShown = false;
@@ -870,14 +889,14 @@ class MainWindow extends Window {
     // }
 
     async makeKanjiInfoLink(element, character) {
-        // TODO: Don't check if kanji is in database here (Do elsewhere)
+        // TODO: Don't check if kanji is in database here (do it elsewhere)
         return dataManager.content.get("Japanese", "English")
         .isKnownKanji(character).then((isKanji) => {
             if (isKanji) {
                 element.classList.add("kanji-info-link");
                 // Open kanji info panel upon clicking kanji
-                element.addEventListener("click", () => {
-                    this.$("kanji-info-panel").load(character);
+                element.addEventListener("click", async () => {
+                    await this.$("kanji-info-panel").load(character);
                     this.$("kanji-info-panel").open();
                 });
                 // Display tooltip with kanji meanings after a short delay
@@ -960,11 +979,16 @@ class MainWindow extends Window {
 
     deleteNotification(id) {
         const notifications = this.$("notifications").children;
+        // Note: notification IDs must be strings for this to work
         for (const notificationNode of notifications) {
-            if (parseInt(notificationNode.dataset.id) === id) {
+            if (notificationNode.dataset.id === id) {
                 this.$("notifications").removeChild(notificationNode);
                 break;
             }
+        }
+        // A text node might remain which disables the CSS selector ":empty"
+        if (this.$("notifications").children.length === 0) {
+            this.$("notifications").innerHTML = "";
         }
         dataManager.notifications.delete(id);
     }
@@ -982,7 +1006,7 @@ class MainWindow extends Window {
             buttonLabel = "Download";
             const { latestVersion, releaseDate, description } = data;
             subtitle = `Version ${latestVersion}, released on ${releaseDate}`;
-            details = markdown.toHTML(description);
+            details = marked(description);
             buttonCallback = () => events.emit("start-program-update");
         }
         // else if (type === "program-download-finished") {
@@ -994,10 +1018,9 @@ class MainWindow extends Window {
         //     buttonLabel = "Reload";
         // }
         else if (type === "content-update-available") {
-            title = "New language content available";
             buttonLabel = "Download";
             const { language, secondary } = data;
-            // subtitle = `For ${secondary} ➝ ${language}`;
+            title = `New language data available`;
             subtitle = `For ${language} (from ${secondary})`;
             buttonCallback = () => {
                 events.emit("start-content-download", { language, secondary });
@@ -1010,11 +1033,11 @@ class MainWindow extends Window {
             });
         }
         else if (type === "content-update-downloading") {
-            title = "Downloading content update...";
+            title = "Downloading language data...";
             buttonLabel = "Open<br>settings";
             const { language, secondary } = data;
             subtitle = `For ${language} (from ${secondary}).<br>
-                        See language settings for download progress.`;
+                        See language settings for progress.`;
             buttonCallback = () => {
                 main.sections["settings"].openSubsection("languages");
                 main.openSection("settings");
@@ -1026,23 +1049,40 @@ class MainWindow extends Window {
             });
         }
         else if (type === "content-download-finished") {
-            title = "Content download finished";
-            buttonLabel = "Reload<br>content";
-            const { language, secondary } = data;
-            subtitle = `For ${language} (from ${secondary}).<br>
-                        Press button on the right to load the content.`;
-            buttonCallback = async () => {
-                await this.loadLanguageContent(language, secondary);
-                this.deleteNotification(id);
-            };
+            const { language, secondary, successful } = data;
+            subtitle = `For ${language} (from ${secondary}).<br>`;
+            if (successful) {
+                title = "Data download finished";
+                subtitle += "Press the button on the right to load.";
+                buttonLabel = "Reload<br>data";
+                buttonCallback = async () => {
+                    await this.loadLanguageContent(language, secondary);
+                    this.deleteNotification(id);
+                };
+                events.once("language-content-loaded", (info) => {
+                    if (info.language==language && info.secondary==secondary) {
+                        this.deleteNotification(id);
+                    }
+                });
+            } else {
+                title = "Language data download failed";
+                subtitle += "This probably happened due to invalid data on " +
+                            "the server. You could retry in a few days. If " +
+                            "the problem persists, please contact the " +
+                            "maintainer of the application (see GitHub page).";
+                buttonLabel = "OK";
+                buttonCallback = () => this.deleteNotification(id);
+            }
         }
         else if (type === "achievement-unlocked") {
-            const { achievement, achievementName, language } = data;
-            title = `Achievement unlocked: ${achievementName}`;
-            buttonLabel = "";
-            subtitle = language !== undefined ? `[${language}] ` : "";
-            subtitle +=
-                dataManager.achievements.getDescription(achievement, language);
+            const { achievement, level, language } = data;
+            const name = dataManager.achievements.getName(achievement, level);
+            title = `Achievement unlocked`;
+            buttonLabel = "OK";
+            subtitle = language !== undefined ? `[For ${language}] ` : "";
+            subtitle += `<b>${name}</b> - ` + 
+                dataManager.achievements.getDescription(achievement, level);
+            buttonCallback = () => this.deleteNotification(id);
         }
         else {
             throw new Error(`Notification type '${type}' does not exist.`);

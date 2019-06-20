@@ -1,6 +1,7 @@
 *.swp
 commit.txt
 Session.vim
+package-lock.json
 /css/
 /node_modules/
 /language-content/

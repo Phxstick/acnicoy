@@ -19,25 +19,17 @@ class LanguageTable extends Widget {
         this.languageConfigs = [];
         this.languageToConfig = new Map();
         this.rowToConfig = new WeakMap();
+        this.configToDomElements = new WeakMap();
         this.interactiveMode = false;
         this.settingsSubsection = null;
         this.handledDownloadStreams = new WeakSet();
         this.updatingContentStatus = new WeakSet();
-        // this.retryContentStatusUpdateDelay = 30000;
+        this.retryContentStatusUpdateDelay = 900000;  // 15 min
         // Quick access to language content elements for each language
-        this.contentDownloadProgressFrames = new WeakMap();
-        this.contentDownloadProgressBars = new WeakMap();
-        this.contentDownloadProgressTexts = new WeakMap();
-        this.contentStatusLabelFrames = new WeakMap();
-        this.contentLoadStatusLabels = new WeakMap();
-        this.contentStatusLabels = new WeakMap();
-        this.programUpdateRecommendedIcons = new WeakMap();
-        this.programUpdateRequiredIcons = new WeakMap();
-        this.contentUpdateRequiredIcons = new WeakMap();
-        this.connectingSpinners = new WeakMap();
         this.$("edit-srs-schemes-button").addEventListener("click", () => {
             overlays.open("srs-schemes");
         });
+
         // Adding a new language
         this.$("add-language-button").addEventListener("click", async () => {
             const config = await overlays.open("add-lang");
@@ -60,6 +52,7 @@ class LanguageTable extends Widget {
                       secondary: config.settings.secondary });
             }
         });
+
         // Updating language content status
         this.$("update-content-status-button").addEventListener("click", () => {
             for (const config of this.languageConfigs) {
@@ -68,79 +61,89 @@ class LanguageTable extends Widget {
                       secondary: config.settings.secondary });
             }
         });
+
         // When a readings checkbox is clicked, update config
         this.$("table-body").addEventListener("click", (event) => {
             if (!event.target.classList.contains("readings-checkbox")) return;
-            const row = event.target.parentNode.parentNode;
-            const config = this.rowToConfig.get(row);
+            const config = this.rowToConfig.get(event.target.closest("tr"));
             if (this.interactiveMode) {
                 dataManager.languageSettings.setFor(
                     config.language, "readings", event.target.checked);
-                this.settingsSubsection.broadcastLanguageSetting("readings");
+                this.settingsSubsection.broadcastLanguageSetting(
+                    "readings", config.language);
             }
             config.settings.readings = event.target.checked;
         });
+
         // Allow user to change SRS scheme and migrate items for a language
         this.$("table-body").addEventListener("click", (event) => {
             if (!this.interactiveMode) return;
             if (!event.target.classList.contains("scheme-button")) return;
+            const config = this.rowToConfig.get(event.target.closest("tr"));
             const label = event.target;
-            const row = event.target.parentNode.parentNode;
-            const config = this.rowToConfig.get(row);
             overlays.open("migrate-srs", "switch-scheme", {
                 language: config.language,
                 schemeName: config.settings.srs.scheme
             }).then((migrated) => {
                 if (!migrated) return;
-                label.textContent = dataManager.languageSettings
-                                    .getFor(config.language, "srs.scheme");
+                const newScheme = dataManager.languageSettings
+                                  .getFor(config.language, "srs.scheme");
+                label.textContent = newScheme;
+                config.settings.srs.scheme = newScheme;
             });
         });
+
         // Functionality for loading/unloading language content
         this.$("table-body").addEventListener("click", (event) => {
             if (!event.target.classList.contains("content-load-status-label"))
                 return;
-            const row = event.target.parentNode.parentNode.parentNode;
-            const config = this.rowToConfig.get(row);
+            const config = this.rowToConfig.get(event.target.closest("tr"));
             const language = config.language;
             const secondary = config.settings.secondary;
             if (!dataManager.content.isLoadedFor(language, secondary)) {
                 main.loadLanguageContent(language, secondary);
                 event.target.textContent = "Unload";
             } else {
-                dataManager.content.unload(language);
+                dataManager.content.unload(language, secondary);
                 main.adjustToLanguageContent(language, secondary);
                 event.target.textContent = "Load";
             }
         });
+
         // Functionality for downloading language content
         this.$("table-body").addEventListener("click", (event) => {
             if (!event.target.classList.contains("content-status-label")) return
-            const row = event.target.parentNode.parentNode.parentNode; // Oh god
-            const config = this.rowToConfig.get(row);
+            const config = this.rowToConfig.get(event.target.closest("tr"));
             if (!config.downloadReady) return;
             events.emit("start-content-download", {
                 language: config.language,
-                secondaryLanguage: config.settings.secondary
+                secondary: config.settings.secondary
             });
         });
+
         // Activate hidden mode for language if eye-button is clicked
         this.$("table-body").addEventListener("click", (event) => {
             if (!event.target.classList.contains("hide-button")) return;
-            const row = event.target.parentNode.parentNode;
+            const row = event.target.closest("tr");
             const config = this.rowToConfig.get(row);
-            const hidden = !dataManager.languageSettings
-                            .getFor(config.language, "hidden");
+            const hidden = dataManager.languageSettings
+                           .getFor(config.language, "hidden");
+            if (!hidden && dataManager.languages.visible.length === 1) {
+                dialogWindow.info("At least one language must be kept visible.")
+                return;
+            }
             dataManager.languageSettings.setFor(
-                config.language, "hidden", hidden);
-            row.classList.toggle("hidden", hidden);
-            this.settingsSubsection.broadcastLanguageSetting("visibility");
+                config.language, "hidden", !hidden);
+            row.classList.toggle("hidden", !hidden);
+            this.settingsSubsection.broadcastLanguageSetting(
+                "visibility", config.language);
             events.emit("language-visibility-changed", config.language);
         });
+
         // Remove language if a remove-icon is clicked
         this.$("table-body").addEventListener("click", async (event) => {
             if (!event.target.classList.contains("remove-button")) return;
-            const row = event.target.parentNode.parentNode;
+            const row = event.target.closest("tr");
             const config = this.rowToConfig.get(row);
             if (this.interactiveMode) {
                 const confirmed = await dialogWindow.confirm(
@@ -187,8 +190,8 @@ class LanguageTable extends Widget {
             // event will be emitted before the language table has been filled
             if (!this.languageToConfig.has(language)) return;
             const config = this.languageToConfig.get(language);
-            const loadStatusLabel = this.contentLoadStatusLabels.get(config);
-            loadStatusLabel.textContent = "Unload";
+            const elements = this.configToDomElements.get(config);
+            elements.loadStatusLabel.textContent = "Unload";
         });
         events.on("update-content-status", async ({ language, secondary }) => {
             if (!this.interactiveMode) return;
@@ -207,36 +210,37 @@ class LanguageTable extends Widget {
         this.$("table-body").appendChild(row);
         this.rowToConfig.set(row, config);
         this.$("table").show();
-        if (config.interactiveMode) {
-            const secondary = config.settings.secondary;
-            config.downloading = networkManager.content.getDownloadStatus(
-                    language, secondary) !== null;
-            config.downloadReady = false;
-            config.lastUpdateTime = -1;
-            const loadStatusLabel = row.querySelector(".content-load-status-label");
-            loadStatusLabel.textContent =
-                dataManager.content.isLoadedFor(language,secondary)?"Unload":"Load";
-            this.contentLoadStatusLabels.set(config, loadStatusLabel);
-            this.contentDownloadProgressFrames.set(
-                config, row.querySelector(".content-download-progress-frame"));
-            this.contentDownloadProgressBars.set(
-                config, row.querySelector(".content-download-progress-bar"));
-            this.contentDownloadProgressTexts.set(
-                config, row.querySelector(".content-download-progress-label"));
-            this.contentStatusLabelFrames.set(
-                config, row.querySelector(".content-status-label-frame"));
-            this.contentStatusLabels.set(
-                config, row.querySelector(".content-status-label"));
-            this.programUpdateRecommendedIcons.set(
-                config, row.querySelector(".program-update-recommended-icon"));
-            this.programUpdateRequiredIcons.set(
-                config, row.querySelector(".program-update-required-icon"));
-            this.contentUpdateRequiredIcons.set(
-                config, row.querySelector(".content-update-required-icon"));
-            this.connectingSpinners.set(
-                config, row.querySelector(".connecting-spinner"));
-            this.updateContentStatus(language);
-        }
+        if (!config.interactiveMode) return;
+
+        // Initialize download status
+        const secondary = config.settings.secondary;
+        config.downloading = networkManager.content.getDownloadStatus(
+                language, secondary) !== null;
+        config.downloadReady = false;
+        config.lastUpdateTime = -1;
+
+        // Get all named DOM elements in this row
+        const q = (query) => row.querySelector(query);
+        const elements = {
+            connectingSpinner: q(".connecting-spinner"),
+
+            progressFrame: q(".content-download-progress-frame"),
+            progressBar: q(".content-download-progress-bar"),
+            progressText: q(".content-download-progress-label"),
+
+            statusFrame: q(".content-status-label-frame"),
+            statusLabel: q(".content-status-label"),
+            loadStatusLabel: q(".content-load-status-label"),
+
+            programUpdateRecommendedIcon: q(".program-update-recommended-icon"),
+            programUpdateRequiredIcon: q(".program-update-required-icon"),
+            contentUpdateRequiredIcon: q(".content-update-required-icon")
+        };
+        this.configToDomElements.set(config, elements);
+
+        elements.loadStatusLabel.textContent =
+            dataManager.content.isLoadedFor(language,secondary)?"Unload":"Load";
+        this.updateContentStatus(language);
     }
 
     async updateContentStatus(language, useCache=true) {
@@ -245,29 +249,19 @@ class LanguageTable extends Widget {
         this.updatingContentStatus.add(config);
         const secondary = config.settings.secondary;
         const cacheKey = `cache.contentVersionInfo.${language}.${secondary}`;
-        // Get HTML elements for this table row and update their status
-        const progressFrame = this.contentDownloadProgressFrames.get(config);
-        const progressBar = this.contentDownloadProgressBars.get(config);
-        const progressText = this.contentDownloadProgressTexts.get(config);
-        const statusFrame = this.contentStatusLabelFrames.get(config);
-        const statusLabel = this.contentStatusLabels.get(config);
-        const loadStatusLabel = this.contentLoadStatusLabels.get(config);
-        const programUpdateRecommendedIcon =
-            this.programUpdateRecommendedIcons.get(config);
-        const programUpdateRequiredIcon =
-            this.programUpdateRequiredIcons.get(config);
-        const contentUpdateRequiredIcon =
-            this.contentUpdateRequiredIcons.get(config);
-        const connectingSpinner = this.connectingSpinners.get(config);
-        progressFrame.hide();
-        loadStatusLabel.hide();
-        statusFrame.hide();
-        connectingSpinner.show();
-        programUpdateRecommendedIcon.hide();
-        programUpdateRequiredIcon.hide();
-        contentUpdateRequiredIcon.hide();
-        statusLabel.classList.remove("button");
-        statusLabel.classList.remove("up-to-date");
+        const elements = this.configToDomElements.get(config);
+
+        // Initially only show the spinner, hide everything else
+        elements.progressFrame.hide();
+        elements.loadStatusLabel.hide();
+        elements.statusFrame.hide();
+        elements.connectingSpinner.show();
+        elements.programUpdateRecommendedIcon.hide();
+        elements.programUpdateRequiredIcon.hide();
+        elements.contentUpdateRequiredIcon.hide();
+        elements.statusLabel.classList.remove("button");
+        elements.statusLabel.classList.remove("up-to-date");
+
         // If some content is already downloaded, check whether it's compatible
         const contentAvailable =
             dataManager.content.isAvailableFor(language, secondary);
@@ -277,13 +271,25 @@ class LanguageTable extends Widget {
             const programUpdateRequired =
                 dataManager.content.programUpdateRequired(language, secondary);
             if (contentUpdateRequired) {
-                contentUpdateRequiredIcon.show();
+                elements.contentUpdateRequiredIcon.show();
             } else if (programUpdateRequired) {
-                programUpdateRequiredIcon.show();
+                elements.programUpdateRequiredIcon.show();
             } else {
-                loadStatusLabel.show();
+                elements.loadStatusLabel.show();
             }
         }
+
+        // Callback for when a network error occurs, show corresponding message
+        const onError = (labelText) => {
+            elements.statusLabel.textContent = labelText;
+            elements.statusLabel.classList.add("error");
+            elements.progressFrame.hide();
+            elements.statusFrame.show();
+            elements.programUpdateRecommendedIcon.hide();
+            // Try to reconnect more frequently
+            window.setTimeout(() => this.updateContentStatus(language),
+                this.retryContentStatusUpdateDelay);
+        };
         try {
             // If a download has already been started, continue it
             if (config.downloading) {
@@ -295,29 +301,36 @@ class LanguageTable extends Widget {
                     const { totalSize, downloaded, percentage } =
                         networkManager.content.getDownloadStatus(
                             language, secondary);
-                    progressBar.max = totalSize;
-                    progressBar.value = downloaded;
-                    progressText.textContent = `${percentage.toFixed(0)} %`;
+                    elements.progressBar.max = totalSize;
+                    elements.progressBar.value = downloaded;
+                    elements.progressText.textContent =
+                        `${percentage.toFixed(0)} %`;
                     downloadStream.on("progressing", (status) => {
-                        progressBar.value = status.downloaded;
-                        progressText.textContent =
+                        elements.progressBar.value = status.downloaded;
+                        elements.progressText.textContent =
                             `${status.percentage.toFixed(0)} %`;
                     });
-                    downloadStream.on("finished", () => {
+                    downloadStream.on("starting-data-processing", () => {
+                        elements.connectingSpinner.show();
+                        elements.progressFrame.hide();
+                    });
+                    downloadStream.on("finished", (successful) => {
+                        if (successful) {
+                            if (dataManager.content.isLoadedFor(
+                                    language, secondary)) {
+                                elements.loadStatusLabel.textContent = "Reload";
+                            } else {
+                                elements.loadStatusLabel.textContent = "Load";
+                            }
+                            storage.set(`${cacheKey}.updateAvailable`, false);
+                        }
                         config.downloading = false;
-                        if (dataManager.content.isLoadedFor(language,secondary))
-                            loadStatusLabel.textContent = "Reload";
-                        else
-                            loadStatusLabel.textContent = "Load";
                         events.emit("content-download-finished",
-                            { language, secondary });
-                        storage.set(`${cacheKey}.updateAvailable`, false);
+                            { language, secondary, successful });
                         this.updateContentStatus(language);
                     });
-                    downloadStream.on("connection-lost", () => {
-                        this.updateContentStatus(language);
-                    });
-                    progressFrame.show();
+                    downloadStream.on("error", (message) => onError(message));
+                    elements.progressFrame.show();
                 }
             } else {
                 if (!useCache) {
@@ -340,25 +353,26 @@ class LanguageTable extends Widget {
                 if (storage.has(cacheKey)) {
                     const { programUpdateRecommended, updateAvailable,
                         lastUpdateTime } = storage.get(cacheKey);
-                    statusLabel.classList.remove("error");
+                    elements.statusLabel.classList.remove("error");
                     if (updateAvailable) {
                         if (contentAvailable) {
-                            statusLabel.textContent = "Update";
+                            elements.statusLabel.textContent = "Update";
                         } else {
-                            statusLabel.textContent = "Download";
+                            elements.statusLabel.textContent = "Download";
                         }
                     } else {
                         if (contentAvailable) {
-                            statusLabel.textContent = "Up to date";
-                            statusLabel.classList.add("up-to-date");
+                            elements.statusLabel.textContent = "Up to date";
+                            elements.statusLabel.classList.add("up-to-date");
                         } else {
-                            statusLabel.textContent = "n.a.";
+                            elements.statusLabel.textContent = "n.a.";
                         }
                     }
-                    statusFrame.show();
-                    statusLabel.classList.toggle("button", updateAvailable);
+                    elements.statusFrame.show();
+                    elements.statusLabel.classList.toggle(
+                        "button", updateAvailable);
                     config.downloadReady = updateAvailable;
-                    programUpdateRecommendedIcon.toggleDisplay(
+                    elements.programUpdateRecommendedIcon.toggleDisplay(
                         programUpdateRecommended);
                     config.lastUpdateTime = lastUpdateTime;
                     // Set last-update-label to the smallest last-update-time
@@ -377,24 +391,12 @@ class LanguageTable extends Widget {
         } catch (error) {
             if (error instanceof networkManager.NoServerConnectionError ||
                     error instanceof networkManager.ServerRequestFailedError) {
-                progressFrame.hide();
-                statusFrame.show();
-                programUpdateRecommendedIcon.hide();
-                if (error instanceof networkManager.NoServerConnectionError) {
-                    statusLabel.textContent = "Connection error";
-                }
-                if (error instanceof networkManager.ServerRequestFailedError) {
-                    statusLabel.textContent = "Server error";
-                }
-                statusLabel.classList.add("error");
-                // Frequently try to reconnect
-                // window.setTimeout(() => this.updateContentStatus(language),
-                //     this.retryContentStatusUpdateDelay);
+                onError(error.name);
             } else {
                 throw error;
             }
         } finally {
-            connectingSpinner.hide();
+            elements.connectingSpinner.hide();
             this.updatingContentStatus.delete(config);
         }
     }

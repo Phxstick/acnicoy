@@ -33,7 +33,7 @@ class MigrateSrsOverlay extends Overlay {
             this.migrate();
         });
         this.$("help-link").addEventListener("click", () => {
-            overlays.open("help", ["Components", "SRS", "Migrating Schemes"]);
+            overlays.open("help", ["Components", "SRS", "Switching schemes"]);
         });
         // Display intervals for selected scheme
         this.$("select-new-scheme").addEventListener("change", () => {
@@ -456,7 +456,6 @@ class MigrateSrsOverlay extends Overlay {
         }
         overlays.open("loading", "Applying changes");
         await dataManager.createBackup(this.backupInfo);
-        console.log("Beginning migration...");
 
         // Migrate items for all languages affected, according to the plan
         const migrationPromises = [];
@@ -480,9 +479,11 @@ class MigrateSrsOverlay extends Overlay {
                 });
             migrationPromises.push(migrationPromise);
         }
+        const minDelay = new Promise((resolve) =>
+            window.setTimeout(() => resolve(), 1200));
+        migrationPromises.push(minDelay);
         await Promise.all(migrationPromises);
         const totalTime = performance.now() - startTime;
-        console.log("Finished migration after %f ms", totalTime);
         overlays.closeTopmost();
         this.resolve(true);
     }
