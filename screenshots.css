@@ -1,0 +1,93 @@
+body {
+  font-family: "Open Sans";
+}
+
+/*
+ * Sectioning
+ */
+
+.section {
+  padding-bottom: 20px;
+  border-top: 1px solid dimgray;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+}
+
+.section-header {
+  width: 180px;
+  height: 150px;
+  text-align: center;
+  margin: 0;
+  margin-right: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.screenshot-wrapper {
+  margin-right: 30px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/*
+ * Screenshot and description
+ */
+
+.screenshot {
+  width: 200px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.screenshot-label {
+  text-align: center;
+  font-size: 1.2rem;
+  flex: 1;
+}
+
+/*.description {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: black;
+  text-shadow: 0 0 1px white; 
+  font-size: 1.1rem;
+  padding: 8px;
+  text-align: center;
+  line-height: normal; /* Not sure why it doesn't work without this
+}*/
+
+/*
+ * Custom arrows for navigating the gallery.
+ */
+
+#arrow-prev {
+  transform: scaleX(-1.5) scaleY(1.5);
+}
+
+#arrow-next {
+  transform: scaleX(1.5) scaleY(1.5);
+}
+
+#arrow-next, #arrow-prev {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  position: absolute;
+  display: none;
+  cursor: pointer;
+}
+
+#arrow-next > path, #arrow-prev > path {
+  opacity: 0.7;
+  fill: white;
+  filter: url("#arrow-glow");
+}
+
+#arrow-next:hover > path, #arrow-prev:hover > path {
+  opacity: 1;
+}
+

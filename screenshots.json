@@ -1,0 +1,87 @@
+[
+    {
+        "name": "Spaced<br>Repetition",
+        "screenshots": [
+            {
+                "label": "SRS Overview",
+                "description": "Table on top: number of vocabulary items per level in total (grey) and ready for review (red).<br>Bottom diagram: number of vocabulary items scheduled for review in the near future.",
+                "filename": "acnicoy-screenshot-home-section.png"
+            },
+            {
+                "label": "Managing<br>SRS schemes",
+                "description": "Each language can use a different set of customizable time intervals for spaced repetition.",
+                "filename": "acnicoy-screenshot-srs-schemes.png"
+            }
+        ]
+    },
+    {
+        "name": "Vocabulary",
+        "screenshots": [
+            {
+                "label": "Vocabulary lists",
+                "description": "View, search and modify vocabulary items using the left column.<br>Create lists in the middle column and view their content on the right.",
+                "filename": "acnicoy-screenshot-vocab-section.png"
+            },
+            {
+                "label": "Dictionary<br>(currently only<br>for Japanese)",
+                "description": "Search for words using their meanings or on/kun-yomi (supports wilcards).",
+                "filename": "acnicoy-screenshot-dictionary.png"
+            },
+            {
+                "label": "Adding words<br>from dictionary",
+                "description": "Conveniently add words straight from the dictionary with just two clicks.<br>One can also select specific details to be adding using the suggestions on the right.",
+                "filename": "acnicoy-screenshot-edit-word-suggestions.png"
+            },
+            {
+                "label": "Kanji overview<br>(currently only<br>for Japanese)",
+                "description": "Divide kanji into groups by criteria such as stroke number or school grade.<br>Click a kanji to view all its details, include stroke order and containing words.",
+                "filename": "acnicoy-screenshot-kanji-overview.png"
+            }
+        ]
+    },
+    {
+        "name": "Vocabulary<br>reviews",
+        "screenshots": [
+            {
+                "label": "Review session<br>(Answering)",
+                "description": "Items get scheduled for review according to the chosen spaced repetition scheme.<br>The answer gets typed by default, but one can also switch to flashcard mode.",
+                "filename": "acnicoy-screenshot-test-section-1.png"
+            },
+            {
+                "label": "Review session<br>(Solutions)",
+                "description": "After answering, the correct answers are shown and the item moves to another level.<br>One can also manually choose a level, ignore the answer or modify the item.",
+                "filename": "acnicoy-screenshot-test-section-2.png"
+            },
+            {
+                "label": "Review session<br>(Results)",
+                "description": "At the end, one can view statistics and all incorrectly answered vocabulary items.",
+                "filename": "acnicoy-screenshot-test-complete.png"
+            },
+            {
+                "label": "Customizing<br>review sessions",
+                "description": "One can e.g. switch to flash-card mode or prioritize low-level vocabulary items.",
+                "filename": "acnicoy-screenshot-test-settings.png"
+            }
+        ]
+    },
+    {
+        "name": "Other<br>features",
+        "screenshots": [
+            {
+                "label": "Statistics",
+                "description": "The table at the top shows the number of items added/reviewed for each language.<br>The diagrams at the bottom illustrate the numbers over the last days or months.",
+                "filename": "acnicoy-screenshot-stats-section.png"
+            },
+            {
+                "label": "Writing notes",
+                "description": "One can write arbitrary notes and organize them into groups and subgroups.<br>Basic styling, enumerations and links are supported using markdown syntax.",
+                "filename": "acnicoy-screenshot-notes-section.png"
+            },
+            {
+                "label": "Shortcuts",
+                "description": "Common procedures (such as adding words) can be done quicker using shortcuts.",
+                "filename": "acnicoy-screenshot-shortcut-settings.png"
+            }
+        ]
+    }
+]
