@@ -1,4 +1,5 @@
 program_name: Acnicoy
+baseurl: /acnicoy
 
 defaults:
 - scope:
