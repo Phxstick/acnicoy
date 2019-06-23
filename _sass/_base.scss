@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:300,400');
+@import url('https://fonts.googleapis.com/css?family=Questrial');
+
+body {
+  font-family: "Open Sans";
+  background-color: whitesmoke;
+  color: #303030;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+
+  &:link, &:visited {
+    color: firebrick;
+  }
+
+  &:hover {
+    color: salmon;
+  }
+}
+
+
+h1, h2, h3, h4 {
+  font-family: "Open Sans", sans-serif;
+  font-weight: 300;
+}
+
+.spacing {
+  height: 25px;
+}
+
+/*
+ *  General classes
+ */
+
+.note {
+  font-size: 1.2rem;
+  color: dimgray;
+
+  &.large {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+}
+
+.info {
+  font-family: Questrial, "sans serif";
+  font-size: 2rem;
+  margin-bottom: 30px;
+  text-align: center;
+}

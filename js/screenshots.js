@@ -18,10 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
             // Show image with original dimensions
             gallery.zoomTo(1);
 
-            // Get the image and its wrapper, add arrows as children
+            // Get the image and its wrapper
             const viewerCanvas = document.querySelector(".viewer-canvas");
             const image = viewerCanvas.querySelector("img");
-            const index = event.detail.index;
 
             // Calculate arrow positions (unresponsive design for now)
             const screenWidth = window.innerWidth;
@@ -45,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
             viewerCanvas.appendChild(arrowNext);
 
             // Remove one arrow if the start/end has been reached
+            const index = event.detail.index;
             if (index === 0) {
                 viewerCanvas.removeChild(arrowPrev);
             }
@@ -52,28 +52,41 @@ document.addEventListener("DOMContentLoaded", () => {
                 viewerCanvas.removeChild(arrowNext);
             }
 
-            // // Create the description
-            // description = document.createElement("div");
-            // description.classList.add("description");
-            // description.innerHTML = screenshots[index].dataset.description;
-            // // Position and display the description
-            // const imageHeight = image.offsetHeight;
-            // const yMargin = (screenHeight - imageHeight) / 2;
-            // const xMargin = (screenWidth - imageWidth) / 2;
-            // description.style.left = `${xMargin}px`;
-            // description.style.right = `${xMargin}px`;
-            // description.style.bottom = `${yMargin}px`;
-            // viewerCanvas.appendChild(description);
+            // Create the description
+            description = document.createElement("div");
+            description.classList.add("description");
+            description.innerHTML = screenshots[index].dataset.description;
+
+            // Position and display the description
+            const imageHeight = image.offsetHeight;
+            const availableMarginX = (screenWidth - imageWidth) / 2;
+            description.style.left = `${availableMarginX}px`;
+            description.style.right = `${availableMarginX}px`;
+            viewerCanvas.appendChild(description);
+
+            // Move the image and description up so that everything is centered
+            const descriptionHeight = description.offsetHeight;
+            const availableMarginY = (screenHeight - imageHeight) / 2;
+            let moveOffsetY = Math.min(availableMarginY, descriptionHeight / 2);
+            if (moveOffsetY < descriptionHeight / 2) {
+                // If there's not enough space, at least make sure that the
+                // description is fully visible by moving the image further up
+                moveOffsetY = descriptionHeight - availableMarginY;
+            }
+            const descOffsetTop = imageHeight + availableMarginY;
+            description.style.top = `${descOffsetTop - moveOffsetY}px`;
+            gallery.move(0, -moveOffsetY);
         },
         hide: () => {
+            // Hide the arrows when the gallery is closed
             if (arrowNext.offsetParent !== null) arrowNext.remove();
             if (arrowPrev.offsetParent !== null) arrowPrev.remove();
-            descriptionWrapper.remove();
         }
     });
     arrowNext.addEventListener("click", () => gallery.next(true));
     arrowPrev.addEventListener("click", () => gallery.prev(true));
     
+    // Open the image viewer upon clicking one of the screenshot thumbnails
     for (let i = 0; i < screenshots.length; ++i) {
         const screenshot = screenshots[i];
         screenshot.addEventListener("click", () => {

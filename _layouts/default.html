@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <title>{%- if page.title -%}{{ page.title }} | {%- endif -%}{{ site.program_name }}, tool for learning languages</title>
+  <meta name="author" value="Phxstick">
+  <meta charset="UTF-8">
+  <meta name="description"
+        content="Tool for learning Japanese and other languages">
+  <script src="https://use.fontawesome.com/8a4a3c1afa.js"></script>
+  <link rel="stylesheet" href="css/main.css">
+  {%- if page.styles -%}
+    {%- for style in page.styles -%}
+      {%- assign prefix = style | slice: 0, 4 -%}
+      {%- if prefix == "http" -%}
+        <link rel="stylesheet" href="{{style}}.css">
+      {%- else -%}
+        <link rel="stylesheet" href="css/{{style}}.css">
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+  {%- if page.scripts -%}
+    {%- for script in page.scripts -%}
+      {%- assign prefix = script | slice: 0, 4 -%}
+      {%- if prefix == "http" -%}
+        <script src="{{script}}.js"></script>
+      {%- else -%}
+        <script src="js/{{script}}.js"></script>
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+</head>
+<body>
+{%- include navigation.html -%}
+<div id="content">
+{{ content }}
+</div>
+</body>
+</html>

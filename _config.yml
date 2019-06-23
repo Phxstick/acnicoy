@@ -1,0 +1,15 @@
+program_name: Acnicoy
+
+defaults:
+- scope:
+    path: pages
+  values:
+    layout: default
+
+sass:
+  style: compressed
+
+exclude:
+  - .gitignore
+  - README.md
+  - .jekyll-cache

@@ -1,3 +1,6 @@
+---
+---
+
 body {
   font-family: "Open Sans";
 }
@@ -50,16 +53,17 @@ body {
   flex: 1;
 }
 
-/*.description {
+.description {
+  $gc: rgba(0, 0, 0, 0.75);
   position: absolute;
-  background-color: rgba(255, 255, 255, 0.9);
-  color: black;
-  text-shadow: 0 0 1px white; 
-  font-size: 1.1rem;
-  padding: 8px;
+  background: linear-gradient(to right, transparent, $gc, $gc, $gc, $gc, transparent);
+  color: white;
+  text-shadow: 0 0 1px black; 
+  font-size: 1rem;
+  padding: 4px;
   text-align: center;
-  line-height: normal; /* Not sure why it doesn't work without this
-}*/
+  line-height: normal;  // Not sure why it doesn't work without this
+}
 
 /*
  * Custom arrows for navigating the gallery.
@@ -79,15 +83,14 @@ body {
   position: absolute;
   display: none;
   cursor: pointer;
-}
 
-#arrow-next > path, #arrow-prev > path {
-  opacity: 0.7;
-  fill: white;
-  filter: url("#arrow-glow");
-}
+  > path {
+    opacity: 0.7;
+    fill: white;
+    filter: url("#arrow-glow");
+  }
 
-#arrow-next:hover > path, #arrow-prev:hover > path {
-  opacity: 1;
+  &:hover > path {
+    opacity: 1;
+  }
 }
-
