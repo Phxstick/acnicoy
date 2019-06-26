@@ -33,32 +33,18 @@ body {
     @extend input.light;
     font-size: 120%;
     padding-left: 10px;
+    min-width: 1px;
     flex: 1;
   }
 
-  #show-overview-button, #settings-button, #search-by-details-input,
-  #history-button {
+  #show-overview-button, #settings-button, #search-by-meanings-input,
+  #search-by-readings-input, #history-button {
     border-left: 1px solid $border-color-light;
   }
-  #kana-input-button, #romaji-input-button {
-    padding: 0;
-    width: 30px;
-    font-size: 1.1rem;
-  }
-  .kana-input-button {
-    padding-left: 5px;
-    padding-right: 5px;
-    font-size: 110%;
-    font-family: $header-font;
-  }
-  #kana-input-button {
-    padding-bottom: 3px;
-  }
-  #search-by-kanji-button, #search-by-details-button,
-  #kana-input-button, #romaji-input-button {
+
+  .search-button {
     @extend button.no-shadow;
-  }
-  #search-by-kanji-button, #search-by-details-button {
+
     .spinner { display: none; }
     &.searching {
       i { display: none; }

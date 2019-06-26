@@ -10,7 +10,7 @@ const extract = require("extract-zip");
 // Functions and variables for communicating with the server.
 // =============================================================================
 
-const HOSTNAME = "http://acnicoy.netai.net";
+const HOSTNAME = "http://127.0.0.1:1234";  // http://acnicoy.netai.net";
 const SCRIPT_URI = "/backend.php";
 const TIMEOUT_DURATION = 10000;
 

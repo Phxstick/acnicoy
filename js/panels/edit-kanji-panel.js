@@ -6,10 +6,11 @@ const menuItems = contextMenu.registerItems({
         click: ({ currentNode }) => {
             const kanji = currentNode.textContent;
             clipboard.writeText(kanji);
+            currentNode.blur();
         }
     },
     "remove-kanji": {
-        label: "Remove kanji from SRS items",
+        label: "Delete kanji",
         click: ({ data: {section} }) => {
             section.deleteKanji();
         }
@@ -25,7 +26,7 @@ const menuItems = contextMenu.registerItems({
         click: ({ currentNode, data: {section} }) => {
             currentNode.remove();
             if (section.$("meanings").children.length === 0)
-                section.$("srs-level-meaning").disabled = true;
+                section.$("srs-level-meaning").hide();
         }
     },
     "modify-meaning": {
@@ -45,7 +46,7 @@ const menuItems = contextMenu.registerItems({
         click: ({ currentNode, data: {section} }) => {
             currentNode.remove();
             if (section.$("on-yomi").children.length === 0)
-                section.$("srs-level-on-yomi").disabled = true;
+                section.$("srs-level-on-yomi").hide();
         }
     },
     "modify-on-yomi": {
@@ -65,7 +66,7 @@ const menuItems = contextMenu.registerItems({
         click: ({ currentNode, data: {section} }) => {
             currentNode.remove();
             if (section.$("kun-yomi").children.length === 0)
-                section.$("srs-level-kun-yomi").disabled = true;
+                section.$("srs-level-kun-yomi").hide();
         }
     },
     "modify-kun-yomi": {
@@ -79,16 +80,96 @@ const menuItems = contextMenu.registerItems({
 class EditKanjiPanel extends EditPanel {
     constructor() {
         super("edit-kanji", ["meaning", "on-yomi", "kun-yomi"]);
+        this.originalKanji = null;
+        this.lastEnteredKanji = null;
+        this.$("kanji").putCursorAtEndOnFocus(this.root);
 
-        // Configure context menu for static elements
-        this.$("kanji").contextMenu(menuItems,
-                ["copy-kanji", "remove-kanji"], { section: this });
-        this.$("meanings-wrapper").contextMenu(
-                menuItems, ["add-meaning"], { section: this });
-        this.$("on-yomi-wrapper").contextMenu(menuItems,
-                ["add-on-yomi"], { section: this });
-        this.$("kun-yomi-wrapper").contextMenu(menuItems,
-                ["add-kun-yomi"], { section: this });
+        // Prevent having more than one character in the kanji entry
+        this.$("kanji").addEventListener("keypress", (event) => {
+            const selection = this.root.getSelection();
+            const existingText = this.$("kanji").textContent;
+            if (existingText.length === 1 && selection.getRangeAt(0).collapsed)
+                event.preventDefault();
+        });
+        this.$("kanji").addEventListener("paste", (event) => {
+            event.preventDefault();
+            const newText = event.clipboardData.getData("text/plain");
+            if (newText.length === 0) return;
+            const existingText = this.$("kanji").textContent;
+            const selection = this.root.getSelection();
+            if (existingText.length === 1 && selection.getRangeAt(0).collapsed)
+                event.preventDefault();
+            else document.execCommand("insertText", false, newText[0]);
+        });
+
+        // Upon finishing entering kanji, try to load associated information
+        this.$("kanji").addEventListener("focusout", async () => {
+            const newKanji = this.$("kanji").textContent;
+            if (this.originalKanji !== null || newKanji.length === 0) return;
+            if (this.lastEnteredKanji === newKanji) return;
+            this.lastEnteredKanji = newKanji;
+
+            // If the entered kanji is already added, load data from vocabulary
+            const isAlreadyAdded = await dataManager.kanji.isAdded(newKanji);
+            if (isAlreadyAdded) {
+                await this.load(newKanji);
+                this.originalKanji = null;  // To stay in "add-mode"
+            } else {
+                this.$("header").textContent = "Add kanji";
+            }
+
+            // If language data is available, load suggestions as well
+            if (dataManager.content.isDictionaryAvailable()) {
+                const known = await dataManager.content.isKnownKanji(newKanji);
+                if (known) {
+                    main.suggestionPanes["edit-kanji"].load(newKanji);
+                    main.showSuggestionsPane("edit-kanji", true);
+                } else {
+                    main.hideSuggestionPane(true);
+                }
+            }
+        });
+
+        // Jump to meanings when pressing enter after typing in a new kanji
+        this.$("kanji").addEventListener("keypress", (event) => {
+            if (event.key === "Enter") {
+                if (this.originalKanji === null) {
+                    this.createListItem("meaning");
+                } else {
+                    this.$("kanji").blur();
+                }
+                event.preventDefault();
+            }
+        });
+
+        // SRS level selectors shouldn't be accessible using tab, only shortcuts
+        this.$("srs-level-meaning").setAttribute("tabindex", "-1");
+        this.$("srs-level-on-yomi").setAttribute("tabindex", "-1");
+        this.$("srs-level-kun-yomi").setAttribute("tabindex", "-1");
+        this.root.addEventListener("keydown", (event) => {
+            if (event.ctrlKey && "1" <= event.key && event.key <= "9") {
+                const focussedElement = this.root.activeElement;
+                const newLevel = parseInt(event.key);
+                if (this.$("meanings").contains(focussedElement)) {
+                    this.$("srs-level-meaning").setByIndex(newLevel - 1);
+                } else if (this.$("on-yomi").contains(focussedElement)) {
+                    this.$("srs-level-on-yomi").setByIndex(newLevel - 1);
+                } else if (this.$("kun-yomi").contains(focussedElement)) {
+                    this.$("srs-level-kun-yomi").setByIndex(newLevel - 1);
+                } else {
+                    this.$("all-srs-levels").setByIndex(newLevel - 1);
+                }
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
+
+        // Set up SRS level selector that sets levels for all details
+        this.$("all-srs-levels").callback = (label, value) => {
+            this.$("srs-level-meaning").setByIndex(value - 1);
+            this.$("srs-level-on-yomi").setByIndex(value - 1);
+            this.$("srs-level-kun-yomi").setByIndex(value - 1);
+        };
 
         // Create closing and saving callbacks
         this.$("close-button").addEventListener(
@@ -96,11 +177,17 @@ class EditKanjiPanel extends EditPanel {
         this.$("cancel-button").addEventListener(
             "click", () => main.closePanel("edit-kanji"));
         this.$("save-button").addEventListener("click", () => this.save());
-        this.$("all-srs-levels").callback = (label, value) => {
-            this.$("srs-level-meaning").setByIndex(value - 1);
-            this.$("srs-level-on-yomi").setByIndex(value - 1);
-            this.$("srs-level-kun-yomi").setByIndex(value - 1);
-        };
+
+        // Configure context menu for static elements
+        this.$("kanji").contextMenu(menuItems, () =>
+            this.originalKanji === null ? ["copy-kanji"] :
+                ["copy-kanji", "remove-kanji"], { section: this });
+        this.$("meanings-wrapper").contextMenu(
+                menuItems, ["add-meaning"], { section: this });
+        this.$("on-yomi-wrapper").contextMenu(menuItems,
+                ["add-on-yomi"], { section: this });
+        this.$("kun-yomi-wrapper").contextMenu(menuItems,
+                ["add-kun-yomi"], { section: this });
     }
 
     registerCentralEventListeners() {
@@ -129,45 +216,84 @@ class EditKanjiPanel extends EditPanel {
         });
     }
 
-    load(kanji) {
-        return dataManager.kanji.getInfo(kanji).then((info) => {
+    open() {
+        if (this.originalKanji === null) {
+            this.$("kanji").focus();
+        }
+    }
+
+    async load(kanji) {
+        // Check if the kanji is already in the vocabulary
+        if (kanji !== undefined && await dataManager.kanji.isAdded(kanji)) {
+            this.originalKanji = kanji;
+        } else {
+            this.originalKanji = null;
+            this.lastEnteredKanji = null;
+        }
+
+        // If a new kanji is getting added, just clear all fields
+        if (this.originalKanji === null) {
+            this.$("kanji").textContent = "";
             this.$("meanings").empty();
             this.$("on-yomi").empty();
             this.$("kun-yomi").empty();
-            this.$("kanji").textContent = kanji;
-            for (const meaning of info.meanings) {
-                this.createListItem("meaning", meaning);
-            }
-            for (const onYomi of info.onYomi) {
-                this.createListItem("on-yomi", onYomi);
-            }
-            for (const kunYomi of info.kunYomi) {
-                this.createListItem("kun-yomi", kunYomi);
-            }
-            // Set level popup stacks
+            this.$("header").textContent = "Add kanji";
             this.$("all-srs-levels").setByIndex(0);
-            this.$("srs-level-meaning").setByIndex(info.meaningsLevel - 1);
-            this.$("srs-level-on-yomi").setByIndex(info.onYomiLevel - 1);
-            this.$("srs-level-kun-yomi").setByIndex(info.kunYomiLevel - 1);
-            // Disable level popups if there's no list entry
-            this.$("srs-level-meaning").disabled = info.meanings.length === 0;
-            this.$("srs-level-on-yomi").disabled = info.onYomi.length === 0;
-            this.$("srs-level-kun-yomi").disabled = info.kunYomi.length === 0;
-        });
+            this.$("srs-level-meaning").hide();
+            this.$("srs-level-on-yomi").hide();
+            this.$("srs-level-kun-yomi").hide();
+            return;
+        }
+        this.$("header").textContent = "Edit kanji";
+
+        // Otherwise, fill in the data associated with this kanji 
+        const info = await dataManager.kanji.getInfo(kanji);
+        this.$("meanings").empty();
+        this.$("on-yomi").empty();
+        this.$("kun-yomi").empty();
+        this.$("kanji").textContent = kanji;
+        for (const meaning of info.meanings) {
+            this.createListItem("meaning", meaning);
+        }
+        for (const onYomi of info.onYomi) {
+            this.createListItem("on-yomi", onYomi);
+        }
+        for (const kunYomi of info.kunYomi) {
+            this.createListItem("kun-yomi", kunYomi);
+        }
+
+        // Set levels in popup stacks
+        this.$("all-srs-levels").setByIndex(0);  // Must be set first
+        this.$("srs-level-meaning").setByIndex(info.meaningsLevel - 1);
+        this.$("srs-level-on-yomi").setByIndex(info.onYomiLevel - 1);
+        this.$("srs-level-kun-yomi").setByIndex(info.kunYomiLevel - 1);
+
+        // Hide level popups if there are no values in a field
+        this.$("srs-level-meaning").toggleDisplay(info.meanings.length > 0)
+        this.$("srs-level-on-yomi").toggleDisplay(info.onYomi.length > 0)
+        this.$("srs-level-kun-yomi").toggleDisplay(info.kunYomi.length > 0)
     }
 
     createListItem(type, text="") {
         const node = super.createListItem(type, text);
+
         // If it's a yomi, enable kana input
         node.addEventListener("focusin", () => {
             if (type === "on-yomi") node.enableKanaInput("katakana");
             if (type === "kun-yomi") node.enableKanaInput("hiragana");
         });
-        // Disable srs-level-selector if there are no items left of this type
+
+        // Show srs-level selector if this is the first item of the given type
+        if (this.viewNodes[type].children.length === 1) {
+            this.$(`srs-level-${type}`).show();
+        }
+
+        // Hide srs-level-selector if there are no items left of the given type
         node.addEventListener("focusout", () => {
-            this.$(`srs-level-${type}`).disabled =
-                this.viewNodes[type].children.length === 0;
+            this.$(`srs-level-${type}`).toggleDisplay(
+                this.viewNodes[type].children.length > 0);
         });
+
         // Attach a context-menu
         if (type === "meaning") {
             node.contextMenu(menuItems, ["delete-meaning", "modify-meaning"],
@@ -185,19 +311,25 @@ class EditKanjiPanel extends EditPanel {
         return node;
     }
 
-    deleteKanji() {
-        const kanji = this.$("kanji").textContent;
-        return dialogWindow.confirm(
-            `Are you sure you want to remove the kanji '${kanji}'?`)
-        .then((confirmed) => {
-            if (!confirmed) return;
-            dataManager.kanji.remove(kanji);
-            main.closePanel("edit-kanji");
-            events.emit("kanji-removed", kanji);
-        });
+    async deleteKanji() {
+        const kanji = this.originalKanji;
+        const confirmed = await dialogWindow.confirm(
+            `Are you sure you want to remove the kanji ${kanji}?`);
+        if (!confirmed) return false;
+        dataManager.kanji.remove(kanji);
+        events.emit("kanji-removed", kanji);
+        main.closePanel("edit-kanji");
+        main.updateStatus(`The kanji ${kanji} has been removed.`);
+        return true;
     }
 
-    save() {
+    async save() {
+        // Prevent empty item getting added as meaning/on-yomi/kun-yomi
+        if (this.root.activeElement !== null)
+            this.root.activeElement.blur();
+
+        // Assemble all the necessary data
+        const originalKanji = this.originalKanji;
         const kanji = this.$("kanji").textContent;
         const levels = {
             meanings: parseInt(this.$("srs-level-meaning").value),
@@ -211,16 +343,66 @@ class EditKanjiPanel extends EditPanel {
             values.on_yomi.push(item.textContent);
         for (const item of this.$("kun-yomi").children)
             values.kun_yomi.push(item.textContent);
-        return dataManager.kanji.edit(kanji, values, levels).then((result) => {
-            if (result === "removed") {
-                main.updateStatus(`Kanji ${kanji} has been removed.`);
-                events.emit("kanji-removed", kanji);
-            } else if (result === "updated") {
-                main.updateStatus(`Kanji ${kanji} has been updated.`);
-                events.emit("kanji-changed", kanji);
+
+        // If no kanji has been entered or no values have been entered at all,
+        // display an error message (if adding) or ask whether to remove kanji
+        if ((values.meanings.length === 0 && values.on_yomi.length === 0 &&
+                values.kun_yomi.length === 0) || kanji.length === 0) {
+            if (originalKanji === null) {
+                if (kanji.length === 0) {
+                    dialogWindow.info("The kanji to be added is missing.");
+                } else {
+                    dialogWindow.info("You must enter at least one meaning, " +
+                                      "on-yomi or kun-yomi to add the kanji.");
+                }
+            } else {
+                this.deleteKanji();
             }
-            main.closePanel("edit-kanji");
-        });
+            return;
+        }
+
+        // If a kanji is being edited and was renamed, apply this change first
+        const isAlreadyAdded = await dataManager.kanji.isAdded(kanji);
+        const renamed = originalKanji !== null && originalKanji !== kanji;
+        if (renamed) {
+            if (isAlreadyAdded) {
+                const confirmed = await dialogWindow.confirm(
+                    `The kanji ${kanji} has already been added to the ` +
+                    `vocabulary. Do you want to overwrite its values?`);
+                if (!confirmed) return;
+                await dataManager.kanji.remove(originalKanji);
+                events.emit("kanji-removed", originalKanji);
+            } else {
+                await dataManager.kanji.rename(originalKanji, kanji);
+                events.emit("kanji-removed", originalKanji);
+                events.emit("kanji-added", kanji);
+            }
+        }
+
+        // Apply other changes to the database and emit corresponding events
+        let dataChanged;
+        if (isAlreadyAdded || renamed) {
+            const result = await dataManager.kanji.edit(kanji, values, levels);
+            dataChanged = result === "updated";
+            if (dataChanged) events.emit("kanji-changed", kanji);
+        } else {
+            await dataManager.kanji.add(kanji, values, levels);
+            events.emit("kanji-added", kanji);
+        }
+
+        // Update the status message
+        if (isAlreadyAdded || renamed) {
+            if (renamed) {
+                main.updateStatus(
+                    `Kanji ${originalKanji} has been renamed to ${kanji}.`);
+            } else if (dataChanged) {
+                main.updateStatus(`Kanji ${kanji} has been updated.`);
+            }
+        } else {
+            main.updateStatus(`Kanji ${kanji} has been added.`);
+        }
+
+        main.closePanel("edit-kanji");
     }
 }
 

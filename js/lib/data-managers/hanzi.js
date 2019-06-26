@@ -177,6 +177,17 @@ module.exports = function (paths, modules) {
         return newStatus;
     };
 
+    hanziModule.rename = async function (oldHanzi, newHanzi) {
+        await modules.database.run(
+            "UPDATE hanzi SET hanzi = ? WHERE hanzi = ?", newHanzi, oldHanzi);
+        await modules.database.run(
+            "UPDATE hanzi_meanings SET hanzi = ? WHERE hanzi = ?",
+            newHanzi, oldHanzi);
+        await modules.database.run(
+            "UPDATE hanzi_readings SET hanzi = ? WHERE hanzi = ?",
+            newHanzi, oldHanzi);
+    };
+
     /**
      * Completely remove hanzi from the database.
      * @param {String} hanzi

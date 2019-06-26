@@ -20,19 +20,17 @@
         "general", "languages", "test", "design", "shortcuts"
     ],
     "panels": [
-        "add-kanji", "edit-kanji", "add-vocab", "edit-vocab",
-        "add-hanzi", "edit-hanzi"
+        "edit-vocab", "edit-kanji", "edit-hanzi"
     ],
     "suggestionPanes": [
-        "add-kanji", "edit-kanji", "add-vocab", "edit-vocab"
+        "edit-vocab", "edit-kanji"
     ],
     "widgets": [
         "popup-stack", "popup-list", "svg-bar-diagram", "kanji-info-panel",
         "kanji-search-result-entry", "dictionary-search-result-entry",
-        "srs-status-table", "language-table", "language-popup", "check-box",
-        "example-word-entry", "tabbed-frame", "srs-review-schedule",
-        "tree-view", "time-bar-diagram", "srs-status-overview", "general-stats",
-        "completion-tooltip"
+        "language-table", "language-popup", "check-box", "example-word-entry",
+        "tabbed-frame", "srs-review-schedule", "tree-view", "time-bar-diagram",
+        "srs-status-overview", "general-stats", "completion-tooltip"
     ],
     "extensions": [
         "converter", "array-extensions", "html-element-extensions",

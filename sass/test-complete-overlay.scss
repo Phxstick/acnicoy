@@ -62,6 +62,7 @@
   #mistakes {
     overflow-y: auto;
     max-height: 290px;
+    position: relative;
 
     > div {
       &:not(:first-child) {

@@ -23,8 +23,10 @@
       margin-bottom: 20px;
       // text-shadow: 0 0 1px $dark-contrast-shadow-color;
     }
-    #spinner {
-      color: $loading-window-color;
+    #spinner > div {
+      background-color: $loading-window-color;
+      width: 30px;
+      height: 30px;
     }
     #spinner-frame {
       position: relative;

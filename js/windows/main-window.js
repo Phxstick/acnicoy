@@ -25,14 +25,13 @@ const menuItems = contextMenu.registerItems({
         label: "Add kanji",
         click: ({ currentNode }) => {
             const kanji = currentNode.textContent;
-            main.openPanel("add-kanji", { entryName: kanji });
+            main.openPanel("edit-kanji", { entryName: kanji });
         }
     },
     "edit-kanji": {
         label: "Edit kanji",
         click: ({ currentNode }) => {
             const kanji = currentNode.textContent;
-            main.panels["edit-kanji"].load(kanji);
             main.openPanel("edit-kanji", { entryName: kanji });
         }
     },
@@ -67,10 +66,11 @@ class MainWindow extends Window {
         // Constants
         this.sideBarWidth = "80px";  // Keep consistent with scss
         this.menuBarHeight = "42px";  // Keep consistent with scss
-        this.panelSlideDuration = 350;
+        this.panelSlideDuration = 300;
         this.kanjiInfoPanelSlideDuration = 200;
+        this.showSuggestionsDuration = 180;
         this.sectionFadeDuration = 150;
-        this.statusUpdateInterval = utility.timeSpanStringToSeconds("3 hours");
+        this.statusUpdateInterval = utility.timeSpanStringToSeconds("23 hours");
         this.dataSavingInterval = utility.timeSpanStringToSeconds("10 minutes");
         this.srsStatusUpdateInterval = utility.timeSpanStringToSeconds("5 min");
         this.statusFadeOutDelay = 1000 * 5;  // 3 seconds
@@ -83,7 +83,7 @@ class MainWindow extends Window {
         this.nextSection = "";
         this.currentPanel = null;
         this.currentSection = null;
-        this.suggestionsShown = false;
+        this.currentSuggestionPane = null;
         this.srsNotificationCallbackId = null;
         this.regularBackupCallbackId = null;
         this.dataSavingCallbackId = null;
@@ -140,9 +140,9 @@ class MainWindow extends Window {
         this.$("add-vocab-button").addEventListener("click",
                 () => this.openPanel("edit-vocab"));
         this.$("add-kanji-button").addEventListener("click",
-                () => this.openPanel("add-kanji"));
+                () => this.openPanel("edit-kanji"));
         this.$("add-hanzi-button").addEventListener("click",
-                () => this.openPanel("add-hanzi"));
+                () => this.openPanel("edit-hanzi"));
         this.$("test-button").addEventListener("click",
                 () => this.openTestSection());
         this.$("dictionary-button").addEventListener("click",
@@ -195,9 +195,9 @@ class MainWindow extends Window {
             "add-word": () => this.openPanel("edit-vocab"),
             "add-kanji": () => {
                 if (dataManager.currentLanguage === "Japanese") {
-                    this.openPanel("add-kanji");
+                    this.openPanel("edit-kanji");
                 } else if (dataManager.currentLanguage === "Chinese") {
-                    this.openPanel("add-hanzi");
+                    this.openPanel("edit-hanzi");
                 }
             },
             "open-test-section": () => this.openTestSection(),
@@ -575,6 +575,7 @@ class MainWindow extends Window {
             this.closePanel(currentPanel, currentPanel === name);
             if (currentPanel === name) return;
         } else {
+            // Otherwise, fade in the background dimming
             if (dataManager.settings.design.animateSlidingPanels) {
                 Velocity(this.$("filter"), "stop");
                 Velocity(this.$("filter"), "fadeIn",
@@ -638,33 +639,51 @@ class MainWindow extends Window {
         // Display loaded suggestion pane (unless the panel was already closed)
         if (this.currentPanel !== name) return;
         if (showSuggestions) {
-            this.$("filter").classList.add("dark");
-            this.suggestionsShown = true;
-            if (dataManager.settings.design.animateSlidingPanels) {
-                Velocity(this.suggestionPanes[name], "stop");
-                Velocity(this.suggestionPanes[name], "fadeIn",
-                    { duration: this.panelSlideDuration });
-            } else {
-                this.suggestionPanes[name].style.opacity = "1";
-                this.suggestionPanes[name].show();
-            }
+            this.showSuggestionsPane(name);
         // If no suggestion pane is shown, display available shortcuts instead
-        } else if (name.startsWith("edit") && showPanelShortcuts) {
-            this.$("filter").classList.add("dark");
-            this.panelShortcutsInfoShown = true;
-            Velocity(this.$("panel-shortcuts-info"), "stop");
-            Velocity(this.$("panel-shortcuts-info"), "fadeIn",
-                { duration: this.panelSlideDuration });
+        } else if (showPanelShortcuts) {
+            this.showShortcutsInfo();
         } else {
-            this.$("filter").classList.remove("dark");
+            this.hideShortcutsInfo();
+            this.hideSuggestionPane();
+        }
+    }
+
+    showShortcutsInfo() {
+        if (this.panelShortcutsInfoShown) return;
+        this.panelShortcutsInfoShown = true;
+        this.hideSuggestionPane();
+        this.$("filter").classList.add("dark");
+        Velocity(this.$("panel-shortcuts-info"), "stop");
+        Velocity(this.$("panel-shortcuts-info"), "fadeIn",
+            { duration: this.panelSlideDuration });
+    }
+
+    showSuggestionsPane(name, fast=false) {
+        if (this.currentSuggestionPane !== null) return;
+        this.currentSuggestionPane = name;
+        this.hideShortcutsInfo(fast);
+        this.$("filter").classList.add("dark");
+        if (dataManager.settings.design.animateSlidingPanels) {
+            Velocity(this.suggestionPanes[name], "stop");
+            Velocity(this.suggestionPanes[name], "fadeIn",
+                { duration: fast ? this.showSuggestionsDuration :
+                                   this.panelSlideDuration });
+        } else {
+            this.suggestionPanes[name].style.opacity = "1";
+            this.suggestionPanes[name].show();
         }
     }
 
     closePanel(name, noOtherPanelOpening=true) {
         const panel = this.panels[name];
+
+        // Remove the focus from the panel
         if (panel.root.activeElement !== null) {
             panel.root.activeElement.blur();
         }
+
+        // Close the panel itself (using animation if flag is set)
         if (dataManager.settings.design.animateSlidingPanels) {
             Velocity(panel, "stop");
             Velocity(panel, { left: "-400px" },
@@ -674,6 +693,8 @@ class MainWindow extends Window {
             panel.close();
         }
         panel.style.zIndex = layers["closing-panel"];
+
+        // If no other panel is getting opened, remove the background dimming
         if (noOtherPanelOpening) {
             this.currentPanel = null;
             if (dataManager.settings.design.animateSlidingPanels) {
@@ -683,23 +704,38 @@ class MainWindow extends Window {
             } else {
                 this.$("filter").hide();
             }
+            this.hideShortcutsInfo();
+            this.hideSuggestionPane();
         }
-        if (this.panelShortcutsInfoShown) {
-            this.panelShortcutsInfoShown = false;
+    }
+
+    hideShortcutsInfo(fast=false) {
+        if (!this.panelShortcutsInfoShown) return;
+        this.panelShortcutsInfoShown = false;
+        if (dataManager.settings.design.animateSlidingPanels) {
             Velocity(this.$("panel-shortcuts-info"), "stop");
             Velocity(this.$("panel-shortcuts-info"), "fadeOut",
-                { duration: this.panelSlideDuration });
+                { duration: fast ? this.showSuggestionsDuration :
+                                   this.panelSlideDuration });
+        } else {
+            this.$("panel-shortcuts-info").hide();
         }
-        if (this.suggestionsShown) {
-            this.suggestionsShown = false;
-            if (dataManager.settings.design.animateSlidingPanels) {
-                Velocity(this.suggestionPanes[name], "stop");
-                Velocity(this.suggestionPanes[name], "fadeOut",
-                    { duration: this.panelSlideDuration });
-            } else {
-                this.suggestionPanes[name].hide();
-            }
+        this.$("filter").classList.remove("dark");
+    }
+
+    hideSuggestionPane(fast=false) {
+        if (this.currentSuggestionPane === null) return;
+        const name = this.currentSuggestionPane;
+        this.currentSuggestionPane = null;
+        if (dataManager.settings.design.animateSlidingPanels) {
+            Velocity(this.suggestionPanes[name], "stop");
+            Velocity(this.suggestionPanes[name], "fadeOut",
+                { duration: fast ? this.showSuggestionsDuration :
+                                   this.panelSlideDuration });
+        } else {
+            this.suggestionPanes[name].hide();
         }
+        this.$("filter").classList.remove("dark");
     }
 
     async toggleBarVisibility() {
@@ -790,8 +826,7 @@ class MainWindow extends Window {
         } else {
             this.$("add-kanji-button").hide();
             this.$("kanji-info-panel").close();
-            if (this.currentPanel === "add-kanji" ||
-                    this.currentPanel === "edit-kanji") {
+            if (this.currentPanel === "edit-kanji") {
                 this.closePanel(this.currentPanel);
             }
             if (this.currentSection === "kanji" ||
@@ -803,6 +838,9 @@ class MainWindow extends Window {
             this.$("add-hanzi-button").show();
         } else {
             this.$("add-hanzi-button").hide();
+            if (this.currentPanel === "edit-hanzi") {
+                this.closePanel(this.currentPanel);
+            }
         }
         this.updateTestButton();
         // Choose fitting font

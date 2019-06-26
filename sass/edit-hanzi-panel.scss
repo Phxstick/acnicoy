@@ -1,14 +1,29 @@
 @import "edit-panel";
 
 #hanzi-frame {
-  display: flex;
-  flex-direction: row;
+  @extend .light-item-view;
+  text-align: center;
+
   #hanzi {
-    font-size: 300%;
-    flex: 1;
-    padding: 4px;
-    overflow-x: auto;
+    font-size: 3rem;
     text-align: center;
+    min-width: 50px;
+    height: 50px;
+    text-align: left;
+
+    &:not(:hover):not(:focus) {
+      border: 1px solid transparent;
+      background-color: transparent;
+    }
+    &:empty:before {
+      cursor: text;
+      content: "Enter\Ahanzi";
+      display: inline-block;
+      font-size: 1.2rem;
+      line-height: 1.2;
+      white-space: pre;
+      text-align: center;
+    }
   }
 }
 
@@ -27,6 +42,10 @@
   width: 30px;
   height: 30px;
   font-size: 1rem;
+}
+
+.detail-row-header {
+  height: 30px;  // Must be same as height of srs selectors above
 }
 
 #all-levels-div {

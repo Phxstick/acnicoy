@@ -276,6 +276,28 @@ module.exports = async function (paths, contentPaths, modules) {
     };
 
     /**
+     * Given a word which is *not* present in the vocabulary, find the ID of
+     * the dictionary entry which matches most likely (with the highest news
+     * frequency). If the word has already been added to the dictionary, use
+     * the function `guessDictionaryId` to make use of translations/readings.
+     * @param {String} word
+     * @returns {Promise[Integer]}
+     */
+    async function findDictionaryIdForWord(word) {
+        const wordMatches = await data.query(
+            "SELECT d.id AS id, MAX(d.news_freq) AS freq " +
+            "FROM words w JOIN dictionary d " +
+            "ON w.id = d.id WHERE w.word = ?", word);
+        if (wordMatches.length > 0) return wordMatches[0].id;
+        const readingMatches = await data.query(
+            "SELECT d.id AS id, MAX(d.news_freq) AS freq " +
+            "FROM readings r JOIN dictionary d " +
+            "ON r.id = d.id WHERE r.reading = ?", word);
+        if (readingMatches.length > 0) return readingMatches[0].id;
+        return null;
+    }
+
+    /**
      * Given a word from the vocabulary, try to guess ID of the dictionary entry
      * corresponding to this word by comparing information from the vocabulary
      * entry and dictionary entry candidates matching the word.
@@ -814,6 +836,7 @@ module.exports = async function (paths, contentPaths, modules) {
         // Dictionary related
         dictionaryAvailable: true,
         getDictionaryEntryInfo,
+        findDictionaryIdForWord,
         guessDictionaryId,
         guessAssociatedVocabEntry,
         searchDictionary,

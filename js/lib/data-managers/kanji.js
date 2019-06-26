@@ -179,6 +179,20 @@ module.exports = function (paths, modules) {
         return newStatus;
     };
 
+    kanjiModule.rename = async function (oldKanji, newKanji) {
+        await modules.database.run(
+            "UPDATE kanji SET kanji = ? WHERE kanji = ?", newKanji, oldKanji);
+        await modules.database.run(
+            "UPDATE kanji_meanings SET kanji = ? WHERE kanji = ?",
+            newKanji, oldKanji);
+        await modules.database.run(
+            "UPDATE kanji_on_yomi SET kanji = ? WHERE kanji = ?",
+            newKanji, oldKanji);
+        await modules.database.run(
+            "UPDATE kanji_kun_yomi SET kanji = ? WHERE kanji = ?",
+            newKanji, oldKanji);
+    };
+
     /**
      * Completely remove kanji from the database.
      * @param {String} kanji

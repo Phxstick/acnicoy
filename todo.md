@@ -1,4 +1,5 @@
 ### Primary goals
+- Add help on suggstion panes and link to it from the panes
 - Extend notes section:
   - Add control bar: search, show help, add group, undo things
   - Maybe an option to decrease font size and padding to see more groups at once
@@ -36,7 +37,7 @@
 - Prevent two instances of the program being open simultaneously
 - Fix visual bug when opening overlays (e.g. when opening help on SRS migration)
 - Test section: fix bug where overflow-shadow below item solutions is now shown
-- "#words-tab" in vocab section some expands height by 15px beyond section size
+- "#words-tab" in vocab section sometimes expands height by 15px beyond section
 
 
 By category
@@ -82,6 +83,8 @@ By category
 - Don't attach separate context menu to every node in dict/kanji/vocab-section
 - Make history view loading more efficient
 - Limit size of search history to a sensible value
+- Use prepared statements for database accesses which are done repeatedly
+- Limit size of notifications list (since deleting takes linear time there)
 
 ### Init window
 - Make init section feel more welcoming and less plain. Consider including a

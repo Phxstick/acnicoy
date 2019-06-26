@@ -30,8 +30,19 @@ class TestCompleteOverlay extends Overlay {
                 }
                 solutionsNode.innerHTML = solutionsHTML;
             }
+            const list = this.$("mistakes");
             if (solutionsNode.isHidden()) {
-                Velocity(solutionsNode, "slideDown", { duration: "fast" });
+                Velocity(solutionsNode, "slideDown", { duration: "fast",
+                    // If solutions-container leaves viewPort, scroll list along
+                    // NOTE: this requires container to be positioned non-static
+                    progress: () => {
+                        const nodeOffset = solutionsNode.offsetTop +
+                                           solutionsNode.offsetHeight;
+                        if (nodeOffset > list.scrollTop + list.offsetHeight) {
+                            list.scrollTop = nodeOffset - list.offsetHeight;
+                        }
+                    }
+                });
                 mistakeNode.classList.add("open");
             } else {
                 Velocity(solutionsNode, "slideUp", { duration: "fast" });

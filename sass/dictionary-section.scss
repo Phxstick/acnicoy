@@ -96,13 +96,9 @@ body {
 
     &.selected {
       background-color: $background-color;
-      // .search-results-info-header {
-      //   color: $highlight-background-dark;
-      //   text-shadow: 0 0 1px $highlight-background;
-      // }
       .search-results-info-header {
         color: $button-light-color-hover;
-        text-shadow: 0 0 1px $button-light-color;
+        text-shadow: 0 0 1px $text-shadow-color;
       }
     }
 

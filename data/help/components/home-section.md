@@ -1,4 +1,4 @@
-The home section gives you an overview of the status of your vocabulary items in
+The home screen gives you an overview of the status of your vocabulary items in
 the spaced repetition system. The displayed information is updated regularly
 every five minutes, but you can also refresh it manually by pressing Ctrl + R.
 

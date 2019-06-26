@@ -7,9 +7,9 @@ additional features specifically for learning Japanese.
 
 The following screenshot shows an example of a dictionary search result
 and how kanji details are displayed. More screenshots are linked below,
-see [here](http://acnicoy.netai.net/screenshots.php) for the full list.
+see [here](http://phxstick.github.io/acnicoy/screenshots) for the full list.
 
-![Screenshot of Dictionary Section](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-dictionary.png)
+![Screenshot of Dictionary Section](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-dictionary.png)
 
 
 Features
@@ -18,30 +18,30 @@ Features
 The basic features for every language include:
 
 * Add words to your vocabulary and organize them into lists.
-  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-vocab-section.png))
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-vocab-section.png))
 * Review your vocabulary according to a spaced repetition scheduler.
-  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-test-section-1.png))
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-test-section-1.png))
 * Customize the review sessions, e.g. by switching to flashcard-mode.
-  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-test-settings.png))
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-test-settings.png))
 * Get an overview over scheduled reviews and items ready for review.
-  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-home-section.png))
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-home-section.png))
 * Adjust the spaced repetition system with custom intervals.
-  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-srs-schemes.png))
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-srs-schemes.png))
 * View statistics illustrating your learning progress.
-  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-stats-section.png))
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-stats-section.png))
 * Write notes using Markdown syntax and organize them into groups.
-  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-notes-section.png))
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-notes-section.png))
 * Use shortcuts to speed up frequently used procedures.
-  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-shortcut-settings.png))
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-shortcut-settings.png))
 
 For learners of the Japanese language, the program additionally offers:
 
 * Look up words in the dictionary (similar to [Jisho] and [Houhou SRS]).
-  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-dictionary.png))
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-dictionary.png))
 * Conveniently edit vocabulary items using suggestions from the dictionary.
-  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-edit-word-suggestions.png))
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-edit-word-suggestions.png))
 * Get an overview over all kanji and look up details for single kanji.
-  ([screenshot](http://acnicoy.netai.net/img/screenshots/acnicoy-screenshot-kanji-overview.png))
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-kanji-overview.png))
 * Separately add kanji to your vocabulary and review meanings and readings.
 
 Installation
