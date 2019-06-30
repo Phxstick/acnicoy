@@ -4,6 +4,7 @@ const { ipcRenderer, remote } = require("electron");
 const mainBrowserWindow = remote.getCurrentWindow();
 // const AutoLaunch = require("auto-launch");
 const marked = require("marked");
+const dateFormat = require("dateformat");
 
 const menuItems = contextMenu.registerItems({
     "copy-kanji": {
@@ -63,6 +64,7 @@ class MainWindow extends Window {
     constructor () {
         super("main");
         this.$("panel-shortcuts-info").hide();
+
         // Constants
         this.sideBarWidth = "80px";  // Keep consistent with scss
         this.menuBarHeight = "42px";  // Keep consistent with scss
@@ -74,27 +76,38 @@ class MainWindow extends Window {
         this.dataSavingInterval = utility.timeSpanStringToSeconds("10 minutes");
         this.srsStatusUpdateInterval = utility.timeSpanStringToSeconds("5 min");
         this.statusFadeOutDelay = 1000 * 5;  // 3 seconds
-        // Collections
+
+        // Main window components
         this.sections = {};
         this.panels = {};
         this.suggestionPanes = {};
-        // Variables
-        this.fadingOutPreviousSection = false;
-        this.nextSection = "";
+
+        // State of main window components
+        this.nextSection = null;
         this.currentPanel = null;
         this.currentSection = null;
         this.currentSuggestionPane = null;
+        this.barsHidden = false;
+
+        // Flags to keep track of whether an action is currently running
+        this.fadingOutPreviousSection = false;
+        this.creatingBackup = false;
+        this.savingData = false;
+
+        // IDs returned by method `window.setTimeout` (used to cancel a timer)
+        this.statusFadeOutCallbackId = null;
         this.srsNotificationCallbackId = null;
         this.regularBackupCallbackId = null;
         this.dataSavingCallbackId = null;
-        this.creatingBackup = false;
-        this.savingData = false;
+        this.programUpdateCallbackId = null;
+        this.languageDataUpdateCallbackId = null;
+
+        // State variables for introduction tours
         this.introTourParts = null;
         this.currentPartIndex = -1;
         this.introTourContext = null;
         this.introTourPromise = null;
-        this.barsHidden = false;
-        this.statusFadeOutCallbackId = null;
+
         // Menu button events
         this.$("home-button").addEventListener("click",
                 () => this.openSection("home"));
@@ -108,6 +121,7 @@ class MainWindow extends Window {
                 () => overlays.open("about"));
         this.$("exit-button").addEventListener("click",
                 () => ipcRenderer.send("quit"));
+
         // Unhighlight all highlighted notifications after they were viewed
         const onNotificationsWindowClosed = () => {
             let notificationNode = this.$("notifications").firstElementChild;
@@ -136,6 +150,7 @@ class MainWindow extends Window {
             notificationsWindowOpen = false;
             onNotificationsWindowClosed();
         });
+
         // Sidebar button events
         this.$("add-vocab-button").addEventListener("click",
                 () => this.openPanel("edit-vocab"));
@@ -153,6 +168,7 @@ class MainWindow extends Window {
                 () => this.openSection("vocab"));
         this.$("notes-button").addEventListener("click",
                 () => this.openSection("notes"));
+
         // Language popup events
         this.$("language-popup").callback = (lang) => this.setLanguage(lang);
         this.$("language-popup").onOpen = () => {
@@ -165,6 +181,7 @@ class MainWindow extends Window {
                 });
             }
         }
+
         // Switching language using Ctrl+Tab
         let switchingLanguage = false;
         window.addEventListener("keydown", (event) => {
@@ -267,17 +284,20 @@ class MainWindow extends Window {
                 }
             }
         };
+
         // Register all shortcut callbacks
         for (const shortcutName in this.shortcutMap) {
             shortcuts.bindCallback(
                 shortcutName, this.shortcutMap[shortcutName]);
         }
+
         // Confirm on closing and save data before exiting the application
         ipcRenderer.on("closing-window", () => {
             this.attemptToQuit().then((confirmed) => {
                 if (confirmed) ipcRenderer.send("close-now");
             });
         });
+
         // Introduction tour button callbacks
         this.$("intro-tour-exit-button").addEventListener("click", () => {
             this.exitIntroTour();
@@ -290,6 +310,7 @@ class MainWindow extends Window {
             ++this.currentPartIndex;
             this.displayNextPart();
         });
+
         // Keyboard shortcuts for intro tour (only active during a tour)
         this.tourShortcutsHandler = (event) => {
             if (event.key === "Escape") {
@@ -309,6 +330,8 @@ class MainWindow extends Window {
             event.preventDefault();
             event.stopPropagation();
         };
+
+        // Hiding information on panel shortcuts
         this.$("hide-panel-shortcuts-info").addEventListener("click", () => {
             this.$("panel-shortcuts-info").hide();
             storage.set("show-panel-shortcuts-info", false);
@@ -389,57 +412,61 @@ class MainWindow extends Window {
         app.openWindow("loading", "Initializing...");
         // Load info about incomplete downloads
         networkManager.load();  // TODO: Move this
+
         // Initialize all subcomponents
         const results = [];
         for (const name in this.sections) {
             results.push(this.sections[name].initialize());
         }
         await Promise.all(results);
+
         // Enable all shortcuts
         for (const shortcutName in this.shortcutMap) {
             shortcuts.enable(shortcutName);
         }
+
         // Open the language which was open when the program was closed last
         const lastOpenedLanguage = storage.get("last-opened-language");
         await this.setLanguage(lastOpenedLanguage !== undefined ?
             lastOpenedLanguage : dataManager.languages.all[0]);
+
         // Apply global settings
         this.sections["settings"].broadcastGlobalSettings();
         events.emit("settings-loaded");  // Allow other widgets to adjust
+
         // Only display home section
         this.sections["home"].show();
         utility.finishEventQueue().then(() => {
             this.sections["home"].open();
         });
         this.currentSection = "home";
+
         // Load search history in kanji info panel
         if (dataManager.content.isLoadedFor("Japanese", "English")) {
             this.$("kanji-info-panel").loadHistory();
         }
+
         // Regularly update SRS info
         events.emit("update-srs-status");
         this.srsStatusCallbackId = window.setInterval(
             () => events.emit("update-srs-status"),
             1000 * this.srsStatusUpdateInterval);
-        // Regularly update program and language content status
-        utility.setTimer(() => events.emit("update-program-status"),
-                         this.statusUpdateInterval,
-                         storage.get("cache.programVersionInfo.lastUpdateTime"))
-        const languages = dataManager.languages.all;
-        for (const lang of languages) {
-            const secondary = 
-                dataManager.languageSettings.getFor(lang, "secondaryLanguage");
-            const lastUpdateTime = storage.get(
-                `cache.contentVersionInfo.${lang}.${secondary}.lastUpdateTime`);
-            const pair = { language: lang, secondary };
-            utility.setTimer(() => events.emit("update-content-status", pair),
-                this.statusUpdateInterval, lastUpdateTime);
-        }
+
+        // Regularly check for new versions of program and language data
+        this.programUpdateCallbackId = utility.setTimer(() =>
+            events.emit("update-program-status"), this.statusUpdateInterval,
+            storage.get("programUpdateCache.lastUpdateTime"));
+        this.languageDataUpdateCallbackId = utility.setTimer(() =>
+            events.emit("update-content-status"), this.statusUpdateInterval,
+            storage.get("dataUpdateCache.lastUpdateTime"));
+
         // Periodically write user data to disk
         this.dataSavingCallbackId = window.setTimeout(() => this.saveData(),
             1000 * this.dataSavingInterval);
+
         // Run clean-up-code from now on whenever attempting to close the window
         ipcRenderer.send("activate-controlled-closing");
+
         // Link achievements module to event emitter and do an initial check
         dataManager.achievements.setEventEmitter(events);
         events.on("achievement-unlocked", (info) => {
@@ -447,6 +474,7 @@ class MainWindow extends Window {
             this.addNotification("achievement-unlocked", info, true);
         });
         await dataManager.achievements.checkAll();
+
         // Load notifications
         const notifications = dataManager.notifications.get();
         for (const notification of notifications) {
@@ -454,11 +482,13 @@ class MainWindow extends Window {
         }
         this.$("selective-dimmer").hide();
         this.$("intro-tour-textbox").hide();
+
         // Display introduction overlay if not displayed yet
         const showIntroOverlay = storage.get("show-introduction-overlay");
         if (showIntroOverlay === undefined || showIntroOverlay) {
             overlays.open("introduction");
         }
+
         await utility.finishEventQueue();
         app.closeWindow("loading");
     }
@@ -1001,7 +1031,7 @@ class MainWindow extends Window {
         await this.saveData();
         await dataManager.database.closeAll();
         await dataManager.history.closeAll();
-        networkManager.stopAllDownloads();
+        networkManager.haltAll();
         networkManager.save();
         return true;
     }
@@ -1043,6 +1073,7 @@ class MainWindow extends Window {
             title = "New program version available";
             buttonLabel = "Download";
             const { latestVersion, releaseDate, description } = data;
+            const dateString = dateFormat(releaseDate, "mmm dS, yyyy");
             subtitle = `Version ${latestVersion}, released on ${releaseDate}`;
             details = marked(description);
             buttonCallback = () => events.emit("start-program-update");
@@ -1092,7 +1123,11 @@ class MainWindow extends Window {
             if (successful) {
                 title = "Data download finished";
                 subtitle += "Press the button on the right to load.";
-                buttonLabel = "Reload<br>data";
+                if (dataManager.content.isLoadedFor(language, secondary)) {
+                    buttonLabel = "Reload<br>data";
+                } else {
+                    buttonLabel = "Load<br>data";
+                }
                 buttonCallback = async () => {
                     await this.loadLanguageContent(language, secondary);
                     this.deleteNotification(id);

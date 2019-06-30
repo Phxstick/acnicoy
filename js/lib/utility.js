@@ -52,19 +52,31 @@ function wait(duration=500) {
 }
 
 /**
+ * Resolve the given promise after the given minimum delay.
+ * @param {Promise}
+ * @param {Integer} [minDelay=1200]
+ * @returns {Promise}
+ */
+function addMinDelay(promise, minDelay=1200) {
+    return Promise.all([wait(minDelay), promise]).then(([_, result]) => result);
+}
+
+/**
  * Execute given callback when 'offset' time has passed after the last time it
  * was called. If 'lastTime' is undefined, execute the callback immediately.
  * @param {Function} callback
  * @param {Integer} offset - Time to call callback after (in seconds).
  * @param {Integer} [lastTime] - Last time the callback was called (in seconds).
+ * @returns {Integer|null} - Timer ID if a timer has been set, otherwise null.
  */
 function setTimer(callback, offset, lastTime) {
     if (lastTime === undefined) {
         callback();
+        return null;
     } else {
         const currentTime = utility.getTime();
         const newOffset = Math.max(0, lastTime + offset - currentTime);
-        window.setTimeout(callback, 1000 * newOffset);
+        return window.setTimeout(callback, 1000 * newOffset);
     }
 }
 
@@ -1130,6 +1142,7 @@ module.exports.parseHtmlFile = parseHtmlFile;
 module.exports.fragmentFromString = fragmentFromString;
 module.exports.finishEventQueue = finishEventQueue;
 module.exports.wait = wait;
+module.exports.addMinDelay = addMinDelay;
 module.exports.setTimer = setTimer;
 module.exports.createSvgNode = createSvgNode;
 module.exports.createDefaultOption = createDefaultOption;

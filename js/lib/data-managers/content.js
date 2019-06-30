@@ -3,9 +3,14 @@
 const compareVersions = require("compare-versions");
 
 module.exports = function (paths, modules) {
+    const minContentVersions = require(paths.minContentVersions);
     const content = {};
     const dataMap = {};
     let data;
+
+    content.getReleasePrefix = (language, secondary) => {
+
+    };
 
     content.isAvailableFor = (language, secondary) => {
         const contentPaths = paths.content(language, secondary);
@@ -18,8 +23,7 @@ module.exports = function (paths, modules) {
     };
     
     content.updateRequired = (language, secondary) => {
-        const languagePair = `${language}-${secondary}`;
-        const minVersions = require(paths.minContentVersions)[languagePair];
+        const minVersions = minContentVersions[language][secondary];
         const curVersions = require(paths.content(language, secondary).versions)
         for (const file in minVersions) {
             if (!curVersions.hasOwnProperty(file) ||

@@ -87,18 +87,20 @@ class GeneralSettingsSubsection extends SettingsSubsection {
         });
         events.on("update-program-status", async () => {
             try {
+                // Replace status label and button with spinner
                 this.$("check-program-update-spinner").show();
                 this.$("program-version-status").hide();
                 this.$("check-program-update").style.visibility = "hidden";
-                const infoProm = networkManager.program.getLatestVersionInfo()
-                const minDelay = new Promise((resolve) =>
-                    window.setTimeout(() => resolve(), 1200));
-                const [_, info] = await Promise.all([minDelay, infoProm]);
-                // Cache latest information
-                info.lastUpdateTime = utility.getTime();
-                const cacheKey = "cache.programVersionInfo";
-                const cachedInfo = storage.get(cacheKey);
-                storage.set(cacheKey, info);
+
+                // Request info on latest program version and cache it
+                const promise = networkManager.program.getLatestVersionInfo();
+                let info = await utility.addMinDelay(promise);
+                if (info === null) info = { latestVersion: app.version };
+                const cachedInfo = storage.get("programUpdateCache.info");
+                storage.set("programUpdateCache.info", info);
+                const lastUpdateTime = utility.getTime();
+                storage.set("programUpdateCache.lastUpdateTime", lastUpdateTime)
+
                 // If a new version has been released, add a notification
                 if ((cachedInfo === undefined &&
                      app.version !== info.latestVersion)
@@ -106,16 +108,16 @@ class GeneralSettingsSubsection extends SettingsSubsection {
                             cachedInfo.latestVersion !== info.latestVersion)) {
                     main.addNotification("program-update-available", info);
                 }
+
                 // Update view
                 this.updateProgramVersionStatusView();
             } catch (error) {
-                if (error instanceof networkManager.NoServerConnectionError) {
+                if (error instanceof networkManager.ConnectionError) {
                     this.$("program-version-status").textContent =
                         "Connection error";
-                } else
-                if (error instanceof networkManager.ServerRequestFailedError) {
+                } else if (error instanceof networkManager.RequestError) {
                     this.$("program-version-status").textContent =
-                        "Server error";
+                        "Request failed";
                 } else {
                     throw error;
                 }
@@ -176,7 +178,7 @@ class GeneralSettingsSubsection extends SettingsSubsection {
     }
 
     updateProgramVersionStatusView() {
-        const info = storage.get("cache.programVersionInfo");
+        const info = storage.get("programUpdateCache.info");
         if (!info) return;
         const updateAvailable = app.version !== info.latestVersion;
         this.$("current-program-version").textContent = app.version;

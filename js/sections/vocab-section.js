@@ -430,7 +430,6 @@ class VocabSection extends Section {
         this.$("search-vocab-entry").togglePinyinInput(language === "Chinese");
         this.$("search-list-contents-entry").togglePinyinInput(
             language === "Chinese");
-        this.$("search-vocab-entry").focus();
     }
 
     open() {
@@ -451,6 +450,7 @@ class VocabSection extends Section {
             this.isViewLoaded["hanzi"] = true;
             this.viewStates["hanzi"].search("");
         }
+        this.$("search-vocab-entry").focus();
     }
 
     // =====================================================================

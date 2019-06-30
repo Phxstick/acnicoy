@@ -1,44 +1,40 @@
 "use strict";
 
 const http = require("http");
-const fs = require("fs");
-const request = require("request");
+const fs = require("fs-extra");
+const request = require("request").defaults({ pool: { maxSockets: Infinity } });
 const EventEmitter = require("events");
 const extract = require("extract-zip");
+const compareVersions = require("compare-versions");
 
 // =============================================================================
 // Functions and variables for communicating with the server.
 // =============================================================================
 
-const HOSTNAME = "http://127.0.0.1:1234";  // http://acnicoy.netai.net";
-const SCRIPT_URI = "/backend.php";
+const RAW_DATA_URL =
+    "https://raw.githubusercontent.com/Phxstick/acnicoy-data/master/";
+const PROGRAM_API_URL = "https://api.github.com/repos/Phxstick/acnicoy/";
+const RELEASES_URL="https://github.com/Phxstick/acnicoy-data/releases/download";
 const TIMEOUT_DURATION = 10000;
 
-const requestOptions = {
-    baseUrl: HOSTNAME,
-    url: SCRIPT_URI,
-    timeout: TIMEOUT_DURATION,
-    method: "POST",
-    headers: { "Cache-Control": "no-cache, no-store, no-transform",
-               "Accept-Encoding": "identity" },
-    json: true
+const defaultOptions = {
+    timeout: TIMEOUT_DURATION
 };
 
-class ServerRequestFailedError extends Error {
+class RequestError extends Error {
     constructor(statusCode, statusMessage, responseBody=null) {
         if (responseBody === null)
             responseBody = "";
         super(`Error ${statusCode}: ${statusMessage}\n\n${responseBody}`);
-        this.name = "Server error";
         this.statusCode = statusCode;
         this.statusMessage = statusMessage;
     }
 }
 
-class NoServerConnectionError extends Error {
-    constructor(message) {
-        this.name = "Connection error";
+class ConnectionError extends Error {
+    constructor(message, connectionTimeout) {
         super(message);
+        this.connectionTimeout = connectionTimeout;
     }
 }
 
@@ -47,23 +43,23 @@ class NoServerConnectionError extends Error {
  *  @param {Object} query - JSON object to send as body of the POST request.
  *  @returns {Promise[Object]} - JSON object from response body.
  */
-function queryServer(query) {
+function sendRequest(options) {
     return new Promise((resolve, reject) => {
-        request({ body: query, ...requestOptions }, (error, response, body) => {
+        request({ ...defaultOptions, ...options }, (error, response, body) => {
             if (error) {
-                reject(new NoServerConnectionError(error.message));
+                reject(new ConnectionError(error.message));
             } else if (response.statusCode !== 200) {
-                reject(new ServerRequestFailedError(
+                reject(new RequestError(
                     response.statusCode, response.statusMessage, body));
             } else {
-                resolve(body);
+                resolve(JSON.parse(body));
             }
         });
     });
 }
 
-module.exports.ServerRequestFailedError = ServerRequestFailedError;
-module.exports.NoServerConnectionError = NoServerConnectionError;
+module.exports.RequestError = RequestError;
+module.exports.ConnectionError = ConnectionError;
 
 // =============================================================================
 // Functions and state information for downloading files.
@@ -98,11 +94,10 @@ function saveDownloadsInfo() {
  * Download a file specified by the given query to the server.
  * @returns {Promise[Boolean]} - Evaluated to true if the download has finished.
  */
-function downloadFile(downloadName, query) {
+function downloadFile(downloadName, requestOptions) {
     const downloadInfo = downloadsInfo.get(downloadName);
     const emitter = progressEmitters.get(downloadName);
-    // "encoding: null" is necessary to interpret data as binary instead of utf8
-    const stream = request({ body: query, encoding: null, ...requestOptions });
+    const stream = request(requestOptions);
 
     let fileHandle;
     let buffer;
@@ -110,7 +105,8 @@ function downloadFile(downloadName, query) {
     let totalChunkSize = 0;
 
     // Fill buffer with received data chunks, write to disk whenever it's full
-    stream.on("data", (chunk) => {
+    const dataCallback = (chunk) => {
+        // if (buffer === undefined) return;  // Discard data if status was not 206
         let chunkOffset = 0;
         let chunkRestSize = chunk.length;
         totalChunkSize += chunk.length;
@@ -130,37 +126,27 @@ function downloadFile(downloadName, query) {
                 emitter.emit("progressing", getDownloadStatus(downloadName));
             }
         }
-    });
-
-    // Callback for when stream is closed, writes final chunk and closes file
-    const concludeDownload = () => {
-        if (bufferOffset > 0) {
-            fs.writeSync(fileHandle, buffer, 0, bufferOffset);
-            downloadInfo.currentlyDownloading.offset += bufferOffset;
-        }
-        fs.closeSync(fileHandle);
     };
 
     return new Promise((resolve, reject) => {
-        let responseReceived = false;
-        let streamEnded = false;
-        let errorEncountered = false;
+        let downloadFinished = false;
+        let errorEmitted = false;
 
         stream.on("response", (response) => {
-            responseReceived = true;
-
-            // Consider all codes but 200 as server errors and resolve to false
-            if (response.statusCode !== 200) {
-                emitter.emit("error", "Server error");
+            // Consider all codes but 206 ("Partial Content") as server errors
+            if (response.statusCode !== 206) {
+                emitter.emit("error", new RequestError(response.statusCode,
+                                                       reponse.statusMessage));
+                response.destroy();
                 resolve(false);
                 return;
             }
 
             // Add function to the emitter that allows interrupting the download
-            // TODO: this assumes that destroy calls "close" listener; does it?
             emitter.stop = () => {
                 response.destroy();
-                // TODO: emit abort-event here (or in close-listener)
+                // TODO: is the "end" listener called after this?
+                // TODO: necessary to listen to "aborted" event?
             };
 
             // Initialize buffer and open file for appending
@@ -168,36 +154,37 @@ function downloadFile(downloadName, query) {
             const downloadPath = paths.downloadArchive(downloadName, filename);
             fileHandle = fs.openSync(downloadPath, "a");
             buffer = Buffer.alloc(FRAGMENT_SIZE);
+
+            response.on("data", dataCallback);
+
+            // Write final chunk, close file, resolve to true if all downloaded
+            response.on("end", async () => {
+                if (bufferOffset > 0) {
+                    fs.writeSync(fileHandle, buffer, 0, bufferOffset);
+                    downloadInfo.currentlyDownloading.offset += bufferOffset;
+                }
+                fs.closeSync(fileHandle);
+                if (!response.complete) return;
+                downloadFinished = true;
+                emitter.emit("progressing", getDownloadStatus(downloadName));
+                resolve(true);
+            });
         });
 
-        stream.on("close", () => {
-            if (streamEnded) return;
-            if (errorEncountered) return;
-            if (!responseReceived) return;  // Is this necessary here?
-            concludeDownload();
-            emitter.emit("progressing", getDownloadStatus(downloadName));
-            resolve(false);
-        });
-
+        // Emit connection error if there is an error in response stream
         stream.on("error", (error) => {
-            if (streamEnded) return;
-            errorEncountered = true;
-            if (!responseReceived) {
-                emitter.emit("error", "Connection error");
-            } else {
-                concludeDownload();
-                // TODO: this can actually be a "parse error" as well, what else
-                emitter.emit("error", "Connection lost");
+            // ESOCKETTIMEDOUT is always fired twice, even if download complete
+            if (!downloadFinished && !errorEmitted) {
+                errorEmitted = true;
+                if (error.code === "ETIMEDOUT" && error.connect) {
+                    emitter.emit("error",
+                        new ConnectionError(error.message, true));
+                } else {  // Check further cases, e.g. if "parse error"
+                    emitter.emit("error",
+                        new ConnectionError(error.message, false));
+                }
+                resolve(false);
             }
-            resolve(false);
-        });
-
-        // Resolve to true if download is complete
-        stream.on("end", async () => {
-            streamEnded = true;
-            concludeDownload();
-            emitter.emit("progressing", getDownloadStatus(downloadName));
-            resolve(true);
         });
     });
 }
@@ -219,41 +206,45 @@ function getDownloadStatus(downloadName) {
 }
 
 /**
- *  Pause download with given name.
- */
-function pauseDownload(downloadName) {
-    // TODO: Set "paused" bool here
-    stopDownload(downloadName);
-}
-
-/**
  *  Stop download with given name.
  */
-function stopDownload(downloadName) {
+function pauseDownload(downloadName, restartAutomatically=true) {
     if (!downloadsInfo.has(downloadName)) {
         throw new Error(`Could not find download with name "${downloadName}".`);
     }
     if (!progressEmitters.has(downloadName)) {
         throw new Error(`Download "${downloadName}" is currently not running.`);
     }
+    // TODO: Set "paused" bool to true here if restartAutomatically is false
     progressEmitters.get(downloadName).stop();
 }
 
-function stopAllDownloads() {
+function haltAllDownloads() {
     for (const [downloadName, progressEmitter] of progressEmitters) {
-        stopDownload(downloadName);
+        pauseDownload(downloadName);
+    }
+}
+
+function removeDownload(downloadName) {
+    // Delete download info from local storage and remove subdirectory
+    downloadsInfo.delete(downloadName);
+    saveDownloadsInfo();
+    fs.remove(paths.downloadSubdirectory(downloadName));
+    if (progressEmitters.has(downloadName)) {
+        progressEmitters.delete(downloadName);
     }
 }
 
 module.exports.load = loadDownloadsInfo;
 module.exports.save = saveDownloadsInfo;
-module.exports.stopAllDownloads = stopAllDownloads;
+module.exports.haltAll = haltAllDownloads;
 
 // =============================================================================
 // Functions for managing language content downloads.
 // =============================================================================
 
 const content = {};
+const releasePrefixes = require(paths.contentReleasePrefixes);
 
 function getContentDownloadName(language, secondary) {
     return `Content-${language}-${secondary}`;
@@ -265,18 +256,62 @@ function getContentFileVersions(language, secondary) {
 }
 
 content.getStatus = async function (language, secondary) {
-    return await queryServer({
-        action: "info",
-        target: {
-            type: "content",
-            language,
-            secondary
-        },
-        clientVersions: {
-            program: app.version,
-            content: getContentFileVersions(language, secondary)
+    const allVersions = await sendRequest({ url:`${language}-${secondary}.json`,
+                                            baseUrl: RAW_DATA_URL });
+    const currentVersions = getContentFileVersions(language, secondary);
+    const currentProgramVersion = app.version;
+    const statusInfo = {
+        updateAvailable: false,
+        programUpdateRecommended: false,
+        latestFileVersions: {},
+        minProgramVersions: {},
+        fileSizes: {},
+        totalSize: 0
+    };
+
+    for (const filename in allVersions) {
+        let foundNonFittingRow = false;
+        let lastFittingRow;
+
+        // Skip rows while minimum required program version is smaller or equal
+        // to currently used program version
+        for (const row of allVersions[filename]) {
+            if (compareVersions(row[1], currentProgramVersion) > 0) {
+                foundNonFittingRow = true;
+                break;
+            }
+            lastFittingRow = row;
         }
-    });
+
+        // If the first version in the register isn't compatible, the others
+        // won't be either (have higher versions), so there's no fitting version
+        if (lastFittingRow === undefined) {
+            continue;
+        }
+
+        // Check if a program update is necessary to make use of the latest data
+        const [releaseVersion, minimumProgramVersion, recommendedProgramVersion,
+               fileSize] = lastFittingRow;
+        if (foundNonFittingRow || compareVersions(
+                recommendedProgramVersion, currentProgramVersion) > 0) {
+            statusInfo.programUpdateRecommended = true;
+        }
+
+        // Add the chosen version for update if it's not the current version
+        if (!currentVersions.hasOwnProperty(filename) ||
+                currentVersions[filename] !== releaseVersion) {
+            statusInfo.latestFileVersions[filename] = releaseVersion;
+            statusInfo.minProgramVersions[filename] = minimumProgramVersion;
+            statusInfo.fileSizes[filename] = fileSize;
+            statusInfo.totalSize += fileSize;
+        }
+    }
+    
+    if (statusInfo.totalSize > 0) {
+        statusInfo.updateAvailable = true;
+    }
+
+    return statusInfo;
 }
 
 content.getDownloadStatus = function (language, secondary) {
@@ -308,8 +343,8 @@ async function finishContentDownload(downloadName) {
     for (const filename in fileVersions) {
         const downloadPath = paths.downloadArchive(downloadName, filename);
         extractionPromises.push(new Promise((resolve, reject) => {
+            // TODO: might violate dependencies if some fail and some don't
             extract(downloadPath, { dir: contentPaths.directory }, (error) => {
-                fs.unlinkSync(downloadPath);
                 if (error) {
                     reject(error);
                 } else {
@@ -347,15 +382,20 @@ async function conductContentDownload(downloadName) {
         }
 
         // Download the file
+        const filename = currentlyDownloading.filename;
+        const releaseVersion = details.fileVersions[filename];
+        const currentSize = currentlyDownloading.offset;
+        const totalSize = downloadInfo.fileSizes[filename];
+        const prefix = releasePrefixes[details.language][details.secondary];
         const complete = await downloadFile(downloadName, {
-            action: "download",
-            offset: currentlyDownloading.offset,
-            target: {
-                type: "content",
-                filename: currentlyDownloading.filename,
-                language: details.language,
-                secondary: details.secondary,
-                version: details.fileVersions[currentlyDownloading.filename]
+            baseUrl: RELEASES_URL,
+            url: `${prefix}-${releaseVersion}/${filename}.zip`,
+            timeout: TIMEOUT_DURATION,
+            encoding: null,  // Interpret data as binary instead of utf8
+            headers: {
+                "Accept-Encoding": "identity",
+                "Cache-Control": "no-transform",
+                "Range": `bytes=${currentSize}-${totalSize-1}`
             }
         });
         
@@ -374,18 +414,13 @@ async function conductContentDownload(downloadName) {
         saveDownloadsInfo();
     }
 
-    // Process the downloaded data
+    // Process the downloaded data and unregister the download
     progressEmitter.emit("starting-data-processing");
     const successful = await finishContentDownload(downloadName);
+    removeDownload(downloadName);
 
-    // Delete download info and emitter from registers and remove subdirectory
-    downloadsInfo.delete(downloadName);
-    saveDownloadsInfo();
-    progressEmitters.delete(downloadName);
-    fs.rmdirSync(paths.downloadSubdirectory(downloadName));
-
-    // Signal that the download was finished and whether it was successful
-    progressEmitter.emit("finished", successful);
+    // Signal that the download has ended and specify whether it was successful
+    progressEmitter.emit("ended", successful);
 }
 
 content.startDownload = async function (language, secondary) {
@@ -396,14 +431,13 @@ content.startDownload = async function (language, secondary) {
         return progressEmitters.get(downloadName);
     }
 
-    // If download doesn't exist yet, get latest file versions from server first
+    // If download doesn't exist yet, register it with information from cache
     if (!downloadsInfo.has(downloadName)) {
-        const contentStatus = await content.getStatus(language, secondary);
+        const contentStatus = storage.get(
+            `dataUpdateCache.latestFileVersions.${language}.${secondary}`);
         if (!contentStatus.updateAvailable)
             throw `Content for language pair '${language}-${secondary}' is ` +
                   `already up to date.`;
-
-        // Register the download and store all associated information
         downloadsInfo.set(downloadName, {
             filesPending: Object.keys(contentStatus.latestFileVersions),
             fileSizes: contentStatus.fileSizes,
@@ -434,7 +468,16 @@ content.startDownload = async function (language, secondary) {
 
 content.pauseDownload = function (language, secondary) {
     const downloadName = getContentDownloadName(language, secondary);
-    return pauseDownload(downloadName);
+    pauseDownload(downloadName);
+}
+
+content.stopDownload = function (language, secondary) {
+    const downloadName = getContentDownloadName(language, secondary);
+    removeDownload(downloadName);
+}
+
+content.getLatestVersions = function () {
+    return sendRequest({ url: "versions.json", baseUrl: RAW_DATA_URL });
 }
 
 module.exports.content = content;
@@ -446,7 +489,18 @@ module.exports.content = content;
 const program = {}
 
 program.getLatestVersionInfo = async function () {
-    return await queryServer({ target: { type: "program" }, action: "info" });
+    let releaseInfo;
+    try {
+        const releaseInfo = await sendRequest({ baseUrl: PROGRAM_API_URL,
+            url: "/releases/latest", headers: { "User-Agent": "acnicoy"} });
+        return {
+            latestVersion: releaseInfo.tag_name.slice(1),  // Remove leading 'v'
+            releaseDate: Date.parse(releaseInfo.published_at),
+            description: releaseInfo.body
+        }
+    } catch (error) {
+        return null;  // No release available (or repository doesn't exist)
+    }
 };
 
 module.exports.program = program;

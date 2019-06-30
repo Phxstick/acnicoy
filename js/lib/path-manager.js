@@ -91,6 +91,8 @@ module.exports = function (basePath) {
     paths.japaneseIndices = path.resolve(basePath, "japanese-indices.sql");
     paths.minContentVersions =
         path.resolve(basePath, "data", "min-content-versions.json");
+    paths.contentReleasePrefixes =
+        path.resolve(basePath, "data", "content-release-prefixes.json");
 
     // JS
     const jsPath = path.resolve(basePath, "js");

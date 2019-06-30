@@ -1,5 +1,6 @@
 ### Primary goals
 - Add help on suggstion panes and link to it from the panes
+- Add latest content version to version register to check if release available?
 - Extend notes section:
   - Add control bar: search, show help, add group, undo things
   - Maybe an option to decrease font size and padding to see more groups at once
@@ -25,6 +26,7 @@
   - Maybe include it in the data but only load it when explicitly asked to
 - When a topic in the help section is selected, make sure it's revealed in tree
 - Implement changing order of translations by dragging while pressing Ctrl
+- Try to replace request module with axios and check if ESOCKETTIMEDOUTs stop
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
@@ -139,6 +141,8 @@ By category
 - Try to split some general network stuff off of content.startDownload
   - Move content-stuff from networkManager into dataManager.content? Partly?
 - Why does an error occurr in the stream after the download successfully finished
+- Stop download after a certain number of read timeouts?
+- Display button to stop download or retry connecting upon connection timeout
 
 ### Stats
 - Line diagram which shows cumulative growth of vocabulary over diff. periods

@@ -13,9 +13,12 @@ class LanguageTable extends Widget {
         this.$("table").hide();
         this.$("update-content-status-button").hide();
         this.$("last-content-status-update-time").hide();
+        this.$("content-update-error-label").hide();
+        this.$("check-content-update-spinner").hide();
         for (const element of this.$$(".interactive-only")) {
             element.hide();
         }
+
         this.languageConfigs = [];
         this.languageToConfig = new Map();
         this.rowToConfig = new WeakMap();
@@ -24,7 +27,7 @@ class LanguageTable extends Widget {
         this.settingsSubsection = null;
         this.handledDownloadStreams = new WeakSet();
         this.updatingContentStatus = new WeakSet();
-        this.retryContentStatusUpdateDelay = 900000;  // 15 min
+
         // Quick access to language content elements for each language
         this.$("edit-srs-schemes-button").addEventListener("click", () => {
             overlays.open("srs-schemes");
@@ -33,34 +36,35 @@ class LanguageTable extends Widget {
         // Adding a new language
         this.$("add-language-button").addEventListener("click", async () => {
             const config = await overlays.open("add-lang");
+            const language = config.language;
+            const secondary = config.settings.secondary;
             if (config === null) return;
-            if (this.languageToConfig.has(config.language)) {
+            if (this.languageToConfig.has(language)) {
                 dialogWindow.info("You cannot add a language twice!"); 
                 return;
             }
             if (this.interactiveMode) {
-                await dataManager.languages.add(
-                    config.language, config.settings);
-                await dataManager.load(config.language);
-                events.emit("language-added", config.language);
+                await dataManager.languages.add(language, config.settings);
+                await dataManager.load(language);
+                events.emit("language-added", language);
             }
             config.interactiveMode = this.interactiveMode;
-            this.addTableRow(config);
-            if (this.interactiveMode) {
-                events.emit("update-content-status",
-                    { language: config.language,
-                      secondary: config.settings.secondary });
+
+            // Check using cache whether language content is available
+            const statusUpdateRequiredKey =
+                `dataUpdateCache.statusUpdateRequired.${language}.${secondary}`;
+            const languageDataVersionsKey =
+                `dataUpdateCache.latestReleaseVersions.${language}.${secondary}`
+            if (storage.get(languageDataVersionsKey) !== undefined) {
+                storage.set(statusUpdateRequiredKey, true);
             }
+
+            this.addTableRow(config);
         });
 
         // Updating language content status
-        this.$("update-content-status-button").addEventListener("click", () => {
-            for (const config of this.languageConfigs) {
-                events.emit("update-content-status",
-                    { language: config.language,
-                      secondary: config.settings.secondary });
-            }
-        });
+        this.$("update-content-status-button").addEventListener(
+            "click", () => this.checkForContentUpdates());
 
         // When a readings checkbox is clicked, update config
         this.$("table-body").addEventListener("click", (event) => {
@@ -193,11 +197,10 @@ class LanguageTable extends Widget {
             const elements = this.configToDomElements.get(config);
             elements.loadStatusLabel.textContent = "Unload";
         });
-        events.on("update-content-status", async ({ language, secondary }) => {
+        events.on("update-content-status", () => {
             if (!this.interactiveMode) return;
-            await this.updateContentStatus(language, false);
-            window.setTimeout(() => events.emit("update-content-status",
-                { language, secondary }), main.statusUpdateInterval * 1000);
+            main.languageDataUpdateCallbackId = null;
+            this.checkForContentUpdates();
         });
     }
 
@@ -217,7 +220,6 @@ class LanguageTable extends Widget {
         config.downloading = networkManager.content.getDownloadStatus(
                 language, secondary) !== null;
         config.downloadReady = false;
-        config.lastUpdateTime = -1;
 
         // Get all named DOM elements in this row
         const q = (query) => row.querySelector(query);
@@ -243,12 +245,74 @@ class LanguageTable extends Widget {
         this.updateContentStatus(language);
     }
 
-    async updateContentStatus(language, useCache=true) {
+    async checkForContentUpdates() {
+        this.$("update-content-status-button").hide();
+        this.$("content-update-error-label").hide();
+        this.$("check-content-update-spinner").show();
+
+        // Request latest versions of language data and cache them
+        let newVersions;
+        try {
+            const promise = networkManager.content.getLatestVersions();
+            newVersions = await utility.addMinDelay(promise);
+        } catch (error) {
+            this.$("content-update-error-label").show();
+            this.$("update-content-status-button").show();
+            this.$("check-content-update-spinner").hide();
+            return;
+        }
+        const versionsCacheKey = "dataUpdateCache.latestReleaseVersions";
+        let cachedVersions = storage.get(versionsCacheKey);
+        if (cachedVersions === undefined) cachedVersions = {};
+        storage.set(versionsCacheKey, newVersions);
+
+        // Record time of update and schedule the next update
+        const lastUpdateTime = utility.getTime();
+        storage.set("dataUpdateCache.lastUpdateTime", lastUpdateTime);
+        this.$("last-content-status-update-time").textContent =
+            "Last checked: " + dateFormat(lastUpdateTime, "HH:MM, mmm dS");
+        if (main.languageDataUpdateCallbackId !== null) {
+            window.clearTimeout(main.languageDataUpdateCallbackId);
+        }
+        main.languageDataUpdateCallbackId = window.setTimeout(() =>
+            events.emit("update-content-status"),main.statusUpdateInterval*1000)
+
+        // Flag languages where current version is not equal to cached one
+        const flagsCacheKey = "dataUpdateCache.statusUpdateRequired";
+        let statusUpdateRequired = storage.get(flagsCacheKey);
+        if (statusUpdateRequired === undefined) statusUpdateRequired = {};
+        for (const language of dataManager.languages.all) {
+            const secondary =
+                this.languageToConfig.get(language).settings.secondary;
+            if (!newVersions.hasOwnProperty(language)) continue;
+            if (!newVersions[language].hasOwnProperty(secondary)) continue;
+            const newVersion = newVersions[language][secondary];
+            if (!cachedVersions.hasOwnProperty(language) ||
+                    !cachedVersions[language].hasOwnProperty(secondary) ||
+                    newVersion !== cachedVersions[language][secondary]) {
+                if (!statusUpdateRequired.hasOwnProperty(language))
+                    statusUpdateRequired[language] = {};
+                statusUpdateRequired[language][secondary] = true;
+            }
+        }
+        storage.set(flagsCacheKey, statusUpdateRequired);
+
+        for (const language of dataManager.languages.all) {
+            this.updateContentStatus(language);
+        }
+        this.$("update-content-status-button").show();
+        this.$("check-content-update-spinner").hide();
+    }
+
+    async updateContentStatus(language) {
         const config = this.languageToConfig.get(language);
         if (this.updatingContentStatus.has(config)) return;
         this.updatingContentStatus.add(config);
         const secondary = config.settings.secondary;
-        const cacheKey = `cache.contentVersionInfo.${language}.${secondary}`;
+        const flagKey =
+            `dataUpdateCache.statusUpdateRequired.${language}.${secondary}`;
+        const cacheKey =
+            `dataUpdateCache.latestFileVersions.${language}.${secondary}`;
         const elements = this.configToDomElements.get(config);
 
         // Initially only show the spinner, hide everything else
@@ -279,17 +343,40 @@ class LanguageTable extends Widget {
             }
         }
 
-        // Callback for when a network error occurs, show corresponding message
-        const onError = (labelText) => {
-            elements.statusLabel.textContent = labelText;
-            elements.statusLabel.classList.add("error");
-            elements.progressFrame.hide();
-            elements.statusFrame.show();
-            elements.programUpdateRecommendedIcon.hide();
-            // Try to reconnect more frequently
-            window.setTimeout(() => this.updateContentStatus(language),
-                this.retryContentStatusUpdateDelay);
+        // Callback for when the download has ended (successfully or not)
+        const concludeDownload = (successful) => {
+            config.downloading = false;
+            events.emit("content-download-finished",
+                { language, secondary, successful });
+            this.updateContentStatus(language);
         };
+
+        // Callback for when a network error occurs, show corresponding message
+        const onError = (error) => {
+            if (error instanceof networkManager.ConnectionError) {
+                if (error.connectionTimeout) {
+                    // No connection, try again in a few minutes
+                    window.setTimeout(() => this.updateContentStatus(language),
+                        utility.timeSpanStringToSeconds("5 minutes") * 1000);
+                    elements.statusLabel.textContent = "Connection Error";
+                    elements.statusLabel.classList.add("error");
+                    elements.progressFrame.hide();
+                    elements.statusFrame.show();
+                    elements.programUpdateRecommendedIcon.hide();
+                } else {
+                    // Almost immediately try to reconnect upon read timeout
+                    window.setTimeout(() => this.updateContentStatus(language),
+                        utility.timeSpanStringToSeconds("1 second") * 1000);
+                }
+            } else if (error instanceof networkManager.RequestError) {
+                networkManager.stopDownload(language, secondary);
+                concludeDownload(false);
+            } else {
+                networkManager.stopDownload(language, secondary);
+                concludeDownload(false);
+            }
+        };
+
         try {
             // If a download has already been started, continue it
             if (config.downloading) {
@@ -298,6 +385,8 @@ class LanguageTable extends Widget {
                         language, secondary)
                 if (!this.handledDownloadStreams.has(downloadStream)) {
                     this.handledDownloadStreams.add(downloadStream);
+
+                    // Initialize status of progress bar
                     const { totalSize, downloaded, percentage } =
                         networkManager.content.getDownloadStatus(
                             language, secondary);
@@ -305,16 +394,22 @@ class LanguageTable extends Widget {
                     elements.progressBar.value = downloaded;
                     elements.progressText.textContent =
                         `${percentage.toFixed(0)} %`;
+
+                    // Update progress bar as the download progresses
                     downloadStream.on("progressing", (status) => {
                         elements.progressBar.value = status.downloaded;
                         elements.progressText.textContent =
                             `${status.percentage.toFixed(0)} %`;
                     });
+
+                    // Display a spinner before downloaded data gets processed
                     downloadStream.on("starting-data-processing", () => {
                         elements.connectingSpinner.show();
                         elements.progressFrame.hide();
                     });
-                    downloadStream.on("finished", (successful) => {
+
+                    // Update status and issue notification if download is over
+                    downloadStream.on("ended", (successful) => {
                         if (successful) {
                             if (dataManager.content.isLoadedFor(
                                     language, secondary)) {
@@ -324,24 +419,24 @@ class LanguageTable extends Widget {
                             }
                             storage.set(`${cacheKey}.updateAvailable`, false);
                         }
-                        config.downloading = false;
-                        events.emit("content-download-finished",
-                            { language, secondary, successful });
-                        this.updateContentStatus(language);
+                        concludeDownload(successful);
                     });
-                    downloadStream.on("error", (message) => onError(message));
+
+                    downloadStream.on("error", onError);
                     elements.progressFrame.show();
                 }
             } else {
-                if (!useCache) {
-                    const minDelay = new Promise((resolve) =>
-                        window.setTimeout(() => resolve(), 1200));
-                    const infoPromise = networkManager.content.getStatus(
+                const updateRequired = storage.get(flagKey);
+                if (updateRequired) {
+                    // Request information on latest language data from server
+                    const promise = networkManager.content.getStatus(
                             language, secondary);
-                    const [_, info] = await Promise.all([minDelay, infoPromise])
-                    info.lastUpdateTime = utility.getTime();
+                    const info = await utility.addMinDelay(promise);
                     const cachedInfo = storage.get(cacheKey);
                     storage.set(cacheKey, info);
+                    storage.set(flagKey, false);
+
+                    // Issue a notification if a new update is available
                     if ((cachedInfo === undefined && info.updateAvailable)
                             || (cachedInfo !== undefined &&
                                 !cachedInfo.updateAvailable &&
@@ -350,51 +445,38 @@ class LanguageTable extends Widget {
                             { language, secondary });
                     }
                 }
+
+                // Update interface according to current status
+                let programUpdateRecommended = false;
+                let updateAvailable = false;
                 if (storage.has(cacheKey)) {
-                    const { programUpdateRecommended, updateAvailable,
-                        lastUpdateTime } = storage.get(cacheKey);
-                    elements.statusLabel.classList.remove("error");
-                    if (updateAvailable) {
-                        if (contentAvailable) {
-                            elements.statusLabel.textContent = "Update";
-                        } else {
-                            elements.statusLabel.textContent = "Download";
-                        }
+                    ({ programUpdateRecommended, updateAvailable }
+                        = storage.get(cacheKey));
+                }
+                elements.statusLabel.classList.remove("error");
+                if (updateAvailable) {
+                    if (contentAvailable) {
+                        elements.statusLabel.textContent = "Update";
                     } else {
-                        if (contentAvailable) {
-                            elements.statusLabel.textContent = "Up to date";
-                            elements.statusLabel.classList.add("up-to-date");
-                        } else {
-                            elements.statusLabel.textContent = "n.a.";
-                        }
+                        elements.statusLabel.textContent = "Download";
                     }
-                    elements.statusFrame.show();
-                    elements.statusLabel.classList.toggle(
-                        "button", updateAvailable);
-                    config.downloadReady = updateAvailable;
-                    elements.programUpdateRecommendedIcon.toggleDisplay(
-                        programUpdateRecommended);
-                    config.lastUpdateTime = lastUpdateTime;
-                    // Set last-update-label to the smallest last-update-time
-                    const minLastUpdateTime = Math.min(...
-                        this.languageConfigs.map((c) => c.lastUpdateTime*1000));
-                    if (minLastUpdateTime > 0) {
-                        const lastUpdateString = "Last checked:  " + dateFormat(
-                            minLastUpdateTime, "HH:MM:ss, mmm dS, yyyy");
-                        this.$("last-content-status-update-time").textContent =
-                            lastUpdateString;
+                } else {
+                    if (contentAvailable) {
+                        elements.statusLabel.textContent = "Up to date";
+                        elements.statusLabel.classList.add("up-to-date");
                     } else {
-                        this.$("last-content-status-update-time").textContent=""
+                        elements.statusLabel.textContent = "n.a.";
                     }
                 }
+                elements.statusFrame.show();
+                elements.statusLabel.classList.toggle(
+                    "button", updateAvailable);
+                config.downloadReady = updateAvailable;
+                elements.programUpdateRecommendedIcon.toggleDisplay(
+                        programUpdateRecommended);
             }
         } catch (error) {
-            if (error instanceof networkManager.NoServerConnectionError ||
-                    error instanceof networkManager.ServerRequestFailedError) {
-                onError(error.name);
-            } else {
-                throw error;
-            }
+            onError(error);
         } finally {
             elements.connectingSpinner.hide();
             this.updatingContentStatus.delete(config);

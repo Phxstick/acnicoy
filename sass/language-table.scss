@@ -132,6 +132,9 @@ tbody tr {
 
 #button-frame {
   font-size: 90%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 #button-frame > button {
@@ -186,4 +189,10 @@ tbody tr {
     width: 5px;  // Make it take up less space to squeeze it in
     color: $color-light;
   }
+}
+
+#content-update-error-label {
+  font-family: $header-font;
+  color: $color-negative;
+  font-size: 1.2rem;
 }
