@@ -377,9 +377,9 @@
     display: flex;
     font-size: 120%;
     flex-direction: column;
+    justify-content: space-around;
     * {
       font-family: $light-font;
-      flex: 1;
     }
   }
 

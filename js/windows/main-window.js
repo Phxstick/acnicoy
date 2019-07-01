@@ -707,6 +707,7 @@ class MainWindow extends Window {
 
     closePanel(name, noOtherPanelOpening=true) {
         const panel = this.panels[name];
+        panel.close();
 
         // Remove the focus from the panel
         if (panel.root.activeElement !== null) {
@@ -717,10 +718,9 @@ class MainWindow extends Window {
         if (dataManager.settings.design.animateSlidingPanels) {
             Velocity(panel, "stop");
             Velocity(panel, { left: "-400px" },
-                { duration: this.panelSlideDuration}).then(() => panel.close());
+                { duration: this.panelSlideDuration});
         } else {
             panel.style.left = "-400px";
-            panel.close();
         }
         panel.style.zIndex = layers["closing-panel"];
 

@@ -74,6 +74,7 @@ const menuItems = contextMenu.registerItems({
 class EditVocabPanel extends EditPanel {
     constructor() {
         super("edit-vocab", ["translation", "reading", "vocab-list"]);
+        this.closed = false;
         this.dictionaryId = null;
         this.originalWord = null;
         this.lastEnteredWord = null;
@@ -82,6 +83,7 @@ class EditVocabPanel extends EditPanel {
 
         // Upon finishing entering word, try to load associated information
         this.$("word").addEventListener("focusout", async () => {
+            if (this.closed) return;
             const newWord = this.$("word").textContent.trim();
             if (this.originalWord !== null || newWord.length === 0) return;
             if (this.dictionaryId !== null) return;
@@ -214,9 +216,14 @@ class EditVocabPanel extends EditPanel {
     }
 
     open() {
+        this.closed = false;
         if (this.originalWord === null) {
             this.$("word").focus();
         }
+    }
+
+    close() {
+        this.closed = true;
     }
 
     async load(word, givenDictionaryId=null) {
@@ -394,7 +401,7 @@ class EditVocabPanel extends EditPanel {
             if (!dataManager.vocabLists.existsList(list)) {
                 const confirmed = await dialogWindow.confirm(
                     `There exists no list with the name '${list}'. ` +
-                    `Do you want to create it now?`);
+                    `Do you want to create it now?`, true);
                 if (confirmed) {
                     dataManager.vocabLists.createList(list);
                     events.emit("vocab-list-created", list, true);

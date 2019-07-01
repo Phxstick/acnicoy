@@ -2,6 +2,8 @@
 
 #kanji-frame {
   @extend .light-item-view;
+  // "!important" needed to not get overridden by partitioned-frame, fix later
+  margin-bottom: -12px !important;  // To save space
   text-align: center;
 
   #kanji {
@@ -52,7 +54,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-top: 5px;
+  margin-top: 3px;
 
   #all-srs-levels {
     margin-left: 15px;

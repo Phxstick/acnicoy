@@ -80,6 +80,7 @@ const menuItems = contextMenu.registerItems({
 class EditKanjiPanel extends EditPanel {
     constructor() {
         super("edit-kanji", ["meaning", "on-yomi", "kun-yomi"]);
+        this.closed = false;
         this.originalKanji = null;
         this.lastEnteredKanji = null;
         this.$("kanji").putCursorAtEndOnFocus(this.root);
@@ -104,6 +105,7 @@ class EditKanjiPanel extends EditPanel {
 
         // Upon finishing entering kanji, try to load associated information
         this.$("kanji").addEventListener("focusout", async () => {
+            if (this.closed) return;
             const newKanji = this.$("kanji").textContent;
             if (this.originalKanji !== null || newKanji.length === 0) return;
             if (this.lastEnteredKanji === newKanji) return;
@@ -217,9 +219,14 @@ class EditKanjiPanel extends EditPanel {
     }
 
     open() {
+        this.closed = false;
         if (this.originalKanji === null) {
             this.$("kanji").focus();
         }
+    }
+
+    close() {
+        this.closed = true;
     }
 
     async load(kanji) {
@@ -233,7 +240,7 @@ class EditKanjiPanel extends EditPanel {
 
         // If a new kanji is getting added, just clear all fields
         if (this.originalKanji === null) {
-            this.$("kanji").textContent = "";
+            this.$("kanji").textContent = kanji !== undefined ? kanji : "";
             this.$("meanings").empty();
             this.$("on-yomi").empty();
             this.$("kun-yomi").empty();
@@ -276,6 +283,9 @@ class EditKanjiPanel extends EditPanel {
 
     createListItem(type, text="") {
         const node = super.createListItem(type, text);
+
+        // If a node with this text already exists, do nothing
+        if (node === null) return;
 
         // If it's a yomi, enable kana input
         node.addEventListener("focusin", () => {

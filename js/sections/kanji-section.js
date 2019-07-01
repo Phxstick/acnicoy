@@ -163,8 +163,10 @@ class KanjiSection extends Section {
     }
 
     registerCentralEventListeners() {
-        events.on("kanji-added", (kanji) => {
+        events.on("kanji-added", async (kanji) => {
             if (!this.contentLoaded) return;
+            const isKnownKanji = await dataManager.content.isKnownKanji(kanji);
+            if (!isKnownKanji) return;
             this.$(kanji).classList.add("added");
             if (this.overviewSettings.onlyMissing) {
                 this.$(kanji).hide();
@@ -177,8 +179,10 @@ class KanjiSection extends Section {
                 }
             }
         });
-        events.on("kanji-removed", (kanji) => {
+        events.on("kanji-removed", async (kanji) => {
             if (!this.contentLoaded) return;
+            const isKnownKanji = await dataManager.content.isKnownKanji(kanji);
+            if (!isKnownKanji) return;
             this.$(kanji).classList.remove("added");
             if (this.overviewSettings.onlyMissing) {
                 this.$(kanji).show();

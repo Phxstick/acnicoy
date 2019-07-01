@@ -60,6 +60,7 @@ const menuItems = contextMenu.registerItems({
 class EditHanziPanel extends EditPanel {
     constructor() {
         super("edit-hanzi", ["meaning", "reading"]);
+        this.closed = false;
         this.originalHanzi = null;
         this.lastEnteredHanzi = null;
         this.$("hanzi").putCursorAtEndOnFocus(this.root);
@@ -84,6 +85,7 @@ class EditHanziPanel extends EditPanel {
 
         // Upon finishing entering hanzi, try to load associated information
         this.$("hanzi").addEventListener("focusout", async () => {
+            if (this.closed) return;
             const newHanzi = this.$("hanzi").textContent;
             if (this.originalHanzi !== null || newHanzi.length === 0) return;
             if (this.lastEnteredHanzi === newHanzi) return;
@@ -184,9 +186,14 @@ class EditHanziPanel extends EditPanel {
     }
 
     open() {
+        this.closed = false;
         if (this.originalHanzi === null) {
             this.$("hanzi").focus();
         }
+    }
+
+    close() {
+        this.closed = true;
     }
 
     async load(hanzi) {

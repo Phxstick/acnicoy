@@ -23,7 +23,7 @@ class KanjiSearchResultEntry extends Widget {
             main.openPanel("edit-kanji", { entryName: kanji });
         });
         this.$("add-button").addEventListener("click", () => {
-            main.openPanel("add-kanji", { entryName: kanji });
+            main.openPanel("edit-kanji", { entryName: kanji });
         });
         // Fill details bar with misc info spans
         // TODO: Create detail spans with handlebars aswell?

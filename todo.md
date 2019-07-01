@@ -1,5 +1,5 @@
 ### Primary goals
-- Add help on suggstion panes and link to it from the panes
+- Add help on suggstion panes and link to it from the corresponding panels
 - Add latest content version to version register to check if release available?
 - Extend notes section:
   - Add control bar: search, show help, add group, undo things
@@ -14,27 +14,24 @@
     - Also let font-family be inherited, and remove all workarounds (and test!)
 - Remember new size when resizing window or notes-group-overview
   - Set minimum size for window, check everywhere if layout is not broken for it
-- Also replace add-kanji panels with edit-kanji panels
 - Reverse completion list order if it's shown above entry instead of below
   - Extend the utility view function for this purpose
 - Add most important missing features to dictionary search (see further below)
 - Add some more achievements and create achievements section
 - In edit-vocab-panel, load suggestions if content is available (see TODOs)
-- Implement dynamic update of kanji/hanzi stats? Maybe make own widget for it?
+- Implement dynamic update of detailed kanji/hanzi stats? Maybe make own widget?
 - Don't freeze after a long test, display loading screen instead (or make fast)
 - Consider dropping name-dictionary to lower memory usage and file size
   - Maybe include it in the data but only load it when explicitly asked to
 - When a topic in the help section is selected, make sure it's revealed in tree
 - Implement changing order of translations by dragging while pressing Ctrl
 - Try to replace request module with axios and check if ESOCKETTIMEDOUTs stop
+- Use thin grey scrollbar instead of the red one everywhere in the program?
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
-- Prevent backslash-encoding on server side, newlines should arrive as such
 - Strange error if autostart is not enabled. How to make it work on linux?
 - Don't preload words in vocabulary section - on scroll, given data is outdated
-- Adding a word and creating a new list simultaneously throws error (textContent
-  of amountLabel is undefined), but somehow everything still works nonetheless.
 - Make it possibly to scroll while pressing Ctrl (for moving notes).
 - Prevent two instances of the program being open simultaneously
 - Fix visual bug when opening overlays (e.g. when opening help on SRS migration)

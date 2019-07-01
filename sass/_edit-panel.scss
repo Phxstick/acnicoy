@@ -22,11 +22,14 @@
 
 .detail-row-header {
   @extend .light-item-view-header;
+  padding: 0px;  // To save space
+  padding-bottom: 2px;
 }
 
 .detail-row-list {
   @extend .light-item-view;
-  display: inline-block;
+  display: inline;
+  padding: 0;  // Doesn't work well for inline items (add to wrapper if needed)
 }
 
 .add-button {

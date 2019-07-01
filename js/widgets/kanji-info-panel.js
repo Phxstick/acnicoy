@@ -68,7 +68,7 @@ class KanjiInfoPanel extends Widget {
             }
         });
         this.$("add-button").addEventListener("click", () => {
-            main.openPanel("add-kanji", { entryName: this.currentKanji });
+            main.openPanel("edit-kanji", { entryName: this.currentKanji });
         });
         this.$("added-label").addEventListener("click", () => {
             main.openPanel("edit-kanji", { entryName: this.currentKanji });
@@ -461,7 +461,7 @@ class KanjiInfoPanel extends Widget {
         if (content.kokujiList.has(kanji)) makeSpan("Kokuji");
         if (kanji in content.counterKanji) makeSpan("Counter");
         if (kanji in content.numericKanji.kanjiToNumber) makeSpan("Numeral");
-        if ("分寸尺丈".includes(kanji)) makeSpan("Unit of length");
+        // if ("分寸尺丈".includes(kanji)) makeSpan("Unit of length");
         return spans;
     }
 

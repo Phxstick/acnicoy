@@ -94,6 +94,22 @@ class StatsSection extends Section {
             this.$("srs-reviews-timeline").incrementLastValue(
                 visibleLanguages.indexOf(dataManager.currentLanguage));
         });
+        events.on("kanji-added", () => {
+            const previousAmount = parseInt(this.$("kanji-count").textContent);
+            this.$("kanji-count").textContent = previousAmount + 1;
+        });
+        events.on("kanji-removed", () => {
+            const previousAmount = parseInt(this.$("kanji-count").textContent);
+            this.$("kanji-count").textContent = previousAmount - 1;
+        });
+        events.on("hanzi-added", () => {
+            const previousAmount = parseInt(this.$("hanzi-count").textContent);
+            this.$("hanzi-count").textContent = previousAmount + 1;
+        });
+        events.on("hanzi-removed", () => {
+            const previousAmount = parseInt(this.$("hanzi-count").textContent);
+            this.$("hanzi-count").textContent = previousAmount - 1;
+        });
         // events.on("achievement-unlocked", (achievementId) => {
         //     // Implement, Adjust counter-increment as well
         // });
@@ -167,19 +183,23 @@ class StatsSection extends Section {
                     return div;
                 };
                 for (let level = 5; level >= 1; --level) {
-                    const numAdded = kanjiPerLevel[level];
+                    let numAdded = kanjiPerLevel[level];
+                    if (numAdded === undefined) numAdded = 0;
                     const numTotal = content.numKanjiPerJlptLevel[level];
                     this.$("kanji-by-jlpt").appendChild(
                         makeLabel(`JLPT ${level}`, numAdded, numTotal));
                 }
                 for (let grade = 1; grade <= 6; ++grade) {
-                    const numAdded = kanjiPerGrade[grade];
+                    let numAdded = kanjiPerGrade[grade];
+                    if (numAdded === undefined) numAdded = 0;
                     const numTotal = content.numKanjiPerGrade[grade];
                     this.$("kanji-by-grade").appendChild(
                         makeLabel(`Grade ${grade}`, numAdded, numTotal));
                 }
+                let numSecondary = kanjiPerGrade[8];
+                if (numSecondary === undefined) numSecondary = 0;
                 this.$("kanji-by-grade").appendChild(makeLabel(
-                    `Grade 7+`, kanjiPerGrade[8], content.numKanjiPerGrade[8]));
+                    `Grade 7+`, numSecondary, content.numKanjiPerGrade[8]));
             } else {
                 this.$("kanji-stats-detailed").hide();
                 this.$("kanji-data-not-loaded").show();

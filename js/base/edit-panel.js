@@ -40,7 +40,7 @@ class EditPanel extends Panel {
 
         // Check if an item with this text already exists
         for (const otherNode of viewNode.children) {
-            if (otherNode.textContent === text) return;
+            if (otherNode.textContent === text) return null;
         }
 
         const node = document.createElement("span");

@@ -11,12 +11,13 @@ class Overlay extends Component {
         // Create a sentinel which is always the last child in the tree
         const sentinel = document.createElement("div");
         sentinel.tabIndex = "0";
+        this.sentinel = sentinel;
         this.root.appendChild(sentinel);
         this.root.appendChild = (node) => {
             this.root.insertBefore(node, sentinel);
             return node;
         };
-        this.elementFocussedByDefault = sentinel;
+        this.elementFocussedByDefault = null;
         this.lastFocussedElement = sentinel;
         // Keep focus within the element using the sentinel and delegatesFocus
         this.captureFocus = false;

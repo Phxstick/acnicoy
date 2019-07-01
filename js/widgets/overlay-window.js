@@ -49,6 +49,8 @@ class OverlayWindow extends Widget {
         const { mode, speed, distance } = overlay.displayOptions;
         overlay.style.opacity = "0";
         overlay.show();
+        if (overlay.elementFocussedByDefault === null)
+            overlay.elementFocussedByDefault = overlay.sentinel;
         overlay.elementFocussedByDefault.focus();
         await utility.finishEventQueue();
         switch (mode) {

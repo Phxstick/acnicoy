@@ -269,14 +269,6 @@ class VocabSection extends Section {
             if (this.selectedList === list) {
                 this.removeEntryFromSortedView("list-contents", word);
             }
-            // Decrement word counter of the list
-            const amountLabel = this.listNameToAmountLabel.get(list);
-            amountLabel.textContent = parseInt(amountLabel.textContent) - 1;
-            // Rearrange lists if they are sorted by length
-            if (this.viewStates["vocab-lists"].sortingCriterion === "length") {
-                this.insertNodeIntoSortedView(
-                    "vocab-lists", this.listNameToViewNode.get(list));
-            }
             // Unmark vocab-view item if it is not part of any list anymore
             if (dataManager.vocabLists.getListsForWord(word).length === 0) {
                 const node = await this.getEntryFromSortedView("vocab", word);
@@ -284,26 +276,36 @@ class VocabSection extends Section {
                     node.classList.remove("already-in-list");
                 }
             }
-        });
-        events.on("added-to-list", async (word, list) => {
-            if (!this.isViewLoaded["vocab-lists"]) return;
-            if (!this.isViewLoaded["vocab"]) return;
-            // Add vocab item to list contents view
-            if (this.selectedList === list) {
-                this.insertEntryIntoSortedView("list-contents", word);
-            }
-            // Increment word counter of the list
+            // Decrement word counter of the list (if the list name if visible)
             const amountLabel = this.listNameToAmountLabel.get(list);
-            amountLabel.textContent = parseInt(amountLabel.textContent) + 1;
+            if (amountLabel === undefined) return;
+            amountLabel.textContent = parseInt(amountLabel.textContent) - 1;
             // Rearrange lists if they are sorted by length
             if (this.viewStates["vocab-lists"].sortingCriterion === "length") {
                 this.insertNodeIntoSortedView(
                     "vocab-lists", this.listNameToViewNode.get(list));
             }
+        });
+        events.on("added-to-list", async (word, list) => {
+            if (!this.isViewLoaded["vocab-lists"]) return;
+            if (!this.isViewLoaded["vocab"]) return;
             // Mark the vocab item if it is displayed in the vocab-view
             const node = await this.getEntryFromSortedView("vocab", word);
             if (node !== null) {
                 node.classList.add("already-in-list");
+            }
+            // Add vocab item to list contents view
+            if (this.selectedList === list) {
+                this.insertEntryIntoSortedView("list-contents", word);
+            }
+            // Increment word counter of the list (if the list name is visible)
+            const amountLabel = this.listNameToAmountLabel.get(list);
+            if (amountLabel === undefined) return;
+            amountLabel.textContent = parseInt(amountLabel.textContent) + 1;
+            // Rearrange lists if they are sorted by length
+            if (this.viewStates["vocab-lists"].sortingCriterion === "length") {
+                this.insertNodeIntoSortedView(
+                    "vocab-lists", this.listNameToViewNode.get(list));
             }
         });
         // ====================================================================
