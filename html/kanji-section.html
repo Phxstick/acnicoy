@@ -18,7 +18,7 @@
       <div class="sk-circle12 sk-circle"></div>
     </div>
   </button>
-  <input id="search-by-meanings-input" placeholder="Enter meanings"></input>
+  <input id="search-by-meanings-input" placeholder="Enter meaning"></input>
   <button id="search-by-meanings-button" class="search-button" tabindex="-1">
     <i class="fa fa-search"></i>
     <div class="spinner fading-dotted-circle-spinner">
@@ -127,20 +127,19 @@
     <div id="search-info" class="info-container">
       <ul>
         <li>
-          Search kanji by directly entering them into the entry on the left,
-          e.g.:
+          Search kanji by directly entering them into the left entry, e.g.:
           <ul>
             <li>
               Entering
               <span class="search-example" data-type="by-kanji">
                 これは漢字を含む文章だ
               </span>
-              will find the kanji 漢, 字, 含, 文, 章.
+              gives the kanji 漢, 字, 含, 文, 章
             </li>
           </ul>
         </li>
         <li>
-          Search kanji by details using the entry on the right, e.g.:
+          Search kanji by details using the middle and right entry, e.g.:
           <ul>
             <li>
               Kanji which have a meaning "search": 
@@ -155,9 +154,7 @@
               <span class="search-example" data-type="by-details">ソウ</span>
             </li>
             <li>
-              Use the wildcard
-              <span class="search-example" data-type="by-details">*</span>
-              to match an arbitrary number of characters, e.g.:
+              Use a wildcard to match an arbitrary number of characters, e.g.:
               <div>
                 Kanji with a kun-yomi starting with "さが":
                 <span class="search-example" data-type="by-details">さが*</span>
@@ -166,19 +163,14 @@
             <li>
               Multiple details can be separated by space/comma/semicolon, e.g.:
               <div>
-                Kanji with both a kun-yomi "さがす" and on-yomi "ソウ":
+                Kanji with both a kun-yomi さがす and on-yomi ソウ:
                 <span class="search-example" data-type="by-details">
                   さがす, ソウ
                 </span>
               </div>
             </li>
             <li>
-              Switch between kana- and romaji-input by pressing the 
-              <span class="kana-input-button">あ/Aa</span>
-              icon.
-              <div>
                 Press shift while typing to input katakana instead of hiragana.
-              </div>
             </li>
           </ul>
         </li>

@@ -428,7 +428,7 @@ module.exports = async function (paths, contentPaths, modules) {
                 }
             }
             // If at least one translation matched, consider word as matching
-            if (translationMatch) return word;
+            if (translationMatch) return wordContainsKanji ? word : reading;
         }
         return null;
     }

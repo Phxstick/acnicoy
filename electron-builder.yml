@@ -1,0 +1,6 @@
+appId: "com.electron.acnicoy"
+productName: "Acnicoy"
+win:
+  target: "zip"
+  icon: "build/icon.png"
+  publish: "github"

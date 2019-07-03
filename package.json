@@ -15,7 +15,7 @@
   "devDependencies": {
     "autoprefixer": "^9.1.3",
     "electron": "^3.0.0-beta.8",
-    "electron-builder": "^20.28.3",
+    "electron-builder": "^20.44.4",
     "glob": "^7.1.1",
     "gulp": "^3.9.1",
     "gulp-changed": "^3.2.0",
@@ -44,6 +44,8 @@
   },
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
     "start": "electron ."
   }
 }

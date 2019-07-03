@@ -61,8 +61,6 @@ module.exports = function (basePath) {
     if (!fs.existsSync(downloadsPath)) fs.mkdirSync(downloadsPath);
     if (!fs.existsSync(paths.downloadsInfo))
         fs.writeFileSync(paths.downloadsInfo, "{}");
-    // Set path for electron-settings module
-    storage.setPath(path.resolve(storagePath, "storage.json"));
 
     // Global data
     paths.packageInfo = path.resolve(basePath, "package.json");

@@ -71,7 +71,7 @@ class MainWindow extends Window {
         this.panelSlideDuration = 300;
         this.kanjiInfoPanelSlideDuration = 200;
         this.showSuggestionsDuration = 180;
-        this.sectionFadeDuration = 150;
+        this.sectionFadeDuration = 140;
         this.statusUpdateInterval = utility.timeSpanStringToSeconds("23 hours");
         this.dataSavingInterval = utility.timeSpanStringToSeconds("10 minutes");
         this.srsStatusUpdateInterval = utility.timeSpanStringToSeconds("5 min");
@@ -272,15 +272,16 @@ class MainWindow extends Window {
             "open-dev-tools": () => {
                 // Open dev tools and stretch window to accomodate them
                 const browserWindow = remote.getCurrentWindow();
-                const [width, height] = browserWindow.getSize();
                 const webContents = remote.getCurrentWebContents();
                 if (webContents.isDevToolsOpened()) {
                     webContents.closeDevTools();
-                    browserWindow.setSize(Math.max(600, width - 240), height);
+                    const [width, height] = browserWindow.getContentSize();
+                    browserWindow.setContentSize(
+                        Math.max(600, width - 241), height);
                 } else {
                     webContents.openDevTools();
                     browserWindow.setSize(
-                        Math.min(screen.width, width + 240), height);
+                        Math.min(screen.width, outerWidth + 241), outerHeight);
                 }
             }
         };
@@ -426,9 +427,10 @@ class MainWindow extends Window {
         }
 
         // Open the language which was open when the program was closed last
-        const lastOpenedLanguage = storage.get("last-opened-language");
-        await this.setLanguage(lastOpenedLanguage !== undefined ?
-            lastOpenedLanguage : dataManager.languages.all[0]);
+        let lastOpenedLanguage = storage.get("last-opened-language");
+        if (!dataManager.languages.all.includes(lastOpenedLanguage))
+            lastOpenedLanguage = dataManager.languages.all[0];
+        await this.setLanguage(lastOpenedLanguage);
 
         // Apply global settings
         this.sections["settings"].broadcastGlobalSettings();
@@ -684,9 +686,14 @@ class MainWindow extends Window {
         this.panelShortcutsInfoShown = true;
         this.hideSuggestionPane();
         this.$("filter").classList.add("dark");
-        Velocity(this.$("panel-shortcuts-info"), "stop");
-        Velocity(this.$("panel-shortcuts-info"), "fadeIn",
-            { duration: this.panelSlideDuration });
+        if (dataManager.settings.design.animateSlidingPanels) {
+            Velocity(this.$("panel-shortcuts-info"), "stop");
+            Velocity(this.$("panel-shortcuts-info"), "fadeIn",
+                { duration: this.panelSlideDuration });
+        } else {
+            this.$("panel-shortcuts-info").style.opacity = "1";
+            this.$("panel-shortcuts-info").show();
+        }
     }
 
     showSuggestionsPane(name, fast=false) {
@@ -894,12 +901,14 @@ class MainWindow extends Window {
 
     adjustToLanguageContent(language, secondaryLanguage) {
         this.$("find-kanji-button").hide();
-        this.$("dictionary-button").hide();
+        this.$("dictionary-button").toggleDisplay(
+            dataManager.content.isDictionaryAvailable());
+        this.$("side-bar").classList.remove("content-loaded");
         if (!dataManager.content.isLoadedFor(language, secondaryLanguage))
             return;
         if (language === "Japanese") {
+            this.$("side-bar").classList.add("content-loaded");
             this.$("find-kanji-button").show();
-            this.$("dictionary-button").show();
         }
         for (const name in this.sections) {
             this.sections[name].adjustToLanguageContent(

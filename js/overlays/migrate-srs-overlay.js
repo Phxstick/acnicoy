@@ -403,6 +403,10 @@ class MigrateSrsOverlay extends Overlay {
             this.finishConnection(connection, startConnector, endConnector);
             ++oldSchemeIndex;
         }
+
+        // Make the SVG element for the connections stretch all the way down
+        this.$("migrate-srs-area-frame").style.height =
+            `${this.$("migrate-srs-frame").scrollHeight}px`;
     }
     
     async migrate() {

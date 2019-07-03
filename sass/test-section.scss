@@ -60,9 +60,17 @@ $fade-color: var(--test-frame-fade-color);
                                  $test-section-color, 80%)};
 }
 
+body {
+  display: flex;
+  flex-direction: column;
+}
+
 #top {
+  // NOTE: flexbox can produce subpixel dimensions whereas Velocity appears to
+  // only work with full pixels, this can cause small glitches after animations
+  // flex-grow: 1;
+  height: 335px; // Leave enough space to at least fully display 3 solutions
   position: relative;
-  height: 60%;
   display: flex;
   flex-direction: column;
   background-color: var(--test-frame-background);
@@ -81,11 +89,21 @@ $fade-color: var(--test-frame-fade-color);
 }
 
 #bottom {
-  position: relative;
-  flex-direction: column;
-  height: 40%;
+  // flex-grow: 6;
+  flex-grow: 1;
   display: flex;
+  flex-direction: column;
+  position: relative;
   align-items: center;
+  background-color: var(--test-frame-background);
+
+  &.animate {
+    // Timing function is ease-out-sine
+    transition-property: background-color;
+    transition-timing-function: $item-fade-in-timing;
+    transition-duration: $item-fade-in-duration;
+    transition-delay: $item-fade-in-delay;
+  }
 }
 
 #status {
@@ -171,6 +189,7 @@ $fade-color: var(--test-frame-fade-color);
       text-align: center;
       padding-top: 3px;
       padding-bottom: 3px;
+      line-height: 1.3;
     }
 
     %scroll-overflow-shadow {
@@ -322,31 +341,82 @@ $fade-color: var(--test-frame-fade-color);
   &:focus::placeholder {
     color: transparent;
   }
+
+  margin-top: 10px;
+  color: $test-section-color;
+  border-bottom: 1px solid $test-section-color-light;
+
+  &:empty:not(:focus):before {
+    cursor: text;
+    content: "Enter your answer here";
+    color: $test-section-color-medium;
+  }
+  &:empty:hover:not(:focus):before {
+    color: $test-section-color;
+  }
+  &:focus:before {
+    display: none;
+  }
+  &:hover, &:focus {
+    border-color: $test-section-color;
+  }
 }
 
 #continue-button, #show-solutions-button {
+  @include fading-border($test-section-color-medium, "horizontal");
   box-sizing: border-box;
-  width: $answer-input-width;
+  width: 460px;
   padding: $answer-input-padding;
+  padding-top: 10px;
+  padding-bottom: 10px;
   font-family: $button-font;
   font-size: $answer-input-font-size;
+  border-bottom-width: 1px;
+  margin-top: 0px;
+  color: $test-section-color-medium;
+
+  &:hover, &:focus {
+    color: $test-section-color;
+    border-color: $test-section-color;
+    background-image: linear-gradient(
+        to right, transparent, $fade-color, transparent);
+    box-shadow: none;
+  }
 }
 
 #show-solutions-button {
   padding-top: 10px;
   padding-bottom: 10px;
   border-radius: 6px;
+  border-top-width: 1px;
 }
 
 #evaluation-buttons {
   display: flex;
   flex-direction: row;
+  border-top-width: 0;
+  width: 460px;
+  color: $test-section-color-medium;
 
   > button {
+    flex: 1;
+    padding-top: 10px;
+    padding-bottom: 10px;
     font-family: $button-font;
     font-size: $answer-input-font-size;
+
     &:focus {
       box-shadow: none;
+    }
+    &:hover, &:focus {
+      color: $test-section-color;
+      background-image: linear-gradient(
+          to right, transparent, $fade-color, transparent);
+      box-shadow: none;
+    }
+    &:not(:last-child) {
+      border: 1px solid $test-section-color-medium;
+      border-right-width: 1px;
     }
   }
 }
@@ -357,7 +427,7 @@ $fade-color: var(--test-frame-fade-color);
   flex-direction: row;
   height: 35px;
   width: 460px;
-  border-width: 1px 0 0 0;
+  border-top-width: 1px;
   @include fading-border($test-section-color-medium, "horizontal");
 
   button {
@@ -418,12 +488,13 @@ $fade-color: var(--test-frame-fade-color);
   width: 100%;
   height: 20px;
   appearance: none;
+  border-top: 1px solid $test-section-color-light;
 
   &::-webkit-progress-bar {
-    background-color: $background-color-dark;
+    background-color: var(--test-frame-background);
   }
   &::-webkit-progress-value {
-    background-color: var(--test-frame-background);
+      background-color: $test-section-color-light;
   }
   &::-webkit-progress-inner-element {
     border: 0;
@@ -446,7 +517,7 @@ $fade-color: var(--test-frame-fade-color);
   display: flex;
   flex-direction: row;
   align-items: center;
-  color: $color-light;
+  color: $test-section-color-light;
   font-size: 1.1rem;
   margin-bottom: 10px;
 
@@ -458,7 +529,7 @@ $fade-color: var(--test-frame-fade-color);
   > button {
     margin-right: 15px;
     &:hover {
-      color: $color;
+      color: $test-section-color;
     }
   }
   #vocab-list {
@@ -468,184 +539,33 @@ $fade-color: var(--test-frame-fade-color);
   }
 }
 
-:host(:not(.old-design)) {
-  #bottom {
-    background-color: var(--test-frame-background);
+#button-bar, #evaluation-buttons {
+  @include fading-border($test-section-color-medium, "horizontal");
+  border-bottom-width: 1px;
 
-    &.animate {
-      // Timing function is ease-out-sine
-      transition-property: background-color;
-      transition-timing-function: $item-fade-in-timing;
-      transition-duration: $item-fade-in-duration;
-      transition-delay: $item-fade-in-delay;
-    }
-  }
-  #session-info-bar {
-    color: $test-section-color-light;
-    > button:hover {
-      color: $test-section-color;
-    }
-  }
-  #progress {
-    border-top: 1px solid $test-section-color-light;
-    &::-webkit-progress-bar {
-      background-color: var(--test-frame-background);
-    }
-    &::-webkit-progress-value {
-      background-color: $test-section-color-light;
-    }
-  }
-  #button-bar {
-    border-top-width: 1px;
-  }
-  #button-bar, #evaluation-buttons {
-    @include fading-border($test-section-color-medium, "horizontal");
-    border-bottom-width: 1px;
+  button {
+    border-image: none;
 
-    button {
-      border-image: none;
-
-      // Make button light up with gradient upon hovering
-      &:not(.flashcard-mode):not(:disabled):hover,
-          &:not(.flashcard-mode):not(:disabled):focus {
-        background-color: $fade-color;
-      }
-      &:not(.flashcard-mode):not(:disabled):first-child:hover,
-          &:not(.flashcard-mode):not(:disabled):first-child:focus {
-        background-image: linear-gradient(to left,$fade-color,transparent 95%);
-        background-color: transparent;
-      }
-      &:not(.flashcard-mode):not(:disabled):last-child:hover,
-          &:not(.flashcard-mode):not(:disabled):last-child:focus {
-        background-image: linear-gradient(to right,$fade-color,transparent 95%);
-        background-color: transparent;
-      }
-      &.flashcard-mode:not(:disabled):hover,
-          &.flashcard-mode:not(:disabled):focus {
-        background-image: linear-gradient(
-            to right, transparent 5%, $fade-color, transparent 95%);
-        background-color: transparent;
-      }
+    // Make button light up with gradient upon hovering
+    &:not(.flashcard-mode):not(:disabled):hover,
+        &:not(.flashcard-mode):not(:disabled):focus {
+      background-color: $fade-color;
     }
-  }
-  #answer-entry {
-    margin-top: 10px;
-    color: $test-section-color;
-    border-bottom: 1px solid $test-section-color-light;
-
-    &:empty:not(:focus):before {
-      cursor: text;
-      content: "Enter your answer here";
-      color: $test-section-color-medium;
+    &:not(.flashcard-mode):not(:disabled):first-child:hover,
+        &:not(.flashcard-mode):not(:disabled):first-child:focus {
+      background-image: linear-gradient(to left,$fade-color,transparent 95%);
+      background-color: transparent;
     }
-    &:empty:hover:not(:focus):before {
-      color: $test-section-color;
+    &:not(.flashcard-mode):not(:disabled):last-child:hover,
+        &:not(.flashcard-mode):not(:disabled):last-child:focus {
+      background-image: linear-gradient(to right,$fade-color,transparent 95%);
+      background-color: transparent;
     }
-    &:focus:before {
-      display: none;
-    }
-    &:hover, &:focus {
-      border-color: $test-section-color;
-    }
-  }
-  #continue-button, #show-solutions-button {
-    @include fading-border($test-section-color-medium, "horizontal");
-    width: 460px;
-    border-bottom-width: 1px;
-    margin-top: 0px;
-    color: $test-section-color-medium;
-    padding-top: 10px;
-    padding-bottom: 10px;
-
-    &:hover, &:focus {
-      color: $test-section-color;
-      border-color: $test-section-color;
+    &.flashcard-mode:not(:disabled):hover,
+        &.flashcard-mode:not(:disabled):focus {
       background-image: linear-gradient(
-          to right, transparent, $fade-color, transparent);
-      box-shadow: none;
-    }
-  }
-  #show-solutions-button {
-    border-top-width: 1px;
-  }
-  #evaluation-buttons {
-    border-top-width: 0;
-    width: 460px;
-    color: $test-section-color-medium;
-
-    > button {
-      flex: 1;
-      padding-top: 10px;
-      padding-bottom: 10px;
-
-      &:hover, &:focus {
-        color: $test-section-color;
-        background-image: linear-gradient(
-            to right, transparent, $fade-color, transparent);
-        box-shadow: none;
-      }
-      &:not(:last-child) {
-        border: 1px solid $test-section-color-medium;
-        border-right-width: 1px;
-      }
-    }
-  }
-}
-
-:host(.old-design) {
-  $answer-input-margin: 30px;
-
-  #answer-entry {
-    @extend input.styled;
-    width: $answer-input-width;
-    margin-top: $answer-input-margin;
-
-    &:empty:not(:focus):before {
-      cursor: text;
-      content: "Enter your answer here";
-      color: $color-light;
-    }
-    &:empty:hover:not(:focus):before {
-      color: $color;
-    }
-    &:focus:before {
-      display: none;
-    }
-  }
-  #continue-button, #show-solutions-button {
-    margin-top: $answer-input-margin;
-    background-color: darken($input-background, 6%);
-    border: 1px solid $input-border-color;
-    color: $input-color;
-    &:focus {
-      box-shadow: none;
-    }
-    &:hover {
-      background-color: darken($input-background, 10%);
-    }
-  }
-  #evaluation-buttons {
-    margin-top: $answer-input-margin;
-    display: flex;
-    flex-direction: row;
-
-    > button {
-      background-color: darken($input-background, 6%);
-      border: 1px solid $input-border-color;
-      color: $input-color;
-      width: 0.6 * $answer-input-width;
-      padding: $answer-input-padding;
-      padding-top: 15px;
-      padding-bottom: 15px;
-      box-sizing: border-box;
-      border-radius: 6px;
-
-      &:hover {
-        background-color: darken($input-background, 10%);
-      }
-      &:not(:last-child) {
-        margin-right: 20px;
-      }
+          to right, transparent 5%, $fade-color, transparent 95%);
+      background-color: transparent;
     }
   }
 }

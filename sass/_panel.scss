@@ -12,6 +12,10 @@
     #close-button {
       font-size: 300%;
       margin-right: 15px;
+      line-height: 40px;
+      > i {
+        line-height: 40px;
+      }
     }
   }
 
@@ -26,8 +30,7 @@
   #button-frame {
     @extend .styled-button-bar;
     > button {
-      padding-top: 25px;
-      padding-bottom: 25px;
+      height: 50px;
     }
   }
 }

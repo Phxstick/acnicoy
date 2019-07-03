@@ -30,6 +30,9 @@
   @extend .light-item-view;
   display: inline;
   padding: 0;  // Doesn't work well for inline items (add to wrapper if needed)
+  > * {
+    line-height: 1rem;  // Strip fonts from built-in padding
+  }
 }
 
 .add-button {

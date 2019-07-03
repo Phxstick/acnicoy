@@ -1,6 +1,4 @@
-In addition to the word vocabulary, there is also a vocabulary for hanzi. In
-order to add hanzi to your hanzi vocabulary, you can use the "Add hanzi" button
-on the side bar.
+In addition to the word vocabulary, there is also a vocabulary for hanzi, to which items can be added using the "Add hanzi" button on the side bar.
 
 In all places where pinyin must be entered (e.g. when adding a hanzi to the
 vocabulary), the input field converts syllables with a following number

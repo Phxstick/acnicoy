@@ -201,7 +201,7 @@ class DictionarySection extends Section {
         events.on("settings-languages-readings", () => {
             if (dataManager.languageSettings.get("readings")) {
                 this.$("words-filter").placeholder =
-                    "Filter by words and readings";
+                    "Filter by words or readings";
             } else {
                 this.$("words-filter").placeholder = "Filter by words";
             }

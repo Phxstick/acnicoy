@@ -1,5 +1,9 @@
 @import "overlay";
 
+#partitioned-window {
+  max-height: 100vh;
+}
+
 #main-frame > * {
   font-family: OpenSans-Regular;
   text-align: center;

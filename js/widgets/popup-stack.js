@@ -11,7 +11,7 @@ class PopupStack extends Widget {
         super("popup-stack", true);
         this.callback = (label, value) => { };
         this._attributes = {
-            "animate": true,
+            "animate": false,
             "disabled": false,
             "overlap": 0,
             "direction": "right",

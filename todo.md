@@ -1,6 +1,5 @@
 ### Primary goals
 - Add help on suggstion panes and link to it from the corresponding panels
-- Add latest content version to version register to check if release available?
 - Extend notes section:
   - Add control bar: search, show help, add group, undo things
   - Maybe an option to decrease font size and padding to see more groups at once
@@ -27,16 +26,21 @@
 - Implement changing order of translations by dragging while pressing Ctrl
 - Try to replace request module with axios and check if ESOCKETTIMEDOUTs stop
 - Use thin grey scrollbar instead of the red one everywhere in the program?
+- Indicate that something can be scrolled using shadows (only where necessary)
+- Add option in general settings to choose compact/extended/custom window size
+- Add loading screen where appropriate (loading vocab section, kanji view, ...)
+- Try to make switching languages even faster 
+- Call garbage collector after unloading language data to actually unload it?
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
 - Strange error if autostart is not enabled. How to make it work on linux?
-- Don't preload words in vocabulary section - on scroll, given data is outdated
+- Don't preload words in vocab section - data revealed by scrolling is outdated
 - Make it possibly to scroll while pressing Ctrl (for moving notes).
-- Prevent two instances of the program being open simultaneously
 - Fix visual bug when opening overlays (e.g. when opening help on SRS migration)
 - Test section: fix bug where overflow-shadow below item solutions is now shown
 - "#words-tab" in vocab section sometimes expands height by 15px beyond section
+- How to prevent SQLITE conflicting journals accumulating in the dropbox folder?
 
 
 By category
@@ -46,7 +50,7 @@ By category
 - Remove flickering when quickly dragging vocab item over list contents column
   - Not a bug in Acnicoy - Events are just fired incorrectly
 - Improve policy for incorrectly answered SRS items
-  - Don't always move down a level, but one with adjusted review time instead
+  - Don't always move down a level, but one with adjusted review time instead?
 - Implement reverse testing?
 - Define proper interface for global settings to detect modifications?
 - Run `VACUUM` on databases once in a while to clean up? Add button to settings?
@@ -342,7 +346,7 @@ once? --> Faster loading, centralized resource loading
   disable entity expansion - use lxml instead to keep dictionary tag names.
 - Remove font-awesome from github repo and add as node package instead
 
-### Adaptions
+### Adaptations
 - Don't assign font family for every element and let it be inherited instead
 - Use `position: sticky` for kanji info panel in kanji section?
 - use split function from sqlite instead of JS version?

@@ -128,13 +128,11 @@ tbody tr {
 #button-frame {
   display: flex;
   flex-direction: row;
-}
-
-#button-frame {
   font-size: 90%;
   display: flex;
   flex-direction: row;
   align-items: center;
+  padding-bottom: 8px;
 }
 
 #button-frame > button {

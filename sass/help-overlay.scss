@@ -5,9 +5,10 @@
 }
 
 #window {
+  max-height: 100vh;
+  height: 480px;
   display: flex;
   flex-direction: row;
-  height: 500px;
 }
 
 #tree-frame {

@@ -48,6 +48,8 @@ class OverlayWindow extends Widget {
         // Display the new overlay according to its display options
         const { mode, speed, distance } = overlay.displayOptions;
         overlay.style.opacity = "0";
+        // Workaround for bug where confirm-dialog is translated down by ~170px
+        overlay.style.transform = "";
         overlay.show();
         if (overlay.elementFocussedByDefault === null)
             overlay.elementFocussedByDefault = overlay.sentinel;

@@ -501,6 +501,9 @@ class LanguageTable extends Widget {
             for (const element of this.$$(".interactive-only")) {
                 element.toggleDisplay(this.interactiveMode, "table-cell");
             }
+            for (const element of this.$$(".non-interactive")) {
+                element.toggleDisplay(!this.interactiveMode, "table-cell");
+            }
             this.$("update-content-status-button").toggleDisplay(
                 this.interactiveMode);
         }

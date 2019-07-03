@@ -221,7 +221,7 @@
     padding-bottom: 16px;
     font-size: 220%;
     line-height: 100%;
-
+  
     #num-srs-items {
       margin-top: 10px;
     }
@@ -236,6 +236,25 @@
       &:hover {
         background-color: $main-window-background;
         color: mix($main-window-color, $main-window-background, 55%);
+      }
+    }
+  }
+}
+
+
+@media (max-height: 520px) {
+  #side-bar.content-loaded {
+    button {
+      font-size: 130%;
+      padding-bottom: 2px;  // Leads to equal padding to due line-height of text
+    }
+    #test-button {
+      font-size: 180%;
+      padding-top: 12px;
+      padding-bottom: 12px;
+
+      #num-srs-items {
+        margin-top: 6px;
       }
     }
   }
@@ -374,10 +393,11 @@
   .content {
     flex: 1;
     padding: 20px;
+    padding-right: 10px;
     display: flex;
     font-size: 120%;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: space-between;
     * {
       font-family: $light-font;
     }

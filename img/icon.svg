@@ -15,13 +15,25 @@
    height="48"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.4 r9939"
-   sodipodi:docname="icon.svg"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="icon-tad-newer.svg"
    inkscape:export-filename="/home/daniel/ElectronNewTrainer/img/icon.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
      id="defs4">
+    <linearGradient
+       id="linearGradient4601"
+       inkscape:collect="always">
+      <stop
+         id="stop4597"
+         offset="0"
+         style="stop-color:#bb2c00;stop-opacity:0.85" />
+      <stop
+         id="stop4599"
+         offset="1"
+         style="stop-color:#bb2c00;stop-opacity:0.351" />
+    </linearGradient>
     <linearGradient
        inkscape:collect="always"
        id="linearGradient5289">
@@ -62,7 +74,7 @@
        fx="22.004162"
        fy="1016.6819"
        r="11.786583"
-       gradientTransform="matrix(-5.4557063,-9.0982584,7.8330112,-4.4663998,-7846.1959,5759.6337)"
+       gradientTransform="matrix(-5.4557063,-9.0982584,7.8330112,-4.4663998,-7846.3164,5759.2594)"
        gradientUnits="userSpaceOnUse" />
     <linearGradient
        inkscape:collect="always"
@@ -74,6 +86,16 @@
        y2="1036.4208"
        gradientUnits="userSpaceOnUse"
        gradientTransform="matrix(1.4966166,0,0,1.4936762,-0.09448717,-519.71472)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4601"
+       id="linearGradient3771"
+       x1="23.171345"
+       y1="999.52173"
+       x2="23.171345"
+       y2="995.72113"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-53.453472,15.815332)" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -83,15 +105,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="8.1566261"
-     inkscape:cx="19.148252"
-     inkscape:cy="17.762265"
+     inkscape:cx="12.485347"
+     inkscape:cy="24.601431"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1366"
-     inkscape:window-height="747"
-     inkscape:window-x="-2"
-     inkscape:window-y="-1"
+     inkscape:window-height="745"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata7">
@@ -110,18 +132,6 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1004.3622)">
-    <text
-       xml:space="preserve"
-       style="font-size:18px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:6.13999987px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TakaoGothic;-inkscape-font-specification:TakaoGothic"
-       x="-11.427351"
-       y="10.786797"
-       id="text2991"
-       sodipodi:linespacing="125%"
-       transform="translate(0,1020.3622)"><tspan
-         sodipodi:role="line"
-         id="tspan2993"
-         x="-11.427351"
-         y="10.786797" /></text>
     <rect
        style="opacity:0.85;fill:#bb2c00;fill-opacity:1;fill-rule:nonzero;stroke:url(#linearGradient5299);stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
        id="rect2995"
@@ -130,24 +140,25 @@
        x="0"
        y="1004.3622"
        rx="0"
-       ry="0" />
+       ry="0"
+       inkscape:export-xdpi="512"
+       inkscape:export-ydpi="512" />
     <text
        xml:space="preserve"
-       style="font-size:38.46580505px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:13.12111282px;word-spacing:0px;fill:#ffd6c4;fill-opacity:1;stroke:url(#radialGradient5285);stroke-width:0.59491587;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:TakaoGothic;-inkscape-font-specification:TakaoGothic"
-       x="4.4370723"
-       y="1061.0964"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:TakaoGothic;-inkscape-font-specification:TakaoGothic;letter-spacing:13.12111282px;word-spacing:0px;fill:#ffd6c4;fill-opacity:1;stroke:url(#radialGradient5285);stroke-width:0.59491587;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       x="4.3165903"
+       y="1060.7222"
        id="text2985"
-       sodipodi:linespacing="125%"
        transform="scale(1.0175763,0.9827273)"><tspan
          sodipodi:role="line"
          id="tspan2987"
-         x="4.4370723"
-         y="1061.0964"
-         style="stroke:url(#radialGradient5285);stroke-width:0.59491587;stroke-opacity:1">能</tspan><tspan
+         x="4.3165903"
+         y="1060.7222"
+         style="font-size:38.46580505px;line-height:1.25;stroke:url(#radialGradient5285);stroke-width:0.59491587;stroke-opacity:1">能</tspan><tspan
          sodipodi:role="line"
-         x="4.4370723"
-         y="1109.1787"
+         x="4.3165903"
+         y="1104.9729"
          id="tspan2989"
-         style="stroke:url(#radialGradient5285);stroke-width:0.59491587;stroke-opacity:1" /></text>
+         style="font-size:38.46580505px;line-height:1.25;stroke:url(#radialGradient5285);stroke-width:0.59491587;stroke-opacity:1"> </tspan></text>
   </g>
 </svg>

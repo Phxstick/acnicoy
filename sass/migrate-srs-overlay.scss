@@ -10,8 +10,9 @@ $migrate-area-level-height: 30px;
   width: $window-width;
 }
 
-#partitioned-window > #main-frame {
-  min-height: 450px;
+#partitioned-window {
+  max-height: 100vh; 
+  height: 530px;
 }
 
 #help-link {
@@ -26,6 +27,7 @@ $migrate-area-level-height: 30px;
   flex: 1;
   display: flex;
   flex-direction: row;
+  overflow: auto;
 
   #migrate-srs-area-frame {
     display: flex;

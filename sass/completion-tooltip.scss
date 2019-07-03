@@ -7,7 +7,8 @@
 
   #items {
     min-width: 160px;
-    max-height: 350px;
+    max-width: 250px;
+    max-height: 300px;
     overflow-y: auto;
     background-color: $background-color;
     color: $color;

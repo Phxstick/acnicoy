@@ -3,6 +3,8 @@
 #word-frame {
   display: flex;
   flex-direction: row;
+  margin-bottom: 0px !important;  // Needed, else partitioned-window overrides
+
   #word-wrapper {
     @extend .light-item-view;
     @include center-content("vertical");
@@ -10,6 +12,7 @@
     
     #word {
       font-size: 1.8rem;
+      line-height: 1.8rem;  // Strip fonts from built-in padding
       &:not(:hover):not(:focus) {
         border: 1px solid transparent;
         background-color: transparent;
