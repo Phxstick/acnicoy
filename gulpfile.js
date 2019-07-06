@@ -65,7 +65,7 @@ gulp.task("style", function() {
                     gulp.src(sassPath)
                         .pipe(sourcemaps.init())
                         .pipe(sass().on("error", sass.logError))
-                        .pipe(postcss([autoprefixer({ browsers: ["last 2 versions"] })]))
+                        .pipe(postcss([autoprefixer()]))
                         .pipe(sourcemaps.write("./sourcemaps"))
                         .pipe(gulp.dest(cssPath))
                     .on("finish", () => resolve());

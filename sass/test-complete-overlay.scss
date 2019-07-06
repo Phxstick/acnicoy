@@ -9,6 +9,10 @@
   }
 }
 
+#partitioned-window {
+  max-height: 100vh;
+}
+
 #partitioned-window #main-frame {
   padding: 0px;
   max-height: 400px;
@@ -47,77 +51,73 @@
   }
 }
 
-#mistakes-frame {
+#mistakes-header {
+  font-family: $header-font;
+  text-align: center;
+  font-variant: small-caps;
+  padding-top: 3px;
+  padding-bottom: 6px;
+  font-size: 140%;
+  border-bottom: 1px solid $border-color-medium;
+}
 
-  #mistakes-header {
-    font-family: $header-font;
-    text-align: center;
-    font-variant: small-caps;
-    padding-top: 3px;
-    padding-bottom: 6px;
-    font-size: 140%;
-    border-bottom: 1px solid $border-color-medium;
-  }
+#mistakes {
+  overflow-y: auto;
+  position: relative;
 
-  #mistakes {
-    overflow-y: auto;
-    max-height: 290px;
-    position: relative;
+  > div {
+    &:not(:first-child) {
+      border-top: 1px solid $border-color-light;
+    }
 
-    > div {
-      &:not(:first-child) {
-        border-top: 1px solid $border-color-light;
+    .mistake-info .caret::before {
+      content: "\f078";  // chevron down
+    }
+    &.open .mistake-info .caret::before {
+      content: "\f077";  // chevron up
+    }
+    &:hover {
+      .mistake-info .caret {
+        display: block;
       }
+      // background-color: $background-color-dark;
+    }
 
-      .mistake-info .caret::before {
-        content: "\f078";  // chevron down
-      }
-      &.open .mistake-info .caret::before {
-        content: "\f077";  // chevron up
-      }
-      &:hover {
-        .mistake-info .caret {
-          display: block;
-        }
-        // background-color: $background-color-dark;
-      }
+    .mistake-info {
+      display: flex;
+      flex-direction: row;
+      padding-top: 6px;
+      padding-bottom: 9px;
+      align-items: flex-center;
 
-      .mistake-info {
-        display: flex;
-        flex-direction: row;
-        padding-top: 6px;
-        padding-bottom: 9px;
-        align-items: flex-center;
-
-        .name {
-          font-size: 120%;
-          margin-left: 15px;
-        }
-        .mode {
-          margin-left: 15px;
-          font-variant: small-caps;
-          flex-shrink: 0;
-          font-size: 120%;
-          color: $color-light;
-        }
-        .caret {
-          display: none;
-          font-size: 120%;
-          margin-left: 15px;
-          margin-right: 15px;
-          color: $color-lightest;
-        }
+      .name {
+        font-size: 120%;
+        margin-left: 15px;
       }
-      .solutions {
-        margin-top: 2px;
-        margin-bottom: 0px;
-        padding: 5px;
-        padding-top: 0;
+      .mode {
+        margin-left: 15px;
+        font-variant: small-caps;
+        flex-shrink: 0;
+        font-size: 120%;
+        color: $color-light;
+      }
+      .caret {
+        display: none;
+        font-size: 120%;
+        margin-left: 15px;
+        margin-right: 15px;
+        color: $color-lightest;
+      }
+    }
+    .solutions {
+      margin-top: 2px;
+      margin-bottom: 0px;
+      padding: 5px;
+      padding-top: 0;
 
-        > * {
-          margin-bottom: 5px;
-          margin-left: 30px;
-        }
+      > * {
+        margin-bottom: 5px;
+        margin-left: 30px;
       }
     }
   }

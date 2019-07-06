@@ -5,6 +5,7 @@
 
   #header-frame {
     padding: 0px;
+    height: 42px;
 
     #header {
       font-size: 165%;
@@ -13,6 +14,8 @@
       font-size: 300%;
       margin-right: 15px;
       line-height: 40px;
+      margin-top: -3px;  // Workaround to account for uneven glyph-margin at top
+
       > i {
         line-height: 40px;
       }

@@ -76,7 +76,7 @@ class TreeView extends Widget {
         const { name, children, open, data } = nodeInfo;
 
         // Create the node and register it as child in its parent node
-        const node = { name, parent: parentNode,
+        const node = { name, parent: parentNode, opened: open,
                        children: {}, childrenArray: [] };
         parentNode.children[name] = node;
         parentNode.childrenArray.push(name);
@@ -108,14 +108,11 @@ class TreeView extends Widget {
         node.labelNode = nameNode;
         this.domLabelToNode.set(nameNode, node);
 
-        // Create the arrow button and attach a callback for opening the node
+        // Create arrow button and attach callback for showing/hiding children
         const openNodeButton = document.createElement("button");
         openNodeButton.classList.add("open-node-button");
         nameFrameNode.prependChild(openNodeButton);
-        openNodeButton.addEventListener("click", () => {
-            childrenContainer.toggleDisplay();
-            domNode.classList.toggle("open");
-        });
+        openNodeButton.addEventListener("click", () => this.toggleOpen(node));
         node.openButton = openNodeButton;
 
         // Create a container of children to be shown when clicking the arrow
@@ -150,14 +147,19 @@ class TreeView extends Widget {
 
     /**
      * Select the given node by marking its associated DOM node and invoking the
-     * callback assigned by the "setOnSelect"-method.
+     * callback assigned by the "setOnSelect"-method. Also reveal it in the tree
      * @param {Object} node
      */
     select(node) {
         this.deselect();
         this.selectedNode = node;
+        while (node.parent !== this.rootNode) {
+            node = node.parent;
+            this.toggleOpen(node, true);
+        }
         this.selectedNode.domNode.classList.add("selected");
-        this.callbacks.onSelect(node);
+        // TODO: if group is out of visible section, scroll top-level container
+        this.callbacks.onSelect(this.selectedNode);
     }
 
     /**
@@ -171,6 +173,19 @@ class TreeView extends Widget {
             this.callbacks.onDeselect(this.selectedNode);
         }
         this.selectedNode = null;
+    }
+
+    /**
+     * Reveal/hide children of the given node.
+     * @param {Object} node
+     * @param {Boolean} [open] - Whether to show or hide, toggle if undefined.
+     */
+    toggleOpen(node, open) {
+        if (node.childrenArray.length === 0) return;
+        if (open === undefined) open = !node.opened;
+        node.opened = open;
+        node.childrenContainer.toggleDisplay(open);
+        node.domNode.classList.toggle("open", open);
     }
 
     /**

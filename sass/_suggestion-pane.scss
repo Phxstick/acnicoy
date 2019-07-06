@@ -9,17 +9,36 @@ $group-number-width: 25px;
   height: 100%;
 
   #suggestions-window-header {
-    font-size: 165%;
-    font-family: $light-font;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     @include fading-border($suggestions-window-color, "to right");
     border-width: 0;
     border-bottom-width: 1px;
     width: 100%;
+    height: 43px;  // TODO: Better way without hard-coding?
     padding-left: 10px;
     padding-top: 5px;
     padding-bottom: 5px;
-    height: 48px;  // TODO: Better way without hard-coding?
     box-sizing: border-box;
+    position: relative;
+    font-size: 165%;
+  }
+
+  #suggestions-header-label {
+    font-family: $light-font;
+    margin-top: -5px; // Workaround to account for inconsistent glyph-margin
+    flex: 1;  // Push help-icon to the right corner
+  }
+
+  #help-link {
+    opacity: 0.6;
+    margin-right: 12px;
+    cursor: $pointer-cursor;
+
+    &:hover {
+      opacity: 1;
+    }
   }
 
   #suggestions-window-content {
@@ -53,7 +72,7 @@ $group-number-width: 25px;
   margin-bottom: 25px;
 
   .suggestion-row-header {
-    font-size: 150%;
+    font-size: 140%;
     font-family: $light-font;
     margin-bottom: 4px;
     cursor: $pointer-cursor;

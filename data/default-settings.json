@@ -1,7 +1,7 @@
 {
     "general": {
         "autoLaunchOnStartup": false,
-        "autoLoadLanguageContent": false,
+        "autoLoadLanguageContent": true,
         "showSrsNotifications": false,
         "srsNotificationsInterval": 900,
         "doRegularBackup": true,
@@ -56,9 +56,6 @@
     },
     "srs": {
         "intervalModifier": "0 hours"
-    },
-    "add": {
-        "separator": ","
     },
     "pinwall": [
         { "type": "srs-status-overview" },

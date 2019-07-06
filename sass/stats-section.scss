@@ -1,6 +1,7 @@
 @import "base";
 
 body {
+  @extend .inverse-scrollbar;
   overflow: auto;
   background-color: $section-background;
 }

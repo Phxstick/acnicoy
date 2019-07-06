@@ -80,7 +80,7 @@ app.on('ready', function() {
     };
     const stateChangeHandler = () => {
         clearTimeout(stateChangeTimer);
-        stateChangeTimer = setTimeout(updateState, 2000);
+        stateChangeTimer = setTimeout(updateState, 1000);
     }
     mainWindow.on("resize", stateChangeHandler);
     mainWindow.on("move", stateChangeHandler);

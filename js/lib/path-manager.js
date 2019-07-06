@@ -18,17 +18,17 @@ module.exports = function (basePath) {
     };
     paths.setDataPath = function (newDataPath) { 
         storage.set("data-path", newDataPath);
-        paths.init();
+        paths.init(newDataPath);
     };
     paths.getDataPath = function () { 
         return dataPath;
     };
 
     // Initialize paths for user data
-    paths.init = function() {
+    paths.init = function(newPath) {
         if (!paths.existsDataPath())
             throw Error("Path for user data has not been set!");
-        const newPath = storage.get("data-path");
+        if (newPath === undefined) newPath = storage.get("data-path");
         const previousPath = dataPath;
         paths.data = dataPath = newPath;
         paths.languages = langPath = path.resolve(dataPath, "Languages");
@@ -41,6 +41,10 @@ module.exports = function (basePath) {
             if (!fs.existsSync(dataPath)) fs.ensureDirSync(dataPath);
             if (!fs.existsSync(langPath)) fs.ensureDirSync(langPath);
         } else {
+            if (!utility.existsDirectory(newPath))
+                throw Error("Destination for user data doesn't exist!"); 
+            if (fs.readdirSync(newPath).length > 0)
+                throw Error("Destination for user data is not empty!");
             // Move previous data to new location
             fs.moveSync(previousPath, newPath, { overwrite: true });
         }

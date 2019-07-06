@@ -1,5 +1,9 @@
 @import "overlay";
 
+#partitioned-window {
+  max-height: 100vh;
+}
+
 #partitioned-window #main-frame {
   overflow-y: auto;
   max-height: 400px;

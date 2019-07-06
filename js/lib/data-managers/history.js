@@ -54,6 +54,7 @@ module.exports = function (paths, modules) {
         }
         await dataMap[language].run("PRAGMA wal_autocheckpoint=50");
         await dataMap[language].run("BEGIN TRANSACTION");
+        if (language === dataManager.currentLanguage) data = dataMap[language];
     };
 
     history.save = async function (language) {

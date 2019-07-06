@@ -71,6 +71,7 @@ body {
   height: calc(100% - #{$control-bar-height});
 
   #overview-pane {
+    @extend .inverse-scrollbar;
     overflow-x: hidden;
     height: 100%;
     overflow-y: auto;

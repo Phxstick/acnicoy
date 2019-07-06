@@ -137,8 +137,9 @@ class GeneralSettingsSubsection extends SettingsSubsection {
     }
 
     async chooseDataPath() {
-        const previousPath = paths.dataPath;
-        const newPath = dialogWindow.chooseDataPath(previousPath);
+        const previousPath = paths.data;
+        const prevDirName = path.basename(previousPath);
+        let newPath = dialogWindow.chooseDataPath(previousPath);
         if (previousPath === newPath)
             return;
 
@@ -148,30 +149,54 @@ class GeneralSettingsSubsection extends SettingsSubsection {
                 `The new location must not be a subfolder of the previous one.`)
             return;
         }
-        
-        // If new path exists, get confirmation that it can be overwritten
+       
+        // If the chosen path exists but is not a directory, prompt new path
+        if (fs.existsSync(newPath)) {
+            if (!utility.existsDirectory(newPath)) {
+                await dialogWindow.info(
+                    `There already exists a file with the specified path. ` +
+                    `Please choose a different one.`);
+                return;
+            }
+        }
+
+        // If the chosen directory is non-empty, make data folder a subdirectory
         if (fs.existsSync(newPath) && fs.readdirSync(newPath).length > 0) {
-            const confirmed = await dialogWindow.confirm(
-                `The specified directory '${newPath}' is not empty. ` +
-                `Are you sure you want to overwrite its content?`);
-            if (!confirmed) return;
+            if (fs.existsSync(path.join(newPath, prevDirName))) {
+                await dialogWindow.info(
+                    `The specified directory '${newPath}' already contains ` +
+                    `a non-empty subdirectory with the name '${prevDirName}'. `+
+                    `Please choose a different directory.`);
+                return;
+            }
+            newPath = path.join(newPath, prevDirName);
         }
 
-        // Save changes in databases and close them
-        const languages = dataManager.languages.all;
-        for (const language of languages) {
-            await dataManager.database.save(language);
-            await dataManager.database.close(language);
-            await dataManager.history.save(language);
-            await dataManager.history.close(language);
+        // Create directory if it doesn't exist
+        if (!fs.existsSync(newPath)) {
+            fs.mkdirSync(newPath);
         }
+        
+        const moveData = async () => {
+            // Save changes in databases and close them
+            const languages = dataManager.languages.all;
+            for (const language of languages) {
+                await dataManager.database.save(language);
+                await dataManager.database.close(language);
+                await dataManager.history.save(language);
+                await dataManager.history.close(language);
+            }
+            // Change path and reload databases at new path
+            await paths.setDataPath(newPath);
+            for (const language of languages) {
+                await dataManager.database.load(language);
+                await dataManager.history.load(language);
+            }
+        };
 
-        // Change path and reload databases at new path
-        paths.setDataPath(newPath);
-        for (const language of languages) {
-            await dataManager.database.load(language);
-            await dataManager.history.load(language);
-        }
+        overlays.open("loading", "Moving data");
+        await utility.addMinDelay(moveData());
+        overlays.closeTopmost();
 
         // Update view
         this.$("data-path").textContent = newPath;

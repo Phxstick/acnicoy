@@ -43,6 +43,9 @@ class Component extends HTMLElement {
                 if (event.target.href.startsWith("http")) {
                     shell.openExternal(event.target.href);
                 }
+                else if (event.target.href.startsWith("mailto")) {
+                    shell.openExternal(event.target.href);
+                }
                 event.preventDefault();
             }
         }, true);

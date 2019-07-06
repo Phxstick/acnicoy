@@ -15,3 +15,4 @@ If language data is installed, you can also make use of the following features:
 
 - [Dictionary](help#Languages#Japanese#Dictionary)
 - [Kanji Section](help#Languages#Japanese#Kanji_section)
+- [Suggestions](help#Languages#Japanese#Suggestions)

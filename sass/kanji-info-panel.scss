@@ -231,10 +231,11 @@
 
     #strokes-info-bar {
       padding-top: 5px;
-      padding-bottom: 5px;
+      padding-bottom: 4px;
       .strokes-info-block {
         white-space: nowrap;
-        margin-right: 15px;
+        margin-right: 20px;
+
         &:last-child {
           margin-right: 0;
         }
@@ -242,6 +243,8 @@
           color: $color-light;
           font-family: $header-font;
           margin-right: 6px;
+          display: inline-block;
+          transform: translate(0, -4px);
         }
         #stroke-count, #radical {
           font-size: 150%;
@@ -260,6 +263,10 @@
         #radical {
           margin-right: 5px;
         }
+        #radical-name {
+          display: inline-block;
+          transform: translate(0, -4px);
+        }
       }
     }
     #stroke-graphics-frame {
@@ -268,6 +275,7 @@
       flex: 1;
       overflow-y: auto;
       border: 2px solid $background-color-dark;
+      border-bottom: 0;
       background: $background-color-dark;
 
       #strokes-not-available-info {
@@ -280,8 +288,8 @@
         overflow-y: auto;
 
         svg {
-          width: 89px;
-          height: 89px;
+          width: 79px;
+          height: 79px;
           margin-right: 2px;
           // &:first-child { margin-top: 2px; }
           &:last-child { margin-right: 0px; };

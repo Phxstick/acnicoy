@@ -5,6 +5,7 @@ body {
 }
 
 #pinwall {
+  @extend .inverse-scrollbar;
   position: absolute;
   top: 0;
   right: 0;

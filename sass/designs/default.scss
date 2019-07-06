@@ -110,9 +110,9 @@ $button-light-shadow-color-active: lighten($button-light-color, 30%);
 
 // Scrollbar
 $scrollbar-track-background: gainsboro;
-$scrollbar-thumb-background: darken(lightcoral, 5%);
-$scrollbar-thumb-background-hover: darken($scrollbar-thumb-background, 5%);
-$scrollbar-thumb-background-active: darken($scrollbar-thumb-background, 10%);
+$scrollbar-thumb-background: lighten(lightcoral, 5%);
+$scrollbar-thumb-background-hover: darken($scrollbar-thumb-background, 8%);
+$scrollbar-thumb-background-active: darken($scrollbar-thumb-background, 16%);
 
 $scrollbar-light-thumb-background: rgba(255, 255, 255, 0.5);
 $scrollbar-light-thumb-background-hover: rgba(255, 255, 255, 0.7);
@@ -233,7 +233,7 @@ $vertical-fading-border: linear-gradient(
 $wide-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 $wide-shadow-centered: 0 4px 8px 0 rgba(0, 0, 0, 0.2),
                        0 0px 20px 0 rgba(0, 0, 0, 0.19);
-$slim-shadow-bottom: 0 1px 3px #333;
+$slim-shadow-bottom: 0 1px 1px dimgray;
 $slim-shadow-top: 0 -1px 3px #333;
 $slim-frame-shadow: 0 0 2px darkred;
 $stats-section-text-shadow: 0.5px 0.5px 0.5px gray;
@@ -247,8 +247,9 @@ $contrast-text-shadow: 0.5px 0.5px 0.5px $contrast-shadow-color,
                        0px 0px 10px $contrast-shadow-color;
 
 // Scrollbar sizes
-$scrollbar-width: 10px;
+$scrollbar-width: 8px;
 $scrollbar-light-width: 16px;
+$scrollbar-padding: 4px;
 
 // Sizes
 $side-bar-width: 80px;

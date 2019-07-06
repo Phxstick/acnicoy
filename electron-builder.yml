@@ -1,6 +1,13 @@
 appId: "com.electron.acnicoy"
 productName: "Acnicoy"
+artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
+publish: "github"
 win:
-  target: "zip"
-  icon: "build/icon.png"
-  publish: "github"
+  target:
+    - "zip"
+    - "nsis"
+linux:
+  category: "Education"
+  target:
+    - "tar.gz"
+    - "deb"

@@ -40,17 +40,5 @@
       padding-left: 5px;
       padding: 3px;
     }
-    &::-webkit-scrollbar {
-      width: 16px;
-    }
-    &::-webkit-scrollbar-track {
-      border-radius: 6px;
-      background-color: $background-color;
-    }
-    &::-webkit-scrollbar-thumb {
-      border-radius: 10px;
-      background-clip: padding-box;
-      border: 3px solid transparent;
-    }
   }
 }

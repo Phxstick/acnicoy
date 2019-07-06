@@ -5,9 +5,10 @@ a [Spaced Repetition System][SRS] (SRS) to help with the memorization of vocabul
 While the basic features work for every language, the program offers a few
 additional features specifically for learning Japanese.
 
-The following screenshot shows an example of a dictionary search result
-and how kanji details are displayed. More screenshots are linked below,
-see [here](http://phxstick.github.io/acnicoy/screenshots) for the full list.
+The following screenshot shows an example of a dictionary search as well as
+information being displayed for a selected kanji. You can browse screenshots for
+more of Acnicoy's features along with short explanations [here](http://phxstick.github.io/acnicoy/screenshots).
+They are also linked in the list of features further below.
 
 ![Screenshot of Dictionary Section](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-dictionary.png)
 

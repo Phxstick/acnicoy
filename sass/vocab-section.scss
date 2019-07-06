@@ -31,6 +31,7 @@
   > * {
     display: inline-block;
     padding: 6px;
+    line-height: initial;  // No special treatment like in the vocab-views
   }
 }
 
@@ -58,6 +59,12 @@
     }
     > * {
       cursor: $pointer-cursor;
+      // By increasing line-height instead of padding, letters like g don't
+      // get cut off
+      padding: 0;
+      padding-left: 5px;
+      padding-right: 2px;  // Scrollbar will also provide padding (if it exists)
+      line-height: calc(1rem + 6px);
     }
   }
 }
@@ -152,7 +159,7 @@
 
   > .amount-words {
     @include center-content;
-    margin-right: 5px;
+    margin-right: 2px;
     margin-left: 8px;
     font-family: $header-font;
     color: $color-light;

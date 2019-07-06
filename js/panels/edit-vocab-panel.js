@@ -280,6 +280,10 @@ class EditVocabPanel extends EditPanel {
     createListItem(type, text="") {
         const createNewItemOnEnter = type !== "vocab-list";
         const node = super.createListItem(type, text, createNewItemOnEnter);
+
+        // If a node with this text already exists, do nothing
+        if (node === null) return;
+
         if (type === "reading") {
             node.contextMenu(menuItems,
                     ["delete-reading", "modify-reading"],

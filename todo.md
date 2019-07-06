@@ -1,31 +1,25 @@
 ### Primary goals
-- Add help on suggstion panes and link to it from the corresponding panels
 - Extend notes section:
   - Add control bar: search, show help, add group, undo things
   - Maybe an option to decrease font size and padding to see more groups at once
   - Make it possible to reorder groups in the notes-section via drag & drop
   - Maybe add an option which orders them alphabetically (without changing data)
+  - Remember custom size for group-overview
 - Design:
   - Add separate functionality for choosing custom background colors for reviews
   - Make dark deflt, Solarized (Light/Dark) and Ubuntu (Light/Dark) color scheme
   - Rework fonts in sass: Separate gui-fonts and content-fonts
     - Use "text-font" everywhere where there's simple text in the gui
     - Also let font-family be inherited, and remove all workarounds (and test!)
-- Remember new size when resizing window or notes-group-overview
-  - Set minimum size for window, check everywhere if layout is not broken for it
 - Reverse completion list order if it's shown above entry instead of below
   - Extend the utility view function for this purpose
 - Add most important missing features to dictionary search (see further below)
 - Add some more achievements and create achievements section
-- In edit-vocab-panel, load suggestions if content is available (see TODOs)
-- Implement dynamic update of detailed kanji/hanzi stats? Maybe make own widget?
 - Don't freeze after a long test, display loading screen instead (or make fast)
 - Consider dropping name-dictionary to lower memory usage and file size
   - Maybe include it in the data but only load it when explicitly asked to
-- When a topic in the help section is selected, make sure it's revealed in tree
 - Implement changing order of translations by dragging while pressing Ctrl
 - Try to replace request module with axios and check if ESOCKETTIMEDOUTs stop
-- Use thin grey scrollbar instead of the red one everywhere in the program?
 - Indicate that something can be scrolled using shadows (only where necessary)
 - Add option in general settings to choose compact/extended/custom window size
 - Add loading screen where appropriate (loading vocab section, kanji view, ...)
@@ -149,6 +143,7 @@ By category
 - Line diagram which shows cumulative growth of vocabulary over diff. periods
 - Implement selecting specific languages to show stats for
 - Possibly use D3.js for diagrams?
+- Implement dynamic update of detailed kanji/hanzi stats? Maybe make own widget?
 
 ### Settings
 - Unify main window animation-settings into a single one (include bar hiding)

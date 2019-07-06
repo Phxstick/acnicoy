@@ -28,7 +28,8 @@
       { "name": "Japanese",
         "children": [
           { "name": "Dictionary" },
-          { "name": "Kanji section" }
+          { "name": "Kanji section" },
+          { "name": "Suggestions" }
         ]
       },
       { "name": "Chinese" }

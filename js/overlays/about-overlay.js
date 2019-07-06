@@ -1,5 +1,14 @@
 "use strict";
 
+const menuItems = contextMenu.registerItems({
+    "copy-email-address": {
+        label: "Copy address",
+        click: ({ currentNode }) => {
+            clipboard.writeText(currentNode.textContent);
+        }
+    }
+});
+
 class AboutOverlay extends Overlay {
     constructor() {
         super("about");
@@ -18,7 +27,10 @@ class AboutOverlay extends Overlay {
         this.$("app-name").textContent = app.name;
         this.$("app-version").textContent = app.version;
         this.$("app-description").textContent = app.description;
-        this.$("app-author").textContent = app.author;
+        this.$("app-author-name").textContent = app.author.name;
+        this.$("app-author-email").textContent = app.author.email;
+        this.$("app-author-email").href = `mailto:${app.author.email}`;
+        this.$("app-author-email").contextMenu(menuItems,["copy-email-address"])
     }
 }
 
