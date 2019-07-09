@@ -145,12 +145,16 @@ function extractKeyCombination(event) {
     let keyCombination = `${event.ctrlKey ? "CmdOrCtrl+" : ""}` +
                          `${event.altKey ? "Alt+" : ""}` +
                          `${event.shiftKey ? "Shift+" : ""}`;
-    if (event.key.length === 1) {
+    if ("a" <= event.key && event.key <= "z") {
         keyCombination += event.key.toUpperCase();
     } else if (event.key === " ") {
         keyCombination += "Space";
     } else if (event.key === "+") {
         keyCombination += "Plus";
+    } else if (event.key === "ArrowUp") {
+        keyCombination += "Up";
+    } else if (event.key === "ArrowDown") {
+        keyCombination += "Down";
     } else {
         keyCombination += event.key;
     }

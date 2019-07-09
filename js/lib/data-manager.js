@@ -104,8 +104,10 @@ module.exports = function (paths) {
         info.time = utility.getTime();
         info.languages = modules.languages.all;
         // Copy all data to new backup location and create info file
+        process.noAsar = true;
         await fs.copy(paths.data, newBackupPath.directory);
         fs.writeFileSync(newBackupPath.infoFile, JSON.stringify(info, null, 4));
+        process.noAsar = false;
     };
 
     /**

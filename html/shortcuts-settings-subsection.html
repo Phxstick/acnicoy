@@ -1,88 +1,156 @@
 <div id="shortcuts-list" class="settings-list">
+
+
+  <div class="section-separator">
+    <div class="section-header">Adding/editing words</div>
+    <div class="separator-line"><hr></div>
+  </div>
   <div>
-    <span class="keyboard-shortcut" id="add-word"></span>
+    <span class="keyboard-shortcut fixed">Tab (+ Shift)</span>
+    <span>Jump to next/previous field</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut fixed">Enter / Semicolon</span>
+    <span>Add new entry to current field</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut fixed">Ctrl + [number]</span>
+    <span>Choose SRS level</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut" data-name="save-input"></span>
+    <span>Save changes</span>
+  </div>
+
+
+  <div class="section-separator">
+    <div class="section-header">Review Sessions</div>
+    <div class="separator-line"><hr></div>
+  </div>
+  <div>
+    <span class="keyboard-shortcut fixed">Ctrl + [number]</span>
+    <span>Choose SRS level for item</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut" data-name="edit-test-item"></span>
+    <span>Modify vocabulary item</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut" data-name="ignore-answer"></span>
+    <span>Ignore last answer (in typing mode)</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut" data-name="add-solution"></span>
+    <span>Add answer to solutions (in typing mode)</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut" data-name="count-as-correct"></span>
+    <span>Count answer as correct (in flashcard mode)</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut" data-name="count-as-wrong"></span>
+    <span>Count answer as wrong (in flashcard mode)</span>
+  </div>
+
+
+  <div class="section-separator">
+    <div class="section-header">Sidebar functions</div>
+    <div class="separator-line"><hr></div>
+  </div>
+  <div>
+    <span class="keyboard-shortcut" data-name="add-word"></span>
     <span>Add word to vocabulary</span>
   </div>
   <div>
-    <span class="keyboard-shortcut" id="add-kanji"></span>
+    <span class="keyboard-shortcut" data-name="add-kanji"
+          data-language="Japanese"></span>
     <span>Add kanji to vocabulary</span>
   </div>
   <div>
-    <span class="keyboard-shortcut" id="open-test-section"></span>
+    <span class="keyboard-shortcut" data-name="add-kanji"
+          data-language="Chinese"></span>
+    <span>Add hanzi to vocabulary</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut" data-name="open-test-section"></span>
     <span>Open test section</span>
   </div>
   <div>
-    <span class="keyboard-shortcut" id="open-dictionary"></span>
-    <span>Open dictionary</span>
+    <span class="keyboard-shortcut" data-name="open-dictionary"></span>
+    <span>Open dictionary (if available)</span>
   </div>
   <div>
-    <span class="keyboard-shortcut" id="open-kanji-search"></span>
-    <span>Open kanji search</span>
+    <span class="keyboard-shortcut" data-name="open-kanji-search"
+          data-language="Japanese"></span>
+    <span>Open kanji search (if available)</span>
   </div>
   <div>
-    <span class="keyboard-shortcut" id="open-kanji-overview"></span>
-    <span>Open kanji overview</span>
+    <span class="keyboard-shortcut" data-name="open-kanji-overview"
+          data-language="Japanese"></span>
+    <span>Open kanji overview (if available)</span>
   </div>
   <div>
-    <span class="keyboard-shortcut" id="open-home-section"></span>
-    <span>Open home section</span>
-  </div>
-  <div>
-    <span class="keyboard-shortcut" id="open-stats-section"></span>
-    <span>Open stats</span>
-  </div>
-  <div>
-    <span class="keyboard-shortcut" id="open-vocab-section"></span>
+    <span class="keyboard-shortcut" data-name="open-vocab-section"></span>
     <span>Open vocabulary</span>
   </div>
   <div>
-    <span class="keyboard-shortcut" id="open-notes-section"></span>
+    <span class="keyboard-shortcut" data-name="open-notes-section"></span>
     <span>Open notes</span>
   </div>
+
+
+  <div class="section-separator">
+    <div class="section-header">Menu functions</div>
+    <div class="separator-line"><hr></div>
+  </div>
   <div>
-    <span class="keyboard-shortcut" id="open-settings"></span>
+    <span class="keyboard-shortcut fixed">Ctrl + Tab (+ Shift)</span>
+    <span>Switch to next/previous language</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut" data-name="open-home-section"></span>
+    <span>Open home screen</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut" data-name="open-stats-section"></span>
+    <span>Open statistics</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut" data-name="open-settings"></span>
     <span>Open settings</span>
   </div>
   <div>
-    <span class="keyboard-shortcut" id="open-help"></span>
-    <span>Open help</span>
+    <span class="keyboard-shortcut" data-name="open-help"></span>
+    <span>Open help section</span>
   </div>
 
-  <hr>
 
+  <div class="section-separator">
+    <div class="section-header">General</div>
+    <div class="separator-line"><hr></div>
+  </div>
   <div>
-    <span class="keyboard-shortcut" id="quit"></span>
+    <span class="keyboard-shortcut" data-name="refresh"></span>
+    <span>Refresh view (e.g. SRS items counter on test button)</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut" data-name="close-sliding-panels"></span>
+    <span>Close topmost pane/window</span>
+  </div>
+  <div>
+    <span class="keyboard-shortcut" data-name="quit"></span>
     <span>Quit program</span>
   </div>
   <div>
-    <span class="keyboard-shortcut" id="force-quit"></span>
+    <span class="keyboard-shortcut" data-name="force-quit"></span>
     <span>Force quit program (some data might not be saved)</span>
   </div>
   <div>
-    <span class="keyboard-shortcut" id="close-sliding-panels"></span>
-    <span>Close sliding panels and overlay windows</span>
-  </div>
-  <div>
-    <span class="keyboard-shortcut" id="refresh"></span>
-    <span>Refresh view (e.g. SRS items counter on "Test" button)</span>
-  </div>
-  <div>
-    <span class="keyboard-shortcut" id="toggle-bars-visibility"></span>
+    <span class="keyboard-shortcut" data-name="toggle-bars-visibility"></span>
     <span>Toggle visibility of sidebar and menu</span>
   </div>
   <div>
-    <span class="keyboard-shortcut" id="open-dev-tools"></span>
+    <span class="keyboard-shortcut" data-name="open-dev-tools"></span>
     <span>Open developer tools for debugging</span>
-  </div>
-
-  <hr>
-
-  <div>
-    <span class="keyboard-shortcut" id="ignore-answer"></span>
-    <span>Ignore last answer during a test session</span>
-  </div>
-  <div>
-    <span class="keyboard-shortcut" id="save-input"></span>
-    <span>Save changes after editing (vocabulary item, notes, etc.)</span>
   </div>
 </div>

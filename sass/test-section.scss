@@ -415,8 +415,7 @@ body {
       box-shadow: none;
     }
     &:not(:last-child) {
-      border: 1px solid $test-section-color-medium;
-      border-right-width: 1px;
+      border-right: 1px solid $test-section-color-medium;
     }
   }
 }

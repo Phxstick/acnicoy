@@ -11,20 +11,21 @@
   - Rework fonts in sass: Separate gui-fonts and content-fonts
     - Use "text-font" everywhere where there's simple text in the gui
     - Also let font-family be inherited, and remove all workarounds (and test!)
+- Performance/Memory:
+  - Try to reduce memory consumption
+  - Try to make switching languages even faster 
+  - Call garbage collector after unloading language data to actually unload it?
+  - Consider dropping name-dictionary to lower memory usage and file size
+    - Maybe include it in the data but only load it when explicitly asked to
+- Indicate that something can be scrolled using shadows (only where necessary)
 - Reverse completion list order if it's shown above entry instead of below
   - Extend the utility view function for this purpose
 - Add most important missing features to dictionary search (see further below)
 - Add some more achievements and create achievements section
-- Don't freeze after a long test, display loading screen instead (or make fast)
-- Consider dropping name-dictionary to lower memory usage and file size
-  - Maybe include it in the data but only load it when explicitly asked to
 - Implement changing order of translations by dragging while pressing Ctrl
 - Try to replace request module with axios and check if ESOCKETTIMEDOUTs stop
-- Indicate that something can be scrolled using shadows (only where necessary)
 - Add option in general settings to choose compact/extended/custom window size
 - Add loading screen where appropriate (loading vocab section, kanji view, ...)
-- Try to make switching languages even faster 
-- Call garbage collector after unloading language data to actually unload it?
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
@@ -110,8 +111,6 @@ By category
 - Implement a test-mode which just tests low-level items for each language?
 - `text-align: center` impairs fadeIn function. How to work around?
   - Add `text-align` to solution divs again
-- Test-complete-overlay: Try `Element.scrollIntoViewIfNeeded()` for elements
-  with `progress` option of velocity call
 
 ### Suggestion panes
 - Consider suggesting vocabulary lists when adding/editing words as well

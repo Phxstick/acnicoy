@@ -7,7 +7,7 @@
   overflow: auto;
 
   > :not(:last-child) {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
 
   check-box {
@@ -19,14 +19,41 @@
   }
 }
 
+.section-separator {
+  display: flex;
+  flex-direction: row;
+
+  &:not(:first-child) {
+    margin-top: 16px;
+  }
+
+  .section-header {
+    font-family: $light-font;
+    font-size: 140%;
+    margin-right: 15px;
+  }
+  .separator-line {
+    flex: 1;
+    > hr {
+      transform: translate(0, 4px);
+    }
+  }
+}
+
 .keyboard-shortcut {
   padding: 6px;
   border-radius: 6px;
   border: 1px solid $border-color-medium;
   background-color: $input-background;
 
-  &:hover {
-    background-color: $input-background-hover;
-    border-color: $border-color-dark;
+  &.fixed {
+    background-color: darken($background-color, 5%);
+  }
+  &:not(.fixed) {
+    cursor: $pointer-cursor;
+    &:hover {
+      background-color: $input-background-hover;
+      border-color: $border-color-dark;
+    }
   }
 }

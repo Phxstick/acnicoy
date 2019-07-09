@@ -46,7 +46,9 @@ module.exports = function (basePath) {
             if (fs.readdirSync(newPath).length > 0)
                 throw Error("Destination for user data is not empty!");
             // Move previous data to new location
+            process.noAsar = true;  // NOTE: not sure if this is necessary
             fs.moveSync(previousPath, newPath, { overwrite: true });
+            process.noAsar = false;
         }
     };
 

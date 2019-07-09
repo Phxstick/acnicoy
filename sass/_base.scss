@@ -118,6 +118,7 @@ body {
   #button-frame {
     display: flex;
     flex-direction: row;
+    flex-shrink: 0;
   }
 }
 

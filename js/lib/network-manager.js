@@ -339,6 +339,7 @@ async function finishContentDownload(downloadName) {
         require(contentPaths.minProgramVersions) : {};
 
     // Unzip downloaded files into the content subdirectory
+    process.noAsar = true;  // NOTE: Not sure if this is necessary
     const extractionPromises = [];
     for (const filename in fileVersions) {
         const downloadPath = paths.downloadArchive(downloadName, filename);
@@ -366,6 +367,7 @@ async function finishContentDownload(downloadName) {
             JSON.stringify(versionsReg, null, 4));
         fs.writeFileSync(contentPaths.minProgramVersions,
             JSON.stringify(minProgramVersionsReg, null, 4));
+        process.noAsar = false;
     }
     return true;
 }

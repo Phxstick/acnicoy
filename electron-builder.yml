@@ -3,6 +3,7 @@ productName: "Acnicoy"
 artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
 publish: "github"
 win:
+  icon: "build/icon.ico"
   target:
     - "zip"
     - "nsis"

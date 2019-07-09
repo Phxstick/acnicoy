@@ -11,12 +11,53 @@ class TestCompleteOverlay extends Overlay {
         this.$("ok-button").addEventListener("click", () => {
             this.resolve(false);
         });
+        this.$("languages-ready-for-testing").callback = async (language) => {
+            await main.setLanguage(language);
+            this.resolve(true);  // `true` signals that another test will start
+        };
+
+        // ==================================================================
+        // Initialize view for displaying list of mistakes
+        // ==================================================================
+        const modeToText = {
+            [dataManager.test.mode.WORDS]: "word",
+            [dataManager.test.mode.KANJI_MEANINGS]: "kanji meaning",
+            [dataManager.test.mode.KANJI_ON_YOMI]: "kanji on yomi",
+            [dataManager.test.mode.KANJI_KUN_YOMI]: "kanji kun yomi",
+            [dataManager.test.mode.HANZI_MEANINGS]: "hanzi meaning",
+            [dataManager.test.mode.HANZI_READINGS]: "hanzi reading"
+        };
+        const partToText = {
+            "meanings": "meaning",
+            "readings": "reading",
+            "solutions": ""
+        };
+        const mistakeNodeTemplate = templates.get("test-complete-mistake");
+        this.mistakesViewState = utility.initializeView({
+            view: this.$("mistakes"),
+            getData: () => this.testInfo.mistakes,
+            createViewItem: (mistake) => {
+                // Display name of mode/part if there's more than one of them
+                if (this.numTotalParts > 1) mistake.modeLabel = 
+                    `${modeToText[mistake.mode]} ${partToText[mistake.part]}`;
+                return utility.fragmentFromString(mistakeNodeTemplate(mistake));
+            },
+            initialDisplayAmount: 15,
+            displayAmount: 15,
+            deterministicSearch: false
+        });
+
+        // ==================================================================
+        // Display solutions upon clicking a mistake
+        // ==================================================================
         this.$("mistakes").addEventListener("click", async (event) => {
             if (event.target === this.$("mistakes")) return;
             let node = event.target;
             while (node.parentNode !== this.$("mistakes")) {
                 node = node.parentNode;
             }
+
+            // Load solutions if they're not loaded yet
             const mistakeNode = node;
             const solutionsNode = mistakeNode.querySelector(".solutions");
             if (solutionsNode.children.length === 0) {
@@ -30,6 +71,8 @@ class TestCompleteOverlay extends Overlay {
                 }
                 solutionsNode.innerHTML = solutionsHTML;
             }
+
+            // Display or hide the list of solutions
             const list = this.$("mistakes");
             if (solutionsNode.isHidden()) {
                 Velocity(solutionsNode, "slideDown", { duration: "fast",
@@ -49,11 +92,10 @@ class TestCompleteOverlay extends Overlay {
                 mistakeNode.classList.remove("open");
             }
         });
-        this.$("languages-ready-for-testing").callback = async (language) => {
-            await main.setLanguage(language);
-            this.resolve(true);
-        };
-        // Choosing a language using Ctrl+Tab (like in the main-window class)
+
+        // ==================================================================
+        // Choose a language using Ctrl+Tab (like in the main-window class)
+        // ==================================================================
         let choosingNextLanguage = false;
         window.addEventListener("keydown", (event) => {
             if (!this.opened) return;
@@ -84,6 +126,10 @@ class TestCompleteOverlay extends Overlay {
 
     open(testInfo) {
         this.testInfo = testInfo;
+        this.classList.toggle("no-mistakes", testInfo.mistakes.length === 0);
+        this.mistakesViewState.search();
+
+        // Fill in statistics
         this.$("items-total").textContent = testInfo.numFinished;
         this.$("percentage-correct").textContent =
             `${(100 * testInfo.numCorrect / testInfo.numFinished).toFixed()}%`;
@@ -95,42 +141,13 @@ class TestCompleteOverlay extends Overlay {
             this.$("score-gained").textContent =
                 `${sign} ${Math.abs(testInfo.score.toFixed(1))}`;
         }
-        this.classList.toggle("no-mistakes", testInfo.mistakes.length === 0);
-        const modeToText = {
-            [dataManager.test.mode.WORDS]: "word",
-            [dataManager.test.mode.KANJI_MEANINGS]: "kanji meaning",
-            [dataManager.test.mode.KANJI_ON_YOMI]: "kanji on yomi",
-            [dataManager.test.mode.KANJI_KUN_YOMI]: "kanji kun yomi",
-            [dataManager.test.mode.HANZI_MEANINGS]: "hanzi meaning",
-            [dataManager.test.mode.HANZI_READINGS]: "hanzi reading"
-        };
-        const partToText = {
-            "meanings": "meaning",
-            "readings": "reading",
-            "solutions": ""
-        };
-        let numTotalParts = 0;
+
+        // Calculate total number of submodes for this language
+        this.numTotalParts = 0;
         for (const mode of dataManager.test.modes) {
-            numTotalParts += dataManager.test.modeToParts(mode).length;
+            this.numTotalParts += dataManager.test.modeToParts(mode).length;
         }
-        let mistakesHTML = "";
-        for (const { name, mode, part } of testInfo.mistakes) {
-            // Don't display name of mode/part if there's only one of them
-            const modeLabel = numTotalParts === 1 ? "" :
-              `<div class="mode">${modeToText[mode]} ${partToText[part]}</div>`;
-            mistakesHTML += `
-             <div data-name="${name}" data-mode="${mode}" data-part="${part}">
-               <div class="mistake-info">
-                 <div class="name">${name}</div>
-                 ${modeLabel}
-                 <div class="flex-spacer"></div>
-                 <i class="fa caret"></i>
-               </div>
-               <ul class="solutions" style="display:none"></ul>
-             </div>
-            `;
-        }
-        this.$("mistakes").innerHTML = mistakesHTML;
+
         // Offer to start a new test for another language
         this.$("languages-ready-for-testing").clear();
         const promises = [];
@@ -156,11 +173,11 @@ class TestCompleteOverlay extends Overlay {
             this.moreLanguagesReady = numLanguagesLeft > 0;
             this.$("start-new-test-frame").toggleDisplay(numLanguagesLeft > 0);
         });
+
         this.opened = true;
     }
 
     close() {
-        this.$("mistakes").innerHTML = "";
         this.opened = false;
     }
 }

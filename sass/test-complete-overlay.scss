@@ -64,6 +64,7 @@
 #mistakes {
   overflow-y: auto;
   position: relative;
+  cursor: pointer;
 
   > div {
     &:not(:first-child) {
@@ -129,6 +130,7 @@
   margin: 0px;
   padding-left: 10px;
   border-top: 1px solid $border-color-dark;
+  flex-shrink: 0;
 
   #languages-ready-for-testing {
     display: inline-block;

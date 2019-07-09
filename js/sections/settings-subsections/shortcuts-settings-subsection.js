@@ -12,42 +12,42 @@ class ShortcutsSettingsSubsection extends SettingsSubsection {
             "open-help",
 
             "quit", "force-quit", "close-sliding-panels",
-            "toggle-bars-visibility", "refresh",
-            "ignore-answer", "save-input", "open-dev-tools"
-        ];
-        const shortcutLabels = this.$$("#shortcuts-list .keyboard-shortcut");
-        for (const label of shortcutLabels) {
-            label.addEventListener("click", () => {
-                overlays.open("choose-shortcut").then((newKeyCombination) => {
-                    if (newKeyCombination === null) return;
-                    shortcuts.bindKeyCombination(label.id, newKeyCombination);
-                    this.broadcastGlobalSetting(label.id);
-                });
-            });
-        }
-    }
+            "toggle-bars-visibility", "refresh", "open-dev-tools",
 
+            "count-as-correct", "count-as-wrong",
+            "ignore-answer", "add-solution", "edit-test-item",
+
+            "save-input"
+        ];
+        this.languageSpecificShortcutLabels =
+            this.$$("#shortcuts-list .keyboard-shortcut[data-language]");
+
+        // Click a shortcut to change its key combination (unless it's fixed)
+        this.$("shortcuts-list").addEventListener("click", async (event) => {
+            if (!event.target.classList.contains("keyboard-shortcut")) return;
+            if (event.target.classList.contains("fixed")) return;
+            const newKeyCombination = await overlays.open("choose-shortcut");
+            if (newKeyCombination === null) return;
+            const shortcutName = event.target.dataset.name;
+            shortcuts.bindKeyCombination(shortcutName, newKeyCombination);
+            this.broadcastGlobalSetting(shortcutName);
+        });
+    }
+    
     registerCentralEventListeners() {
-        const shortcutLabels = this.$$("#shortcuts-list .keyboard-shortcut");
+        const shortcutLabels =
+            this.$$("#shortcuts-list .keyboard-shortcut:not(.fixed)");
         for (const label of shortcutLabels) {
-            events.on(`settings-shortcuts-${label.id}`, () => {
-                label.textContent = shortcuts.getBoundKeyCombination(label.id);
+            events.on(`settings-shortcuts-${label.dataset.name}`, () => {
+                label.textContent =
+                    shortcuts.getBoundKeyCombination(label.dataset.name);
             });
         }
     }
 
     adjustToLanguage(language, secondary) {
-        const shortcutLabels = this.$$("#shortcuts-list .keyboard-shortcut");
-        const shortcutsToHide = new Set();
-        if (language !== "Japanese") {
-            const shortcutNames = [
-                "add-kanji", "open-kanji-search", "open-kanji-overview",
-                "open-dictionary"
-            ];
-            for (const name of shortcutNames) shortcutsToHide.add(name);
-        }
-        for (const label of shortcutLabels) {
-            label.parentNode.toggleDisplay(!shortcutsToHide.has(label.id));
+        for (const label of this.languageSpecificShortcutLabels) {
+            label.parentNode.toggleDisplay(label.dataset.language === language);
         }
     }
 }

@@ -132,9 +132,23 @@ class LanguagePopup extends Widget {
         return this.$("label").textContent;
     }
 
+    set direction(value) {
+        this.setAttribute("direction", value);
+    }
+
+    get direction() {
+        return this.getAttribute("direction");
+    }
+
     open() {
         this.isOpen = true;
-        this.$("popup-window").style.top = `${this.offsetHeight}px`;
+        if (!this.direction || this.direction === "down") {
+            this.$("popup-window").style.top = `${this.offsetHeight}px`;
+            this.$("popup-window").style.bottom = "initial";
+        } else if (this.direction === "up") {
+            this.$("popup-window").style.top = "initial";
+            this.$("popup-window").style.bottom = `${this.offsetHeight}px`;
+        }
         this.$("popup-window").show();
         this.classList.add("open");
         this.onOpen();

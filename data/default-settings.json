@@ -84,8 +84,12 @@
         "open-settings": "CmdOrCtrl+E",
         "open-help": "F1",
 
+        "count-as-correct": "CmdOrCtrl+Up",
+        "count-as-wrong": "CmdOrCtrl+Down",
         "ignore-answer": "CmdOrCtrl+I",
+        "add-solution": "CmdOrCtrl+Plus",
         "edit-test-item": "CmdOrCtrl+M",
+
         "save-input": "CmdOrCtrl+Enter"
     }
 }

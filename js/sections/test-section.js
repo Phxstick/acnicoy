@@ -29,14 +29,29 @@ const menuItems = contextMenu.registerItems({
 class TestSection extends Section {
     constructor() {
         super("test");
+
+        // Variables
         this.testInfo = null;
         this.currentBackgroundClass = null;
+        this.timeOfLastAction = 0;
+
+        // ====================================================================
+        // Initial state of some interface elements and general event listeners
+        // ====================================================================
         this.$("show-solutions-button").hide();
         this.$("answer-entry").hide();
         this.$("levels-frame").style.visibility = "hidden";
         this.$("button-bar").style.visibility = "hidden";
         this.$("new-level").removeAttribute("tabindex"); // Use shortcut instead
-        // Set some constants
+        this.$("test-item").contextMenu(menuItems, ["copy-test-item"]);
+        // TODO: fix this functionality
+        this.$("solutions").addEventListener("scroll", () => {
+            this.$("solutions").fadeScrollableBorders();
+        });
+
+        // ====================================================================
+        //   Constants
+        // ====================================================================
         this.itemFadeInDuration = 250;  // Set in scss as well!
         this.itemFadeInDistance = 25;  // Set in scss as well!
         this.itemFadeInDelay = 80;  // Set in scss as well!
@@ -50,80 +65,77 @@ class TestSection extends Section {
         this.pickedItemsLimit = 10;
         this.testItemMarginBottom = "25px";  // Set in scss as well!
         this.testItemEasing = "easeOutQuad";
-        const actionDelay = 180;
-        // Create function which makes sure an action is not taken too fast
-        this.lastTime = 0;
-        const ifDelayHasPassed = (callback) => {
-            const time = new Date().getTime();
-            if (time - this.lastTime > actionDelay) {
-                callback();
-                this.lastTime = time;
-            }
-        };
-        // Add callbacks
-        this.$("solutions").addEventListener("scroll", () => {
-            this.$("solutions").fadeScrollableBorders();
-        });
-        this.$("continue-button").addEventListener("click", () => {
-            ifDelayHasPassed(() => this._createQuestion());
-        });
-        this.$("show-solutions-button").addEventListener("click", () => {
-            ifDelayHasPassed(() => this._showEvaluationButtons());
-        });
-        this.$("answer-entry").addEventListener("keypress", (event) => {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                ifDelayHasPassed(() => this._evaluateAnswer());
-            }
-        });
-        this.$("evaluation-button-wrong").addEventListener("click", () => {
-            const item = this.testInfo.currentItem;
-            item.lastAnswerIncorrect = true;
-            const newLevel = dataManager.test.getNewLevel(item.level, false);
-            ifDelayHasPassed(() => this._createQuestion(newLevel));
-        });
-        this.$("evaluation-button-correct").addEventListener("click", () => {
-            const item = this.testInfo.currentItem;
-            item.lastAnswerIncorrect = false;
-            const isCorrect = !item.marked;
-            const newLevel = dataManager.test.getNewLevel(item.level,isCorrect);
-            ifDelayHasPassed(() => this._createQuestion(newLevel));
-        });
+        this.minimumDelayBetweenActions = 180;
+
+        // ====================================================================
+        //   Session button callbacks
+        // ====================================================================
         this.$("abort-session").addEventListener("click", () => {
             this.closeSession();
         });
         this.$("wrap-up").addEventListener("click", () => {
-            this.testInfo.wrappingUp = true;
-            this.testInfo.items.clear();
-            this.testInfo.numTotal = this.testInfo.numFinished
-                                     + this.testInfo.pickedItems.length + 1;
-            this.$("progress").max = this.testInfo.numTotal;
-            this.$("progress-text").textContent =
-                `${this.testInfo.numFinished} / ${this.testInfo.numTotal}`;
-            if (!this.testInfo.vocabListMode) {
-                main.updateTestButton();
-            }
-            this.$("wrap-up").hide();
+            this.wrapUp();
         });
-        // Buttons on control bar
+
+        // ====================================================================
+        //   Callbacks for typing-mode
+        // ====================================================================
+        this.$("continue-button").addEventListener("click", () => {
+            if (this.delayHasPassed()) this._createQuestion();
+        });
+        this.$("show-solutions-button").addEventListener("click", () => {
+            if (this.delayHasPassed()) this._showEvaluationButtons();
+        });
+        this.$("answer-entry").addEventListener("keypress", (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                if (this.delayHasPassed()) this._evaluateAnswer();
+            }
+        });
+
+        // ====================================================================
+        //   Callbacks for flashcard-mode
+        // ====================================================================
+        this.$("evaluation-button-wrong").addEventListener("click", () => {
+            this._countAsWrong();
+        });
+        this.$("evaluation-button-correct").addEventListener("click", () => {
+            this._countAsCorrect();
+        });
+        shortcuts.bindCallback("count-as-correct", () => {
+            if (dataManager.settings.test.useFlashcardMode)
+                this._countAsCorrect();
+        });
+        shortcuts.bindCallback("count-as-wrong", () => {
+            if (dataManager.settings.test.useFlashcardMode)
+                this._countAsWrong();
+        });
+
+        // ====================================================================
+        //   Control bar button callbacks
+        // ====================================================================
         this.$("ignore-answer").addEventListener("click", () => {
             this._ignoreAnswer();
         });
         this.$("add-answer").addEventListener("click", () => {
-            const answer = this.$("answer-entry").textContent.trim();
-            const item = this.testInfo.currentItem;
-            dataManager.test.addToSolutions(
-                item.entry, answer, item.mode, this.testInfo.currentPart);
-            this._ignoreAnswer();
+            this._addAnswerToSolutions();
         });
         this.$("modify-item").addEventListener("click", () => {
             this._modifyItem();
         });
-        // Create context menu
-        this.$("test-item").contextMenu(menuItems, ["copy-test-item"]);
-        // Bind callbacks for shortcuts
-        shortcuts.bindCallback("ignore-answer", () => this._ignoreAnswer());
         shortcuts.bindCallback("edit-test-item", () => this._modifyItem());
+        shortcuts.bindCallback("ignore-answer", () => {
+            if (!dataManager.settings.test.useFlashcardMode)
+                this._ignoreAnswer();
+        });
+        shortcuts.bindCallback("add-solution", () => {
+            if (!dataManager.settings.test.useFlashcardMode)
+                this._addAnswerToSolutions();
+        });
+
+        // ====================================================================
+        //   Shortcuts
+        // ====================================================================
         // Enable choosing next level without explicitly focussing popup stack
         this.$("continue-button").addEventListener("keypress", (event) => {
             if (event.key >= "1" && event.key <= "9") {
@@ -133,11 +145,19 @@ class TestSection extends Section {
         });
     }
 
-    /* =====================================================================
-        Inherited from Section
-    ===================================================================== */
+    // Helper function to make sure that actions are not taken too quickly.
+    // Returns true if the minimum delay has passed and updates the time stamp.
+    delayHasPassed() {
+        const time = new Date().getTime();
+        if (time - this.timeOfLastAction > this.minimumDelayBetweenActions) {
+            this.timeOfLastAction = time;
+            return true;
+        }
+        return false;
+    }
 
     registerCentralEventListeners() {
+        // Fill SRS level containers with correct number of items
         events.onAll(["language-changed", "current-srs-scheme-edited"], () => {
             const numLevels = dataManager.srs.currentScheme.numLevels;
             const intervalTexts = dataManager.srs.currentScheme.intervalTexts;
@@ -148,6 +168,10 @@ class TestSection extends Section {
                 option.dataset.tooltipPos = "left";
             }
         });
+
+        // ====================================================================
+        //   Dynamically adapt to settings
+        // ====================================================================
         events.on("settings-design-animate-popup-stacks", () => {
             const animate = dataManager.settings.design.animatePopupStacks;
             this.$("new-level").animate = animate;
@@ -209,7 +233,10 @@ class TestSection extends Section {
                 }
             }
         });
-        // If current item has been deleted, immediately skip to next item
+
+        // ====================================================================
+        //   If current item has been deleted, immediately skip to next one
+        // ====================================================================
         events.on("word-deleted", (word) => {
             if (this.testInfo === null) return;
             const currentItem = this.testInfo.currentItem;
@@ -232,30 +259,34 @@ class TestSection extends Section {
                 this._createQuestion();
             }
         });
-        // If current item has been edited, display new solutions
-        events.onAll(["vocab-changed", "kanji-changed"], (entry) => {
+
+        // ====================================================================
+        //   If current item has been edited, display new solutions
+        // ====================================================================
+        events.onAll(["vocab-changed", "kanji-changed"], async (entry) => {
             if (this.testInfo === null) return;
             const item = this.testInfo.currentItem;
-            if (item.entry === entry) {
-                dataManager.test.getSolutions(
-                    item.entry, item.mode, this.testInfo.currentPart)
-                .then((solutions) => {
-                    if (solutions.length === 0) {
-                        if (item.parts.length === 0) {
-                            this.testInfo.numTotal--;
-                        } else {
-                            this.testInfo.pickedItems.push(item);
-                        }
-                        this.testInfo.skipNextEvaluation = true;
-                        this._createQuestion();
-                    } else {
-                        this.$("solutions").innerHTML = "";
-                        this._displaySolutions(solutions, false);
-                    }
-                });
+            if (item.entry !== entry) return;
+            const solutions = await dataManager.test.getSolutions(
+                item.entry, item.mode, this.testInfo.currentPart);
+            if (solutions.length === 0) {
+                if (item.parts.length === 0) {
+                    this.testInfo.numTotal--;
+                } else {
+                    this.testInfo.pickedItems.push(item);
+                }
+                this.testInfo.skipNextEvaluation = true;
+                this._createQuestion();
+            } else {
+                this.$("solutions").innerHTML = "";
+                this._displaySolutions(solutions, false);
             }
         });
     }
+
+    /* =====================================================================
+        Override some functions inherited from Section-class
+    ===================================================================== */
 
     adjustToLanguage() {
         this.testInfo = null;
@@ -311,8 +342,72 @@ class TestSection extends Section {
         if (main.barsHidden) main.toggleBarVisibility();
     }
 
+    // ====================================================================
+    //   Loading test items
+    // ====================================================================
+
+    async _createTestItem(entry, mode) {
+        const newItem = {
+            entry: entry,
+            marked: false,
+            lastAnswerIncorrect: false,
+            mode: mode,
+            parts: [
+                mode === dataManager.test.mode.WORDS ? "meanings" : "solutions"]
+        };
+        newItem.level = await dataManager.srs.getLevel(entry, mode);
+        if (mode === dataManager.test.mode.WORDS) {
+            const readings = await dataManager.vocab.getReadings(entry);
+            if (readings.length > 0) newItem.parts.push("readings");
+        }
+        return newItem;
+    }
+
+    _getTestItems(since=0) {
+        const itemPromises = [];
+
+        // Assemble vocabulary part of the testitem list
+        const vocabPart = dataManager.srs.getDueVocab(since).then((words) => {
+            for (const word of words) {
+                itemPromises.push(
+                    this._createTestItem(word, dataManager.test.mode.WORDS));
+            }
+        });
+
+        // Assemble kanji part of the testitem list if the language is Japanese
+        let kanjiParts = [];
+        if (dataManager.currentLanguage === "Japanese") {
+            for (const mode of [dataManager.test.mode.KANJI_MEANINGS,
+                                dataManager.test.mode.KANJI_ON_YOMI,
+                                dataManager.test.mode.KANJI_KUN_YOMI]) {
+                kanjiParts.push(dataManager.srs.getDueKanji(mode, since)
+                .then((kanjiList) => {
+                    for (const kanji of kanjiList) {
+                        itemPromises.push(this._createTestItem(kanji, mode));
+                    }
+                }));
+            }
+        }
+
+        // Assemble hanzi part of the testitem list if the language is Chinese
+        let hanziParts = [];
+        if (dataManager.currentLanguage === "Chinese") {
+            for (const mode of [dataManager.test.mode.HANZI_MEANINGS,
+                                dataManager.test.mode.HANZI_READINGS]) {
+                hanziParts.push(dataManager.srs.getDueHanzi(mode, since)
+                .then((hanziList) => {
+                    for (const hanzi of hanziList) {
+                        itemPromises.push(this._createTestItem(hanzi, mode));
+                    }
+                }));
+            }
+        }
+        return Promise.all([vocabPart, ...kanjiParts, ...hanziParts])
+        .then(() => Promise.all(itemPromises));
+    }
+
     /* =====================================================================
-        Private testing functions
+        Starting and ending review sessions
     ===================================================================== */
 
     async createTest(vocabList) {
@@ -371,6 +466,20 @@ class TestSection extends Section {
         return true;
     }
 
+    wrapUp() {
+        this.testInfo.wrappingUp = true;
+        this.testInfo.items.clear();
+        this.testInfo.numTotal = this.testInfo.numFinished
+                                 + this.testInfo.pickedItems.length + 1;
+        this.$("progress").max = this.testInfo.numTotal;
+        this.$("progress-text").textContent =
+            `${this.testInfo.numFinished} / ${this.testInfo.numTotal}`;
+        if (!this.testInfo.vocabListMode) {
+            main.updateTestButton();
+        }
+        this.$("wrap-up").hide();
+    }
+
     async closeSession() {
         const oldTestInfo = this.testInfo;
         this.testInfo = null;
@@ -382,6 +491,67 @@ class TestSection extends Section {
             main.openSection(oldTestInfo.vocabListMode ? "vocab" : "home");
         }
     }
+
+    // ====================================================================
+    //   Control button callbacks
+    // ====================================================================
+
+    _ignoreAnswer() {
+        if (this.testInfo === null || !this.testInfo.inEvalStep) return;
+        if (!this.testInfo.currentItem.lastAnswerIncorrect)
+            this.testInfo.currentItem.parts.push(this.testInfo.currentPart);
+        this.testInfo.currentItem.lastAnswerIncorrect = false;
+        this._createQuestion();
+    }
+    
+    _addAnswerToSolutions() {
+        if (this.testInfo === null || !this.testInfo.inEvalStep) return;
+        const answer = this.$("answer-entry").textContent.trim();
+        const item = this.testInfo.currentItem;
+        dataManager.test.addToSolutions(
+            item.entry, answer, item.mode, this.testInfo.currentPart);
+        this._ignoreAnswer();
+    }
+    
+    _modifyItem() {
+        if (this.testInfo === null || !this.testInfo.inEvalStep) return;
+        const item = this.testInfo.currentItem;
+        if (item.mode === dataManager.test.mode.KANJI_MEANINGS ||
+                item.mode === dataManager.test.mode.KANJI_ON_YOMI ||
+                item.mode === dataManager.test.mode.KANJI_KUN_YOMI) {
+            main.openPanel("edit-kanji", { entryName: item.entry });
+        } else if (item.mode === dataManager.test.mode.WORDS) {
+            main.openPanel("edit-vocab", { entryName: item.entry });
+        } else if (item.mode === dataManager.test.mode.HANZI_MEANINGS ||
+                item.mode === dataManager.test.mode.HANZI_READINGS) {
+            main.openPanel("edit-hanzi", { entryName: item.entry });
+        }
+    }
+
+    // ====================================================================
+    //   Callbacks for flashcard-mode
+    // ====================================================================
+
+    _countAsCorrect() {
+        if (this.testInfo === null || !this.testInfo.inEvalStep) return;
+        const item = this.testInfo.currentItem;
+        item.lastAnswerIncorrect = false;
+        const isCorrect = !item.marked;
+        const newLevel = dataManager.test.getNewLevel(item.level, isCorrect);
+        if (this.delayHasPassed()) this._createQuestion(newLevel);
+    }
+
+    _countAsWrong() {
+        if (this.testInfo === null || !this.testInfo.inEvalStep) return;
+        const item = this.testInfo.currentItem;
+        item.lastAnswerIncorrect = true;
+        const newLevel = dataManager.test.getNewLevel(item.level, false);
+        if (this.delayHasPassed()) this._createQuestion(newLevel);
+    }
+
+    /* =====================================================================
+        Answer evaluation for typing-mode
+    ===================================================================== */
 
     async _evaluateAnswer() {
         // Prevent multiple consecutive invocations of this function
@@ -484,6 +654,10 @@ class TestSection extends Section {
         }
     }
 
+    /* =====================================================================
+        Preparing evaluation for flashcard-mode
+    ===================================================================== */
+
     _showEvaluationButtons() {
         const item = this.testInfo.currentItem;
         const part = this.testInfo.currentPart;
@@ -515,6 +689,10 @@ class TestSection extends Section {
             }
         });
     }
+
+    /* =====================================================================
+        Displaying solutions
+    ===================================================================== */
 
     async _displaySolutions(solutions, animate) {
         const itemPosBefore = this.$("test-item").getBoundingClientRect();
@@ -564,6 +742,10 @@ class TestSection extends Section {
             }
         }
     }
+
+    /* =====================================================================
+        Preparing next answer step
+    ===================================================================== */
 
     _prepareMode(mode, part) {
         this.$("status").classList.remove("correct");
@@ -945,94 +1127,15 @@ class TestSection extends Section {
         this.$("continue-button").hide();
         this.$("evaluation-buttons").hide();
         if (dataManager.settings.test.useFlashcardMode) {
+            this.$("answer-entry").hide();
             this.$("show-solutions-button").show();
             this.$("show-solutions-button").focus();
         } else {
+            this.$("show-solutions-button").hide();
             this.$("answer-entry").textContent = "";
             this.$("answer-entry").show();
             this.$("answer-entry").focus();
         }
-    }
-
-    _ignoreAnswer() {
-        if (!this.testInfo.currentItem.lastAnswerIncorrect)
-            this.testInfo.currentItem.parts.push(this.testInfo.currentPart);
-        this.testInfo.currentItem.lastAnswerIncorrect = false;
-        this._createQuestion();
-    }
-    
-    _modifyItem() {
-        const item = this.testInfo.currentItem;
-        if (item.mode === dataManager.test.mode.KANJI_MEANINGS ||
-                item.mode === dataManager.test.mode.KANJI_ON_YOMI ||
-                item.mode === dataManager.test.mode.KANJI_KUN_YOMI) {
-            main.openPanel("edit-kanji", { entryName: item.entry });
-        } else if (item.mode === dataManager.test.mode.WORDS) {
-            main.openPanel("edit-vocab", { entryName: item.entry });
-        } else if (item.mode === dataManager.test.mode.HANZI_MEANINGS ||
-                item.mode === dataManager.test.mode.HANZI_READINGS) {
-            main.openPanel("edit-hanzi", { entryName: item.entry });
-        }
-    }
-
-    async _createTestItem(entry, mode) {
-        const newItem = {
-            entry: entry,
-            marked: false,
-            lastAnswerIncorrect: false,
-            mode: mode,
-            parts: [
-                mode === dataManager.test.mode.WORDS ? "meanings" : "solutions"]
-        };
-        newItem.level = await dataManager.srs.getLevel(entry, mode);
-        if (mode === dataManager.test.mode.WORDS) {
-            const readings = await dataManager.vocab.getReadings(entry);
-            if (readings.length > 0) newItem.parts.push("readings");
-        }
-        return newItem;
-    }
-
-    _getTestItems(since=0) {
-        const itemPromises = [];
-
-        // Assemble vocabulary part of the testitem list
-        const vocabPart = dataManager.srs.getDueVocab(since).then((words) => {
-            for (const word of words) {
-                itemPromises.push(
-                    this._createTestItem(word, dataManager.test.mode.WORDS));
-            }
-        });
-
-        // Assemble kanji part of the testitem list if the language is Japanese
-        let kanjiParts = [];
-        if (dataManager.currentLanguage === "Japanese") {
-            for (const mode of [dataManager.test.mode.KANJI_MEANINGS,
-                                dataManager.test.mode.KANJI_ON_YOMI,
-                                dataManager.test.mode.KANJI_KUN_YOMI]) {
-                kanjiParts.push(dataManager.srs.getDueKanji(mode, since)
-                .then((kanjiList) => {
-                    for (const kanji of kanjiList) {
-                        itemPromises.push(this._createTestItem(kanji, mode));
-                    }
-                }));
-            }
-        }
-
-        // Assemble hanzi part of the testitem list if the language is Chinese
-        let hanziParts = [];
-        if (dataManager.currentLanguage === "Chinese") {
-            for (const mode of [dataManager.test.mode.HANZI_MEANINGS,
-                                dataManager.test.mode.HANZI_READINGS]) {
-                hanziParts.push(dataManager.srs.getDueHanzi(mode, since)
-                .then((hanziList) => {
-                    for (const hanzi of hanziList) {
-                        itemPromises.push(this._createTestItem(hanzi, mode));
-                    }
-                }));
-            }
-        }
-        return Promise.all([vocabPart, ...kanjiParts, ...hanziParts])
-        .then(() => Promise.all(itemPromises));
     }
 }
 

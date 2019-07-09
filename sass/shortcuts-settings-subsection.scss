@@ -1,11 +1,7 @@
 @import "settings";
 
-#shortcuts-list > *:not(:last-child):not(hr) {
+#shortcuts-list > *:not(:last-child):not(.section-separator) {
   margin-bottom: 10px;
-}
-#shortcuts-list > hr {
-  margin-top: 14px;
-  margin-bottom: 14px;
 }
 
 .keyboard-shortcut {
