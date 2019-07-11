@@ -44,7 +44,6 @@
     vertical-align: middle;
     text-align: center;
     width: 1px;  // Only use as much space as needed
-    font-family: OpenSans-Regular;
     padding-left: 10px;
     padding-right: 10px;
   }
@@ -52,6 +51,7 @@
     display: table-cell;
     padding-top: 4px;
     padding-bottom: 4px;
+    font-family: $light-font;
   }
 }
 
@@ -61,7 +61,6 @@
   font-size: 1.25rem;
 
   > * {
-    font-family: $light-font;
     text-align: center;
     flex: 1;
 
@@ -79,9 +78,7 @@
 .all-items {
   color: $color-light;
   font-size: 0.9rem;
-  > * {
-    font-family: OpenSans-Regular;
-  }
+  font-family: $text-font;
 }
 
 #reload-srs {

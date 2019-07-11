@@ -10,7 +10,7 @@ class MigrateSrsOverlay extends Overlay {
         this.connectorHoveredOver = null;
         this.startConnector = null;
         this.arrowTriangle = null;
-        this.levelItemHeight = 32;
+        this.levelItemHeight = 30;  // Must include 2px for border
         this.connectorRadius = this.levelItemHeight / 2 - 3;
         this.migrateAreaWidth = 130;
         this.connectorToInterval = new WeakMap();

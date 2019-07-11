@@ -12,7 +12,12 @@
 
         ]
       },
-      { "name": "Reviewing" },
+      { "name": "Reviewing",
+        "children": [
+            { "name": "Typing mode" },
+            { "name": "Flashcard mode" }
+        ]
+      },
       { "name": "Vocabulary",
         "children": [
           { "name": "Adding words" },

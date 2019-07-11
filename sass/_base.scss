@@ -13,7 +13,6 @@
 @import "mixins";
 
 * {
-  font-family: var(--main-font);
   user-select: none;
 
   &::selection {
@@ -56,6 +55,7 @@
 
 :host {
   cursor: $default-cursor;
+  font-family: $text-font;
 }
 
 body {
@@ -242,10 +242,8 @@ hr {
   font-size: 1.2rem;
   line-height: 140%;
   text-align: center;
+  font-family: $light-font;
 
-  *:not(i):not(.search-example) {
-    font-family: $light-font;
-  }
   ul {
     list-style-type: none;
     padding-left: 25px;
@@ -287,6 +285,7 @@ hr {
     border-radius: 3px;
     border: 1px solid $border-color-medium;
     background-color: $input-background;
+    font-family: $vocab-font;
 
     &:hover {
       background-color: $input-background-hover;

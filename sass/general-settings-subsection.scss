@@ -35,8 +35,7 @@
 }
 
 #program-update-frame {
-  margin-top: -10px;
-  margin-bottom: 15px;
+  margin-top: -5px;
 }
 
 #program-version-status {
@@ -45,7 +44,7 @@
     color: $color-negative;
   }
   font-size: 1.2rem;
-  margin-right: 15px;
+  margin-right: 20px;
 }
 
 #current-program-version {
@@ -53,4 +52,8 @@
   margin-right: 20px;
   font-family: $header-font;
   font-size: 1.2rem;
+}
+
+#update-program-version, #check-program-update {
+  padding: 0;
 }

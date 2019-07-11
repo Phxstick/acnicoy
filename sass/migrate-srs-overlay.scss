@@ -4,7 +4,7 @@ $window-width: 600px;
 $migrate-area-width: $window-width - 20px;
 $migrate-area-gap-width: 130px;
 $migrate-area-scheme-width: ($migrate-area-width - $migrate-area-gap-width) / 2;
-$migrate-area-level-height: 30px;
+$migrate-area-level-height: 28px;
 
 :host {
   width: $window-width;

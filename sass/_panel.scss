@@ -5,7 +5,7 @@
 
   #header-frame {
     padding: 0px;
-    height: 42px;
+    height: $panel-header-height;
 
     #header {
       font-size: 165%;
@@ -32,6 +32,7 @@
 
   #button-frame {
     @extend .styled-button-bar;
+
     > button {
       height: 50px;
     }

@@ -21,8 +21,9 @@ button.styled {
   color: $button-color;
   background-color: $button-background;
   padding: 4px;
-  font-size: 120%;
   border: 1px solid $button-border-color;
+  font-family: $button-font;
+  font-size: 120%;
 
   &:hover {
     color: $button-color-hover;
@@ -45,9 +46,9 @@ button.rounded {
 
 button.light {
   padding: 10px;
-  font-size: 120%;
   color: $button-light-color;
-  font-family: $header-font;
+  font-family: $button-font;
+  font-size: 120%;
 
   > i {
     pointer-events: none;
@@ -143,6 +144,8 @@ button.simple {
   border: 1px solid $border-color-medium;
   border-radius: 3px;
   font-family: $button-font;
+  font-size: 120%;
+
   &:hover {
     border: 1px solid $border-color-dark;
     box-shadow: 0 0 3px $border-color-medium;

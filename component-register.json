@@ -5,7 +5,7 @@
         "history", "achievements", "notifications"
     ],
     "windows": [
-        "init-path", "init-lang", "init-default-lang", "loading", "main"
+        "init-path", "init-lang", "loading", "main"
     ],
     "overlays": [
         "add-lang", "info-dialog", "confirm-dialog", "srs-schemes",

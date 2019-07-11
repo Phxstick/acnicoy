@@ -90,7 +90,7 @@ class GeneralSettingsSubsection extends SettingsSubsection {
                 // Replace status label and button with spinner
                 this.$("check-program-update-spinner").show();
                 this.$("program-version-status").hide();
-                this.$("check-program-update").style.visibility = "hidden";
+                this.$("check-program-update").hide();
 
                 // Request info on latest program version and cache it
                 const promise = networkManager.program.getLatestVersionInfo();
@@ -132,7 +132,7 @@ class GeneralSettingsSubsection extends SettingsSubsection {
             dialogWindow.info(
                 `Automated program updating is not yet implemented.
                  Please download and install the latest program version
-                 from <a href="${app.homepage + "/releases"}">here</a>.`);
+                 from <a href="${app.homepage + "/releases/latest"}">here</a>.`)
         });
     }
 
@@ -210,8 +210,7 @@ class GeneralSettingsSubsection extends SettingsSubsection {
         this.$("program-version-status").textContent =
             updateAvailable ? "Update available" : "Up to date";
         this.$("update-program-version").toggleDisplay(updateAvailable);
-        this.$("check-program-update").style.visibility =
-            updateAvailable ? "hidden" : "visible";
+        this.$("check-program-update").toggleDisplay(!updateAvailable);
         this.$("program-version-status").classList.toggle(
             "update-available", updateAvailable);
         this.$("check-program-update-spinner").hide();

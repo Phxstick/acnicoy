@@ -210,13 +210,11 @@ class KanjiInfoPanel extends Widget {
                 this.loadExampleWords();
                 this.loadStrokeGraphics();
             }
-            this.$("maximize-button").firstChild.innerHTML = "&#x1f5d5";
             this.$("maximize-button").tooltip("Minimize window");
         } else {
             this.sectionFrames["strokes"].hide();
             this.sectionFrames["examples"].hide();
             this.openSection("info");
-            this.$("maximize-button").firstChild.innerHTML = "&#x1f5d6";
             this.$("maximize-button").tooltip("Maximize window");
         }
         this.$("close-button").children[0].toggleDisplay(!this.maximized);

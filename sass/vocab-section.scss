@@ -31,7 +31,7 @@
   > * {
     display: inline-block;
     padding: 6px;
-    line-height: initial;  // No special treatment like in the vocab-views
+    line-height: 2rem;
   }
 }
 
@@ -53,6 +53,7 @@
 
   .list-view {
     flex: 1;
+    font-family: $vocab-font;
 
     &.dragover {
       background-color: $view-hover-background;
@@ -114,6 +115,7 @@
     width: 1px;
     flex: 1;
     padding-left: 10px;
+    font-family: $vocab-font;
   }
 
   .search-button {

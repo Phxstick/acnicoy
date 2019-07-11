@@ -37,8 +37,11 @@
         color: $view-hover-color;
       }
       font-size: 1rem;
+      line-height: 1.3rem;
       padding-left: 5px;
       padding: 3px;
+      border-radius: 6px;
+      cursor: $pointer-cursor;
     }
   }
 }

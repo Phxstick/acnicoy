@@ -1,6 +1,6 @@
 @import "base";
 
-$control-bar-height: 40px;
+$control-bar-height: 35px;
 
 body {
   color: $section-color;
@@ -41,6 +41,10 @@ body {
   #show-overview-button, #settings-button, #search-by-meanings-input,
   #search-by-readings-input, #history-button {
     border-left: 1px solid $border-color-light;
+  }
+
+  #search-by-readings-input, #search-by-kanji-input {
+    font-family: $vocab-font;
   }
 
   .search-button {
@@ -113,7 +117,7 @@ dt {
   font-size: 130%;
   margin: 10px;
   margin-top: 18px;
-  font-variant: small-caps;
+  font-family: $header-font;
 }
 
 dd {
@@ -121,6 +125,7 @@ dd {
   margin-right: 28px;
   background: $background-color-dark;
   box-shadow: $slim-frame-shadow;
+  font-family: $vocab-font;
 }
 
 .amount-added {
@@ -143,6 +148,7 @@ dd {
 #history {
   flex: 1;
   font-size: 1.1rem;
+  font-family: $vocab-font;
   > * {
     cursor: $pointer-cursor;
   }

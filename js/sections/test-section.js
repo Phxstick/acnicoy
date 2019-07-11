@@ -34,6 +34,7 @@ class TestSection extends Section {
         this.testInfo = null;
         this.currentBackgroundClass = null;
         this.timeOfLastAction = 0;
+        this.currentlySelectedLevel = null;
 
         // ====================================================================
         // Initial state of some interface elements and general event listeners
@@ -132,13 +133,31 @@ class TestSection extends Section {
             if (!dataManager.settings.test.useFlashcardMode)
                 this._addAnswerToSolutions();
         });
+        this.$("srs-levels-bar").addEventListener("click", (event) => {
+            if (event.target.parentNode !== this.$("srs-levels-bar")) return;
+            if (this.currentlySelectedLevel !== null)
+                this.currentlySelectedLevel.classList.remove("selected");
+            this.currentlySelectedLevel = event.target;
+            this.currentlySelectedLevel.classList.add("selected");
+        });
 
         // ====================================================================
         //   Shortcuts
         // ====================================================================
-        // Enable choosing next level without explicitly focussing popup stack
-        this.$("continue-button").addEventListener("keypress", (event) => {
-            if (event.key >= "1" && event.key <= "9") {
+        // Enable choosing next level without explicitly focussing widgets
+        window.addEventListener("keypress", (event) => {
+            if (this.testInfo === null) return;
+            if (!this.testInfo.inEvalStep) return;
+            if (event.key < "1" || event.key > "9") return;
+            if (dataManager.settings.test.useFlashcardMode) {
+                const numLevels = dataManager.srs.currentScheme.numLevels;
+                if (parseInt(event.key) > numLevels) return;
+                if (this.currentlySelectedLevel !== null)
+                    this.currentlySelectedLevel.classList.remove("selected");
+                this.currentlySelectedLevel =
+                    this.$("srs-levels-bar").children[parseInt(event.key) - 1];
+                this.currentlySelectedLevel.classList.add("selected");
+            } else {
                 const new_event = new KeyboardEvent(event.type, event);
                 this.$("new-level").dispatchEvent(new_event);
             }
@@ -167,6 +186,15 @@ class TestSection extends Section {
                 option.dataset.tooltip = intervalTexts[level];
                 option.dataset.tooltipPos = "left";
             }
+            this.$("srs-levels-bar").empty();
+            for (let level = 1; level <= numLevels; ++level) {
+                const button = document.createElement("button");
+                button.textContent = level;
+                button.dataset.tooltip = intervalTexts[level];
+                button.dataset.tooltipPos = "bottom";
+                button.setAttribute("tabindex", "-1");
+                this.$("srs-levels-bar").appendChild(button);
+            }
         });
 
         // ====================================================================
@@ -189,7 +217,8 @@ class TestSection extends Section {
                 dataManager.settings.test.showProgress);
         });
         events.on("settings-test-show-score", () => {
-            this.$("score").toggleDisplay(dataManager.settings.test.showScore);
+            this.$("score-frame").toggleDisplay(
+                dataManager.settings.test.showScore);
         });
         events.on("settings-test-make-continuous", () => {
             this.testInfo = null;
@@ -327,16 +356,6 @@ class TestSection extends Section {
         return true;
     }
 
-    async abortSession() {
-        if (this.testInfo !== null) {
-            const confirmed = await dialogWindow.confirm(
-                "A test session is still running.<br>Do you want to abort it?");
-            if (confirmed) this.testInfo = null;
-            return confirmed;
-        }
-        return true;
-    }
-
     async close() {
         shortcuts.disable("ignore-answer");
         if (main.barsHidden) main.toggleBarVisibility();
@@ -352,13 +371,16 @@ class TestSection extends Section {
             marked: false,
             lastAnswerIncorrect: false,
             mode: mode,
-            parts: [
-                mode === dataManager.test.mode.WORDS ? "meanings" : "solutions"]
+            parts: []
         };
         newItem.level = await dataManager.srs.getLevel(entry, mode);
         if (mode === dataManager.test.mode.WORDS) {
             const readings = await dataManager.vocab.getReadings(entry);
             if (readings.length > 0) newItem.parts.push("readings");
+            const translations = await dataManager.vocab.getTranslations(entry);
+            if (translations.length > 0) newItem.parts.push("meanings");
+        } else {
+            newItem.parts.push("solutions")
         }
         return newItem;
     }
@@ -430,6 +452,8 @@ class TestSection extends Section {
         if (vocabList === undefined) {
             this.$("session-info").textContent = "Testing on SRS items";
             this.$("vocab-list").hide();
+            if (dataManager.settings.test.showScore)
+                this.$("score-frame").show();
             items = await this._getTestItems();
             vocabListMode = false;
             additionalTestInfo = {
@@ -437,10 +461,10 @@ class TestSection extends Section {
                 score: 0
             };
         } else {
-            this.$("session-info").textContent = "Testing on vocabulary list:";
+            this.$("session-info").textContent = "Testing on list";
             this.$("vocab-list").textContent = vocabList;
             this.$("vocab-list").show();
-            this.$("score").textContent = "";
+            this.$("score-frame").hide();
             const itemPromises = [];
             const words = dataManager.vocabLists.getWordsForList(vocabList);
             for (const word of words) {
@@ -456,6 +480,10 @@ class TestSection extends Section {
             if (!itemMap.has(item.level))
                 itemMap.set(item.level, []);
             itemMap.get(item.level).push(item);
+        }
+        for (const levelNode of this.$("srs-levels-bar").children) {
+            levelNode.classList.remove("next-if-wrong");
+            levelNode.classList.remove("next-if-correct");
         }
         this.$("wrap-up").show();
         this.testInfo = Object.assign(testInfo, additionalTestInfo, {
@@ -484,12 +512,24 @@ class TestSection extends Section {
         const oldTestInfo = this.testInfo;
         this.testInfo = null;
         if (oldTestInfo.numFinished > 0) {
+            const vocabListMode = oldTestInfo.vocabListMode;
             const keepGoing = await overlays.open("test-complete", oldTestInfo);
-            if (!keepGoing)
-                main.openSection(oldTestInfo.vocabListMode ? "vocab" : "home");
+            if (!keepGoing) main.openSection(vocabListMode ? "vocab" : "home");
         } else {
             main.openSection(oldTestInfo.vocabListMode ? "vocab" : "home");
         }
+    }
+
+    // Like closeSession, but without displaying test-complete-overlay.
+    // Used when switching languages during a session or upon closing the app
+    async abortSession() {
+        if (this.testInfo !== null) {
+            const confirmed = await dialogWindow.confirm(
+                "A test session is still running.<br>Do you want to abort it?");
+            if (confirmed) this.testInfo = null;
+            return confirmed;
+        }
+        return true;
     }
 
     // ====================================================================
@@ -532,12 +572,26 @@ class TestSection extends Section {
     //   Callbacks for flashcard-mode
     // ====================================================================
 
+    _toggleNextLevelMarkers(bool) {
+        if (this.testInfo.currentItem === null) return;
+        const item = this.testInfo.currentItem;
+        const current = this.$("srs-levels-bar").children[item.level - 1];
+        const previous = item.level > 1 ? current.previousSibling : current;
+        const numLevels = dataManager.srs.currentScheme.numLevels;
+        const next = item.level < numLevels ? current.nextSibling : current;
+        previous.classList.toggle("next-if-wrong", bool);
+        next.classList.toggle("next-if-correct", bool);
+    }
+
     _countAsCorrect() {
         if (this.testInfo === null || !this.testInfo.inEvalStep) return;
         const item = this.testInfo.currentItem;
         item.lastAnswerIncorrect = false;
         const isCorrect = !item.marked;
-        const newLevel = dataManager.test.getNewLevel(item.level, isCorrect);
+        const newLevel = this.currentlySelectedLevel !== null ?
+            parseInt(this.currentlySelectedLevel.textContent) :
+            dataManager.test.getNewLevel(item.level, isCorrect);
+        this._toggleNextLevelMarkers(false);
         if (this.delayHasPassed()) this._createQuestion(newLevel);
     }
 
@@ -545,7 +599,10 @@ class TestSection extends Section {
         if (this.testInfo === null || !this.testInfo.inEvalStep) return;
         const item = this.testInfo.currentItem;
         item.lastAnswerIncorrect = true;
-        const newLevel = dataManager.test.getNewLevel(item.level, false);
+        const newLevel = this.currentlySelectedLevel !== null ?
+            parseInt(this.currentlySelectedLevel.textContent) :
+            dataManager.test.getNewLevel(item.level, false);
+        this._toggleNextLevelMarkers(false);
         if (this.delayHasPassed()) this._createQuestion(newLevel);
     }
 
@@ -616,14 +673,12 @@ class TestSection extends Section {
 
         this._displaySolutions(solutions, dataManager.settings.test.animate);
 
-        // Update the level indicators
+        // Update the level indicator
         if (item.parts.length === 0 && !this.testInfo.vocabListMode) {
             this.$("new-level").setByIndex(newLevel - 1);
             this.$("old-level").textContent = item.level;
-            this.$("level-arrow").classList.toggle("correct",
-                                                   itemCorrect);
-            this.$("level-arrow").classList.toggle("incorrect",
-                                                   !itemCorrect);
+            this.$("level-arrow").classList.toggle("correct", itemCorrect);
+            this.$("level-arrow").classList.toggle("incorrect", !itemCorrect);
             if (dataManager.settings.test.animate) {
                 Velocity(this.$("levels-frame"), "fadeIn", { display:"flex",
                     visibility:"visible",duration:this.evalFadeInDuration});
@@ -658,36 +713,52 @@ class TestSection extends Section {
         Preparing evaluation for flashcard-mode
     ===================================================================== */
 
-    _showEvaluationButtons() {
+    async _showEvaluationButtons() {
         const item = this.testInfo.currentItem;
         const part = this.testInfo.currentPart;
         if (item.lastAnswerIncorrect) {
             item.marked = true;
         }
         this.testInfo.inEvalStep = true;
-        dataManager.test.getSolutions(item.entry, item.mode, part)
-        .then((solutions) => {
-            this._displaySolutions(
-                solutions, dataManager.settings.test.animate);
-            if (dataManager.settings.test.animate) {
-                Velocity(this.$("status"), "fadeOut", { display: "block",
-                    visibility: "hidden", duration: this.evalFadeOutDuration });
-            } else {
-                this.$("status").style.visibility = "hidden";
-            }
-            this.$("show-solutions-button").hide();
-            this.$("evaluation-buttons").show();
-            this.$("ignore-answer").hide();
-            this.$("add-answer").hide();
-            this.$("modify-item").removeAttribute("disabled");
-            if (dataManager.settings.test.animate) {
-                Velocity(this.$("button-bar"), "fadeIn", { display: "flex",
-                    visibility: "visible", duration: this.evalFadeInDuration });
-            } else {
-                this.$("button-bar").style.visibility = "visible";
-                this.$("button-bar").style.opacity = "1";
-            }
-        });
+
+        // Display solutions first
+        const solutions = await dataManager.test.getSolutions(
+            item.entry, item.mode, part);
+        this._displaySolutions(solutions, dataManager.settings.test.animate);
+
+        // Hide or fade out status message
+        if (dataManager.settings.test.animate) {
+            Velocity(this.$("status"), "fadeOut", { display: "block",
+                visibility: "hidden", duration: this.evalFadeOutDuration });
+        } else {
+            this.$("status").style.visibility = "hidden";
+        }
+
+        // Toggle visibility of control buttons
+        this.$("show-solutions-button").hide();
+        this.$("evaluation-buttons").show();
+        this.$("ignore-answer").hide();
+        this.$("add-answer").hide();
+        this.$("modify-item").removeAttribute("disabled");
+
+        // Mark potential next SRS levels for if item is counted correct/wrong
+        if (this.currentlySelectedLevel !== null)
+            this.currentlySelectedLevel.classList.remove("selected");
+        this.currentlySelectedLevel = null;
+        this._toggleNextLevelMarkers(true);
+
+        // Display control buttons and srs levels
+        if (dataManager.settings.test.animate) {
+            Velocity(this.$("button-bar"), "fadeIn", { display: "flex",
+                visibility: "visible", duration: this.evalFadeInDuration });
+            Velocity(this.$("srs-levels-bar"), "fadeIn", { display: "flex",
+                visibility: "visible", duration: this.evalFadeInDuration });
+        } else {
+            this.$("srs-levels-bar").style.visibility = "visible";
+            this.$("srs-levels-bar").style.opacity = "1";
+            this.$("button-bar").style.visibility = "visible";
+            this.$("button-bar").style.opacity = "1";
+        }
     }
 
     /* =====================================================================
@@ -701,6 +772,8 @@ class TestSection extends Section {
             (this.testInfo.currentPart === "readings" ||
              this.testInfo.currentItem.mode ===
                  dataManager.test.mode.HANZI_READINGS));
+
+        // Fill the solutions container
         for (const solution of solutions) {
             const solutionLabel = document.createElement("div");
             solutionLabel.textContent = solution;
@@ -711,14 +784,18 @@ class TestSection extends Section {
         }
         this.$("solutions").fadeScrollableBorders();
         this.$("test-item").style.marginBottom = this.testItemMarginBottom;
-        // Slide up test item to make space for solutions
-        const itemPosAfter = this.$("test-item").getBoundingClientRect();
-        const itemSlideDistance = itemPosBefore.top - itemPosAfter.top;
-        this.$("test-item").slideToCurrentPosition({
-            direction: "up", distance: itemSlideDistance,
-            duration: this.evalFadeInDuration, easing: "easeOutCubic"
-        });
-        // If animation flag is set, fade and slide labels down a bit
+
+        // If animation flag is set, slide up item to make space for solutions
+        if (animate) {
+            const itemPosAfter = this.$("test-item").getBoundingClientRect();
+            const itemSlideDistance = itemPosBefore.top - itemPosAfter.top;
+            this.$("test-item").slideToCurrentPosition({
+                direction: "up", distance: itemSlideDistance,
+                duration: this.evalFadeInDuration, easing: "easeOutCubic"
+            });
+        }
+
+        // If animation flag is set, fade and slide solutions a bit to the right
         let delay = 0; 
         if (animate) {
             await utility.finishEventQueue();
@@ -833,8 +910,9 @@ class TestSection extends Section {
     }
 
     async _createQuestion(newLevel) {
-        // Prevent multiple consecutive invocations of this function
-        if (!this.testInfo.inEvalStep)
+        // Prevent multiple consecutive invocations of this function by the user
+        // but check "skipNextEvaluation" to allow planned recursive invocation
+        if (!this.testInfo.inEvalStep && !this.testInfo.skipNextEvaluation)
             return;
         this.testInfo.inEvalStep = false;
 
@@ -901,7 +979,8 @@ class TestSection extends Section {
 
                 // Animate label with gained score
                 if (dataManager.settings.test.showScore &&
-                        !this.testInfo.vocabListMode) {
+                        !this.testInfo.vocabListMode &&
+                        dataManager.settings.test.animate) {
                     this.$("score-animation").textContent =
                         `${scoreGain >= 0 ? "+" : "-"}${
                            Math.abs(scoreGain).toFixed(1)}`;
@@ -1120,9 +1199,12 @@ class TestSection extends Section {
                 visibility: "hidden", duration: this.evalFadeOutDuration });
             Velocity(this.$("levels-frame"), "fadeOut", { display: "flex",
                 visibility: "hidden", duration: this.evalFadeOutDuration });
+            Velocity(this.$("srs-levels-bar"), "fadeOut", { display: "flex",
+                visibility: "hidden", duration: this.evalFadeOutDuration });
         } else {
             this.$("button-bar").style.visibility = "hidden";
             this.$("levels-frame").style.visibility = "hidden";
+            this.$("srs-levels-bar").style.visibility = "hidden";
         }
         this.$("continue-button").hide();
         this.$("evaluation-buttons").hide();

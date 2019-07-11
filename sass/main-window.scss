@@ -47,13 +47,13 @@
   #menu {
     display: flex;
     flex-direction: row;
+    font-family: $light-font;
 
     > button {
       @include center-content("horizontal");
       box-sizing: border-box;
       width: 45px;
       font-size: 140%;
-      font-family: $light-font;
       transition: background-color 0.15s, color 0.15s, border-width 0.15s;
       border-left: 1px solid $main-window-border-color;
       --tooltip-delay: 0.5s;
@@ -161,13 +161,11 @@
         flex: 1;
         padding-right: 8px;
         .title {
-          font-family: $text-font;
           font-size: 1.2rem;
         }
         .subtitle {
           margin-top: 4px;
           color: $color-light;
-          font-family: $text-font;
         }
       }
       .action {
@@ -203,11 +201,11 @@
   button {
     display: flex;
     flex-direction: column;
-    font-family: $button-font;
     line-height: 140%;
     transition: background-color 0.1s linear, color 0.1s linear;
     border-bottom: 1px solid $main-window-border-color;
     font-size: 150%;
+    font-family: $button-font;
     padding-top: 8px;
     padding-bottom: 8px;
     &:hover {
@@ -229,7 +227,6 @@
       line-height: 120%;
       font-size: 60%;
       text-shadow: 0 0 1px $main-window-color;
-      font-family: inherit;
     }
     &.no-items {
       color: mix($main-window-color, $main-window-background, 55%);
@@ -264,6 +261,14 @@
   background-color: $background-color;
   position: relative;
   contain: strict;
+
+  // Used to make fading between sections look more natural
+  &.alternative-background {
+    background-color: $section-background;
+  }
+  &.default-test-background {
+    background-color: $test-section-background;
+  }
 }
 
 #filter {
@@ -337,9 +342,7 @@
 
   #intro-tour-textbox-content {
     font-size: 0.9rem;
-    * {
-      font-family: OpenSans-Regular;
-    }
+
     p:first-of-type {
       margin-top: 0;
     }
@@ -362,6 +365,9 @@
     display: flex;
     flex-direction: row;
     margin-top: 10px;
+    > button {
+      font-size: 1rem;
+    }
   }
   #intro-tour-next-button, #intro-tour-back-button {
     margin-left: 15px;
@@ -386,7 +392,7 @@
     padding-left: 10px;
     padding-top: 5px;
     padding-bottom: 5px;
-    height: 48px;  // TODO: Better way without hard-coding?
+    height: $panel-header-height + 1px;
     box-sizing: border-box;
   }
 
@@ -398,9 +404,7 @@
     font-size: 120%;
     flex-direction: column;
     justify-content: space-between;
-    * {
-      font-family: $light-font;
-    }
+    font-family: $light-font;
   }
 
   .shortcut {
@@ -411,6 +415,7 @@
     @include fading-border($suggestions-window-color, "horizontal");
     padding: 5px;
     border-top: 1px solid $suggestions-window-color;
+    font-family: $button-font;
     opacity: 0.7;
 
     &:hover {

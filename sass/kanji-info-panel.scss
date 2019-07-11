@@ -68,6 +68,9 @@
   #icon-sidebar > #history-navigation-buttons {
     left: 2px;
   }
+  #maximize-button > i::before {
+    content: "🗕";
+  }
 }
 
 #window {
@@ -108,10 +111,13 @@
   }
   #kanji {
     font-size: 450%;
-    text-shadow: -1px -1px 1px $color;
-    padding: 15px;
-    padding-bottom: 0;
+    text-shadow: -0.5px -0.5px 0.5px $color;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 10px;
+    padding-bottom: 5px;
     white-space: nowrap;
+    font-family: $vocab-font;
   }
   #added-label {
     flex: 1;
@@ -182,15 +188,14 @@
 
     > div {
       &:not(:last-child) {
-        margin-bottom: 10px;
-      }
-      &:first-child {
-        margin-top: 10px;
+        margin-bottom: 8px;
       }
     }
 
     #meanings-label {
       font-size: 150%;
+      margin-top: 8px;
+      margin-bottom: 6px;
     }
     #details-frame {
       span {
@@ -216,6 +221,7 @@
     }
     .details-value {
       font-size: 120%;
+      font-family: $vocab-font;
     }
     #number-label {
       margin-right: 10px;
@@ -230,8 +236,6 @@
     flex-direction: column;
 
     #strokes-info-bar {
-      padding-top: 5px;
-      padding-bottom: 4px;
       .strokes-info-block {
         white-space: nowrap;
         margin-right: 20px;
@@ -250,6 +254,7 @@
           font-size: 150%;
         }
         #kanji-parts {
+          font-family: $vocab-font;
           white-space: nowrap;
           span {
             @extend .kanji-info-link;
@@ -261,6 +266,7 @@
           }
         }
         #radical {
+          font-family: $vocab-font;
           margin-right: 5px;
         }
         #radical-name {
@@ -354,9 +360,6 @@
   font-size: 1.5rem;
 
   button {
-    > i {
-      font-family: FontAwesome;
-    }
     opacity: 0.4;
     &:hover:not(:disabled) {
       opacity: 0.8;
@@ -391,16 +394,22 @@
 }
 
 #history {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   position: absolute;
   right: 0;
   top: 0;
   bottom: 0;
-  width: 40px;
+  width: 50px;
   z-index: 10;
+  font-family: $vocab-font;
 
   > * {
     text-align: center;
     padding: 5px;
+    cursor: $pointer-cursor;
   }
+}
+
+#maximize-button > i::before {
+  content: "🗖";
 }

@@ -16,10 +16,6 @@
     <i id="level-arrow" class="fa fa-arrow-right"></i>
     <popup-stack id="new-level" direction="up"></popup-stack>
   </div>
-  <div id="score-frame">
-    <div id="score-animation"></div>
-    <div id="score"></div>
-  </div>
 </div>
 <div id="bottom">
   <!--input id="answer-entry" placeholder="Enter your answer here"></input-->
@@ -34,14 +30,20 @@
     <button id="evaluation-button-wrong">Wrong</button>
     <button id="evaluation-button-correct">Correct</button>
   </div>
+  <div id="srs-levels-bar"></div>
   <div class="flex-spacer"></div>
   <div id="session-info-bar">
     <div id="session-info"></div>
     <div id="vocab-list"></div>
+    <div id="progress-text"></div>
+    <div id="score-frame">
+      <span>Score</span>
+      <div id="score-animation"></div>
+      <span id="score"></span>
+    </div>
     <div class="flex-spacer"></div>
     <button id="wrap-up">Wrap up</button>
     <button id="abort-session">Abort test session</button>
   </div>
   <progress id="progress"></progress>
-  <div id="progress-text" class="contrast"></div>
 </div>

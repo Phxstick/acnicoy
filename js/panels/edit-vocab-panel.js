@@ -1,6 +1,7 @@
 "use strict";
 
 const menuItems = contextMenu.registerItems({
+    // Shortcuts for word
     "copy-word": {
         label: "Copy word",
         click: ({ currentNode }) => {
@@ -21,6 +22,8 @@ const menuItems = contextMenu.registerItems({
             currentNode.focus();
         }
     },
+
+    // Shortcuts for translations
     "add-translation": {
         label: "Add translation",
         click: ({ data: {section} }) => {
@@ -39,6 +42,8 @@ const menuItems = contextMenu.registerItems({
             currentNode.focus();
         }
     },
+
+    // Shortcuts for readings
     "add-reading": {
         label: "Add reading",
         click: ({ data: {section} }) => {
@@ -57,6 +62,28 @@ const menuItems = contextMenu.registerItems({
             currentNode.focus();
         }
     },
+
+    // Shortcuts for supplementary notes
+    "add-note": {
+        label: "Add note",
+        click: ({ data: {section} }) => {
+            section.createListItem("note");
+        }
+    },
+    "delete-note": {
+        label: "Remove note",
+        click: ({ currentNode }) => {
+            currentNode.remove();
+        }
+    },
+    "modify-note": {
+        label: "Edit note",
+        click: ({ currentNode }) => {
+            currentNode.focus();
+        }
+    },
+
+    // Shortcuts for vocab lists
     "add-to-list": {
         label: "Add to a list",
         click: ({ currentNode, data: {section} }) => {
@@ -73,7 +100,7 @@ const menuItems = contextMenu.registerItems({
 
 class EditVocabPanel extends EditPanel {
     constructor() {
-        super("edit-vocab", ["translation", "reading", "vocab-list"]);
+        super("edit-vocab", ["translation", "reading", "vocab-list", "note"]);
         this.closed = false;
         this.dictionaryId = null;
         this.originalWord = null;
@@ -161,6 +188,8 @@ class EditVocabPanel extends EditPanel {
                 menuItems, ["add-reading"], { section: this });
         this.$("vocab-lists-wrapper").contextMenu(
                 menuItems, ["add-to-list"], { section: this });
+        this.$("notes-wrapper").contextMenu(
+                menuItems, ["add-note"], { section: this });
 
         // Set up completion tooltip for vocab-list view items
         this.vocabListCompletionTooltip =
@@ -197,6 +226,8 @@ class EditVocabPanel extends EditPanel {
         });
         events.on("settings-languages-readings", () => {
             this.$("readings-frame").toggleDisplay(
+                dataManager.languageSettings.get("readings"));
+            this.$("translations-frame").classList.toggle("readings-enabled",
                 dataManager.languageSettings.get("readings"));
         });
         events.on("settings-design-animate-popup-stacks", () => {
@@ -241,6 +272,7 @@ class EditVocabPanel extends EditPanel {
             this.$("translations").empty();
             this.$("readings").empty();
             this.$("vocab-lists").empty();
+            this.$("notes").empty();
             this.$("header").textContent = "Add word";
             this.$("srs-level").setByIndex(0);
             this.dictionaryId = givenDictionaryId;
@@ -257,14 +289,14 @@ class EditVocabPanel extends EditPanel {
 
         // Load existing data for this word, possibly including a dictionary ID
         const wordInfo = await dataManager.vocab.getInfo(word);
-        const { translations, readings, level, dictionaryId } = wordInfo;
+        const { translations, readings, notes, level, dictionaryId } = wordInfo;
         if (dictionaryId === null && givenDictionaryId !== null) {
             this.dictionaryId = givenDictionaryId;
         } else {
             this.dictionaryId = dictionaryId;
         }
 
-        // Display the word, translations, readings and the SRS level
+        // Display the word, translations, readings, notes and the SRS level
         this.$("word").textContent = word;
         this.$("translations").empty();
         for (const translation of translations) {
@@ -274,12 +306,15 @@ class EditVocabPanel extends EditPanel {
         for (const reading of readings) {
             this.createListItem("reading", reading);
         }
+        this.$("notes").empty();
+        for (const note of notes) {
+            this.createListItem("note", note);
+        }
         this.$("srs-level").setByIndex(level - 1);
     }
 
     createListItem(type, text="") {
-        const createNewItemOnEnter = type !== "vocab-list";
-        const node = super.createListItem(type, text, createNewItemOnEnter);
+        const node = super.createListItem(type, text);
 
         // If a node with this text already exists, do nothing
         if (node === null) return;
@@ -306,6 +341,9 @@ class EditVocabPanel extends EditPanel {
                     !dataManager.vocabLists.existsList(text));
             });
             this.vocabListCompletionTooltip.attachTo(node);
+        } else if (type === "note") {
+            node.contextMenu(menuItems,
+                    ["delete-note", "modify-note"], { section: this });
         }
         if (text.length === 0) {
             node.focus();
@@ -334,7 +372,7 @@ class EditVocabPanel extends EditPanel {
     }
 
     async save() {
-        // Prevent empty item getting added as translation/reading/list
+        // Prevent empty item getting added as translation/reading/note/list
         if (this.root.activeElement !== null)
             this.root.activeElement.blur();
 
@@ -345,12 +383,15 @@ class EditVocabPanel extends EditPanel {
         const translations = [];
         const readings = [];
         const lists = [];
+        const notes = [];
         for (const item of this.$("translations").children)
             translations.push(item.textContent);
         for (const item of this.$("readings").children)
             readings.push(item.textContent);
         for (const item of this.$("vocab-lists").children)
             lists.push(item.textContent);
+        for (const item of this.$("notes").children)
+            notes.push(item.textContent);
 
         // If no word has been entered or no values have been entered at all,
         // display an error message (if adding) or ask whether to remove word
@@ -390,11 +431,11 @@ class EditVocabPanel extends EditPanel {
         let dataChanged;
         if (isAlreadyAdded || renamed) {
             dataChanged = await dataManager.vocab.edit(
-                    word, translations, readings, level);
+                word, translations, readings, notes, level);
             if (dataChanged) events.emit("vocab-changed", word);
         } else {
             await dataManager.vocab.add(
-                    word, translations, readings, level, this.dictionaryId);
+                word, translations, readings, notes, level, this.dictionaryId);
             events.emit("word-added", word, this.dictionaryId);
         }
 

@@ -13,6 +13,8 @@
     #word {
       font-size: 1.8rem;
       line-height: 1.8rem;  // Strip fonts from built-in padding
+      font-family: $vocab-font;
+
       &:not(:hover):not(:focus) {
         border: 1px solid transparent;
         background-color: transparent;
@@ -40,9 +42,15 @@
 #vocab-lists > *:empty:before {
   content: "Enter list name";
 }
+#notes > *:empty:before {
+  content: "Enter note";
+}
 
 #translations-frame {
-  flex: 2;
+  flex: 4;
+  &.readings-enabled {
+    flex: 3;
+  }
 }
 #readings.pinyin > * {
   font-family: $pinyin-font;
@@ -50,6 +58,10 @@
 #vocab-lists > * {
   &.list-not-existing {
     background-color: $background-color-dark;
+    &:hover {
+      background-color: $background-color-medium;
+      border-color: $border-color-darkest;
+    }
   }
 }
 

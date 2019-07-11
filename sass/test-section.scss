@@ -18,12 +18,14 @@ $solution-fade-distance: 10px;
 
 $scroll-overflow-shadow-size: 25px;
 $fade-color: var(--test-frame-fade-color);
+$test-frame-background: var(--test-frame-background);
 
 :host {
   --test-frame-background: #{$test-section-background};
   --test-frame-fade-color: #{mix($test-section-background,
                                  $test-section-color, 80%)};
 }
+
 :host(.colored-background.word-meaning) {
   --test-frame-background: #{$test-section-item-type-word-meaning};
   --test-frame-fade-color: #{mix($test-section-item-type-word-meaning,
@@ -73,7 +75,7 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  background-color: var(--test-frame-background);
+  background-color: $test-frame-background;
   color: $test-section-color;
   align-items: center;
   padding-left: 12%;
@@ -95,7 +97,7 @@ body {
   flex-direction: column;
   position: relative;
   align-items: center;
-  background-color: var(--test-frame-background);
+  background-color: $test-frame-background;
 
   &.animate {
     // Timing function is ease-out-sine
@@ -129,6 +131,7 @@ body {
     color: $test-section-color;
     margin-bottom: 25px;
     text-align: center;
+    font-family: $vocab-font;
 
     &.serif { font-family: $serif-font; }
 
@@ -156,7 +159,7 @@ body {
       position: absolute;
       left: -$solution-fade-distance;
       right: -$item-fade-out-distance;
-      background-color: var(--test-frame-background);
+      background-color: $test-frame-background;
       content: "";
       z-index: 2;
       transition-property: background-color;
@@ -184,6 +187,7 @@ body {
     z-index: 1;
     color: $test-section-color;
     font-size: 120%;
+    font-family: $vocab-font;
 
     div {
       text-align: center;
@@ -206,14 +210,14 @@ body {
       top: 0;
       height: var(--top-shadow-height, 0px);
       background: linear-gradient(
-          to bottom, var(--test-frame-background), transparent);
+          to bottom, $test-frame-background, transparent);
     }
     &::after {
       @extend %scroll-overflow-shadow;
       bottom: 0;
       height: var(--bottom-shadow-height, 0px);
       background: linear-gradient(
-          to top, var(--test-frame-background), transparent);
+          to top, $test-frame-background, transparent);
     }
 
     &.stretch-shadows {
@@ -264,10 +268,10 @@ body {
 
 #new-level > option {
   font-size: 100%;
-  font-family: $font;
-  background-color: var(--test-frame-background);
+  background-color: $test-frame-background;
   color: $test-section-color;
   border: 1px solid transparent;
+  font-family: $text-font;
 
   &:hover {
     border-color: $test-section-color;
@@ -301,25 +305,18 @@ body {
 }
 
 #score-frame {
-  position: absolute;
-  bottom: 10px;
-  left: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: left;
+  position: relative;
+  margin-left: 30px;
 
   #score {
-    font-size: 140%;
-    font-family: $light-font;
-    opacity: 0.7;
-    color: $test-section-color;
-    margin-top: -10px;
+    margin-left: 5px;
   }
   #score-animation {
+    position: absolute;
+    right: -6px;  // Try to center element (works less well for larger scores)
+    bottom: 0;
     font-size: 120%;
     font-family: $header-font;
-    margin-left: -6px;
-
     &.positive { color: $test-section-correct-color; }
     &.negative { color: $test-section-incorrect-color; }
   }
@@ -334,6 +331,7 @@ body {
   cursor: $auto-cursor;
   min-width: $answer-input-width;
   max-width: $answer-input-max-width;
+  font-family: $vocab-font;
 
   &.pinyin {
     font-family: $pinyin-font;
@@ -375,11 +373,14 @@ body {
   margin-top: 0px;
   color: $test-section-color-medium;
 
-  &:hover, &:focus {
+  &:hover {
     color: $test-section-color;
     border-color: $test-section-color;
     background-image: linear-gradient(
         to right, transparent, $fade-color, transparent);
+  }
+
+  &:focus {
     box-shadow: none;
   }
 }
@@ -452,7 +453,7 @@ body {
     // Make button light up with gradient upon hovering
     &:not(:disabled):hover, &:not(:disabled):focus {
       color: $test-section-color;
-      text-shadow: 0 0 0.5px $test-section-color-medium;
+      text-shadow: 0 0 0.5px $test-section-color-dark;
     }
     &:not(.flashcard-mode):not(:disabled):hover,
         &:not(.flashcard-mode):not(:disabled):focus {
@@ -485,12 +486,11 @@ body {
 
 #progress {
   width: 100%;
-  height: 20px;
+  height: 5px;
   appearance: none;
-  border-top: 1px solid $test-section-color-light;
 
   &::-webkit-progress-bar {
-    background-color: var(--test-frame-background);
+    background-color: transparent;
   }
   &::-webkit-progress-value {
       background-color: $test-section-color-light;
@@ -498,17 +498,6 @@ body {
   &::-webkit-progress-inner-element {
     border: 0;
   }
-}
-
-#progress-text {
-  @include center-content;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 20px;
-  font-family: $small-font;
-  font-size: 90%;
 }
 
 #session-info-bar {
@@ -545,7 +534,7 @@ body {
   button {
     border-image: none;
 
-    // Make button light up with gradient upon hovering
+    // Make button light up upon hovering, add gradient if it's at the border
     &:not(.flashcard-mode):not(:disabled):hover,
         &:not(.flashcard-mode):not(:disabled):focus {
       background-color: $fade-color;
@@ -565,6 +554,91 @@ body {
       background-image: linear-gradient(
           to right, transparent 5%, $fade-color, transparent 95%);
       background-color: transparent;
+    }
+  }
+}
+
+#srs-levels-bar {
+  @include fading-border($test-section-color-dark, "horizontal");
+  border-bottom-width: 1px;
+  border-top-width: 0;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  color: darken($test-section-color, 20%);
+  font-size: 1.2rem;
+  --tooltip-speed: 0s;
+
+  > button {
+    display: flex;  // Needed to center css-tooltip
+    width: 40px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    font-family: $light-font;
+
+    &:hover {
+      background-color: $fade-color;
+    }
+
+    // Transparent placeholder for border
+    border-left: 1px solid transparent;
+    &:last-child {
+      border-right: 1px solid transparent;
+    }
+
+    &.next-if-correct {
+      background-color: rgba($test-section-correct-color, 0.20);
+      color: darken($test-section-color, 5%);
+
+      border-left: 1px solid rgba($test-section-correct-color, 0.5);
+      + button {
+        border-left: 1px solid rgba($test-section-correct-color, 0.5);
+      }
+      &:last-child {
+        border-right: 1px solid rgba($test-section-correct-color, 0.5);
+      }
+
+      &:hover {
+        background-color:
+          rgba(mix(white, $test-section-correct-color, 50%), 0.25);
+      }
+    }
+
+    &.next-if-wrong {
+      background-color: rgba($test-section-incorrect-color, 0.20);
+      color: darken($test-section-color, 5%);
+
+      border-left: 1px solid rgba($test-section-incorrect-color, 0.5);
+      + button {
+        border-left: 1px solid rgba($test-section-incorrect-color, 0.5);
+      }
+      &:last-child {
+        border-right: 1px solid rgba($test-section-incorrect-color, 0.5);
+      }
+
+      &:hover {
+        background-color:
+          rgba(mix(white, $test-section-incorrect-color, 50%), 0.25);
+      }
+    }
+
+    &.selected {
+      background-color: rgba(white, 0.45);
+      color: white;
+      text-shadow: 0 0 1px $test-frame-background;
+
+      border-left: 1px solid rgba(white, 0.8) !important;
+      + button {
+        border-left: 1px solid rgba(white, 0.8);
+      }
+      &:last-child {
+        border-right: 1px solid rgba(white, 0.8);
+      }
+
+      &:hover {
+        background-color: rgba(white, 0.55);
+      }
     }
   }
 }

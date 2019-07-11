@@ -62,6 +62,7 @@ body {
   transition-duration: .15s;
   transition-delay: .2s;
   transition-timing-function: ease;
+  font-family: $text-font;
 
   &.visible {
     opacity: 1;

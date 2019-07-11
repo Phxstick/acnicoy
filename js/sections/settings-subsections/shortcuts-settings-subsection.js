@@ -24,11 +24,12 @@ class ShortcutsSettingsSubsection extends SettingsSubsection {
 
         // Click a shortcut to change its key combination (unless it's fixed)
         this.$("shortcuts-list").addEventListener("click", async (event) => {
-            if (!event.target.classList.contains("keyboard-shortcut")) return;
-            if (event.target.classList.contains("fixed")) return;
+            const element = event.target;
+            if (!element.classList.contains("keyboard-shortcut")) return;
+            if (element.classList.contains("fixed")) return;
             const newKeyCombination = await overlays.open("choose-shortcut");
             if (newKeyCombination === null) return;
-            const shortcutName = event.target.dataset.name;
+            const shortcutName = element.dataset.name;
             shortcuts.bindKeyCombination(shortcutName, newKeyCombination);
             this.broadcastGlobalSetting(shortcutName);
         });

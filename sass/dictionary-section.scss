@@ -13,7 +13,7 @@ body {
   flex-direction: row;
   background-color: $background-color;
   color: $color;
-  height: 40px;
+  height: 35px;
   box-shadow: $slim-shadow-bottom;
   flex-shrink: 0;
   z-index: var(--dictionary-control-bar-layer);
@@ -154,7 +154,9 @@ body {
 
 #history {
   flex: 1;
-  font-size: 1.1rem;
+  font-family: $vocab-font;
+  line-height: 1.3rem;
+
   > * {
     cursor: $pointer-cursor;
   }

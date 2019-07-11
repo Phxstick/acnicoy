@@ -61,8 +61,6 @@
     cursor: $pointer-cursor;
     white-space: nowrap;
     border-radius: 5px;
-    font-family: OpenSans-Regular;  // TODO: Should be inherited, but is over-
-                                    //       written by stuff in "base"-import
 
     &:hover:not([contenteditable]) {
       text-decoration: underline;
@@ -118,5 +116,4 @@ input.light {
   color: $view-edit-color;
   background-color: $input-background-focus;
   box-shadow: $input-highlight-shadow;
-  font-family: OpenSans-Regular;
 }

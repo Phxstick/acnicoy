@@ -23,7 +23,7 @@ module.exports = function (paths, modules) {
     vocab.getAll = function (sortingCriterion, sortBackwards=false) {
         let columnToSortBy;
         if (sortingCriterion === "alphabetical") columnToSortBy = "word";
-        else if (sortingCriterion === "dateAdded") columnToSortBy = "date_added";
+        else if (sortingCriterion === "dateAdded") columnToSortBy = "date_added"
         else if (sortingCriterion === "level") columnToSortBy = "level";
         const sortingDirection = sortBackwards ? "DESC" : "ASC";
         return modules.database.query(
@@ -123,31 +123,39 @@ module.exports = function (paths, modules) {
      *     this word corresponds to. Optional.
      * @returns {Promise[Array[String]}
      */
-    vocab.add = async function (word, translations, readings, level,
+    vocab.add = async function (word, translations, readings, notes, level,
                                 dictionaryId=null) {
         translations = utility.removeDuplicates(translations);
         readings = utility.removeDuplicates(readings);
+        notes = utility.removeDuplicates(notes);
         const rows = await modules.database.query(
             "SELECT * FROM vocabulary WHERE word = ?", word);
         if (!rows.length) {
-            // Word not added. Insert new row into the the vocabulary table
+            // Word not added. Insert new row into the vocabulary table
             const spacing = modules.srs.currentScheme.intervals[level];
             modules.stats.updateScore(modules.test.mode.WORDS, 0, level);
             await modules.database.run(`
                 INSERT INTO vocabulary
                 (word, date_added, level, review_date,
-                 translations, readings, dictionary_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                 translations, readings, notes, dictionary_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                 word, utility.getTime(), level, utility.getTime() + spacing,
-                translations.join(";"), readings.join(";"), dictionaryId);
-            return [true, translations.length, readings.length];
+                translations.length > 0 ? translations.join(";") : null,
+                readings.length > 0 ? readings.join(";") : null,
+                notes.length > 0 ? notes.join(";") : null, dictionaryId);
+            return true;
         }
-        const oldTranslations = rows[0].translations.length === 0 ?
+
+        // If word is already added, extend with new values without deleting old
+        const oldTranslations = rows[0].translations !== null ?
             new Set() : new Set(rows[0].translations.split(";"));
-        const oldReadings = rows[0].readings.length === 0 ?
+        const oldReadings = rows[0].readings !== null ?
             new Set() : new Set(rows[0].readings.split(";"));
+        const oldNotes = rows[0].notes !== null ?
+            new Set() : new Set(rows[0].notes.split(";"));
         const newTranslations = [...oldTranslations];
         const newReadings = [...oldReadings];
+        const newNotes = [...oldNotes];
         for (const translation of translations) {
             if (!oldTranslations.has(translation)) {
                 newTranslations.push(translation);
@@ -158,17 +166,18 @@ module.exports = function (paths, modules) {
                 newReadings.push(reading);
             }
         }
+        for (const note of notes) {
+            if (!oldNotes.has(note)) {
+                newNotes.push(note);
+            }
+        }
         await modules.database.run(`
-            UPDATE vocabulary SET translations = ?, readings = ?
+            UPDATE vocabulary SET translations = ?, readings = ?, notes = ?
             WHERE word = ?`,
-            newTranslations.join(";"), newReadings.join(";"), word);
-        let numTranslationsAdded = 0;
-        let numReadingsAdded = 0;
-        for (const translation of translations)
-            numTranslationsAdded += !oldTranslations.has(translation);
-        for (const reading of readings)
-            numReadingsAdded += !oldReadings.has(reading);
-        return [false, numTranslationsAdded, numReadingsAdded];
+            newTranslations.length > 0 ? newTranslations.join(";") : null,
+            newReadings.length > 0 ? newReadings.join(";") : null,
+            newNotes.length > 0 ? newNotes.join(";") : null, word);
+        return false;
     }
 
     /**
@@ -182,30 +191,37 @@ module.exports = function (paths, modules) {
      * @param {Integer} level
      * @returns {Promise[Boolean]}
      */
-    vocab.edit = async function (word, translations, readings, level) {
+    vocab.edit = async function (word, translations, readings, notes, level) {
         // Get old values
         const rows = await modules.database.query(
             "SELECT * FROM vocabulary WHERE word = ?", word);
-        const oldTranslations = rows[0].translations.length === 0 ?
+        const oldTranslations = rows[0].translations === null ?
             [] : new Set(rows[0].translations.split(";"));
-        const oldReadings = rows[0].readings.length === 0 ?
+        const oldReadings = rows[0].readings === null ?
             [] : new Set(rows[0].readings.split(";"));
+        const oldNotes = rows[0].notes === null ?
+            [] : new Set(rows[0].notes.split(";"));
         const oldLevel = rows[0].level;
         const oldReviewDate = rows[0].review_date;
         // Apply changes to database
         const spacing = modules.srs.currentScheme.intervals[level];
         const newReviewDate = oldLevel === level ? oldReviewDate :
             utility.getTime() + spacing;
-        modules.stats.updateScore(modules.test.mode.WORDS, oldLevel, level);
+        if (oldLevel !== level)
+            modules.stats.updateScore(modules.test.mode.WORDS, oldLevel, level);
         await modules.database.run(`
             UPDATE vocabulary
-            SET translations = ?, readings = ?, level = ?, review_date = ?
+            SET translations = ?, readings = ?, notes = ?, level = ?,
+                review_date = ?
             WHERE word = ?`,
-            translations.join(";"), readings.join(";"), level,
-            newReviewDate, word);
+            translations.length > 0 ? translations.join(";") : null,
+            readings.length > 0 ? readings.join(";") : null,
+            notes.length > 0 ? notes.join(";") : null,
+            level, newReviewDate, word);
         // Return true if anything has changed
-        return !utility.setEqual(new Set(oldTranslations), new Set(translations))
+        return !utility.setEqual(new Set(oldTranslations),new Set(translations))
             || !utility.setEqual(new Set(oldReadings), new Set(readings))
+            || !utility.setEqual(new Set(oldNotes), new Set(notes))
             || oldLevel !== level;
     }
 
@@ -245,22 +261,24 @@ module.exports = function (paths, modules) {
 
     /**
      * Return information about given added word. Info object contains fields
-     * "translations", "readings", "level", "reviewDate", "dateAdded".
+     * "translations", "readings", "notes", "level", "reviewDate", "dateAdded".
      * @param {String} word
      * @returns {Promise[Object]}
      */
     vocab.getInfo = function (word) {
         return modules.database.query(
             `SELECT date_added, level, review_date, translations, readings,
-                    dictionary_id
+                    notes, dictionary_id
              FROM vocabulary WHERE word = ?`, word)
         .then(([{ date_added, level, review_date, translations, readings,
-                  dictionary_id }]) => {
+                  notes, dictionary_id }]) => {
             const info = {};
             info.translations =
-                translations.length === 0 ? [] : translations.split(";");
+                translations === null ? [] : translations.split(";");
             info.readings =
-                readings.length === 0 ? [] : readings.split(";");
+                readings === null ? [] : readings.split(";");
+            info.notes =
+                notes === null ? [] : notes.split(";");
             info.level = level;
             info.reviewDate = review_date;
             info.dateAdded = date_added;
@@ -279,8 +297,7 @@ module.exports = function (paths, modules) {
         return modules.database.query(
             "SELECT translations FROM vocabulary WHERE word = ?", word)
         .then((rows) => {
-            if (rows.length === 0) return [];
-            if (rows[0].translations.length === 0) return [];
+            if (rows.length === 0 || rows[0].translations === null) return [];
             return rows[0].translations.split(";");
         });
     }
@@ -295,9 +312,23 @@ module.exports = function (paths, modules) {
         return modules.database.query(
             "SELECT readings FROM vocabulary WHERE word = ?", word)
         .then((rows) => {
-            if (rows.length === 0) return [];
-            if (rows[0].readings.length === 0) return [];
+            if (rows.length === 0 || rows[0].readings === null) return [];
             return rows[0].readings.split(";");
+        });
+    }
+
+    /**
+     * Return notes associated with given word, or an empty array if the word
+     * is not added or has no notes.
+     * @param {String} word
+     * @returns {Promise[Array[String]]}
+     */
+    vocab.getNotes = function (word) {
+        return modules.database.query(
+            "SELECT notes FROM vocabulary WHERE word = ?", word)
+        .then((rows) => {
+            if (rows.length === 0 || rows[0].notes === null) return [];
+            return rows[0].notes.split(";");
         });
     }
 

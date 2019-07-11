@@ -4,7 +4,7 @@
   #stats-bar {
     border-bottom: 0;
   }
-  #mistakes-frame {
+  #mistakes-header {
     display: none;
   }
 }
@@ -89,17 +89,19 @@
       flex-direction: row;
       padding-top: 6px;
       padding-bottom: 9px;
-      align-items: flex-center;
+      align-items: center;
 
       .name {
         font-size: 120%;
         margin-left: 15px;
+        font-family: $vocab-font;
       }
       .mode {
         margin-left: 15px;
         font-variant: small-caps;
         flex-shrink: 0;
         font-size: 120%;
+        line-height: 1.2rem;
         color: $color-light;
       }
       .caret {
@@ -115,8 +117,10 @@
       margin-bottom: 0px;
       padding: 5px;
       padding-top: 0;
+      font-family: $vocab-font;
 
       > * {
+        line-height: 1.2;
         margin-bottom: 5px;
         margin-left: 30px;
       }

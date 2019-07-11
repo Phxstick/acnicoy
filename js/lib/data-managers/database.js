@@ -91,6 +91,7 @@ module.exports = function (paths, modules) {
                         date_added INTEGER,
                         translations TEXT,
                         readings TEXT,
+                        notes TEXT,
                         level INTEGER,
                         review_date INTEGER,
                         correct_count INTEGER DEFAULT 0,

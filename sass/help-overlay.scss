@@ -44,10 +44,6 @@
       padding-bottom: 8px;
       margin-right: 4px;
 
-      > * {
-        font-family: OpenSans-Regular;
-      }
-
       .separator::after {
         margin-right: 8px;
         margin-left: 8px;
@@ -62,10 +58,6 @@
     padding: 5px;
     padding-right: 10px;
     overflow-y: auto;
-
-    *:not(i) {
-      font-family: OpenSans-Regular;
-    }
 
     > p:first-child {
       margin-top: 5px;

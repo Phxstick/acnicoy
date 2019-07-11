@@ -7,10 +7,10 @@ The sidebar on the left of the window provides functions that operate on the
 currently selected language. You build up a vocabulary using the "Word" button
 at the top, which lets you enter foreign words along with their translations.
 
-Acnicoy will periodically schedule your vocabulary items for review according
-to a customizable [SRS system](help#Components#SRS). To test yourself on those
-items, click the "Test" button on the side bar (which displays the amount of
-items that are ready to be reviewed).
+Acnicoy will schedule your vocabulary items for review according to a
+customizable [spaced repetition system](help#Components#SRS). To test yourself
+on those items, click the "Test" button on the side bar (which displays the
+amount of items that are ready to be reviewed).
 
 If you are learning several languages, you can switch to another language
 by clicking the button located in the top left corner of the window.

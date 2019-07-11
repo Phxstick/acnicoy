@@ -11,6 +11,7 @@
     height: 50px;
     line-height: 50px;
     text-align: left;
+    font-family: $vocab-font;
 
     &:not(:hover):not(:focus) {
       border: 1px solid transparent;
@@ -35,7 +36,7 @@
   content: "Enter pinyin";
 }
 
-#readings > * {
+#readings {
   font-family: $pinyin-font;
 }
 

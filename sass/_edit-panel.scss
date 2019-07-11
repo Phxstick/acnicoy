@@ -2,17 +2,17 @@
 
 #partitioned-window > #main-frame {
   padding-top: 5px;
-  padding-bottom: 10px;
+  padding-bottom: 5px;
 
   > *:not(:last-child) {
-    margin-bottom: 3px;
+    margin-bottom: 1px;
   }
 }
 
 .detail-row {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 2;
 }
 
 .detail-row-list-wrapper {
@@ -30,6 +30,8 @@
   @extend .light-item-view;
   display: inline;
   padding: 0;  // Doesn't work well for inline items (add to wrapper if needed)
+  font-family: $vocab-font;
+
   > * {
     line-height: 1rem;  // Strip fonts from built-in padding
   }

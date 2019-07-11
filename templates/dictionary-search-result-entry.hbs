@@ -13,21 +13,21 @@
 
     {{! Display reading corresponding to main word }}
 
-    <div id="main-reading">
+    <span id="main-reading">
       {{#if wordsAndReadings.[0].word.length}}
         {{wordsAndReadings.[0].reading}}
       {{/if}}
-    </div>
+    </span>
 
     {{! Display main word. If there is only a reading, use it as main word }}
 
-    <span id="main-word">
+    <div id="main-word">
       {{#if wordsAndReadings.[0].word.length}}
         {{eachLetter wordsAndReadings.[0].word}}
       {{else}}
         {{wordsAndReadings.[0].reading}}
       {{/if}}
-    </span>
+    </div>
   </div>
   <div id="meanings-frame">
 

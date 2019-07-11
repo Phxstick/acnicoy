@@ -22,6 +22,8 @@ span {
       padding: 5px;
       text-shadow: -0.5px -0.5px 0.5px $color;
       text-align: center;
+      font-family: $vocab-font;
+
       &.rare {
         color: $kanji-search-results-rare-color;
         text-shadow:-0.5px -0.5px 0.5px $kanji-search-results-rare-shadow-color;
@@ -69,7 +71,6 @@ span {
 
     #meanings {
       font-size: 120%;
-      margin-bottom: 5px;
     }
 
     #details-bar > span {
@@ -90,6 +91,7 @@ span {
 
     .yomi-frame {
       margin-top: 4px;
+      font-family: $vocab-font;
 
       .yomi-header {
         font-size: 80%;

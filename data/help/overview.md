@@ -1,6 +1,6 @@
-This help is split into three parts:
+This help section is split into three parts:
 
-- [Quick Start](help#Quick_Start): If you aren't up to reading boring detailed
+- [Quick Start](help#Quick_Start): If you aren't up to reading boring
   descriptions and just want to start learning, this section will give you a
   broad overview of the most important parts of the application.
 - [Components](help#Components): More detailed descriptions for each of the

@@ -1,3 +1,12 @@
+### Next
+- Display notes in test section after an item has been finished
+- Refine kanji search and make it work like dictionary search
+- Display some kind of loading screen when starting a test session
+- If language data for a seconary language is not available, offer EN version
+- Get rid of linear runtime when comparing a new mistake to previous ones
+- Make instructions in init-path-window clearer
+- Switching languages is only slow because of loading test-button label. Cache?
+
 ### Primary goals
 - Extend notes section:
   - Add control bar: search, show help, add group, undo things
@@ -7,16 +16,11 @@
   - Remember custom size for group-overview
 - Design:
   - Add separate functionality for choosing custom background colors for reviews
-  - Make dark deflt, Solarized (Light/Dark) and Ubuntu (Light/Dark) color scheme
-  - Rework fonts in sass: Separate gui-fonts and content-fonts
-    - Use "text-font" everywhere where there's simple text in the gui
-    - Also let font-family be inherited, and remove all workarounds (and test!)
+  - Make dark default, Solarized (Light/Dark), Ubuntu (Light/Dark) color schemes
+  - Use translations-font and readings-font in some places instead of vocab-font
 - Performance/Memory:
   - Try to reduce memory consumption
-  - Try to make switching languages even faster 
   - Call garbage collector after unloading language data to actually unload it?
-  - Consider dropping name-dictionary to lower memory usage and file size
-    - Maybe include it in the data but only load it when explicitly asked to
 - Indicate that something can be scrolled using shadows (only where necessary)
 - Reverse completion list order if it's shown above entry instead of below
   - Extend the utility view function for this purpose
@@ -26,6 +30,7 @@
 - Try to replace request module with axios and check if ESOCKETTIMEDOUTs stop
 - Add option in general settings to choose compact/extended/custom window size
 - Add loading screen where appropriate (loading vocab section, kanji view, ...)
+- Also consider notes when searching vocabulary items in vocab section?
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
@@ -59,11 +64,9 @@ By category
   - Make sure notifications are removed or updated whenever necessary!
   - Make sure no additional program file is loaded after start for safe update
 - Display number of notes in each group?
-- Enable and test auto-launch functionality again or is it unnecessary?
 
 ### Design
 - Use font-family "Trajan" for roman numerals?
-- When switching between home and stats section, fade to lightcoral background?
 - Adjust scrollbars to corresponding background color so that they're always
   visible well. Also consider using thin, rounded scrollbars with margin
 
@@ -82,14 +85,13 @@ By category
 - Make history view loading more efficient
 - Limit size of search history to a sensible value
 - Use prepared statements for database accesses which are done repeatedly
-- Limit size of notifications list (since deleting takes linear time there)
+- Limit size of notifications list (since deleting one takes linear time there)
 
 ### Init window
 - Make init section feel more welcoming and less plain. Consider including a
   welcome message or using a subtle pattern as background image.
 
 ### Main window
-- Remember where focus was when opening panel, restore after closing panel again
 - Highlight menu button whose corresponding section/panel is opened?
   Or otherwise indicate which section/panel is currently opened?
 - Notifications:
@@ -158,6 +160,8 @@ Japanese
 - Check if there is new stuff in the JMdict that's not getting parsed yet
 - Get rid of words column in dictionary table? (adjust both parse and JS-script)
   Note that this might require to create words-index again, probably not worth.
+- Consider dropping name-dictionary to lower memory usage and file size
+  - Maybe include it in the data but only load it when explicitly asked to
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)

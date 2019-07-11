@@ -107,13 +107,14 @@
   #word-frame {
     width: 130px;
     margin-right: 4px;
+    font-family: $vocab-font;
 
     #main-reading {
       font-size: 80%;
     }
     #main-word {
-      margin-top: 4px;
       font-size: 124%;  // Under 125% to prevent thicker underline and its bugs
+      line-height: 1.6rem;
     }
   }
 
@@ -131,6 +132,8 @@
         }
       }
       &.meaning {
+        line-height: 1.2rem;
+
         .number {
           @extend .small;
         }
@@ -151,6 +154,7 @@
       }
       &#variants {
         margin-top: 10px;
+        font-family: $vocab-font;
 
         #variant-header {
           @extend .small;

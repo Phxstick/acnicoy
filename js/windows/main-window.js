@@ -87,6 +87,7 @@ class MainWindow extends Window {
         this.currentPanel = null;
         this.currentSection = null;
         this.currentSuggestionPane = null;
+        this.lastFocussedSectionElement = null;
         this.barsHidden = false;
 
         // Flags to keep track of whether an action is currently running
@@ -568,6 +569,8 @@ class MainWindow extends Window {
             this.nextSection = name;
             return;
         }
+        if (this.currentPanel !== null)
+            this.closePanel(this.currentPanel)
         if (this.currentSection === name)
             return;
         const currentSection = this.currentSection;
@@ -578,6 +581,10 @@ class MainWindow extends Window {
         this.nextSection = name;
         await this.sections[currentSection].close();
         if (dataManager.settings.design.fadeSectionSwitching && !noFading) {
+            this.$("section-frame").classList.toggle("alternative-background",
+                name === "home" || name === "stats" || name === "kanji");
+            this.$("section-frame").classList.toggle("default-test-background",
+                name === "test");
             this.fadingOutPreviousSection = true;
             await Velocity(this.sections[currentSection], "fadeOut",
                 { duration: this.sectionFadeDuration });
@@ -616,6 +623,9 @@ class MainWindow extends Window {
                 this.$("filter").style.opacity = "1";
                 this.$("filter").show();
             }
+            // Remember which element in the section had focus
+            this.lastFocussedSectionElement =
+                this.sections[this.currentSection].root.activeElement;
         }
 
         // Load the given entry
@@ -743,6 +753,10 @@ class MainWindow extends Window {
             }
             this.hideShortcutsInfo();
             this.hideSuggestionPane();
+
+            // Also restore focus to last focussed element in current section
+            if (this.lastFocussedSectionElement)
+                this.lastFocussedSectionElement.focus();
         }
     }
 
@@ -1083,7 +1097,8 @@ class MainWindow extends Window {
             buttonLabel = "Download";
             const { latestVersion, releaseDate, description } = data;
             const dateString = dateFormat(releaseDate, "mmm dS, yyyy");
-            subtitle = `Version ${latestVersion}, released on ${releaseDate}`;
+            subtitle = `Version ${latestVersion}, released on ${releaseDate}` +
+                       `<br>Click here to view the release notes.`;
             details = marked(description);
             buttonCallback = () => events.emit("start-program-update");
         }
