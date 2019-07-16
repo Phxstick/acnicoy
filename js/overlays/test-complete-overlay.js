@@ -6,7 +6,7 @@ class TestCompleteOverlay extends Overlay {
         this.opened = false;
         this.moreLanguagesReady = false;
         this.$("close-button").addEventListener("click", () => {
-            this.resolve(false);
+            this.resolve(null);
         });
         this.$("ok-button").addEventListener("click", () => {
             this.resolve(false);
@@ -35,11 +35,13 @@ class TestCompleteOverlay extends Overlay {
         const mistakeNodeTemplate = templates.get("test-complete-mistake");
         this.mistakesViewState = utility.initializeView({
             view: this.$("mistakes"),
-            getData: () => this.testInfo.mistakes,
+            getData: () => this.mistakes,
             createViewItem: (mistake) => {
+                const [name, mode, part] = mistake.split("\t");
+                mistake = { name, mode, part };
                 // Display name of mode/part if there's more than one of them
                 if (this.numTotalParts > 1) mistake.modeLabel = 
-                    `${modeToText[mistake.mode]} ${partToText[mistake.part]}`;
+                    `${modeToText[mode]} ${partToText[part]}`;
                 return utility.fragmentFromString(mistakeNodeTemplate(mistake));
             },
             initialDisplayAmount: 15,
@@ -125,8 +127,9 @@ class TestCompleteOverlay extends Overlay {
     }
 
     open(testInfo) {
-        this.testInfo = testInfo;
-        this.classList.toggle("no-mistakes", testInfo.mistakes.length === 0);
+        this.opened = true;
+        this.mistakes = Array.from(testInfo.mistakes);
+        this.classList.toggle("no-mistakes", this.mistakes.length === 0);
         this.mistakesViewState.search();
 
         // Fill in statistics
@@ -147,34 +150,26 @@ class TestCompleteOverlay extends Overlay {
         for (const mode of dataManager.test.modes) {
             this.numTotalParts += dataManager.test.modeToParts(mode).length;
         }
-
-        // Offer to start a new test for another language
-        this.$("languages-ready-for-testing").clear();
-        const promises = [];
-        for (const language of dataManager.languages.visible) {
-            promises.push(dataManager.srs.getTotalAmountDueFor(language)
-            .then((amount) => ({ language, amount })));
+        
+        if (testInfo.vocabListMode) {
+            this.$("start-new-test-frame").hide();
+            return;
         }
-        this.moreLanguagesReady = false;
-        Promise.all(promises).then((languageAndAmount) => {
-            // Display languages with large amount of due items first
-            languageAndAmount.sort((lA1, lA2) => lA2.amount - lA1.amount);
-            let numLanguagesLeft = 0;
-            for (const { language, amount } of languageAndAmount) {
-                if (amount === 0) break;
-                if (dataManager.currentLanguage === language) break;
-                this.$("languages-ready-for-testing").add(language);
-                this.$("languages-ready-for-testing").setAmountDue(language,
-                                                                   amount);
-                ++numLanguagesLeft;
-            }
-            this.$("languages-ready-for-testing").set("Choose a language");
-            // Hide this frame if there are no languages with due items
-            this.moreLanguagesReady = numLanguagesLeft > 0;
-            this.$("start-new-test-frame").toggleDisplay(numLanguagesLeft > 0);
-        });
 
-        this.opened = true;
+        // Display sorted list of languages that have items ready for review
+        this.moreLanguagesReady = false;
+        this.$("languages-ready-for-testing").clear();
+        const languageAndAmount = Object.entries(main.srsItemAmountsDueTotal);
+        languageAndAmount.sort(([,amount1], [,amount2]) => amount2 - amount1);
+        for (const [ language, amount ] of languageAndAmount) {
+            if (amount === 0) break;
+            if (dataManager.currentLanguage === language) continue;
+            this.$("languages-ready-for-testing").add(language);
+            this.$("languages-ready-for-testing").setAmountDue(language,amount);
+            this.moreLanguagesReady = true;
+        }
+        this.$("languages-ready-for-testing").set("Choose a language");
+        this.$("start-new-test-frame").toggleDisplay(this.moreLanguagesReady);
     }
 
     close() {

@@ -456,17 +456,22 @@ class EditVocabPanel extends EditPanel {
 
         // Apply changes to vocab-lists
         for (const list of oldLists) {
-            if (!newLists.has(list)) {
+            const notInList = !newLists.has(list);
+            if (notInList) {
                 dataManager.vocabLists.removeWordFromList(originalWord, list);
+            }
+            if (notInList || renamed) {
                 events.emit("removed-from-list", originalWord, list);
             }
         }
         for (const list of newLists) {
-            if (!oldLists.has(list)) {
-                if (dataManager.vocabLists.existsList(list)) {
-                    dataManager.vocabLists.addWordToList(word, list);
-                    events.emit("added-to-list", word, list);
-                }
+            if (!dataManager.vocabLists.existsList(list)) continue;
+            const notInList = !oldLists.has(list);
+            if (notInList) {
+                dataManager.vocabLists.addWordToList(word, list);
+            }
+            if (notInList || renamed) {
+                events.emit("added-to-list", word, list);
             }
         }
 

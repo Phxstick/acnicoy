@@ -4,6 +4,7 @@ class OverlayWindow extends Widget {
     constructor() {
         super("overlay-window", true);
         this.wrapper = this.$("wrapper");
+        this.resolveFunctions = new WeakMap();
         this.overlays = [];
         this.filters = [];
         // Change bottommost filter size when window size changes
@@ -38,10 +39,9 @@ class OverlayWindow extends Widget {
         this.filters.push(filter);
         // Create a promise which the opened overlay can resolve at any time
         const promise = new Promise((resolve) => {
-            overlay.resolve = (results) => {
-                this.closeTopmost();
-                resolve(results);
-            };
+            this.resolveFunctions.set(overlay, resolve);
+            // Overlay can call this function internally to return some value
+            overlay.resolve = (returnValue) => this.closeTopmost(returnValue);
         });
         overlay.open(...args);
         overlay.captureFocus = true;
@@ -79,7 +79,7 @@ class OverlayWindow extends Widget {
         return promise;
     }
     
-    closeTopmost() {
+    closeTopmost(returnValue) {
         if (this.overlays.length === 0) return;
         const overlay = this.overlays.pop();
         const filter = this.filters.pop();
@@ -123,6 +123,9 @@ class OverlayWindow extends Widget {
                 this.hide();
             }
         });
+        const resolveFunction = this.resolveFunctions.get(overlay);
+        this.resolveFunctions.delete(overlay);
+        resolveFunction(returnValue);
     }
 }
 

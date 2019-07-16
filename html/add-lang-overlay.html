@@ -6,25 +6,28 @@
   <div id="main-frame">
     <div>
       <div class="select"><select id="language"></select></div>
+      <div id="language-data-note" class="note">
+        Please note that additional data for the Japanese language is currently
+        only available when choosing English as the language for translations.
+      </div>
     </div>
     <div>
       <div class="select"><select id="secondary-language"></select></div>
-      <!--div class="note">Recommended: Your native language.</div-->
     </div>
-    <hr class="fading">
+    <div>
+      <div class="select"><select id="srs-scheme"></select></div>
+    </div>
     <div>
       <div>
         <check-box id="readings-flag"></check-box>
         <span>Add word readings</span>
       </div>
       <div class="note">
-        Useful if the target language has many irregular readings or uses a
-        different writing system (e.g. Chinese, Japanese).
+        This feature allows adding transcriptions to words and is mainly
+        intended to be used for Japanese and Chinese, which have complex
+        writing systems. But it might also come in useful if a language has
+        many irregular readings.
       </div>
-    </div>
-    <hr class="fading">
-    <div>
-      <div class="select"><select id="srs-scheme"></select></div>
     </div>
   </div>
   <div id="button-frame" class="light-button-bar">

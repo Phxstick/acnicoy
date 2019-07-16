@@ -3,6 +3,7 @@
 class SrsStatusOverview extends PinwallWidget {
     constructor() {
         super("srs-status-overview");
+        this.minSpinnerDisplayTimePromise = Promise.resolve();
     }
 
     connectedCallback() {
@@ -20,10 +21,9 @@ class SrsStatusOverview extends PinwallWidget {
 
     async update() {
         const languages = dataManager.languages.visible;
-        const amounts = {};
+        const amounts = main.srsItemAmounts;
         let maxNumLevels = 1;
         for (const language of languages) {
-            amounts[language] = await dataManager.srs.getAmountsFor(language);
             maxNumLevels = Math.max(maxNumLevels, amounts[language].length - 1);
         }
         // Add header for the total count and each SRS level
@@ -34,7 +34,13 @@ class SrsStatusOverview extends PinwallWidget {
         }
         rowsHtml.push(`
           <div id="header-row">
-            <div id="reload-srs"><i class="fa fa-refresh"></i>Reload</div>
+            <div style="display:none" id="update-button">
+              <i class="fa fa-refresh"></i>Refresh</div>
+            <div id="updating-spinner" class="pulsating-triple-dots">
+              <div class="bounce1"></div>
+              <div class="bounce2"></div>
+              <div class="bounce3"></div>
+            </div>
             <div>
               <div id="column-headers">
                 <div>Total</div>
@@ -65,8 +71,15 @@ class SrsStatusOverview extends PinwallWidget {
             rowsHtml.push(html)
         }
         this.$("container").innerHTML = rowsHtml.join("");
-        this.$("reload-srs").addEventListener(
-            "click", () => events.emit("update-srs-status"));
+        this.$("update-button").addEventListener("click", () => {
+            this.$("update-button").hide();
+            this.$("updating-spinner").show("table-cell");
+            this.minSpinnerDisplayTimePromise = utility.wait(740);
+            events.emit("update-srs-status");
+        });
+        await this.minSpinnerDisplayTimePromise;
+        this.$("update-button").show("table-cell");
+        this.$("updating-spinner").hide();
     }
 }
 

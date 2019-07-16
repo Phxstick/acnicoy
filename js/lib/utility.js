@@ -174,6 +174,31 @@ function removeDuplicates(array) {
 }
 
 /**
+ * Replace all sequences of whitespace with a single space (unicode 32).
+ * @param {String}
+ * @returns {String}
+ */
+function collapseWhitespace(string) {
+    return string.replace(/\s/g, " ");
+}
+
+/**
+ * Return a list of all matches of the given pattern in the given string.
+ * @param {RegExp}
+ * @param {String}
+ * @returns {Array[Match]}
+ */
+function findMatches(pattern, string) {
+    const matches = [];
+    let match = pattern.exec(string);
+    while (match !== null) {
+        matches.push(match);
+        match = pattern.exec(string);  // Will find next match
+    }
+    return matches;
+}
+
+/**
  * Given multiple arrays, return a new one where the i-th entry is an array
  * containing the i-th entries of the individual arrays.
  * @param {...Array} arrays
@@ -1122,6 +1147,8 @@ module.exports.daysInMonth = daysInMonth;
 module.exports.parseCssFile = parseCssFile;
 module.exports.setEqual = setEqual;
 module.exports.removeDuplicates = removeDuplicates;
+module.exports.collapseWhitespace = collapseWhitespace;
+module.exports.findMatches = findMatches;
 module.exports.zipArrays = zipArrays;
 module.exports.calculateED = calculateED;
 module.exports.getStringForNumber = getStringForNumber;

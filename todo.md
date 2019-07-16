@@ -1,12 +1,3 @@
-### Next
-- Display notes in test section after an item has been finished
-- Refine kanji search and make it work like dictionary search
-- Display some kind of loading screen when starting a test session
-- If language data for a seconary language is not available, offer EN version
-- Get rid of linear runtime when comparing a new mistake to previous ones
-- Make instructions in init-path-window clearer
-- Switching languages is only slow because of loading test-button label. Cache?
-
 ### Primary goals
 - Extend notes section:
   - Add control bar: search, show help, add group, undo things
@@ -14,6 +5,7 @@
   - Make it possible to reorder groups in the notes-section via drag & drop
   - Maybe add an option which orders them alphabetically (without changing data)
   - Remember custom size for group-overview
+  - Rework how notes are displayed, separate view and data using initializeView
 - Design:
   - Add separate functionality for choosing custom background colors for reviews
   - Make dark default, Solarized (Light/Dark), Ubuntu (Light/Dark) color schemes
@@ -31,6 +23,9 @@
 - Add option in general settings to choose compact/extended/custom window size
 - Add loading screen where appropriate (loading vocab section, kanji view, ...)
 - Also consider notes when searching vocabulary items in vocab section?
+- Use String.matchAll for test comparisons after updating to Chome 73
+- Update notes shown in view container test section if item has been updated
+- Offer language data for EN if not available for the chosen source language?
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
@@ -39,8 +34,8 @@
 - Make it possibly to scroll while pressing Ctrl (for moving notes).
 - Fix visual bug when opening overlays (e.g. when opening help on SRS migration)
 - Test section: fix bug where overflow-shadow below item solutions is now shown
-- "#words-tab" in vocab section sometimes expands height by 15px beyond section
 - How to prevent SQLITE conflicting journals accumulating in the dropbox folder?
+- When adding a word to a newly created list in edit-panel, word-counter shows 2
 
 
 By category
@@ -64,6 +59,7 @@ By category
   - Make sure notifications are removed or updated whenever necessary!
   - Make sure no additional program file is loaded after start for safe update
 - Display number of notes in each group?
+- Disallow closing loading-overlay via shortcut?
 
 ### Design
 - Use font-family "Trajan" for roman numerals?
@@ -86,6 +82,7 @@ By category
 - Limit size of search history to a sensible value
 - Use prepared statements for database accesses which are done repeatedly
 - Limit size of notifications list (since deleting one takes linear time there)
+- Make edit distance calculation more efficient using threshold
 
 ### Init window
 - Make init section feel more welcoming and less plain. Consider including a
@@ -108,11 +105,11 @@ By category
 ### Test section
 - Re-evaluate answer after current item has been edited?
 - If item has been renamed, directly display change instead of skipping?
-- Allow directly setting new level in flashcard-mode
-- Where to move level-frame?
 - Implement a test-mode which just tests low-level items for each language?
 - `text-align: center` impairs fadeIn function. How to work around?
   - Add `text-align` to solution divs again
+- Also fade buttons in evaluation mode?
+- Fix overflow shadow in test section (and add to notes container as well)
 
 ### Suggestion panes
 - Consider suggesting vocabulary lists when adding/editing words as well

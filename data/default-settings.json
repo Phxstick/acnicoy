@@ -63,8 +63,7 @@
     ],
     "shortcuts": {
         "quit": "CmdOrCtrl+Q",
-        "force-quit": "CmdOrCtrl+Escape",
-        "close-sliding-panels": "Escape",
+        "close-topmost": "Escape",
         "toggle-bars-visibility": "F11",
         "refresh": "CmdOrCtrl+R",
         "save-data": "CmdOrCtrl+S",
@@ -84,11 +83,12 @@
         "open-settings": "CmdOrCtrl+E",
         "open-help": "F1",
 
-        "count-as-correct": "CmdOrCtrl+Y",
+        "count-as-correct": "CmdOrCtrl+C",
         "count-as-wrong": "CmdOrCtrl+X",
         "ignore-answer": "CmdOrCtrl+I",
         "add-solution": "CmdOrCtrl+Plus",
         "edit-test-item": "CmdOrCtrl+M",
+        "wrap-up-test": "CmdOrCtrl+Escape",
 
         "save-input": "CmdOrCtrl+Enter"
     }

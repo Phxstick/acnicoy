@@ -4,23 +4,32 @@ const fs = require("fs");
 
 module.exports = function (paths, modules) {
     const settings = {};
+    const defaultSettings = require(paths.defaultSettings);
     let data;
+
+    // Recursively fills in missing values in user settings using default values
+    function assureCompleteness(settingsObj, defaultsObj) {
+        for (const key in defaultsObj) {
+            if (!settingsObj.hasOwnProperty(key)) {
+                settingsObj[key] = defaultsObj[key];
+            } else if (defaultsObj[key] instanceof Object &&
+                    !Array.isArray(defaultsObj[key])) {
+                assureCompleteness(settingsObj[key], defaultsObj[key]);
+            }
+        }
+    }
 
     settings.isLoaded = function () {
         return data !== undefined;
     };
 
-    settings.setDefault = function () {
-        const defaultSettings = fs.readFileSync(paths.defaultSettings);
-        fs.writeFileSync(paths.globalSettings, defaultSettings);
-        return require(paths.defaultSettings);
-    };
-
     settings.initialize = function () {
         if (fs.existsSync(paths.globalSettings)) {
             data = require(paths.globalSettings);
+            assureCompleteness(data, defaultSettings);
         } else {
-            data = settings.setDefault();
+            data = defaultSettings;
+            settings.saveGlobal();
         }
     };
 

@@ -14,11 +14,13 @@ module.exports = function (paths, modules) {
             fs.writeFileSync(paths.notifications, JSON.stringify([]));
         }
         const global = require(paths.notifications);
+
         // Get local notifications from local storage
         if (!storage.get("notifications")) {
             storage.set("notifications", []);
         }
         const local = storage.get("notifications");
+
         // Merge global and local notifications chronologically
         let g = 0;
         let l = 0;
@@ -33,15 +35,15 @@ module.exports = function (paths, modules) {
                 notificationList.push(local[l++]);
             }
         }
-        const notificationsCopy = [...notificationList];
+
         // Remove notifications which are not needed anymore
+        const notificationsCopy = [...notificationList];
         for (const { type, id, data } of notificationsCopy) {
             if (type === "content-download-finished" ||
                     type === "content-installation-finished") {
                 notificationsManager.delete(id);
             } else if (type === "program-update-available") {
-                const curVersion = require(paths.packageInfo).version;
-                if (compareVersions(curVersion, data.latestVersion) >= 0) {
+                if (compareVersions(app.version, data.latestVersion) >= 0) {
                     notificationsManager.delete(id);
                 }
             }
@@ -50,6 +52,7 @@ module.exports = function (paths, modules) {
 
     notificationsManager.saveGlobal = function () {
         if (!isModified) return;
+
         // Separate global and local notifications (by their id)
         const global = [];
         const local = [];
@@ -60,6 +63,7 @@ module.exports = function (paths, modules) {
                 local.push(notification);
             }
         }
+
         // Save global and local notifications to their respective locations
         fs.writeFileSync(paths.notifications, JSON.stringify(global));
         storage.set("notifications", local);

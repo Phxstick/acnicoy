@@ -81,11 +81,14 @@
   font-family: $text-font;
 }
 
-#reload-srs {
-  padding-top: 4px;
-  padding-bottom: 4px;
-  opacity: 0.75;
+#updating-spinner, #update-button {
+  display: table-cell;
   text-align: center;
+}
+
+#update-button {
+  padding-top: 2px;  // Workaround to keep row height constant 
+  opacity: 0.75;
   cursor: $pointer-cursor;
   font-size: 0.9rem;
 
@@ -95,4 +98,10 @@
   i {
     margin-right: 6px;
   }
+}
+
+#updating-spinner > div {
+  vertical-align: middle;
+  width: 14px;
+  height: 14px;
 }

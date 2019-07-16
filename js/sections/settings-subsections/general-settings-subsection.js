@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const compareVersions = require("compare-versions");
 
 class GeneralSettingsSubsection extends SettingsSubsection {
     constructor() {
@@ -101,12 +102,12 @@ class GeneralSettingsSubsection extends SettingsSubsection {
                 const lastUpdateTime = utility.getTime();
                 storage.set("programUpdateCache.lastUpdateTime", lastUpdateTime)
 
-                // If a new version has been released, add a notification
-                if ((cachedInfo === undefined &&
-                     app.version !== info.latestVersion)
-                        || (cachedInfo !== undefined &&
-                            cachedInfo.latestVersion !== info.latestVersion)) {
-                    main.addNotification("program-update-available", info);
+                // If a new version has been released, issue a notification
+                if (compareVersions(app.version, info.latestVersion) < 0) {
+                    if (cachedInfo === undefined ||
+                            cachedInfo.latestVersion !== info.latestVersion) {
+                        main.addNotification("program-update-available", info);
+                    }
                 }
 
                 // Update view
@@ -205,7 +206,8 @@ class GeneralSettingsSubsection extends SettingsSubsection {
     updateProgramVersionStatusView() {
         const info = storage.get("programUpdateCache.info");
         if (!info) return;
-        const updateAvailable = app.version !== info.latestVersion;
+        const updateAvailable =
+             compareVersions(app.version, info.latestVersion) < 0;
         this.$("current-program-version").textContent = app.version;
         this.$("program-version-status").textContent =
             updateAvailable ? "Update available" : "Up to date";

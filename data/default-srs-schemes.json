@@ -24,7 +24,7 @@
             "1 month",
             "2 months",
             "4 months"],
-        "description": "Smaller version of the standard scheme with larger intervals at the beginning to increase time efficiency. Final interval lengths are the same to ensure long-time-memorization."
+        "description": "Smaller version of the standard scheme with larger intervals at the beginning to increase time efficiency. Final interval lengths are the same to ensure long-term memorization."
     },
     {
         "name": "Very compact",
@@ -36,7 +36,7 @@
             "1 month",
             "2 months",
             "4 months"],
-        "description": "Smaller version of the compact scheme with even larger intervals at the beginning to increase time efficiency. Final interval lengths are the same to ensure long-time-memorization."
+        "description": "Smaller version of the compact scheme with even larger intervals at the beginning to increase time efficiency. Final interval lengths are the same to ensure long-term memorization."
     },
     {
         "name": "Standard Extended",
@@ -51,6 +51,6 @@
             "2 months",
             "4 months",
             "8 months"],
-        "description": "Standard scheme with an added 8 months interval. Useful for a rather small vocabulary with many rare/specialized terms that are hard to memorize."
+        "description": "Standard scheme with an additional 8 months interval. Useful for a rather small vocabulary with many rare/specialized terms that are hard to memorize."
     }
 ]

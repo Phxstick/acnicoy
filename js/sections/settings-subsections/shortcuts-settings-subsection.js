@@ -11,10 +11,10 @@ class ShortcutsSettingsSubsection extends SettingsSubsection {
             "open-home-section", "open-stats-section", "open-settings",
             "open-help",
 
-            "quit", "force-quit", "close-sliding-panels",
-            "toggle-bars-visibility", "refresh", "open-dev-tools",
+            "quit", "close-topmost", "toggle-bars-visibility",
+            "refresh", "open-dev-tools",
 
-            "count-as-correct", "count-as-wrong",
+            "count-as-correct", "count-as-wrong", "wrap-up-test",
             "ignore-answer", "add-solution", "edit-test-item",
 
             "save-input"
@@ -37,11 +37,16 @@ class ShortcutsSettingsSubsection extends SettingsSubsection {
     
     registerCentralEventListeners() {
         const shortcutLabels =
-            this.$$("#shortcuts-list .keyboard-shortcut:not(.fixed)");
+            this.$$("#shortcuts-list .keyboard-shortcut[data-name]");
         for (const label of shortcutLabels) {
             events.on(`settings-shortcuts-${label.dataset.name}`, () => {
-                label.textContent =
-                    shortcuts.getBoundKeyCombination(label.dataset.name);
+                if (label.dataset.builtin !== undefined) {
+                    label.textContent = label.dataset.builtin + " / " +
+                        shortcuts.getBoundKeyCombination(label.dataset.name);
+                } else {
+                    label.textContent =
+                        shortcuts.getBoundKeyCombination(label.dataset.name);
+                }
             });
         }
     }

@@ -14,7 +14,7 @@ $item-fade-out-timing: cubic-bezier(0.390, 0.575, 0.565, 1.000);  // Ease-out-si
 $item-fade-out-duration: .23;
 $item-fade-out-distance: 25px;
 
-$solution-fade-distance: 10px;
+$solution-fade-distance: 12px;
 
 $scroll-overflow-shadow-size: 25px;
 $fade-color: var(--test-frame-fade-color);
@@ -41,12 +41,12 @@ $test-frame-background: var(--test-frame-background);
   --test-frame-fade-color: #{mix($test-section-item-type-kanji-meaning,
                                  $test-section-color, 80%)};
 }
-:host(.colored-background.on-yomi) {
+:host(.colored-background.kanji-on-yomi) {
   --test-frame-background: #{$test-section-item-type-kanji-on-yomi};
   --test-frame-fade-color: #{mix($test-section-item-type-kanji-on-yomi,
                                  $test-section-color, 80%)};
 }
-:host(.colored-background.kun-yomi) {
+:host(.colored-background.kanji-kun-yomi) {
   --test-frame-background: #{$test-section-item-type-kanji-kun-yomi};
   --test-frame-fade-color: #{mix($test-section-item-type-kanji-kun-yomi,
                                  $test-section-color, 80%)};
@@ -65,6 +65,7 @@ $test-frame-background: var(--test-frame-background);
 body {
   display: flex;
   flex-direction: column;
+  background-color: $test-section-background;
 }
 
 #top {
@@ -81,12 +82,18 @@ body {
   padding-left: 12%;
   padding-right: 12%;
 
-  &.animate, &.animate #new-level > option {
+  &.animate, &.animate #new-level > option, &.animate #notes-wrapper,
+      &.animate #button-bar {
     // Timing function is ease-out-sine
     transition-property: background-color;
     transition-timing-function: $item-fade-in-timing;
     transition-duration: $item-fade-in-duration;
     transition-delay: $item-fade-in-delay;
+  }
+
+  // Set backgrounds so that solutions don't overlap when fading in
+  &.animate #notes-wrapper, &.animate #button-bar {
+    background-color: $test-frame-background;
   }
 }
 
@@ -149,11 +156,11 @@ body {
     }
   }
 
-  #solutions-wrapper {
+  #solutions-wrapper, #notes-wrapper {
     position: relative;
     display: flex;
     flex-direction: row;
-    z-index: 0;
+    overflow-y: hidden;
 
     %scroll-overflow-bar {
       position: absolute;
@@ -161,7 +168,6 @@ body {
       right: -$item-fade-out-distance;
       background-color: $test-frame-background;
       content: "";
-      z-index: 2;
       transition-property: background-color;
       transition-timing-function: $item-fade-out-timing;
       transition-duration: $item-fade-out-duration;
@@ -178,22 +184,43 @@ body {
     }
   }
 
-  #solutions {
-    flex: 1;
+  #solutions, #notes {
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    flex: 1;
     overflow-y: auto;
-    z-index: 1;
+
     color: $test-section-color;
     font-size: 120%;
     font-family: $vocab-font;
 
     div {
-      text-align: center;
+      text-align: center;  // Despite `align-items: center` needed for multiline
       padding-top: 3px;
       padding-bottom: 3px;
       line-height: 1.3;
+    }
+
+    &::-webkit-scrollbar {
+      width: 16px;
+    }
+    &::-webkit-scrollbar-track {
+      border-radius: 6px;
+      background-color: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      background-clip: padding-box;
+      border: 4px solid transparent;
+      background-color: $scrollbar-light-thumb-background;
+      &:hover {
+        background-color: $scrollbar-light-thumb-background-hover;
+      }
+      &:active {
+        background-color: $scrollbar-light-thumb-background-active;
+      }
     }
 
     %scroll-overflow-shadow {
@@ -229,29 +256,30 @@ body {
         right: -$item-fade-in-distance;  // Or should it be fade-out-distance?
       }
     }
+  }
 
+  #notes {
+    @include fading-border($test-section-color-light, "horizontal");
+    border-top-width: 1px;
+    border-bottom-width: 0;
+
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-top: 5px;
+    color: $test-section-color-lightest;
+
+    > div {
+      line-height: 1.2rem;
+    }
+  }
+
+  #notes-wrapper {
+    min-height: 46px;
+  }
+
+  #solutions {
     &.pinyin > * {
       font-family: $pinyin-font;
-    }
-
-    &::-webkit-scrollbar {
-      width: 16px;
-    }
-    &::-webkit-scrollbar-track {
-      border-radius: 6px;
-      background-color: transparent;
-    }
-    &::-webkit-scrollbar-thumb {
-      border-radius: 10px;
-      background-clip: padding-box;
-      border: 4px solid transparent;
-      background-color: $scrollbar-light-thumb-background;
-      &:hover {
-        background-color: $scrollbar-light-thumb-background-hover;
-      }
-      &:active {
-        background-color: $scrollbar-light-thumb-background-active;
-      }
     }
   }
 }
@@ -326,6 +354,7 @@ body {
   text-align: center;
   box-sizing: border-box;
   font-size: $answer-input-font-size;
+  line-height: $answer-input-font-size;  // Disregard padding in font glyphs
   padding: $answer-input-padding;
   outline: none;
   cursor: $auto-cursor;
@@ -340,7 +369,7 @@ body {
     color: transparent;
   }
 
-  margin-top: 10px;
+  margin-top: 11px;  // Stack with bottom border of continue-button
   color: $test-section-color;
   border-bottom: 1px solid $test-section-color-light;
 
@@ -362,6 +391,9 @@ body {
 
 #continue-button, #show-solutions-button {
   @include fading-border($test-section-color-medium, "horizontal");
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+
   box-sizing: border-box;
   width: 460px;
   padding: $answer-input-padding;
@@ -369,7 +401,6 @@ body {
   padding-bottom: 10px;
   font-family: $button-font;
   font-size: $answer-input-font-size;
-  border-bottom-width: 1px;
   margin-top: 0px;
   color: $test-section-color-medium;
 
@@ -385,17 +416,13 @@ body {
   }
 }
 
-#show-solutions-button {
-  padding-top: 10px;
-  padding-bottom: 10px;
-  border-radius: 6px;
-  border-top-width: 1px;
-}
-
 #evaluation-buttons {
+  @include fading-border($test-section-color-medium, "horizontal");
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+
   display: flex;
   flex-direction: row;
-  border-top-width: 0;
   width: 460px;
   color: $test-section-color-medium;
 
@@ -411,76 +438,90 @@ body {
     }
     &:hover, &:focus {
       color: $test-section-color;
-      background-image: linear-gradient(
-          to right, transparent, $fade-color, transparent);
-      box-shadow: none;
     }
     &:not(:last-child) {
-      border-right: 1px solid $test-section-color-medium;
+      border-right-width: 1px;
+      border-right-style: solid;
     }
   }
 }
 
+#evaluation-button-wrong {
+  &::first-letter {
+    border-bottom: 1px solid $test-section-color;
+  }
+  &:hover, &:focus, &.highlighted {
+    $incorrect-fade: rgba(mix(white, $test-section-incorrect-color, 50%), 0.3);
+    background-image: linear-gradient(to left,$incorrect-fade,transparent 95%);
+    text-shadow: 0 0 1px $test-section-incorrect-color;
+  }
+}
+
+#evaluation-button-correct {
+  &::first-letter {
+    border-bottom: 1px solid $test-section-color;
+  }
+  &:hover, &:focus, &.highlighted {
+    $correct-fade: rgba(mix(white, $test-section-correct-color, 50%), 0.3);
+    background-image: linear-gradient(to right, $correct-fade, transparent 95%);
+    text-shadow: 0 0 1px $test-section-correct-color;
+  }
+}
+
 #button-bar {
+  @include fading-border($test-section-color-medium, "horizontal");
+  border-top-width: 1px;
+  border-bottom-width: 0px;
+
   position: relative;
   display: flex;
   flex-direction: row;
   height: 35px;
   width: 460px;
-  border-top-width: 1px;
   @include fading-border($test-section-color-medium, "horizontal");
 
   button {
     @include center-content;
-    @include fading-border(lighten($test-section-color-medium, 5%),"to bottom");
-    // width: 190px;
     flex: 1;
-    border-top: 0;
-    border-bottom: 0;
-    border-left: 0;
-    background-color: transparent;
-    background-repeat: no-repeat;
-    background-position: center top;
     color: $test-section-color-medium;
     font-family: $button-font;
+
     &:not(:last-child) {
       border-right-width: 1px;
+      border-right-style: solid;
     }
     &:focus {
       box-shadow: none;
     }
 
-    // Make button light up with gradient upon hovering
-    &:not(:disabled):hover, &:not(:disabled):focus {
+    // Make text light up upon hovering
+    &:hover, &:focus {
       color: $test-section-color;
       text-shadow: 0 0 0.5px $test-section-color-dark;
     }
-    &:not(.flashcard-mode):not(:disabled):hover,
-        &:not(.flashcard-mode):not(:disabled):focus {
-      background-image: linear-gradient(to bottom,$fade-color,transparent 70%);
+
+    // Make background light up upon hovering, use gradient if it's first/last
+    &:not(.flashcard-mode) {
+      &:not(:first-child):not(:last-child) {
+        &:hover, &:focus {
+          background-color: $fade-color;
+        }
+      }
+      &:first-child:hover, &:first-child:focus {
+        background-image: linear-gradient(to left,$fade-color,transparent 95%);
+      }
+      &:last-child:hover, &:last-child:focus {
+        background-image: linear-gradient(to right,$fade-color,transparent 95%);
+      }
     }
-    &:not(.flashcard-mode):not(:disabled):first-child:hover,
-        &:not(.flashcard-mode):not(:disabled):first-child:focus {
-      background-image: radial-gradient(ellipse at top right,
-        $fade-color, transparent 65%);
+
+    // In flashcard mode, there's just a single button, so fade to both sides
+    &.flashcard-mode {
+      &:hover, &:focus {
+        background-image: linear-gradient(
+            to right, transparent 5%, $fade-color, transparent 95%);
+      }
     }
-    &:not(.flashcard-mode):not(:disabled):last-child:hover,
-        &:not(.flashcard-mode):not(:disabled):first-child:focus {
-      background-image: radial-gradient(ellipse at top left,
-        $fade-color, transparent 65%);
-    }
-    &.flashcard-mode:not(:disabled):hover,
-        &.flashcard-mode:not(:disabled):focus {
-      background-image: radial-gradient(ellipse at top,
-        $fade-color, transparent 65%);
-    }
-    // &:disabled {
-    //   color: $control-bar-disabled-color;
-    //   &:hover {
-    //     text-shadow: none;
-    //     background-image: none;
-    //   }
-    // }
   }
 }
 
@@ -524,37 +565,6 @@ body {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-  }
-}
-
-#button-bar, #evaluation-buttons {
-  @include fading-border($test-section-color-medium, "horizontal");
-  border-bottom-width: 1px;
-
-  button {
-    border-image: none;
-
-    // Make button light up upon hovering, add gradient if it's at the border
-    &:not(.flashcard-mode):not(:disabled):hover,
-        &:not(.flashcard-mode):not(:disabled):focus {
-      background-color: $fade-color;
-    }
-    &:not(.flashcard-mode):not(:disabled):first-child:hover,
-        &:not(.flashcard-mode):not(:disabled):first-child:focus {
-      background-image: linear-gradient(to left,$fade-color,transparent 95%);
-      background-color: transparent;
-    }
-    &:not(.flashcard-mode):not(:disabled):last-child:hover,
-        &:not(.flashcard-mode):not(:disabled):last-child:focus {
-      background-image: linear-gradient(to right,$fade-color,transparent 95%);
-      background-color: transparent;
-    }
-    &.flashcard-mode:not(:disabled):hover,
-        &.flashcard-mode:not(:disabled):focus {
-      background-image: linear-gradient(
-          to right, transparent 5%, $fade-color, transparent 95%);
-      background-color: transparent;
-    }
   }
 }
 

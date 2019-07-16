@@ -1,14 +1,28 @@
 <div id="window">
   <div id="partitioned-window">
     <div id="main-frame">
-      <div>Choose the directory where your data will be stored in.</div>
+      <div>
+        Please choose the directory where your data will be stored in.
+      </div>
+      <div>
+        This will include your vocabulary, user preferences etc. and should be
+        stored separately from the program files, e.g. in your home directory.
+      </div>
+      <div>
+        If you wish to use the program across multiple devices, you can choose
+        a folder managed by a synchronization service such as Dropbox.
+      </div>
+      <div>
+        If you used the program previously already and want to continue with
+        existing data, you can select the corresponding directory now. If you
+        use the program for the first time, specify a new or empty directory.
+      </div>
       <div id="input-frame">
         <input id="data-path" class="styled"></input>
         <button id="choose-path-button" class="simple">
           <i class="fa fa-folder-open-o"></i>
         </button>
       </div>
-      <div class="note">If you used the program previously already and want to continue with your existing data, you can select the corresponding directory now.</div>
     </div>
     <div id="button-frame">
       <button id="continue-button" class="simple">Continue</button>

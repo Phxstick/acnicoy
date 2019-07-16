@@ -107,8 +107,9 @@
 
       #scheme-description, #scheme-description-input {
         height: 64px;
-        font-size: 15px;
         line-height: 16px;
+        font-size: 15px;
+        font-family: $small-font;
         overflow: auto;
         padding: 3px;
         margin-bottom: 6px;

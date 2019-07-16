@@ -77,6 +77,10 @@ class MainWindow extends Window {
         this.srsStatusUpdateInterval = utility.timeSpanStringToSeconds("5 min");
         this.statusFadeOutDelay = 1000 * 5;  // 3 seconds
 
+        // Cached amounts of SRS items, updated regularly and on user action
+        this.srsItemAmounts = {};
+        this.srsItemAmountsDueTotal = {};
+
         // Main window components
         this.sections = {};
         this.panels = {};
@@ -175,11 +179,10 @@ class MainWindow extends Window {
         this.$("language-popup").onOpen = () => {
             this.$("language-popup").clear();
             for (const language of dataManager.languages.visible) {
-                this.$("language-popup").add(
-                    language, dataManager.currentLanguage === language);
-                dataManager.srs.getTotalAmountDueFor(language).then((amount)=>{
-                    this.$("language-popup").setAmountDue(language, amount);
-                });
+                const isSelected = dataManager.currentLanguage === language;
+                const amountDue = this.srsItemAmountsDueTotal[language];
+                this.$("language-popup").add(language, isSelected);
+                this.$("language-popup").setAmountDue(language, amountDue);
             }
         }
 
@@ -248,8 +251,7 @@ class MainWindow extends Window {
             "open-settings": () => this.openSection("settings"),
             "open-help": () => overlays.open("help"),
             "quit": () => ipcRenderer.send("quit"),
-            "force-quit": () => ipcRenderer.send("close-now"),
-            "close-sliding-panels": () => {
+            "close-topmost": () => {
                 // Close whatever is currently on top
                 if (overlays.isAnyOpen()) {
                     overlays.closeTopmost();
@@ -257,13 +259,15 @@ class MainWindow extends Window {
                     this.closePanel(this.currentPanel);
                 } else if (this.$("kanji-info-panel").isOpen) {
                     this.$("kanji-info-panel").close();
+                } else if (this.sections["test"].testInfo !== null) {
+                    this.sections["test"].closeSession();
                 }
             },
             "toggle-fullscreen": () =>
                 mainBrowserWindow.setFullScreen(
                     !mainBrowserWindow.isFullScreen()),
             "toggle-bars-visibility": () => this.toggleBarVisibility(),
-            "refresh": () => events.emit("update-srs-status"),
+            "refresh": () => events.emit("update-srs-status-cache"),
             "save-input": () => {
                 if (this.currentPanel !== null) {
                     this.panels[this.currentPanel].save();
@@ -342,8 +346,26 @@ class MainWindow extends Window {
     }
 
     registerCentralEventListeners() {
-        // Update amount of SRS items displayed on test button regularly
-        events.on("update-srs-status", () => this.updateTestButton());
+        // Regularly update amount of SRS items displayed in various locations
+        events.on("update-srs-status-cache", async () => {
+            const languages = dataManager.languages.visible;
+            for (const language of languages) {
+                const amounts = await dataManager.srs.getAmountsFor(language);
+                this.srsItemAmounts[language] = amounts;
+
+                // Sum up amounts to get total number of due items per language
+                let amountDueTotal = 0;
+                for (const itemsForLevel of amounts) {
+                    for (const mode in itemsForLevel) {
+                        amountDueTotal += itemsForLevel[mode].due;
+                    }
+                }
+                this.srsItemAmountsDueTotal[language] = amountDueTotal;
+            }
+            // After cache has been updated, notify other parts of the program
+            this.updateTestButton();
+            events.emit("update-srs-status");
+        });
         // Regulary notify user if SRS items are ready to be reviewed
         events.onAll(["settings-general-show-srs-notifications",
                       "settings-general-srs-notifications-interval"], () => {
@@ -405,9 +427,6 @@ class MainWindow extends Window {
         events.on("content-download-finished", (info) => {
             this.addNotification("content-download-finished", info);
         });
-        events.on("settings-test-show-progress", () => {
-            this.updateTestButton();
-        });
     }
 
     async open() {
@@ -450,10 +469,18 @@ class MainWindow extends Window {
         }
 
         // Regularly update SRS info
-        events.emit("update-srs-status");
+        events.emit("update-srs-status-cache");
         this.srsStatusCallbackId = window.setInterval(
-            () => events.emit("update-srs-status"),
+            () => events.emit("update-srs-status-cache"),
             1000 * this.srsStatusUpdateInterval);
+
+        // If program version has changed, delete cache to force status update
+        let lastUsedProgramVersion = storage.get("last-used-program-version");
+        if (lastUsedProgramVersion !== app.version) {
+            if (storage.has("dataUpdateCache"))
+                storage.delete("dataUpdateCache");
+        }
+        storage.set("last-used-program-version", app.version);
 
         // Regularly check for new versions of program and language data
         this.programUpdateCallbackId = utility.setTimer(() =>
@@ -827,23 +854,23 @@ class MainWindow extends Window {
     }
 
     async updateTestButton() {
-        const amount = await
-            dataManager.srs.getTotalAmountDueFor(dataManager.currentLanguage);
+        const amount = this.srsItemAmountsDueTotal[dataManager.currentLanguage];
         this.$("num-srs-items").innerHTML = `${amount}<br>items`;
         this.$("test-button").classList.toggle("no-items", amount === 0);
-        return amount;
     }
 
-    openTestSection() {
-        // Update label and open section if there are items to test
-        this.updateTestButton().then((count) => {
-            if (count > 0) {
-                this.openSection("test");
-            } else {
-                this.updateStatus("There are currently no items " +
-                                  "available for testing!");
-            }
-        });
+    async openTestSection() {
+        const amount = await
+            dataManager.srs.getTotalAmountDueFor(dataManager.currentLanguage);
+        this.srsItemAmountsDueTotal[dataManager.currentLanguage] = amount;
+        // Update test button label and open section if there are items to test
+        this.updateTestButton();
+        if (amount > 0) {
+            this.openSection("test");
+        } else {
+            this.updateStatus("There are currently no items " +
+                              "available for testing!");
+        }
     }
 
     showSrsNotification() {
@@ -1097,7 +1124,7 @@ class MainWindow extends Window {
             buttonLabel = "Download";
             const { latestVersion, releaseDate, description } = data;
             const dateString = dateFormat(releaseDate, "mmm dS, yyyy");
-            subtitle = `Version ${latestVersion}, released on ${releaseDate}` +
+            subtitle = `Version ${latestVersion}, released on ${dateString}` +
                        `<br>Click here to view the release notes.`;
             details = marked(description);
             buttonCallback = () => events.emit("start-program-update");

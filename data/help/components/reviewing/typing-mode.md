@@ -38,7 +38,7 @@ Shortcuts are assigned to each of these controls, which can be viewed and
 changed in the settings.
 
 Press "continue" to move the item to the chosen level and move on to the next
-question. There is also the possibility to immediately continue to the next
-item after a correct answer, which can be enabled by marking the corresponding
+question. There is also the option to immediately continue to the next item
+after a correct answer, which can be enabled by marking the corresponding
 checkbox in the test settings.
 

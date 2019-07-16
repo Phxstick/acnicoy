@@ -147,11 +147,11 @@ module.exports = function (paths, modules) {
         }
 
         // If word is already added, extend with new values without deleting old
-        const oldTranslations = rows[0].translations !== null ?
+        const oldTranslations = rows[0].translations === null ?
             new Set() : new Set(rows[0].translations.split(";"));
-        const oldReadings = rows[0].readings !== null ?
+        const oldReadings = rows[0].readings === null ?
             new Set() : new Set(rows[0].readings.split(";"));
-        const oldNotes = rows[0].notes !== null ?
+        const oldNotes = rows[0].notes === null ?
             new Set() : new Set(rows[0].notes.split(";"));
         const newTranslations = [...oldTranslations];
         const newReadings = [...oldReadings];

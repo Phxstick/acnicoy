@@ -15,6 +15,8 @@
   flex: 1;
   display: flex;
   flex-direction: row;
+  margin-bottom: -100px; // Workaround for strange bug where pane exceeds parent
+                         // size by a few pixel. Also happens in other tab-panes
 }
 
 #kanji-tab, #hanzi-tab {

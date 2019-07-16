@@ -13,6 +13,10 @@ class ChooseShortcutOverlay extends Overlay {
         });
         this.callback = (event) => {
             event.stopPropagation();
+            if (event.key === "Escape") {
+                this.resolve(null);
+                return;
+            }
             const keyCombination = shortcuts.extractKeyCombination(event);
             if (keyCombination === null) return;
             if (shortcuts.isKeyCombinationUsed(keyCombination)) {

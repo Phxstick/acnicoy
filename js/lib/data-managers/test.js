@@ -42,7 +42,8 @@ module.exports = function (paths, modules) {
     test.modeToParts = function (mode) {
         switch (mode) {
             case test.mode.WORDS:
-                if (!modules.languageSettings.readings) return ["meanings"];
+                if (!modules.languageSettings.get("readings"))
+                    return ["meanings"];
                 else return ["meanings", "readings"];
             case test.mode.KANJI_MEANINGS:
             case test.mode.KANJI_ON_YOMI:
@@ -93,33 +94,65 @@ module.exports = function (paths, modules) {
         }
     }
 
-    const fullPattern = /(\[[^\]]*?\])|(\([^)]*?\))/g;
+    const fullPattern = /(?:\[[^\]]*?\])|(?:\([^)]*?\))/g;
     const bracketPattern = /\(|\)|\[|\]/g;
 
-    test.getExtendedSolutions = async function (item, mode, part) {
-        const data = await test.getSolutions(item, mode, part);
-        const solutions = new Set(data);
-        const originalSolutions = new Set(data);
-
-        // If the language is English, make solutions without "to" count
-        if (modules.currentSecondaryLanguage === "English") {
-            for (const solution of originalSolutions) {
-                if (solution.startsWith("to "))
-                    solutions.add(solution.slice(3));
+    // Get allowed solutions by leaving out all combinations of optional parts
+    function recursivelyGetCombinations(matches, string, output) {
+        if (matches.length > 1) {
+            for (let i = 0; i < matches.length; ++i) {
+                const subArray = matches.slice(0, i).concat(matches.slice(i+1));
+                recursivelyGetCombinations(subArray, string, output);
             }
         }
 
-        // Also ignore round/square brackets and their content for the solutions
-        const temp = new Set(solutions);
-        for (const solution of temp) {
-            const onlyBracketsRemoved = solution.replace(bracketPattern, "");
-            if (solution === onlyBracketsRemoved) continue;
-            solutions.add(onlyBracketsRemoved.trim());
-            const withoutBracketsAndContent = solution.replace(fullPattern, "");
-            solutions.add(withoutBracketsAndContent.trim());
+        // Remove all matches and brackets from string and add it to output set
+        const solutionParts = [];
+        let start = 0;
+        for (let i = 0; i < matches.length; ++i) {
+            solutionParts.push(string.slice(start, matches[i].index));
+            start = matches[i].index + matches[i][0].length;
+        }
+        solutionParts.push(string.slice(start));
+        output.add(solutionParts.join("").replace(bracketPattern, "").trim());
+    }
+
+    test.getExtendedSolutions = function (solutions) {
+        const extendedSolutions = new Set();
+
+        // First convert all to lower case
+        for (const solution of solutions) {
+            extendedSolutions.add(solution.toLowerCase());
         }
 
-        return solutions;
+        // If the language is English, make solutions without "to" count
+        if (modules.currentSecondaryLanguage === "English") {
+            const copy = new Set(extendedSolutions);
+            for (const solution of copy) {
+                if (solution.startsWith("to "))
+                    extendedSolutions.add(solution.slice(3));
+            }
+        }
+
+        // Add versions without round/square brackets and without their content
+        const copy = new Set(extendedSolutions);
+        for (const solution of copy) {
+            const onlyBracketsRemoved = solution.replace(bracketPattern, "");
+            if (solution === onlyBracketsRemoved) continue;
+            extendedSolutions.add(onlyBracketsRemoved.trim());
+            const matches = utility.findMatches(fullPattern, solution);
+            if (matches.length > 0) {
+                recursivelyGetCombinations(matches, solution, extendedSolutions)
+            }
+        }
+
+        // Collapse whitespace everywhere
+        const extendedAndCollapsed = new Set();
+        for (const solution of extendedSolutions) {
+            extendedAndCollapsed.add(utility.collapseWhitespace(solution));
+        }
+
+        return extendedAndCollapsed;
     }
 
     test.setLanguage = function (language) {

@@ -2,7 +2,7 @@
 
 /*
  *  This module extends String, HTMLInputElement and HTMLTextAreaElement and
- *  HTMLElements.
+ *  HTMLElements with text conversion from/to hiragana, katakana and pinyin.
  */
 
 HTMLInputElement.prototype.disableInputConversion =
@@ -262,6 +262,10 @@ String.prototype.toKana = function (type, ignoreN) {
                 (string[i] === "-" || string[i] === "_")) {
             converted.push("ー");
         }
+        // Replace non-breaking space (\u160) with a normal space (\u32)
+        else if (string.codePointAt(i) === 160) {
+            converted.push(" ");
+        }
         // Anything else simply gets appended
         else {
             converted.push(string[i]);
@@ -341,7 +345,7 @@ function kanaInputRoot(type, root, event) {
                (type === "hiragana" ? "ん" : "ン") +
                text.slice(pos);
         replaced = true;
-    } else if (romajiChars.has(key)) {
+    } else if (romajiChars.has(key) || key === "-" || key === "_") {
         text = text.slice(0, pos) + key + text.slice(pos);
     } else {
         return;

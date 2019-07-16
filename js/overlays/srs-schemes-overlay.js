@@ -12,7 +12,7 @@ class SrsSchemesOverlay extends Overlay {
         // Add all event listeners
         this.$("done-button").addEventListener("click", async () => {
             if (this.editModeActive) {
-                const confirmed = dialogWindow.confirm(
+                const confirmed = await dialogWindow.confirm(
                     `The current scheme has unsaved changes.
                      Do you want to save those changes?`)
                 if (confirmed === null) return;

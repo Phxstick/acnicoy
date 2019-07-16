@@ -48,6 +48,8 @@ For learners of the Japanese language, the program additionally offers:
 Installation
 ----
 
+You can download the [latest releases for Windows and Linux](https://github.com/phxstick/acnicoy/releases/latest) from GitHub.
+
 ### Building from source
 Acnicoy requires [Node.js] v8.11 and uses the [npm package manager][npm].
 The build process is simple:
@@ -72,7 +74,7 @@ Contact
 ----
 
 I gladly accept feedback and suggestions. You can open a Github issue or contact
-me at: Phxstick [at] gmail.com
+me at: Phxstick@gmail.com
 
 
    [SRS]: <https://en.wikipedia.org/wiki/Spaced_repetition>

@@ -8,6 +8,12 @@ The items that are ready for review will by default appear in a random order.
 It is possible to give precedence to items in lower SRS levels by marking the
 corresponding checkbox in the test settings.
 
+Note that words with both translations and readings assigned do not count as
+reviewed until both of these two parts have been reviewed. The parts will
+appear with a random but rather low delay. If you want to terminate a review
+session but don't want to lose your progress on halfway reviewed words, you can
+instead press the "wrap up" button to finish those.
+
 ### Test modes
 
 There are two modes for reviewing vocabulary items, **typing mode** and **flashcard

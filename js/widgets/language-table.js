@@ -36,7 +36,7 @@ class LanguageTable extends Widget {
         // Adding a new language
         this.$("add-language-button").addEventListener("click", async () => {
             const config = await overlays.open("add-lang");
-            if (config === null) return;
+            if (!config) return;
             const language = config.language;
             const secondary = config.settings.secondary;
             if (this.languageToConfig.has(language)) {

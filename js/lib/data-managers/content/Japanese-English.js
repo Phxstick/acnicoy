@@ -441,24 +441,113 @@ module.exports = async function (paths, contentPaths, modules) {
      * @returns {Array}
      */
     async function searchKanji(query) {
-        const promises = [];
         // If query is empty, return an empty list
         if (Object.keys(query).length === 0)
             return [];
+
         // Convert wildcards * and ? to % and _ for SQL pattern matching
         const replace = (f) => f.replace(/[*]/g, "%").replace(/[?]/g, "_");
         for (const field in query) {
             query[field] = query[field].map(replace);
         }
-        // Add wildcards for meaning search
-        if (query.meanings !== undefined) {
-            query.meanings = query.meanings.map(
-              (m) => (m.startsWith("%")?"":"%") + m + (m.endsWith("%")?"":"%"));
+
+        // If any query field contains a wildcard at the start or end
+        // (or both sides), do not prioritize exact matches for that field.
+        const exactMatchesQuery = { };
+        for (const field in query) {
+            exactMatchesQuery[field] = [];
+            for (const qString of query[field]) {
+                if (!qString.startsWith("%") && !qString.endsWith("%")) {
+                    exactMatchesQuery[field].push(qString.replace(/[%_]/g, ""));
+                }
+            }
         }
+
+        // Search for exact matches (using query without any wildcards).
+        let exactMatches = await kanjiSearchFunction(exactMatchesQuery);
+        const originalQuery = { };
+        for (const field in query) originalQuery[field] = query[field];
+
+        // Add wildcard to both sides of each meaning
+        query.meanings = query.meanings.map(
+            (m) => (m.startsWith("%")?"":"%") + m + (m.endsWith("%")?"":"%"));
+        // Add wildcard to end of kun-yomi if there are none at the beginning
+        query.kunYomi = query.kunYomi.map(
+            (k) => k.startsWith("%") ? k : k + (k.endsWith("%")?"":"%"));
+
+        // Search for all matches, put exact matches at the beginning of results
+        let allMatches = await kanjiSearchFunction(query);
+        const matchKanji = Array(allMatches.length);
+        for (let i = 0; i < exactMatches.length; ++i) {
+            matchKanji[i] = exactMatches[i].kanji;
+        }
+
+        // Prioritize matches where any meaning query matches whole words.
+        // Only match word boundaries if there is no wild card at that side
+        // of the string in the original query.
+        if (query.meanings.length > 0) {
+            const wholeWordMatches = [];
+            const nonWholeWordMatches = [];
+            const queryRegexes = []
+            for (const meaning of originalQuery.meanings) {
+                if (meaning.startsWith("%") && meaning.endsWith("%"))
+                    continue;
+                let regex = meaning.replace(/^%+/, "").replace(/%+$/, "");
+                if (!meaning.startsWith("%")) {
+                    regex = "\\b" + regex; 
+                }
+                if (!meaning.endsWith("%")) {
+                    regex = regex + "\\b";
+                }
+                regex.replace(/%+/g, "\\B*?");
+                queryRegexes.push(new RegExp(regex, 'i'));
+            }
+            for (const match of allMatches) {
+                if (match.meanings === null) {
+                    nonWholeWordMatches.push(match);
+                    continue;
+                }
+                let matched = false;
+                for (const regex of queryRegexes) {
+                    if (regex.test(match.meanings)) {
+                        matched = true;
+                        break;
+                    }
+                }
+                if (matched) {
+                    wholeWordMatches.push(match);
+                } else {
+                    nonWholeWordMatches.push(match);
+                }
+            }
+            allMatches = [...wholeWordMatches, ...nonWholeWordMatches];
+        }
+
+        // Add all non-exact matches to the result array
+        let i = 0;
+        let j = 0;
+        while (j < allMatches.length) {
+            if (i < exactMatches.length &&
+                    exactMatches[i].kanji === allMatches[j].kanji) {
+                ++i;
+            } else {
+                matchKanji[exactMatches.length + j - i] = allMatches[j].kanji;
+            }
+            ++j;
+        }
+        return matchKanji;
+    }
+
+    // Executes database queries for the given kanji details query object
+    async function kanjiSearchFunction(query) {
+
         // Find matching kanji for each detail in the query
+        const promises = [];
         for (const meaning of query.meanings) {
             promises.push(data.query(
-                `SELECT entry, frequency FROM kanji
+                `SELECT entry, frequency,
+                        (meanings || ';' || meanings_search) AS allMeanings
+                 FROM kanji
                  WHERE (';' || meanings || ';') LIKE '%;${meaning};%' 
                  OR (';' || meanings_search || ';') LIKE '%;${meaning};%'`));
         }
@@ -475,17 +564,24 @@ module.exports = async function (paths, contentPaths, modules) {
                  OR (';' || kun_yomi_search || ';') LIKE '%;${kunYomi};%'`));
         }
         const subMatches = await Promise.all(promises);
-        // Map each matched kanji to frequency and number of matches
+
+        // Map each matched kanji to frequency, number of matches and data
         const matches = new Map();
         for (const subMatch of subMatches) {
-            for (const { entry, frequency } of subMatch) {
+            for (const info of subMatch) {
+                const { entry, frequency } = info;
                 if (!matches.has(entry)) {
-                    matches.set(entry, { frequency, matchCount: 0 });
+                    matches.set(entry, { frequency, matchCount: 0,
+                                         meanings: null });
                 }
-                matches.get(entry).matchCount++;
+                const matchObj = matches.get(entry);
+                if (info.hasOwnProperty("allMeanings"))
+                    matchObj.meanings = info.allMeanings;
+                matchObj.matchCount++;
             }
         }
         const matchList = [...matches];
+
         // Sort kanji by match count, or by frequency if match count is equal
         matchList.sort((match1, match2) => {
             if (match1[1].matchCount !== match2[1].matchCount) {
@@ -496,7 +592,10 @@ module.exports = async function (paths, contentPaths, modules) {
                 return match1[1].frequency - match2[1].frequency;
             }
         });
-        return matchList.map((match) => match[0]);
+
+        // Return kanji along with meanings if they contain matches (else null)
+        return matchList.map((match) => ({ kanji: match[0],
+                                           meanings: match[1].meanings }));
     }
 
     /**

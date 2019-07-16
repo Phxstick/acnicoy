@@ -5,6 +5,7 @@ const languages = require("languages");
 class AddLangOverlay extends Overlay {
     constructor() {
         super("add-lang");
+        this.elementFocussedByDefault = this.$("language");
         this.$("close-button").addEventListener("click", () => {
             this.resolve(null);
         });
@@ -38,6 +39,12 @@ class AddLangOverlay extends Overlay {
                     hidden: false
                 }
             });
+        });
+        this.$("language").addEventListener("input", () => {
+            const language = this.$("language").value;
+            this.$("language-data-note").toggleDisplay(language === "Japanese");
+            this.$("readings-flag").checked = 
+                language === "Japanese" || language === "Chinese";
         });
         this.$("language").appendChild(
             utility.createDefaultOption("Select foreign language"));
