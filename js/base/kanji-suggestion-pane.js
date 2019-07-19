@@ -56,11 +56,13 @@ class KanjiSuggestionPane extends Widget {
                 this.$("on-yomi").appendChild(
                     this.createSuggestionNode(onYomi, "on-yomi"));
             }
+            this.$("on-yomi-row").toggleDisplay(info.onYomi.length > 0);
             this.$("kun-yomi").empty();
             for (const kunYomi of info.kunYomi) {
                 this.$("kun-yomi").appendChild(
                     this.createSuggestionNode(kunYomi, "kun-yomi"));
             }
+            this.$("kun-yomi-row").toggleDisplay(info.kunYomi.length > 0);
         });
     }
 

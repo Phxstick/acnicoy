@@ -74,8 +74,6 @@ app.on('ready', function() {
         }
         mainWindowState.isMaximized = mainWindow.isMaximized();
         mainWindowState.isFullScreen = mainWindow.isFullScreen();
-        const devToolsOpened = mainWindow.webContents.isDevToolsOpened();
-        mainWindowState.isDevToolsOpened = devToolsOpened;
         storage.set("windowState", mainWindowState);
     };
     const stateChangeHandler = () => {
@@ -86,6 +84,12 @@ app.on('ready', function() {
     mainWindow.on("move", stateChangeHandler);
     mainWindow.on("close", updateState);
     mainWindow.on("closed", () => clearTimeout(stateChangeTimer));
+
+    // Handle dev tools separately using its corresponding events
+    mainWindow.webContents.on("devtools-opened",
+        () => storage.set("windowState.devToolsOpened", true));
+    mainWindow.webContents.on("devtools-closed",
+        () => storage.set("windowState.devToolsOpened", false));
   
     // Content Security Policy: don't allow loading anything at all.
     // session.defaultSession.webRequest.onHeadersReceived((details, callback)=>{

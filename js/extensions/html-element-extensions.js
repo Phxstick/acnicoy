@@ -225,7 +225,7 @@ HTMLElement.prototype.fadeOut = function(
  */
 HTMLElement.prototype.fadeIn = function(
         { distance=300, duration=500, easing="easeOutSine",
-          direction="right", delay=0, zIndex="auto" }={}) {
+          direction="right", delay=0, zIndex="auto", onCompletion }={}) {
     const fadeInNode = this.safeDeepClone();
     const root = this.getRoot();
     fadeInNode.style.position = "fixed";
@@ -259,17 +259,28 @@ HTMLElement.prototype.fadeIn = function(
     const options = { queue: false, duration, easing, delay };
     Velocity(fadeInNode, {
         [directionToAttribute[direction]]: `+=${distance}` }, options);
-    return Velocity(fadeInNode, "fadeIn", options).then(() => {
+    let finished = false;
+    const onFinish = () => {
+        finished = true;
         fadeInNode.remove();
         this.style.visibility = "visible";
         this.style.opacity = "1";
-    });
+        if (onCompletion !== undefined) onCompletion();
+    };
+    Velocity(fadeInNode, "fadeIn", { ...options, complete: onFinish });
+
+    // Return a function that can be used to stop this animation in advance
+    return () => {
+        if (finished) return;
+        Velocity(fadeInNode, "stop");
+        onFinish();
+    };
 }
 
 /**
  *  Slide this item to the position it's currently at.
  */
-HTMLElement.prototype.slideToCurrentPosition = async function(
+HTMLElement.prototype.slideToCurrentPosition = function(
         { distance=300, duration=500, easing="easeOutSine",
           direction="right", delay=0, zIndex="auto" }={}) {
     const fadeInNode = this.safeDeepClone();
@@ -302,12 +313,24 @@ HTMLElement.prototype.slideToCurrentPosition = async function(
         `${offsets[directionToAttribute[direction]] - distance}px`;
     fadeInNode.style[directionToSecondaryAttribute[direction]] =
         `${offsets[directionToSecondaryAttribute[direction]]}px`;
-    const options = { queue: false, duration, easing, delay };
+
+    let finished = false;
+    const onFinish = () => {
+        finished = true;
+        fadeInNode.remove();
+        this.style.visibility = "visible";
+    };
+    const options = { queue: false, duration, easing, delay, complete:onFinish }
     this.style.visibility = "hidden";
-    await Velocity(fadeInNode, {
+    Velocity(fadeInNode, {
         [directionToAttribute[direction]]: `+=${distance}` }, options);
-    this.style.visibility = "visible";
-    fadeInNode.remove();
+
+    // Return a function that can be used to stop this animation in advance
+    return () => {
+        if (finished) return;
+        Velocity(fadeInNode, "stop");
+        onFinish();
+    };
 }
 
 /**

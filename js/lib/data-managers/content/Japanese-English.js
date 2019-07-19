@@ -373,11 +373,13 @@ module.exports = async function (paths, contentPaths, modules) {
         if (dictionaryInfo === undefined) {
             dictionaryInfo = await getDictionaryEntryInfo(dictionaryId);
         }
+
         // Try to match dictionary ID first
         const idQueryResult = await data.query(
             "SELECT word FROM trainer.vocabulary WHERE dictionary_id = ?",
             dictionaryId);
         if (idQueryResult.length > 0) return idQueryResult[0].word;
+
         // Add kana variants as word variants as well (after kanji variants)
         const wordsAndReadings = [...dictionaryInfo.wordsAndReadings];
         const readings = new Set();
@@ -389,19 +391,22 @@ module.exports = async function (paths, contentPaths, modules) {
         for (const reading of readings) {
             wordsAndReadings.push({ word: "", reading });
         }
+
         // Try to match each word variant (starting with main word at index 0)
         for (const wordAndReading of wordsAndReadings) {
             const { word, reading } = wordAndReading;
             const wordContainsKanji = word.length > 0;
             const wordMatch = await modules.vocab.contains(
                 wordContainsKanji ? word : reading);
+
             // If the word variant doesn't match, skip it and try the next one
             if (!wordMatch) continue;
             const vocabEntryData =
                 await modules.vocab.getInfo(wordContainsKanji ? word : reading);
+
             // If this word variant contains kanji, check whether its reading
             // is registered as one of the readings of the vocabulary entry
-            if (wordContainsKanji) {
+            if (wordContainsKanji && vocabEntryData.readings.length > 0) {
                 let readingMatch = false;
                 for (const registeredReading of vocabEntryData.readings) {
                     if (registeredReading === reading) {
@@ -413,7 +418,9 @@ module.exports = async function (paths, contentPaths, modules) {
                 if (readingMatch) return word;
                 else continue;
             }
-            // If this word doesn't contain kanji, check translations instead
+
+            // If this word doesn't contain kanji or has no registered readings,
+            // check translations instead
             const translations = new Set();
             for (const meaning of dictionaryInfo.meanings) {
                 for (const translation of meaning.translations) {

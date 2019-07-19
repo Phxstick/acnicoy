@@ -4,6 +4,12 @@ class SrsStatusOverview extends PinwallWidget {
     constructor() {
         super("srs-status-overview");
         this.minSpinnerDisplayTimePromise = Promise.resolve();
+        this.$("update-button").addEventListener("click", () => {
+            this.$("update-button").hide();
+            this.$("updating-spinner").show("table-cell");
+            this.minSpinnerDisplayTimePromise = utility.wait(740);
+            events.emit("update-srs-status-cache");
+        });
     }
 
     connectedCallback() {
@@ -26,30 +32,22 @@ class SrsStatusOverview extends PinwallWidget {
         for (const language of languages) {
             maxNumLevels = Math.max(maxNumLevels, amounts[language].length - 1);
         }
-        // Add header for the total count and each SRS level
-        const rowsHtml = [];
-        const headersHTML = [];
+
+        // Remove all HTML except for the header row
+        const container = this.$("container");
+        while (container.children.length > 1) {
+            container.removeChild(container.lastChild);
+        }
+
+        // Add header cells for the total count and each SRS level
+        const headersHTML = ["<div>Total</div>"];
         for (let level = 1; level <= maxNumLevels; ++level) {
             headersHTML.push(`<div>${level}</div>`);
         }
-        rowsHtml.push(`
-          <div id="header-row">
-            <div style="display:none" id="update-button">
-              <i class="fa fa-refresh"></i>Refresh</div>
-            <div id="updating-spinner" class="pulsating-triple-dots">
-              <div class="bounce1"></div>
-              <div class="bounce2"></div>
-              <div class="bounce3"></div>
-            </div>
-            <div>
-              <div id="column-headers">
-                <div>Total</div>
-                ${headersHTML.join("")}
-              </div>
-            </div>
-          </div>
-        `);
+        this.$("column-headers").innerHTML = headersHTML.join("");
+
         // Add dual row for each language
+        const rowsHtml = [];
         for (const language of languages) {
             const amountsForLanguage = new Array(maxNumLevels + 1);
             amountsForLanguage[0] = { total: 0, due: 0 };
@@ -68,15 +66,12 @@ class SrsStatusOverview extends PinwallWidget {
             }
             const template = templates.get("srs-status-overview-row");
             const html = template({ language, amounts: amountsForLanguage });
-            rowsHtml.push(html)
+            rowsHtml.push(html);
         }
-        this.$("container").innerHTML = rowsHtml.join("");
-        this.$("update-button").addEventListener("click", () => {
-            this.$("update-button").hide();
-            this.$("updating-spinner").show("table-cell");
-            this.minSpinnerDisplayTimePromise = utility.wait(740);
-            events.emit("update-srs-status");
-        });
+        this.$("container").appendChild(
+            utility.fragmentFromString(rowsHtml.join("")));
+
+        // Wait minimum time before hiding spinner and showing button again
         await this.minSpinnerDisplayTimePromise;
         this.$("update-button").show("table-cell");
         this.$("updating-spinner").hide();

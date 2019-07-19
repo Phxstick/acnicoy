@@ -4,7 +4,7 @@ enter key when you're done. The program will then automatically match your
 answer to the registered solutions, and deem your answer correct if it matches
 one of them.
 
-If your solutions contains information in round or square brackets, you may omit
+If your solutions contain information in round or square brackets, you may omit
 it in your answer. When entering translations (but not readings), small typos
 are also ignored, as long as they're not too many. The program will tell you
 whether your answer was considered correct and display all the registered

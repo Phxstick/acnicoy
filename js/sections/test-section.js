@@ -36,6 +36,7 @@ class TestSection extends Section {
         this.currentBackgroundClass = null;
         this.timeOfLastAction = 0;
         this.currentlySelectedLevel = null;
+        this.stopFuncs = [];
 
         // ====================================================================
         // Initial state of some interface elements and general event listeners
@@ -341,6 +342,7 @@ class TestSection extends Section {
                 this._createQuestion();
             } else {
                 this.$("solutions").innerHTML = "";
+                this.$("notes").innerHTML = "";
                 this._displaySolutions(solutions, false);
             }
         });
@@ -563,7 +565,10 @@ class TestSection extends Section {
         if (oldTestInfo.numFinished > 0) {
             const vocabListMode = oldTestInfo.vocabListMode;
             const keepGoing = await overlays.open("test-complete", oldTestInfo);
-            if (!keepGoing) main.openSection(vocabListMode ? "vocab" : "home");
+            if (!keepGoing) {
+                main.openSection(vocabListMode ? "vocab" : "home");
+                if (!vocabListMode) events.emit("update-srs-status-cache");
+            }
         } else {
             main.openSection(oldTestInfo.vocabListMode ? "vocab" : "home");
         }
@@ -892,6 +897,7 @@ class TestSection extends Section {
             fragment.appendChild(solutionNode);
         }
         this.$("solutions").appendChild(fragment);
+        this.$("solutions-wrapper").show();
         this.$("solutions").fadeScrollableBorders();
         this.$("test-item").style.marginBottom = this.testItemMarginBottom;
 
@@ -902,10 +908,10 @@ class TestSection extends Section {
                 Math.min(solutions.length, 4)) * this.itemMoveExtendDuration;
             const itemPosAfter = this.$("test-item").getBoundingClientRect();
             const itemSlideDistance = itemPosBefore.top - itemPosAfter.top;
-            this.$("test-item").slideToCurrentPosition({
+            this.stopFuncs.push(this.$("test-item").slideToCurrentPosition({
                 direction: "up", distance: itemSlideDistance,
                 duration, easing: "easeOutCubic"
-            });
+            }));
         }
 
         // If animation flag is set, fade and slide solutions a bit to the right
@@ -922,12 +928,12 @@ class TestSection extends Section {
                 }
             }
             for (const solutionNode of solutionNodes) {
-                solutionNode.fadeIn({
+                this.stopFuncs.push(solutionNode.fadeIn({
                     distance: this.solutionFadeDistance,
                     duration: this.solutionFadeDuration,
                     direction: "right",
                     delay: delay
-                });
+                }));
                 delay += this.solutionFadeDelay;
             }
 
@@ -1081,6 +1087,7 @@ class TestSection extends Section {
 
                 // Update stats
                 this.testInfo.numFinished++;
+                main.srsItemAmountsDueTotal[dataManager.currentLanguage]--;
                 const itemCorrect = !item.marked && !item.lastAnswerIncorrect;
                 if (itemCorrect) {
                     await dataManager.test.incrementCorrectCounter(
@@ -1130,7 +1137,6 @@ class TestSection extends Section {
             `${this.testInfo.numFinished} / ${this.testInfo.numTotal}`;
         if (!this.testInfo.vocabListMode) {
             this.$("score").textContent = this.testInfo.score.toFixed();
-            main.updateTestButton();
         }
 
         // If "continuous" flag is set, add new items ready for review
@@ -1145,6 +1151,13 @@ class TestSection extends Section {
                 this.testInfo.items.get(item.level).push(item);
             }
             this.testInfo.numTotal += newItems.length;
+            main.srsItemAmountsDueTotal[dataManager.currentLanguage]
+                += newItems.length;
+        }
+
+        // Update item counter on test button
+        if (!this.testInfo.vocabListMode) {
+            main.updateTestButton();
         }
 
         // Pick new items until threshold amount is reached
@@ -1195,7 +1208,6 @@ class TestSection extends Section {
             if (!this.testInfo.vocabListMode) {
                 // TODO: If frequent saving activated, save database+stats here
             }
-            events.emit("update-srs-status");
             this.closeSession();
             return;
         }
@@ -1229,6 +1241,19 @@ class TestSection extends Section {
         this.testInfo.currentItem = newItem;
         this.testInfo.currentPart = part;
         // TODO: If frequent saving activated, save database+stats here
+
+        // Stop all animations if they're still in progress
+        if (dataManager.settings.test.animate && previousItem !== null) {
+            Velocity(this.$("levels-frame"), "stop");
+            Velocity(this.$("srs-levels-bar"), "stop");
+            Velocity(this.$("continue-button"), "stop");
+            Velocity(this.$("button-bar"), "stop");
+            Velocity(this.$("notes-wrapper"), "stop");
+            for (const stopFunction of this.stopFuncs) {
+                stopFunction();
+            }
+            this.stopFuncs.length = 0;
+        }
 
         // If animate flag is set, fade away previous item, solutions and notes
         if (dataManager.settings.test.animate && previousItem !== null) {
@@ -1267,6 +1292,7 @@ class TestSection extends Section {
             Velocity(this.$("solutions-wrapper"), "fadeOut", fadeOptions)
             .then(() => {
                 this.$("solutions").innerHTML = "";
+                this.$("solutions-wrapper").hide();  // Need to fix strange bug
                 Velocity(this.$("solutions-wrapper"), "fadeIn",
                          { duration: 0, display: "flex" });
             });
@@ -1299,6 +1325,7 @@ class TestSection extends Section {
         } else {
             this.$("solutions").innerHTML = "";
             this.$("notes").innerHTML = "";
+            this.$("solutions-wrapper").hide();  // Needed to fix strange bug
             this.$("notes-wrapper").hide();
             this.$("continue-button").hide();
         }
@@ -1308,12 +1335,14 @@ class TestSection extends Section {
         this.$("test-item").style.marginBottom = "0px";
         this.$("test-item").textContent = newItem.entry;
         if (dataManager.settings.test.animate && previousItem !== null) {
-            this.$("test-item").fadeIn({ duration: this.itemFadeInDuration,
-                                         distance: this.itemFadeInDistance,
-                                         easing: this.testItemEasing,
-                                         delay: this.itemFadeInDelay })
-            .then(() => {
-                this.$("test-item").style.visibility = "visible";
+            this.$("test-item").fadeIn({
+                duration: this.itemFadeInDuration,
+                distance: this.itemFadeInDistance,
+                easing: this.testItemEasing,
+                delay: this.itemFadeInDelay,
+                onCompletion: () => {
+                    this.$("test-item").style.visibility = "visible";
+                }
             });
         }
 
