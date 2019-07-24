@@ -74,13 +74,6 @@ HTMLElement.prototype.childrenArray = function () {
     return Array.prototype.slice.call(this.children);
 }
 
-/**
- *  Insert given node as the first child of this node.
- */
-HTMLElement.prototype.prependChild = function(node) {
-    this.insertBefore(node, this.firstChild);
-}
-
 
 /**
  *  Insert given node as child at given index.

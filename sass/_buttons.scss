@@ -50,14 +50,16 @@ button.light {
   font-family: $button-font;
   font-size: 120%;
 
-  > i {
+  * {
     pointer-events: none;
+  }
+  i {
     color: $button-light-icon-color;
   }
   &:hover {
     color: $button-light-color-hover;
     text-shadow: 0 0 1px $button-light-color;
-    > i {
+    i {
       color: $button-light-icon-color-hover;
     }
   }

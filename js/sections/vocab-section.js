@@ -142,8 +142,9 @@ class VocabSection extends Section {
         // Initialize views and attach event listeners for searching
         // =====================================================================
         this.viewStates = {};
+        this.viewData = {};
         this.isViewLoaded = {};
-        const viewConfigs = {
+        this.viewConfigs = {
             "vocab": {
                 displayInitial: 40,
                 displayOnScroll: 40,
@@ -175,19 +176,17 @@ class VocabSection extends Section {
                 sortBackwards: true
             }
         };
-        for (const viewName in viewConfigs) {
-            this.viewStates[viewName] = utility.initializeView({
-                view: this.$(viewName),
+        for (const viewName in this.viewConfigs) {
+            this.viewStates[viewName] = new View({
+                viewElement: this.$(viewName),
                 getData: (query,method) => this.search(viewName, query, method),
                 createViewItem: (text) => this.createViewItem(viewName, text),
-                initialDisplayAmount: viewConfigs[viewName].displayInitial,
-                displayAmount: viewConfigs[viewName].displayOnScroll,
-                criticalScrollDistance: 150
+                initialDisplayAmount: this.viewConfigs[viewName].displayInitial,
+                displayAmount: this.viewConfigs[viewName].displayOnScroll,
+                deterministic: false,
+                loadOnResize: true
             });
-            this.viewStates[viewName].sortingCriterion =
-                    viewConfigs[viewName].sortingCriterion;
-            this.viewStates[viewName].sortBackwards =
-                    viewConfigs[viewName].sortBackwards;
+            this.viewData[viewName] = { srsLevels: null, datesAdded: null };
             // Add search functionality
             let searchEntryNames;
             if (viewName === "kanji") {
@@ -211,13 +210,13 @@ class VocabSection extends Section {
                 searchEntry.addEventListener("keypress", (event) => {
                     if (event.key !== "Enter") return;
                     const query = searchEntry.value.trim();
-                    this.viewStates[viewName].search(query, searchMethod);
+                    this.viewStates[viewName].load(query, searchMethod);
                 });
                 // Attach event listener to search button
                 const searchButton = this.$(searchEntryName + "-button");
                 searchButton.addEventListener("click", () => {
                     const query = searchEntry.value.trim();
-                    this.viewStates[viewName].search(query, searchMethod);
+                    this.viewStates[viewName].load(query, searchMethod);
                 });
             }
         }
@@ -254,8 +253,8 @@ class VocabSection extends Section {
             const dateAdded = await dataManager.vocab.getDateAdded(word);
             const srsLevel = await dataManager.srs.getLevel(
                     word, dataManager.test.mode.WORDS);
-            this.viewStates["vocab"].data.datesAdded.set(word, dateAdded);
-            this.viewStates["vocab"].data.srsLevels.set(word, srsLevel);
+            this.viewData["vocab"].datesAdded.set(word, dateAdded);
+            this.viewData["vocab"].srsLevels.set(word, srsLevel);
             if (!this.isViewLoaded["vocab"]) return;
             this.insertEntryIntoSortedView("vocab", word);
         });
@@ -281,7 +280,7 @@ class VocabSection extends Section {
             if (amountLabel === undefined) return;
             amountLabel.textContent = parseInt(amountLabel.textContent) - 1;
             // Rearrange lists if they are sorted by length
-            if (this.viewStates["vocab-lists"].sortingCriterion === "length") {
+            if (this.viewConfigs["vocab-lists"].sortingCriterion === "length") {
                 this.insertNodeIntoSortedView(
                     "vocab-lists", this.listNameToViewNode.get(list));
             }
@@ -303,7 +302,7 @@ class VocabSection extends Section {
             if (amountLabel === undefined) return;
             amountLabel.textContent = parseInt(amountLabel.textContent) + 1;
             // Rearrange lists if they are sorted by length
-            if (this.viewStates["vocab-lists"].sortingCriterion === "length") {
+            if (this.viewConfigs["vocab-lists"].sortingCriterion === "length") {
                 this.insertNodeIntoSortedView(
                     "vocab-lists", this.listNameToViewNode.get(list));
             }
@@ -330,7 +329,7 @@ class VocabSection extends Section {
         events.on("vocab-list-created", (list, reloadView=false) => {
             if (reloadView) {
                 if (this.viewStates["vocab-lists"].lastQuery !== null) {
-                    this.viewStates["vocab-lists"].search(
+                    this.viewStates["vocab-lists"].load(
                         this.viewStates["vocab-lists"].lastQuery);
                 }
             }
@@ -363,7 +362,7 @@ class VocabSection extends Section {
         });
         events.on("kanji-added", async (kanji) => {
             const dateAdded = await dataManager.kanji.getDateAdded(kanji);
-            this.viewStates["kanji"].data.datesAdded.set(kanji, dateAdded);
+            this.viewData["kanji"].datesAdded.set(kanji, dateAdded);
             if (!this.isViewLoaded["kanji"]) return;
             this.insertEntryIntoSortedView("kanji", kanji);
         });
@@ -384,7 +383,7 @@ class VocabSection extends Section {
         });
         events.on("hanzi-added", async (hanzi) => {
             const dateAdded = await dataManager.hanzi.getDateAdded(hanzi);
-            this.viewStates["hanzi"].data.datesAdded.set(hanzi, dateAdded);
+            this.viewData["hanzi"].datesAdded.set(hanzi, dateAdded);
             if (!this.isViewLoaded["hanzi"]) return;
             this.insertEntryIntoSortedView("hanzi", hanzi);
         });
@@ -412,16 +411,16 @@ class VocabSection extends Section {
             this.$("words-tab-button").hide();
         }
         // Load data needed for item sorting
-        this.viewStates["vocab"].data.datesAdded =
+        this.viewData["vocab"].datesAdded =
             await dataManager.vocab.getDateAddedForEachWord();
-        this.viewStates["vocab"].data.srsLevels =
+        this.viewData["vocab"].srsLevels =
             await dataManager.vocab.getLevelForEachWord();
         if (language === "Japanese") {
-            this.viewStates["kanji"].data.datesAdded =
+            this.viewData["kanji"].datesAdded =
                 await dataManager.kanji.getDateAddedForEachKanji();
         }
         if (language === "Chinese") {
-            this.viewStates["hanzi"].data.datesAdded =
+            this.viewData["hanzi"].datesAdded =
                 await dataManager.hanzi.getDateAddedForEachHanzi();
         }
         // Defer initial loading of views until section is actually opened
@@ -435,22 +434,23 @@ class VocabSection extends Section {
     }
 
     open() {
-        // Load initial view contents if not done yet
+        // Load initial view contents if not done yet. If they're already
+        // loaded, fill them up in case the view size has been changed.
         if (!this.isViewLoaded["vocab"]) {
             this.isViewLoaded["vocab"] = true;
-            this.viewStates["vocab"].search("");
-        }
+            this.viewStates["vocab"].load("");
+        } else this.viewStates["vocab"].fillSufficiently();
         if (!this.isViewLoaded["vocab-lists"]) {
             this.isViewLoaded["vocab-lists"] = true;
-            this.viewStates["vocab-lists"].search("");
-        }
+            this.viewStates["vocab-lists"].load("");
+        } else this.viewStates["vocab-lists"].fillSufficiently();
         const language = dataManager.currentLanguage;
         if (language === "Japanese" && !this.isViewLoaded["kanji"]) {
             this.isViewLoaded["kanji"] = true;
-            this.viewStates["kanji"].search("");
+            this.viewStates["kanji"].load("");
         } else if (language === "Chinese" && !this.isViewLoaded["hanzi"]) {
             this.isViewLoaded["hanzi"] = true;
-            this.viewStates["hanzi"].search("");
+            this.viewStates["hanzi"].load("");
         }
         this.$("search-vocab-entry").focus();
     }
@@ -721,7 +721,7 @@ class VocabSection extends Section {
         this.$("test-on-list-button").show();
         this.selectedList = listName;
         this.selectedListNode = node;
-        this.viewStates["list-contents"].search("");
+        this.viewStates["list-contents"].load("");
         events.emit("vocab-list-selected", listName);
     }
 
@@ -765,10 +765,10 @@ class VocabSection extends Section {
     // =====================================================================
 
     async getStringKeyForSorting(fieldName) {
-        const sortingCriterion = this.viewStates[fieldName].sortingCriterion;
+        const sortingCriterion = this.viewConfigs[fieldName].sortingCriterion;
         if (fieldName === "vocab") {
-            const datesAdded = this.viewStates["vocab"].data.datesAdded;
-            const srsLevels = this.viewStates["vocab"].data.srsLevels;
+            const datesAdded = this.viewData["vocab"].datesAdded;
+            const srsLevels = this.viewData["vocab"].srsLevels;
             if (sortingCriterion === "alphabetical") {
                 return (word) => word;
             } else if (sortingCriterion === "dateAdded") {
@@ -788,14 +788,14 @@ class VocabSection extends Section {
                 return (word) => word;
             }
         } else if (fieldName === "kanji") {
-            const datesAdded = this.viewStates["kanji"].data.datesAdded;
+            const datesAdded = this.viewData["kanji"].datesAdded;
             if (sortingCriterion === "alphabetical") {
                 return (kanji) => kanji;
             } else if (sortingCriterion === "dateAdded") {
                 return (kanji) => datesAdded.get(kanji);
             }
         } else if (fieldName === "hanzi") {
-            const datesAdded = this.viewStates["hanzi"].data.datesAdded;
+            const datesAdded = this.viewData["hanzi"].datesAdded;
             if (sortingCriterion === "alphabetical") {
                 return (hanzi) => hanzi;
             } else if (sortingCriterion === "dateAdded") {
@@ -805,7 +805,7 @@ class VocabSection extends Section {
     }
 
     getNodeKeyForSorting(fieldName) {
-        const sortingCriterion = this.viewStates[fieldName].sortingCriterion;
+        const sortingCriterion = this.viewConfigs[fieldName].sortingCriterion;
         if (fieldName === "vocab") {
             return (node) => node.textContent;
         } else if (fieldName === "vocab-lists") {
@@ -830,7 +830,7 @@ class VocabSection extends Section {
             return;
         }
         const nodeKey = this.getNodeKeyForSorting(fieldName);
-        const sortBackwards = this.viewStates[fieldName].sortBackwards;
+        const sortBackwards = this.viewConfigs[fieldName].sortBackwards;
         const viewNode = this.$(fieldName);
         const stringKey = await this.getStringKeyForSorting(fieldName);
         const key = (node) => stringKey(nodeKey(node));
@@ -840,7 +840,7 @@ class VocabSection extends Section {
         } else {
             const index = utility.findIndex(viewNode, value, key, sortBackwards)
             if (index === -1) {
-                viewNode.prependChild(node);
+                viewNode.prepend(node);
             } else if (index === viewNode.children.length) {
                 const displayAmount = this.viewStates[fieldName].displayAmount;
                 const initialDisplayAmount =
@@ -859,7 +859,7 @@ class VocabSection extends Section {
         const nodeKey = this.getNodeKeyForSorting(fieldName);
         const stringKey = await this.getStringKeyForSorting(fieldName);
         const key = (node) => stringKey(nodeKey(node));
-        const sortBackwards = this.viewStates[fieldName].sortBackwards;
+        const sortBackwards = this.viewConfigs[fieldName].sortBackwards;
         const value = stringKey(content);
         await utility.removeEntryFromSortedList(
             this.$(fieldName), value, key, sortBackwards);
@@ -869,7 +869,7 @@ class VocabSection extends Section {
         const nodeKey = this.getNodeKeyForSorting(fieldName);
         const stringKey = await this.getStringKeyForSorting(fieldName);
         const key = (node) => stringKey(nodeKey(node));
-        const sortBackwards = this.viewStates[fieldName].sortBackwards;
+        const sortBackwards = this.viewConfigs[fieldName].sortBackwards;
         const value = stringKey(content);
         return utility.getEntryFromSortedList(
             this.$(fieldName), value, key, sortBackwards);
@@ -880,8 +880,8 @@ class VocabSection extends Section {
     // =====================================================================
 
     async search(fieldName, query, searchMethod) {
-        const sortingCriterion = this.viewStates[fieldName].sortingCriterion;
-        const sortBackwards = this.viewStates[fieldName].sortBackwards;
+        const sortingCriterion = this.viewConfigs[fieldName].sortingCriterion;
+        const sortBackwards = this.viewConfigs[fieldName].sortBackwards;
         let searchResults;
         let alreadySorted = false;
         if (query.length === 0) {

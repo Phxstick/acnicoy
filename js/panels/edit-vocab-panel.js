@@ -194,6 +194,8 @@ class EditVocabPanel extends EditPanel {
         // Set up completion tooltip for vocab-list view items
         this.vocabListCompletionTooltip =
             document.createElement("completion-tooltip");
+        // this.vocabListCompletionTooltip.setPlaceholder("No matching lists.");
+        this.vocabListCompletionTooltip.setAttribute("direction", "up");
         const addedLists = new Set();
         this.vocabListCompletionTooltip.setDisplayCallback((node) => {
             addedLists.clear();

@@ -61,8 +61,8 @@ class KanjiSection extends Section {
         // =================================================================
         // Kanji search functionality
         // =================================================================
-        this.kanjiSearchViewState = utility.initializeView({
-            view: this.$("search-results"),
+        this.kanjiSearchViewState = new View({
+            viewElement: this.$("search-results"),
             getData: async (query, method) => {
                 if (method === "by-kanji") {
                     return await this.searchByKanji(query);
@@ -81,7 +81,7 @@ class KanjiSection extends Section {
             initialDisplayAmount: 10,
             displayAmount: 10,
             placeholder: this.$("search-info"),
-            noResultsPane: this.$("no-search-results-info")
+            noDataPane: this.$("no-search-results-info")
         });
         // =================================================================
         // Overview/Search settings
@@ -146,9 +146,9 @@ class KanjiSection extends Section {
             this.$("history-popup").closeInThisIteration = false;
         });
         utility.makePopupWindow(this.$("history-popup"));
-        this.historyViewState = utility.initializeView({
-            view: this.$("history"),
-            getData: async () => await dataManager.history.get("kanji_search"),
+        this.historyView = new View({
+            viewElement: this.$("history"),
+            getData: () => dataManager.history.get("kanji_search"),
             createViewItem:
                 ({ name, type }) => this.createHistoryViewItem(name, type),
             initialDisplayAmount: 20,
@@ -156,7 +156,7 @@ class KanjiSection extends Section {
         });
         this.$("history").addEventListener("click", (event) => {
             if (event.target.parentNode !== this.$("history")) return;
-            this.kanjiSearchViewState.search(
+            this.kanjiSearchViewState.load(
                 event.target.textContent, event.target.dataset.type);
             this.showSearchResults();
         });
@@ -204,7 +204,7 @@ class KanjiSection extends Section {
     adjustToLanguage(language, secondary) {
         // Load search history
         if (language === "Japanese") {
-            this.historyViewState.search("");
+            this.historyView.load();
         }
     }
 
@@ -380,7 +380,7 @@ class KanjiSection extends Section {
             //     this.$("search-by-readings-button").classList.add("searching");
             // }
         }
-        await this.kanjiSearchViewState.search(query, method);
+        await this.kanjiSearchViewState.load(query, method);
         await utility.finishEventQueue();
         this.showSearchResults();
         // this.$("search-by-kanji-button").classList.remove("searching");

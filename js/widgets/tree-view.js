@@ -42,8 +42,10 @@ class TreeView extends Widget {
         };
         this.selectedNode = null;
         this.rootNode = null;
-        this.domLabelToNode = new WeakMap();
+        this.domLabelToNode = new WeakMap();  // For selection event listener
+        this.domNodeToNode = new WeakMap();  // For managing sorted children
         this.isEditable = false;
+        this.sortChildrenLexically = false;
         this.contextMenu(menuItems, ["add-group"], { treeView: this });
     }
 
@@ -57,13 +59,20 @@ class TreeView extends Widget {
     build(structure, loadData) {
         this.$("root").empty();
         this.rootNode = { domNode: null, parent: null,
+                          childrenContainer: this.$("root"),
                           children: {}, childrenArray: [] };
         this.selectedNode = null;
         this.callbacks.loadData = loadData;
+        const nodes = [];
         for (const nodeInfo of structure) {
-            const node = this.buildNode(nodeInfo, this.rootNode);
-            this.$("root").appendChild(node.domNode);
+            nodes.push(this.buildNode(nodeInfo, this.rootNode));
         }
+        // Sort nodes by name if flag is set (but don't modify order in data)
+        if (this.sortChildrenLexically) {
+            nodes.sort((node1, node2) => node1.name.toLowerCase()
+                                         > node2.name.toLowerCase());
+        }
+        for (const node of nodes) this.$("root").appendChild(node.domNode);
     }
 
     /**
@@ -90,6 +99,7 @@ class TreeView extends Widget {
         const domNode = document.createElement("div");
         domNode.classList.add("node");
         node.domNode = domNode;
+        this.domNodeToNode.set(domNode, node);
 
         // Create a container for the arrow button and name label
         const nameFrameNode = document.createElement("div");
@@ -101,6 +111,7 @@ class TreeView extends Widget {
         nameNode.classList.add("node-name")
         nameNode.textContent = name;
         nameNode.addEventListener("click", (event) => {
+            if (nameNode.hasAttribute("contenteditable")) return;
             this.select(node);
             event.stopPropagation();
         });
@@ -111,7 +122,7 @@ class TreeView extends Widget {
         // Create arrow button and attach callback for showing/hiding children
         const openNodeButton = document.createElement("button");
         openNodeButton.classList.add("open-node-button");
-        nameFrameNode.prependChild(openNodeButton);
+        nameFrameNode.prepend(openNodeButton);
         openNodeButton.addEventListener("click", () => this.toggleOpen(node));
         node.openButton = openNodeButton;
 
@@ -122,9 +133,18 @@ class TreeView extends Widget {
         node.childrenContainer = childrenContainer;
         
         if (children !== undefined && children.length > 0) {
-            // Recursively create child nodes and add them to the container
+            // Recursively create child nodes
+            let childNodes = [];
             for (const childInfo of children) {
-                const childNode = this.buildNode(childInfo, node);
+                childNodes.push(this.buildNode(childInfo, node));
+            }
+            // Sort nodes by name if flag is set (don't modify order in data)
+            if (this.sortChildrenLexically) {
+                childNodes.sort((node1, node2) => node1.name.toLowerCase()
+                                                > node2.name.toLowerCase());
+            }
+            // Insert DOM nodes of children into the parent container
+            for (const childNode of childNodes) {
                 childrenContainer.appendChild(childNode.domNode);
             }
             // Initially show the children container if the "open" flag is set
@@ -146,11 +166,123 @@ class TreeView extends Widget {
     }
 
     /**
+     * Add a new node to the tree.
+     * @param {Object} [parent] - Parent of the new node, defaults to root node.
+     */
+    addNode(parent) {
+        if (parent === undefined) parent = this.rootNode;
+
+        // Create an entry where the user can enter a name for the node
+        const inputContainer = document.createElement("div");
+        inputContainer.classList.add("input-container");
+        const inputNode = document.createElement("input");
+        inputContainer.appendChild(inputNode);
+        inputNode.placeholder = "Enter name";
+        inputNode.classList.add("light");
+
+        // Display and focus the entry
+        if (parent !== this.rootNode) {
+            parent.opened = true;
+            parent.childrenContainer.show();
+            parent.domNode.classList.add("open");
+            parent.openButton.classList.remove("hidden");
+        }
+        parent.childrenContainer.prepend(inputContainer);
+        inputNode.focus();
+
+        // Pressing escape or focussing out cancels the action
+        inputNode.addEventListener("focusout", () => {
+            inputContainer.remove();
+            if (parent !== this.rootNode && parent.childrenArray.length === 0) {
+                parent.opened = false;
+                parent.childrenContainer.hide();
+                parent.domNode.classList.remove("open");
+                parent.openButton.classList.add("hidden");
+            }
+        });
+        inputNode.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") inputNode.blur();
+        });
+
+        // Process input when Enter key is pressed
+        inputNode.addEventListener("keypress", async (event) => {
+            if (event.key !== "Enter") return;
+            event.preventDefault();
+            const newGroupName = inputNode.value.trim();
+            inputNode.blur();
+
+            // If the input value is empty, do nothing
+            if (newGroupName.length === 0) {
+                return;
+            }
+
+            // Check if a node with this name already exists
+            if (parent.children.hasOwnProperty(newGroupName)) {
+                dialogWindow.info(
+                    `A group with the name '${newGroupName}' already exists!`);
+                return;
+            }
+
+            // Otherwise add the new node and remove the input node
+            const node = this.buildNode({ name: newGroupName }, parent);
+            if (this.sortChildrenLexically) {
+                utility.insertNodeIntoSortedList(parent.childrenContainer,
+                    node.domNode,
+                    (n) => this.domNodeToNode.get(n).name.toLowerCase(), false);
+            } else {
+                parent.childrenContainer.appendChild(node.domNode);
+            }
+
+            // If this child node is the first, show it by opening the parent
+            if (parent !== this.rootNode && parent.childrenArray.length === 1) {
+                this.toggleOpen(parent, true);
+                parent.openButton.classList.remove("hidden");
+            }
+
+            // Signal that the tree has been modified
+            this.callbacks.onModify();
+        });
+    }
+
+    /**
+     * Remove the given node from the tree.
+     * @param {Object} node
+     */
+    async removeNode(node) {
+        const confirmed = await dialogWindow.confirm(
+            `Are you sure you want to delete the group '${node.name}' and` +
+            ` all its content and descendants?`);
+        if (!confirmed) return;
+
+        // If selected node is this one or a descendant, deselect it first
+        if (this.selectedNode !== null &&
+                node.domNode.contains(this.selectedNode.domNode)) {
+            this.deselect();
+        }
+
+        // Remove node from both the tree and DOM
+        delete node.parent.children[node.name];
+        node.parent.childrenArray.remove(node.name);
+        node.domNode.remove();
+
+        // If this subgroup was the only one, close the parent group
+        if (node.parent.childrenArray.length === 0) {
+            node.parent.domNode.classList.remove("open");
+            node.parent.open = false;
+            node.parent.openButton.classList.add("hidden");
+        }
+
+        // Signal that the tree has been modified
+        this.callbacks.onModify();
+    }
+
+    /**
      * Select the given node by marking its associated DOM node and invoking the
      * callback assigned by the "setOnSelect"-method. Also reveal it in the tree
      * @param {Object} node
      */
     select(node) {
+        if (this.selectedNode === node) return;
         this.deselect();
         this.selectedNode = node;
         while (node.parent !== this.rootNode) {
@@ -158,7 +290,7 @@ class TreeView extends Widget {
             this.toggleOpen(node, true);
         }
         this.selectedNode.domNode.classList.add("selected");
-        // TODO: if group is out of visible section, scroll top-level container
+        this.selectedNode.labelNode.scrollIntoViewIfNeeded();
         this.callbacks.onSelect(this.selectedNode);
     }
 
@@ -168,10 +300,9 @@ class TreeView extends Widget {
      * @param {Object} node
      */
     deselect() {
-        if (this.selectedNode !== null) {
-            this.selectedNode.domNode.classList.remove("selected");
-            this.callbacks.onDeselect(this.selectedNode);
-        }
+        if (this.selectedNode === null) return;
+        this.selectedNode.domNode.classList.remove("selected");
+        this.callbacks.onDeselect(this.selectedNode);
         this.selectedNode = null;
     }
 
@@ -263,6 +394,29 @@ class TreeView extends Widget {
     }
 
     /**
+     * Traverses tree depth-first and calls given callback for each node.
+     * @param {Function} [callback]
+     * @param {Boolean} [parentFirst=true] - Whether to execute callback for
+     *     parent first before recursing on children (only in case of DFS).
+     */
+    traverse(callback, parentFirst=true) {
+        this.traverseNode(this.rootNode, callback, parentFirst);
+    }
+
+    traverseNode(node, callback, parentFirst=true) {
+        for (const name of node.childrenArray) {
+            const childNode = node.children[name];
+            if (parentFirst) {
+                callback(childNode);
+                this.traverseNode(childNode, callback, parentFirst);
+            } else {
+                this.traverseNode(childNode, callback, parentFirst);
+                callback(childNode);
+            }
+        }
+    }
+
+    /**
      * Add an event listener to every node in the tree.
      * @param {String} eventType - Event type to add a listener for.
      * @param {Function} callback - Callback taking (event, node) as argument.
@@ -330,12 +484,14 @@ class TreeView extends Widget {
     // =========================================================================
 
     static get observedAttributes() {
-        return ["editable"];
+        return ["editable", "sort-children"];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === "editable") {
             this.isEditable = newValue !== null;
+        } else if (name === "sort-children") {
+            this.sortChildrenLexically = newValue !== null;
         }
     }
 }
@@ -343,128 +499,19 @@ class TreeView extends Widget {
 const menuItems = contextMenu.registerItems({
     "add-group": {
         label: "Add group",
-        click: ({ currentNode, data: { treeView } }) => {
-            const inputContainer = document.createElement("div");
-            inputContainer.classList.add("input-container");
-            const inputNode = document.createElement("input");
-            inputContainer.appendChild(inputNode);
-            inputNode.placeholder = "Enter name";
-            inputNode.classList.add("light");
-            // Escape or focussing out cancels the action
-            inputNode.addEventListener("focusout", () => {
-                inputContainer.remove();
-            });
-            inputNode.addEventListener("keydown", (event) => {
-                if (event.key === "Escape") inputNode.blur();
-            });
-            // Process input when Enter key is pressed
-            inputNode.addEventListener("keypress", async (event) => {
-                if (event.key !== "Enter") return;
-                event.preventDefault();
-                const newGroupName = inputNode.value.trim();
-                // If the input value is empty, just remove the input node again
-                if (newGroupName.length === 0) {
-                    inputNode.blur();
-                    return;
-                }
-                // Check if a group with this name already exists
-                if (treeView.rootNode.children.hasOwnProperty(newGroupName)) {
-                    await dialogWindow.info(
-                        `A group with the name '${newGroupName}' already ` +
-                        `exists!`);
-                    inputNode.blur();
-                    return;
-                }
-                // Otherwise add the new group and remove the input node
-                const node = treeView.buildNode({ name: newGroupName },
-                                                treeView.rootNode);
-                treeView.$("root").appendChild(node.domNode);
-                inputNode.blur();
-                treeView.callbacks.onModify();
-            });
-            treeView.$("root").appendChild(inputContainer);
-            inputNode.focus();
-        }
+        click: ({ data: { treeView } }) => treeView.addNode()
     },
     "add-subgroup": {
         label: "Add subgroup",
-        click: ({ currentNode, data: { node, treeView } }) => {
-            const inputContainer = document.createElement("div");
-            inputContainer.classList.add("input-container");
-            const inputNode = document.createElement("input");
-            inputContainer.appendChild(inputNode);
-            inputNode.placeholder = "Enter name";
-            inputNode.classList.add("light");
-            // Escape or focussing out cancels the action
-            inputNode.addEventListener("focusout", () => {
-                inputContainer.remove();
-                if (node.childrenArray.length === 0) {
-                    node.openButton.classList.add("hidden");
-                }
-            });
-            inputNode.addEventListener("keydown", (event) => {
-                if (event.key === "Escape") inputNode.blur();
-            });
-            // Process input when Enter key is pressed
-            inputNode.addEventListener("keypress", async (event) => {
-                if (event.key !== "Enter") return;
-                event.preventDefault();
-                const newGroupName = inputNode.value.trim();
-                // If the input value is empty, just remove the input node again
-                if (newGroupName.length === 0) {
-                    inputNode.blur();
-                    return;
-                }
-                // Check if a sibling group with this name already exists
-                if (node.children.hasOwnProperty(newGroupName)) {
-                    await dialogWindow.info(
-                        `A subgroup with the name '${newGroupName}' already ` +
-                        `exists!`);
-                    inputNode.blur();
-                    return;
-                }
-                // Otherwise add the new subgroup and remove the input node
-                const child = treeView.buildNode({ name: newGroupName }, node);
-                node.childrenContainer.appendChild(child.domNode);
-                // If this subgroup is the first, show it by opening the parent
-                if (node.childrenArray.length === 1) {
-                    node.domNode.classList.add("open");
-                    node.open = true;
-                }
-                inputNode.blur();
-                treeView.callbacks.onModify();
-            });
-            node.childrenContainer.show();
-            node.openButton.classList.remove("hidden");
-            node.childrenContainer.appendChild(inputContainer);
-            inputNode.focus();
-        }
+        click: ({ data: { node, treeView } }) => treeView.addNode(node)
     },
     "delete-group": {
         label: "Delete group",
-        click: async ({ currentNode, data: { node, treeView } }) => {
-            const confirmed = await dialogWindow.confirm(
-                `Are you sure you want to delete the group '${node.name}' and` +
-                ` all its contents and descendants?`);
-            if (!confirmed) return;
-            if (node.domNode.contains(treeView.selectedNode.domNode)) {
-                treeView.deselect();
-            }
-            delete node.parent.children[node.name];
-            node.parent.childrenArray.remove(node.name);
-            node.domNode.remove();
-            // If this subgroup was the only one, close the parent group
-            if (node.parent.childrenArray.length === 0) {
-                node.parent.domNode.classList.remove("open");
-                node.parent.open = false;
-                node.parent.openButton.classList.add("hidden");
-            }
-            treeView.callbacks.onModify();
-        }
+        click: ({ data: { node, treeView } }) => treeView.removeNode(node)
     },
     "rename-group": {
         label: "Rename group",
-        click: ({ currentNode, data: { node } }) => {
+        click: ({ currentNode, data: { node, treeView } }) => {
             const oldGroupName = node.name;
             const nameNode = node.labelNode;
             nameNode.setAttribute("contenteditable", "");
@@ -473,12 +520,14 @@ const menuItems = contextMenu.registerItems({
                 if (event.key !== "Enter") return;
                 event.preventDefault();
                 const newGroupName = nameNode.textContent.trim();
+
                 // The group name may not be empty
                 if (newGroupName.length === 0) {
                     await dialogWindow.info(`Group names can not be empty.`);
                     nameNode.focus();
                     return;
                 }
+
                 // Check if a sibling group with this name already exists
                 if (node.parent.children.hasOwnProperty(newGroupName) &&
                         newGroupName !== oldGroupName) {
@@ -488,15 +537,18 @@ const menuItems = contextMenu.registerItems({
                     nameNode.focus();
                     return;
                 }
+
                 // If the new name is valid, make the label non-editable again
                 nameNode.removeEventListener("keypress", renameCallback);
                 nameNode.removeEventListener("keydown", cancelCallback);
                 nameNode.removeEventListener("focusout", cancelCallback);
                 nameNode.removeAttribute("contenteditable");
+
                 // Do nothing more if the group name didn't change
                 if (newGroupName === oldGroupName) {
                     return;
                 }
+
                 // If the name changed, also change it in the internal tree data
                 const childIndex = node.parent.childrenArray.indexOf(node.name);
                 node.parent.childrenArray[childIndex] = newGroupName;
@@ -505,6 +557,15 @@ const menuItems = contextMenu.registerItems({
                 delete node.parent.children[oldGroupName];
                 node.name = newGroupName;
                 treeView.callbacks.onModify();
+
+                // If children nodes are sorted, move the renamed node
+                if (treeView.sortChildrenLexically) {
+                    node.domNode.remove();
+                    utility.insertNodeIntoSortedList(
+                        node.parent.childrenContainer, node.domNode,
+                        (n) => treeView.domNodeToNode.get(n).name.toLowerCase(),
+                        false);
+                }
             };
             // Escape cancels renaming (keep old name)
             cancelCallback = (event) => {

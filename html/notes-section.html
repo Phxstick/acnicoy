@@ -1,4 +1,24 @@
 <div id="structure-tree-frame">
+  <div id="button-bar">
+    <button id="add-group-button" data-tooltip="Add group"
+                                  data-tooltip-pos="bottom">
+      <i class="fa fa-plus"></i>
+    </button>
+    <button id="search-groups-button" data-tooltip="Search groups"
+                                      data-tooltip-pos="bottom">
+      <span class="fa-stack">
+        <i class="fa fa-search"></i>
+        <i class="fa fa-sort-down fa-stack-1x"></i>
+      </span>
+    </button>
+    <button id="search-notes-button" data-tooltip="Search notes"
+                                     data-tooltip-pos="bottom">
+      <i class="fa fa-search"></i>
+      <i class="fa fa-caret-right"></i>
+    </button>
+  </div>
+  <input id="search-groups-entry" placeholder="Search groups"></input>
+  <input id="search-notes-entry" placeholder="Search notes"></input>
   <tree-view id="structure-tree" editable></tree-view>
 </div>
 <div id="notes-frame">
@@ -6,11 +26,11 @@
     <i class="fa fa-plus"></i>
     Add note
   </button>
-  <div id="notes"></div>
-  <div id="control-buttons">
-    <button id="edit-button"><i class="fa fa-pencil"></i></button>
-    <button id="delete-button"><i class="fa fa-trash"></i></button>
-    <button id="move-button"><i class="fa fa-arrows"></i></button>
+  <div id="notes">
+    <div id="search-results" class="notes-container"></div>
+  </div>
+  <div id="no-search-results-info" class="info-container">
+      No search results found.
   </div>
   <div id="info-panel" class="info-container">
     <ul>

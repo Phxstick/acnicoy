@@ -5,6 +5,7 @@ class TestCompleteOverlay extends Overlay {
         super("test-complete");
         this.opened = false;
         this.moreLanguagesReady = false;
+        this.elementFocussedByDefault = this.$("ok-button");
         this.$("close-button").addEventListener("click", () => {
             this.resolve(null);
         });
@@ -33,8 +34,8 @@ class TestCompleteOverlay extends Overlay {
             "solutions": ""
         };
         const mistakeNodeTemplate = templates.get("test-complete-mistake");
-        this.mistakesViewState = utility.initializeView({
-            view: this.$("mistakes"),
+        this.mistakesView = new View({
+            viewElement: this.$("mistakes"),
             getData: () => this.mistakes,
             createViewItem: (mistake) => {
                 const [name, mode, part] = mistake.split("\t");
@@ -46,7 +47,7 @@ class TestCompleteOverlay extends Overlay {
             },
             initialDisplayAmount: 15,
             displayAmount: 15,
-            deterministicSearch: false
+            deterministic: false
         });
 
         // ==================================================================
@@ -130,7 +131,7 @@ class TestCompleteOverlay extends Overlay {
         this.opened = true;
         this.mistakes = Array.from(testInfo.mistakes);
         this.classList.toggle("no-mistakes", this.mistakes.length === 0);
-        this.mistakesViewState.search();
+        this.mistakesView.load();
 
         // Fill in statistics
         this.$("items-total").textContent = testInfo.numFinished;

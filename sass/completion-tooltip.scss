@@ -8,7 +8,8 @@
   #items {
     min-width: 160px;
     max-width: 250px;
-    max-height: 285px;
+    max-height: 258px;
+    width: var(--width);
     overflow-y: auto;
     background-color: $background-color;
     color: $color;
@@ -16,11 +17,11 @@
     text-align: left;
     border-radius: 6px;
 
-    &:empty::after {
-      color: $color-light;
-      content: "No matching lists.";
-      padding: 3px;
-    }
+    // &:empty::after {
+    //   color: $color-light;
+    //   content: var(--no-items-text, initial);
+    //   padding: 3px;
+    // }
 
     &:hover {
       text-shadow: none;

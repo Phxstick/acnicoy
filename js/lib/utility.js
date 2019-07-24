@@ -714,122 +714,6 @@ function bindRadiobuttonGroup(container, initialValue, callback) {
 
 
 /**
- * Make given node a data view, which displays search results upon searching
- * for some data provided by given function. Scrolling almost to the bottom of
- * the view will cause more search results to be displayed.
- * @param {HTMLElement} view - Node which will contain the search results.
- * @param {Function} getData - Async function returning a list of data items.
- *     First argument must be the query (a string or undefined).
- * @param {Function} createViewItem - Function which takes a data item (returned
- *     by 'getdata') as argument and returns an HTMLElement representing a
- *     search result to be inserted into the view.
- * @param {Integer} initialDisplayAmount - Amount of items to display initially
- *     after a search.
- * @param {Integer} displayAmount - Amount of items to be displayed upon
- *     scrolling almost to the bottom of the search results view.
- *
- * @param {HTMLElement} [placeholder] - Node to be displayed if query searched
- *     for is empty.
- * @param {HTMLElement} [noResultsPane] - Node to be displayed if there are no
- *     search results after searching.
- * @param {Boolean} [deterministicSearch=true] - If set to true, querying the
- *     same thing as the previous time will not trigger a new search (as the
- *     search results are expected to be completely determined by the query).
- * @param {Boolean} [criticalScrollDistance=150] - Distance from the bottom of
- *     the view in number of pixels which determines how far to the bottom
- *     the view has to be scrolled for the next search results to be displayed.
- */
-function initializeView({ view, getData, createViewItem, initialDisplayAmount,
-                          displayAmount, placeholder, noResultsPane,
-                          deterministicSearch=true,
-                          criticalScrollDistance=150 }={}) {
-    const state = {
-        view,
-        getData,
-        createViewItem,
-        lastQuery: null,
-        lastArgs: null,
-        searchResult: null,
-        nextResultIndex: null,
-        resultLoaded: false,
-        viewItemsLoaded: true,
-        initialDisplayAmount,
-        displayAmount,
-        deterministicSearch,
-        data: {}  // Use this to store custom data required by this view
-    };
-    function displayMoreViewItems() {
-        state.viewItemsLoaded = false;
-        const amount = state.nextResultIndex === 0 ?
-            state.initialDisplayAmount : state.displayAmount;
-        const limit = Math.min(
-            state.nextResultIndex + amount, state.searchResult.length);
-        const viewItemPromises = [];
-        for (let i = state.nextResultIndex; i < limit; ++i) {
-            viewItemPromises.push(state.createViewItem(state.searchResult[i]));
-        }
-        return Promise.all(viewItemPromises).then((viewItems) => {
-            const fragment = document.createDocumentFragment();
-            for (const viewItem of viewItems) {
-                fragment.appendChild(viewItem);
-            };
-            state.view.appendChild(fragment);
-            state.nextResultIndex = limit;
-            state.viewItemsLoaded = true;
-        });
-    }
-    // If user scrolls almost to bottom of view, load more entries
-    state.view.uponScrollingBelow(criticalScrollDistance, () => {
-        if (state.nextResultIndex > 0 &&
-                state.resultLoaded &&
-                state.viewItemsLoaded &&
-                state.nextResultIndex < state.searchResult.length)
-            displayMoreViewItems();
-    });
-    state.search = async function(query, ...args) {
-        if (placeholder !== undefined && query.length === 0) {
-            placeholder.show();
-            state.view.hide();
-            if (noResultsPane !== undefined)
-                noResultsPane.hide();
-            return;
-        }
-        if (state.deterministicSearch && query !== undefined
-                && query.length > 0
-                && query === state.lastQuery && args.equals(state.lastArgs)) {
-            return;
-        }
-        state.lastQuery = query;
-        state.lastArgs = args;
-        state.resultLoaded = false;
-        state.view.empty();
-        const searchResult = await state.getData(query, ...args);
-        state.nextResultIndex = 0;
-        state.searchResult = searchResult;
-        state.view.scrollToTop();
-        await displayMoreViewItems();
-        // Load items until view is filled sufficiently or no more left to load
-        while (!state.view.isHidden()) {
-            if (state.nextResultIndex === state.searchResult.length) break;
-            await finishEventQueue();
-            const threshold = state.view.clientHeight + criticalScrollDistance;
-            if (state.view.scrollHeight > threshold) break;
-            await displayMoreViewItems();
-        }
-        state.resultLoaded = true;
-        if (placeholder !== undefined)
-            placeholder.hide();
-        if (noResultsPane !== undefined) {
-            const resultsFound = state.searchResult.length > 0;
-            state.view.toggleDisplay(resultsFound);
-            noResultsPane.toggleDisplay(!resultsFound);
-        }
-        return state.searchResult;
-    };
-    return state;
-}
-
-/**
  * Make given node behave like a popup-window, i.e. it gets closed when clicking
  * somewhere outside of it. Call given callback if the window is being closed.
  * @param {HTMLElement} node
@@ -1180,7 +1064,6 @@ module.exports.getEntryFromSortedList = getEntryFromSortedList;
 module.exports.calculateHeaderCellWidths = calculateHeaderCellWidths;
 module.exports.selectAllOnFocus = selectAllOnFocus;
 module.exports.bindRadiobuttonGroup = bindRadiobuttonGroup;
-module.exports.initializeView = initializeView;
 module.exports.makePopupWindow = makePopupWindow;
 module.exports.drawArrowOnCanvas = drawArrowOnCanvas;
 module.exports.handleKeyDownEvent = handleKeyDownEvent;

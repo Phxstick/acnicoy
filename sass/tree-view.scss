@@ -4,6 +4,11 @@
   display: block;
 }
 
+#root {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
 .node.open {
   > .node-name-frame > .open-node-button::after {
     content: "\f107";
@@ -58,10 +63,12 @@
     padding-top: 3px;
     padding-bottom: 3px;
     display: inline-block;
-    cursor: $pointer-cursor;
     white-space: nowrap;
     border-radius: 5px;
 
+    &:not([contenteditable]) {
+      cursor: $pointer-cursor;
+    }
     &:hover:not([contenteditable]) {
       text-decoration: underline;
     }

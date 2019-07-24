@@ -76,7 +76,7 @@ class KanjiInfoPanel extends Widget {
         this.loadExampleWords = async () => {
             if (this.examplesLoaded) return;
             this.examplesLoaded = true;
-            await this.exampleWordsViewState.search(this.currentKanji);
+            await this.exampleWordsView.load(this.currentKanji);
         };
         this.loadStrokeGraphics = () => {
             if (this.strokesLoaded) return;
@@ -101,8 +101,8 @@ class KanjiInfoPanel extends Widget {
             return resultEntry;
         };
         this.$("example-words").classList.add("small-entries");
-        this.exampleWordsViewState = utility.initializeView({
-            view: this.$("example-words"),
+        this.exampleWordsView = new View({
+            viewElement: this.$("example-words"),
             getData: (kanji) => dataManager.content.exampleWordIds[kanji],
             createViewItem: createDetailedExampleWordViewItem,
             initialDisplayAmount: 10,
@@ -112,8 +112,8 @@ class KanjiInfoPanel extends Widget {
         // Kanji history
         // =================================================================
         utility.makePopupWindow(this.$("history"));
-        this.historyViewState = utility.initializeView({
-            view: this.$("history"),
+        this.historyView = new View({
+            viewElement: this.$("history"),
             getData: async () => await
                 dataManager.history.getForLanguage("Japanese", "kanji_info"),
             createViewItem: ({ name }) => this.createHistoryViewItem(name),
@@ -195,7 +195,7 @@ class KanjiInfoPanel extends Widget {
     }
 
     loadHistory() {
-        this.historyViewState.search();
+        this.historyView.load();
     }
 
     setMaximized(bool) {

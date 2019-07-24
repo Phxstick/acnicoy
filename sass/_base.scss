@@ -435,3 +435,53 @@ hr {
 .fa.fa-plus {
   @include justify($top: 1px);
 }
+
+// Used in notes-section, but needed in global style for dragging notes
+.note-content {
+  position: relative;
+  color: $view-color;
+  border-bottom: 1px solid $border-color-medium;
+  margin-left: 5px;
+  margin-right: 5px;
+  padding: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
+  outline: none;
+  font-family: $vocab-font;
+
+  * {
+    user-select: text;
+  }
+
+  > * {
+    margin-top: 7px;
+    margin-bottom: 7px;
+  }
+  > *:first-child {
+    margin-top: 0;
+  }
+  > *:last-child {
+    margin-bottom: 0;
+  }
+  p {
+    margin-left: 0px;
+    margin-right: 0px;
+  }
+  ol, ul {
+    padding-left: 25px;
+
+    > li:not(:last-child) {
+      margin-bottom: 5px;
+    }
+  }
+}
+
+.dragged-note {
+  position: absolute;
+  box-shadow: $wide-shadow;
+  opacity: 0.7;
+  background-color: $view-background-dark;
+  box-sizing: border-box;
+  z-index: var(--dragged-item-layer);
+  pointer-events: none;
+}

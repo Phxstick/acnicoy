@@ -1256,7 +1256,7 @@ class MainWindow extends Window {
                 }
             }
         }
-        this.$("notifications").prependChild(fragment);
+        this.$("notifications").prepend(fragment);
     }
 
     // ========================================================================

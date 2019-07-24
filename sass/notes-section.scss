@@ -1,5 +1,8 @@
 @import "base";
 
+$button-bar-height: 30px;
+$tree-frame-default-width: 160px;
+
 body {
   display: flex;
   flex-direction: row;
@@ -7,28 +10,88 @@ body {
 }
 
 #structure-tree-frame {
-  min-width: 150px;
-  width: 150px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 140px;
+  width: $tree-frame-default-width;
   max-width: 400px;
   resize: horizontal;
-  overflow: auto;
   border-right: 1px solid $border-color-dark;
 }
 
+#button-bar {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid $border-color-light;
+  margin-left: 8px;
+  margin-right: 8px;
+  height: $button-bar-height;
+
+  > * {
+    @extend button.light;
+    @extend button.no-shadow;
+    display: flex;
+    flex-direction: row;
+    width: ($tree-frame-default-width - 16px) / 3;
+    text-align: center;
+    box-sizing: border-box;
+    padding-top: 0;
+    padding-bottom: 0;
+    --tooltip-delay: 0.3s;
+  }
+
+  #search-groups-button {
+    .fa-stack {
+      margin-left: -5px;
+    }
+    .fa-search {
+      font-size: 1.1rem;
+      transform: translate(3px, -6px);
+    }
+  }
+  
+  #search-notes-button {
+    .fa-search {
+      font-size: 1.1rem;
+    }
+    .fa-caret-right {
+      transform: translate(-1px, -1px);
+    }
+  }
+}
+
+#search-groups-entry, #search-notes-entry {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: $button-bar-height + 1px;
+  width: 100%;
+  padding-left: 6px;
+  background-color: $view-background;
+  color: $view-color;
+  box-shadow: $slim-shadow-bottom;
+  box-sizing: border-box;
+}
+
 #structure-tree {
+  flex: 1;
   height: 100%;
   box-sizing: border-box;
-  padding-top: 10px;
   padding-right: 5px;
+  overflow: auto;
 }
 
 #notes-frame {
   overflow: auto;
   flex: 1;
-  &:not(.ready-to-drag-note) .notes-container > * {
-    cursor: $auto-cursor;
-  }
-  &.ready-to-drag-note .notes-container > * {
+  margin-bottom: -1px;  // Hide bottom border of last node
+
+  // &:not(.ready-to-drag-note) .notes-container > * {
+  //   cursor: $auto-cursor;
+  // }
+  &.ready-to-drag-note .note-content {
     cursor: $grab-cursor;
   }
   &::-webkit-scrollbar {
@@ -42,14 +105,27 @@ body {
 }
 
 .notes-container > * {
-  position: relative;
-  color: $view-color;
-  border-bottom: 1px solid $border-color-medium;
-  margin-left: 5px;
-  margin-right: 5px;
-
-  &:first-child {
+  &:first-child:not(.location-label) {
     border-top: 1px solid $border-color-medium;
+  }
+
+  &.location-label {
+    font-family: $small-font;
+    color: $color-light;
+    margin-left: 5px;
+    padding-left: 18px;
+    padding-top: 10px;
+    margin-right: 5px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid $border-color-medium;
+    font-size: 90%;
+
+    .separator::after {
+      margin-right: 8px;
+      margin-left: 8px;
+      content: "\f105";
+      font-family: FontAwesome;
+    }
   }
 
   &.editing {
@@ -59,45 +135,8 @@ body {
     box-shadow: $input-highlight-shadow;
     color: $input-color-focus;
 
-    #control-buttons {
-      display: none;
-    }
     .note-content {
       white-space: pre-wrap;
-    }
-  }
-}
-
-.note-content {
-  padding: 10px;
-  padding-left: 5px;
-  padding-right: 5px;
-  outline: none;
-  font-family: $vocab-font;
-
-  * {
-    user-select: text;
-  }
-
-  > * {
-    margin-top: 7px;
-    margin-bottom: 7px;
-  }
-  > *:first-child {
-    margin-top: 0;
-  }
-  > *:last-child {
-    margin-bottom: 0;
-  }
-  p {
-    margin-left: 0px;
-    margin-right: 0px;
-  }
-  ol, ul {
-    padding-left: 25px;
-
-    > li:not(:last-child) {
-      margin-bottom: 5px;
     }
   }
 }
@@ -123,32 +162,12 @@ body {
   }
 }
 
-#control-buttons {
-  background-color: $view-background-dark;
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  border-left: 20px solid transparent;
-  border-image: linear-gradient(to left, $view-background-dark, transparent);
-  border-image-slice: 0 0 0 100%;
-  background-clip: padding-box;
-
-  > * {
-    @extend button.light, button.no-shadow;
-    padding: 0px;
-    padding: 5px;
-    font-size: 140%;
-  }
-
-  #move-button {
-    cursor: $grab-cursor;
-  }
-}
-
 #info-panel {
   padding-right: 20px;
+}
+
+#no-search-results-info {
+  @include center-content;
+  background-color: transparent;
+  font-size: 1.4rem;
 }

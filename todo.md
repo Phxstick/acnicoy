@@ -1,15 +1,18 @@
+### Primary goals
 - Implement various selection methods in the vocab-section
 - Fix hover-bug in vocab section somehow
-
-### Primary goals
+- Implement selecting multiple vocab lists and testing on them
+- Try to fix maximize-on-start on Windows
 - Extend notes section:
-  - Add control bar: search, show help, add group, undo things
-  - Maybe an option to decrease font size and padding to see more groups at once
-  - Make it possible to reorder groups in the notes-section via drag & drop
-  - Maybe add an option which orders them alphabetically (without changing data)
-  - Remember custom size for group-overview
-  - Rework how notes are displayed, separate view and data using initializeView
-    - Make sure no bugs in view can happen due to asynchronicity
+  - Implement simple undo-function and add corresponding button to bar
+  - Implement multiple selection
+  - Option to decrease font size and padding to see more groups at once?
+  - Make it possible to reorder groups via drag & drop
+  - Allow resizing group-overview and remember custom size
+  - Make sure no bugs in view can happen due to asynchronicity
+  - Make sure that displayed label in group search identifies group uniquely
+  - Somehow invalidate notes in search result if group is deleted
+  - Add shortcuts for both searches + add-button
 - Design:
   - Add separate functionality for choosing custom background colors for reviews
   - Make dark default, Solarized (Light/Dark), Ubuntu (Light/Dark) color schemes
@@ -28,7 +31,6 @@
 - Add loading screen where appropriate (loading vocab section, kanji view, ...)
 - Also consider notes when searching vocabulary items in vocab section?
 - Use String.matchAll for test comparisons after updating to Chome 73
-- Update notes shown in view container test section if item has been updated
 - Offer language data for EN if not available for the chosen source language?
 
 ### Fixes
@@ -337,7 +339,7 @@ once? --> Faster loading, centralized resource loading
 - Decide whether kanji search should be additive. If so, merge it into the
   dictionary search function
 - As soon as everything search-related is generalized, the objects passed to
-  `utility.initializeView` in the dictionary can be a single parameterized obj
+  the view in the dictionary can be a single parameterized obj
 - Switch to "better-sqlite3" to increase performance and code style?
 - Removing word from vocabulary lists should be done in datamanager function too
 - Content-related tables should be created dynamically when the content is first

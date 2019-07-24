@@ -1,11 +1,11 @@
 {
   "name": "acnicoy",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A tool for learning Japanese and other languages.",
   "homepage": "https://github.com/Phxstick/acnicoy",
   "author": {
-      "name": "Phxstick",
-      "email": "Phxstick@gmail.com"
+    "name": "Phxstick",
+    "email": "Phxstick@gmail.com"
   },
   "license": "GPL-3.0",
   "repository": "github:Phxstick/acnicoy",
@@ -16,7 +16,7 @@
     "Japanese"
   ],
   "browserslist": [
-      "Chrome > 66"
+    "Chrome > 66"
   ],
   "devDependencies": {
     "autoprefixer": "^9.1.3",

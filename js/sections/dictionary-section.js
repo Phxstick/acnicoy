@@ -61,8 +61,8 @@ class DictionarySection extends Section {
         // =================================================================
         // Words search
         // =================================================================
-        this.viewStates["words"] = utility.initializeView({
-            view: this.$("search-results-words"),
+        this.viewStates["words"] = new View({
+            viewElement: this.$("search-results-words"),
             getData: (query, searchCriterion) => {
                 if (searchCriterion === "reading") {
                     return dataManager.content.searchDictionary(
@@ -84,13 +84,14 @@ class DictionarySection extends Section {
             },
             initialDisplayAmount: 15,
             displayAmount: 15,
-            deterministicSearch: false
+            deterministic: false,
+            loadOnResize: true
         });
         // =================================================================
         // Proper names search
         // =================================================================
-        this.viewStates["names"] = utility.initializeView({
-            view: this.$("search-results-names"),
+        this.viewStates["names"] = new View({
+            viewElement: this.$("search-results-names"),
             getData: (query, searchCriterion) => {
                 if (searchCriterion === "reading") {
                     return dataManager.content.searchDictionary(
@@ -111,7 +112,8 @@ class DictionarySection extends Section {
             },
             initialDisplayAmount: 15,
             displayAmount: 15,
-            deterministicSearch: false
+            deterministic: false,
+            loadOnResize: true
         });
         // =================================================================
         // Settings
@@ -163,8 +165,8 @@ class DictionarySection extends Section {
             this.$("history-popup").closeInThisIteration = false;
         });
         utility.makePopupWindow(this.$("history-popup"));
-        this.historyViewState = utility.initializeView({
-            view: this.$("history"),
+        this.historyView = new View({
+            viewElement: this.$("history"),
             getData: async () => await dataManager.history.get("dictionary"),
             createViewItem:
                 ({ name, type }) => this.createHistoryViewItem(name, type),
@@ -210,7 +212,7 @@ class DictionarySection extends Section {
 
     adjustToLanguage(language, secondary) {
         // Load search history
-        this.historyViewState.search("");
+        this.historyView.load();
     }
 
     open() {
@@ -309,7 +311,7 @@ class DictionarySection extends Section {
         // Define function for searching and measuring search time
         const measuredSearch = async (category, ...args) => {
             const start = process.hrtime()
-            const searchResult = await this.viewStates[category].search(...args)
+            const searchResult = await this.viewStates[category].load(...args);
             const [seconds, nanoSeconds] = process.hrtime(start);
             const timeInMilliSeconds = seconds * 1000 + nanoSeconds / 1000000;
             return [searchResult, timeInMilliSeconds / 1000];

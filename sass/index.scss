@@ -20,30 +20,6 @@ body {
   }
 }
 
-.dragged-note {
-  position: absolute;
-  box-shadow: $wide-shadow;
-  opacity: 0.7;
-  background-color: $view-background-dark;
-  color: $view-color;
-  padding: 10px;
-  white-space: pre-wrap;
-  box-sizing: border-box;
-  z-index: var(--dragged-item-layer);
-  pointer-events: none;
-
-  *:not(#control-buttons) {
-    margin: 0;
-  }
-  ol, ul {
-    padding-left: 25px;
-
-    > li:not(:last-child) {
-      margin-bottom: 5px;
-    }
-  }
-}
-
 #link-location-display {
   position: absolute;
   bottom: 0;
