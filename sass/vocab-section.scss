@@ -136,7 +136,8 @@
     position: relative;
     background-color: $input-background-focus;
     box-shadow: $input-highlight-shadow;
-    z-index: 1;  // To make shadow stand above other items
+    z-index: 1;  // Make shadow go above other items
+    border-radius: 5px;
     
     > .amount-words {
       display: none;
@@ -198,4 +199,26 @@
   padding: 4px;
   font-size: 140%;
   border-top: 1px solid $border-color-light;
+}
+
+// Remove rounded borders from items in the middle of multiple selections
+// (requires a bunch of code controlling the .last-selected class)
+#vocab, #vocab-lists, #list-contents {
+  > * {
+    border-radius: 0;
+    &:not(.selected):hover {
+      border-radius: 5px;
+    }
+    // Last item in selection range must have rounded bottom borders
+    // (would not need any JS if there was a previous-sibling selector)
+    &:last-child, &.last-selected {
+      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 5px;
+    }
+    // First item in selection range must have rounded top borders
+    &:first-child, &:not(.selected) + .selected {
+      border-top-left-radius: 5px;
+      border-top-right-radius: 5px;
+    }
+  }
 }

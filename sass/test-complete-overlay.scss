@@ -155,3 +155,7 @@
     --menu-separator-color: #{$border-color-light};
   }
 }
+
+#ok-button:focus {
+  box-shadow: none;
+}

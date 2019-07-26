@@ -1,8 +1,4 @@
 ### Primary goals
-- Implement various selection methods in the vocab-section
-- Fix hover-bug in vocab section somehow
-- Implement selecting multiple vocab lists and testing on them
-- Try to fix maximize-on-start on Windows
 - Extend notes section:
   - Implement simple undo-function and add corresponding button to bar
   - Implement multiple selection
@@ -41,7 +37,6 @@
 - Fix visual bug when opening overlays (e.g. when opening help on SRS migration)
 - Test section: fix bug where overflow-shadow below item solutions is now shown
 - How to prevent SQLITE conflicting journals accumulating in the dropbox folder?
-- When adding a word to a newly created list in edit-panel, word-counter shows 2
 - Fix visual bug in item fade-in animation when menu bar is hidden
 
 

@@ -474,7 +474,7 @@ class TestSection extends Section {
         Starting and ending review sessions
     ===================================================================== */
 
-    async createTest(vocabList) {
+    async createTest(vocabLists) {
         if (!await this.abortSession()) return false;
         const testInfo = {
             pickedItems: [],
@@ -487,14 +487,14 @@ class TestSection extends Section {
             inEvalStep: true,
             skipNextEvaluation: false,
             wrappingUp: false,
-            vocabListMode: vocabList !== undefined
+            vocabListMode: vocabLists !== undefined
         };
         this.testInfo = testInfo;
         this.$("wrap-up").toggleDisplay(
             dataManager.languageSettings.get("readings"));
 
         // Prepare session depending on whether testing on SRS items or list
-        if (vocabList === undefined) {
+        if (vocabLists === undefined) {
             this.$("session-info").textContent = "Testing on SRS items";
             this.$("vocab-list").hide();
             for (const levelNode of this.$("srs-levels-bar").children) {
@@ -515,15 +515,23 @@ class TestSection extends Section {
             testInfo.lastUpdateTime = utility.getTime();
             testInfo.score = 0;
         } else {
-            this.$("session-info").textContent = "Testing on list";
-            this.$("vocab-list").textContent = vocabList;
-            this.$("vocab-list").show();
+            if (vocabLists.length === 1) {
+                this.$("session-info").textContent = "Testing on list";
+                this.$("vocab-list").textContent = vocabLists[0];
+                this.$("vocab-list").show();
+            } else {
+                this.$("session-info").textContent =
+                    `Testing on ${vocabLists.length} vocabulary lists`;
+                this.$("vocab-list").hide();
+            }
             this.$("score-frame").hide();
             const itemPromises = [];
-            const words = dataManager.vocabLists.getWordsForList(vocabList);
-            for (const word of words) {
-                itemPromises.push(
-                    this._createTestItem(word, dataManager.test.mode.WORDS));
+            for (const vocabList of vocabLists) {
+                const words = dataManager.vocabLists.getWordsForList(vocabList);
+                for (const word of words) {
+                    itemPromises.push(
+                        this._createTestItem(word, dataManager.test.mode.WORDS))
+                }
             }
             testInfo.items = await Promise.all(itemPromises);
             testInfo.numTotal = testInfo.items.length;

@@ -134,6 +134,24 @@ module.exports = function (paths, modules) {
         return true;
     };
 
+    // Efficiently deleting set of multiple words at once in linear time
+    vocabLists.removeMultipleWordsFromList = function (words, list) {
+        const listArray = data[list];
+        let numRemoved = 0;
+        for (let i = 0; i < listArray.length; ++i) {
+            const word = listArray[i];
+            if (words.has(word)) {
+                wordToLists.get(word).remove(list);
+                ++numRemoved;
+            } else if (numRemoved > 0) {
+                listArray[i - numRemoved] = word;
+            }
+        }
+        listArray.length -= numRemoved;
+        isModified[modules.currentLanguage] = true;
+        return true;
+    };
+
     // =====================================================================
     // Searching for lists or searching lists
     // =====================================================================

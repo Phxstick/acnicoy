@@ -1023,6 +1023,16 @@ function promisifyDatabase(db) {
     return dbInterface;
 }
 
+// Efficiently remove all DOM nodes in the given set from the given container.
+function removeMultipleNodes(nodesToDelete, container) {
+    const fragment = document.createDocumentFragment();
+    const children = Array.from(container.children);
+    container.innerHTML = "";
+    for (let i = 0; i < children.length; ++i) {
+        if (!nodesToDelete.has(children[i])) fragment.appendChild(children[i]);
+    }
+    container.appendChild(fragment);
+}
 
 // Non DOM-related functions
 module.exports.getTime = getTime;
@@ -1068,3 +1078,4 @@ module.exports.makePopupWindow = makePopupWindow;
 module.exports.drawArrowOnCanvas = drawArrowOnCanvas;
 module.exports.handleKeyDownEvent = handleKeyDownEvent;
 module.exports.measureSvgElementSize = measureSvgElementSize;
+module.exports.removeMultipleNodes = removeMultipleNodes;

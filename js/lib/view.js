@@ -61,6 +61,7 @@ class View {
         this.displayAmount = displayAmount;
         this.deterministic = deterministic;
         this.scrollOffsetThreshold = scrollOffsetThreshold;
+        this.loadOnScroll = loadOnScroll;
 
         // State variables
         this.lastQuery = null;
