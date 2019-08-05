@@ -6,9 +6,9 @@ win:
   icon: "build/icon.ico"
   target:
     - "zip"
-    - "nsis"
+#    - "nsis"
 linux:
   category: "Education"
   target:
     - "tar.gz"
-    - "deb"
+#    - "deb"

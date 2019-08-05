@@ -3,6 +3,7 @@
 const { ipcMain, app, BrowserWindow, session } = require('electron');
 const path = require("path");
 const url = require("url");
+const fs = require("fs");
 const storage = require("electron-settings");
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -33,10 +34,33 @@ app.on('window-all-closed', function() {
 
 
 app.on('ready', function() {
+    // Get active color scheme (or take default if settings not yet initialized)
+    let colorScheme = "default";
+    if (storage.has("data-path")) {
+        const dataPath = storage.get("data-path");
+        const settingsPath = path.resolve(dataPath, "settings.json");
+        if (fs.existsSync(settingsPath)) {
+            const settings = require(settingsPath);
+            if (settings.hasOwnProperty("design") &&
+                    settings.design.hasOwnProperty("colorScheme")) {
+                colorScheme = settings.design.colorScheme;
+            }
+        }
+    }
+
+    // Set BG color of window to the BG used for "#loading-window" in the scheme
+    let windowColor = "white";
+    if (colorScheme === "default") {
+        windowColor = "#800000";
+    } else if (colorScheme === "solarized-light") {
+        windowColor = "#586e75";
+    }
+
+    // Initialize app window
     mainWindow = new BrowserWindow({
         // Don't set width/height here, hide application menu first
         // Minimum width/height here don't respect "useContentSize"
-        backgroundColor: "#800000",  // maroon (set as BG of "loading-window")
+        backgroundColor: windowColor,
         icon: "./img/icon.png",
         show: false
     });
@@ -96,15 +120,15 @@ app.on('ready', function() {
     //     callback({ responseHeaders: "default-src 'self'" });
     // });
   
-    // Load the index.html of the app and execute corresponding script.
+    // Load the index.html of the app which also executes the main script
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, "html", "index.html"),
         protocol: "file:",
         slashes: true
     }));
-    let forceQuit = true;
   
     // Allow mainWindow to control when the app gets closed
+    let forceQuit = true;
     ipcMain.on("activate-controlled-closing", (event) => {
         forceQuit = false;
     });
@@ -121,6 +145,7 @@ app.on('ready', function() {
           event.preventDefault();
       }
     });
+
     mainWindow.on("ready-to-show", () => {
         if (mainWindowState.isDevToolsOpened)
             mainWindow.webContents.openDevTools();
@@ -128,11 +153,7 @@ app.on('ready', function() {
         mainWindow.focus();
     });
   
-    // Emitted when the window is closed.
     mainWindow.on('closed', function() {
-      // Dereference the window object, usually you would store windows
-      // in an array if your app supports multi windows, this is the time
-      // when you should delete the corresponding element.
       mainWindow = null;
     });
     ipcMain.on("quit", () => app.quit());

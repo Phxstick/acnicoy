@@ -20,32 +20,32 @@ popup-list {
 
 popup-stack {
   --tooltip-speed: 0s;
+  --shadow-color: #{$main-window-color};
 
   &[disabled] > option[selected] {
     color: transparent;
   }
   &:focus {
-    box-shadow: $button-focus-shadow;
     outline: none !important;
   }
   > option {
-    color: whitesmoke;
-    background-color: $button-background;
+    color: $main-window-color;
+    background-color: $main-window-background;
     font-family: $light-font;
     font-size: 150%;
     cursor: $pointer-cursor;
 
     &:hover {
-      background-color: $button-background-hover;
-      color: $button-color-hover;
+      background-color: $main-window-background-hover;
+      color: $main-window-color-hover;
       // Raise element to make sure tooltips are visible on hovering
       // FIXME: This is a workaround and causes bugs. Try to circumvent issue
       z-index: 900 !important;
     }
 
     &[selected] {
-      color: $button-color;
-      background-color: $highlight-background;
+      color: $select-color;
+      background-color: $select-background;
     }
   }
 }
@@ -64,6 +64,7 @@ svg-bar-diagram {
   --value-font: #{$small-font};
   --description-font: #{$small-font};
   --separator-font: #{$header-font};
+  --bar-opacity: #{$diagram-bar-opacity};
 }
 
 tabbed-frame {

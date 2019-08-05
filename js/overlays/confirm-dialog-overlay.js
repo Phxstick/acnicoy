@@ -15,8 +15,9 @@ class ConfirmDialogOverlay extends Overlay {
         });
     }
 
-    open(message, focusYes) {
+    open(message, focusYes, title) {
         this.$("message").innerHTML = message;
+        this.$("header").textContent = title === undefined ? "Confirm" : title;
         this.elementFocussedByDefault = focusYes ? this.$("yes-button") : null;
     }
 }

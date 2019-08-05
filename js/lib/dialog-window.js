@@ -3,8 +3,8 @@
 const { remote, nativeImage } = require("electron");
 const { dialog } = remote;
 
-function confirm(text, focusYes=false) {
-    return overlays.open("confirm-dialog", text, focusYes);
+function confirm(text, focusYes=false, title) {
+    return overlays.open("confirm-dialog", text, focusYes, title);
 }
 
 function info(text, title="Info") {

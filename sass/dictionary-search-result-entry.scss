@@ -22,10 +22,12 @@
   &.frequent {
     background-color: $dictionary-frequent-words-background;
     border-bottom: 1px solid $dictionary-frequent-words-border-color;
+    color: $dictionary-frequent-words-color;
   }
   &.semi-frequent {
     background-color: $dictionary-semi-frequent-words-background;
     border-bottom: 1px solid $dictionary-semi-frequent-words-border-color;
+    color: $dictionary-semi-frequent-words-color;
   }
 
   &.tag-p {
@@ -57,27 +59,6 @@
     border-image-slice: 1;
   }
 
-  // #added-label, #add-button {
-  //   width: 30px;
-  //   writing-mode: sideways-lr;
-  //   transform: rotate(-90deg);
-  // }
-
-  // #added-label {
-  //   @extend .small;
-  //   font-variant: small-caps;
-  //   &:hover {
-  //     @extend button.light:hover;
-  //   }
-  // }
-
-  // button#add-button {
-  //   @extend .link;
-  //   font-family: $header-font;
-  //   font-variant: small-caps;
-  //   text-decoration: none;
-  // }
-
   #added-label, #add-button {
     @include center-content;
     width: 25px;
@@ -87,19 +68,19 @@
   }
 
   #added-label {
-    color: $color-positive;
+    color: $added-label-color;
     opacity: 0.6;
     &:hover {
-      text-shadow: 0 0 1px $color-positive;
+      text-shadow: 0 0 1px $added-label-shadow-color;
       opacity: 1;
     }
   }
 
   #add-button {
-    color: $color-negative;
+    color: $add-button-color;
     opacity: 0.6;
     &:hover {
-      text-shadow: 0 0 1px $color-negative;
+      text-shadow: 0 0 1px $add-button-shadow-color;
       opacity: 1;
     }
   }

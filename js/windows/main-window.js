@@ -474,6 +474,11 @@ class MainWindow extends Window {
             () => events.emit("update-srs-status-cache"),
             1000 * this.srsStatusUpdateInterval);
 
+        // Wait until SRS info cache has been initialized
+        await new Promise((resolve, reject) => {
+            events.once("update-srs-status", resolve);
+        });
+
         // If program version has changed, delete cache to force status update
         let lastUsedProgramVersion = storage.get("last-used-program-version");
         if (lastUsedProgramVersion !== app.version) {
@@ -521,6 +526,28 @@ class MainWindow extends Window {
 
         await utility.finishEventQueue();
         app.closeWindow("loading");
+
+        // Notify user if there are shortcuts without assigned key combinations
+        const notifyUnassigned = storage.get("show-shortcuts-unassigned-notice")
+        if (shortcuts.hasUnassigned()) {
+            console.log("k")
+            if (notifyUnassigned || notifyUnassigned === undefined) {
+                console.log("k2")
+                storage.set("show-shortcuts-unassigned-notice", false);
+                const goToShortcuts = await dialogWindow.confirm(
+                    "For some of the newly added shortcuts, the default key " +
+                    "combinations collide with the currently assigned ones. " +
+                    "Do you want to assign new key combinations now?",
+                    false, "Notice");
+                if (goToShortcuts) {
+                    main.sections["settings"].openSubsection("shortcuts");
+                    main.openSection("settings");
+                }
+            }
+        } else if (!notifyUnassigned) {
+                console.log("wtf")
+            storage.set("show-shortcuts-unassigned-notice", true);
+        }
     }
 
     async close() {

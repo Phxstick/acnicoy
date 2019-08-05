@@ -25,7 +25,6 @@ module.exports = function (paths) {
                 results.push(modules[name].initialize());
             }
         }
-        shortcuts.initialize();
         return Promise.all(results);
     };
 

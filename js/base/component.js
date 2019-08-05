@@ -14,9 +14,10 @@ class Component extends HTMLElement {
         const style = document.createElement("style");
         const fontAwesomePath = paths.fontAwesome.replace(/\\/g, "/");
         style.textContent = `@import url(${fontAwesomePath});`;
-        // Apply global design (set in settings)
+        // Apply global design from settings (use default if it doesn't exist)
         let design = "default";
-        if (dataManager.settings.isLoaded()) {
+        if (dataManager.settings.isLoaded() && utility.existsDirectory(
+                paths.design(dataManager.settings.design.colorScheme))) {
             design = dataManager.settings.design.colorScheme;
         }
         // Apply local CSS (if it exists)

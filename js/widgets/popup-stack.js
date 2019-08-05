@@ -46,9 +46,9 @@ class PopupStack extends Widget {
         });
         // Make element selectable with the keyboard
         this.setAttribute("tabindex", "0");
-        this.addEventListener("keypress", (event) => {
-            // If enter is pressed, close the stack (if it's open)
-            if (event.key === "Enter") {
+        this.addEventListener("keydown", (event) => {
+            // If enter or escape is pressed, close the stack (if it's open)
+            if (event.key === "Enter" || event.key === "Escape") {
                 this.close();
                 return;
             }

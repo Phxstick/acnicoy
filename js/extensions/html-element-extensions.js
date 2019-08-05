@@ -510,6 +510,22 @@ SVGElement.prototype.empty = function() {
     while (this.lastChild) this.removeChild(this.lastChild);
 }
 
+/**
+ *  Hide/display this element.
+ */
+SVGElement.prototype.hide = function() {
+    this.style.display = "none";
+}
+
+SVGElement.prototype.show = function() {
+    this.style.display = "block";
+}
+
+SVGElement.prototype.toggleDisplay = function(condition) {
+    if (condition) this.show();
+    else this.hide();
+}
+
 // Don't let buttons take focus when clicked (focus should only show when
 // tabbing through widgets with the keyboard).
 document.addEventListener("mousedown", (event) => {

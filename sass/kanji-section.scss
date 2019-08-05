@@ -89,20 +89,32 @@ body {
 
 #kanji-overview > dd > * {
   display: inline-block;
-  margin-right: 3px;
-  margin-bottom: 3px;
-  padding: 4px;
-  font-size: 140%;
+  padding: 5px;
+  font-size: 150%;
   color: $link-color;
+
+  &:hover {
+    &:not(.selected) {
+      color: $link-color-hover;
+    }
+  }
 
   &.added {
     color: $view-color-greyed-out;
+
+    &:hover:not(.selected) {
+      color: $view-color;
+    }
   }
 
   &.selected {
     color: $select-color;
     background: $select-background;
     border-radius: 3px;
+
+    &:hover {
+      text-shadow: none;
+    }
   }
 }
 
@@ -121,7 +133,7 @@ dt {
 }
 
 dd {
-  padding: 10px;
+  padding: 6px;
   margin-right: 28px;
   background: $background-color-dark;
   box-shadow: $slim-frame-shadow;

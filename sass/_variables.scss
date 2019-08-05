@@ -1,0 +1,77 @@
+
+$num-side-bar-buttons: 8;
+
+// =============================================================================
+//   Sizes
+// =============================================================================
+
+$scrollbar-width: 8px;
+$scrollbar-light-width: 16px;
+$scrollbar-padding: 4px;
+
+$side-bar-width: 80px;
+$menu-bar-height: 42px;
+$panel-header-height: 42px;
+$panel-width: 370px;
+
+// =============================================================================
+//   Interface fonts
+// =============================================================================
+
+$text-font: OpenSans-Regular;
+$light-font: OpenSans-Light;
+$header-font: Questrial;
+$button-font: $header-font;
+$small-font: Arial;
+$tooltip-font: $text-font;
+$pinyin-font: OpenSans-Regular;
+
+// =============================================================================
+//   Shadows and gradients
+// =============================================================================
+
+$wide-shadow: 0 4px 8px 0 rgba($shadow-color, 0.2),
+              0 6px 20px 0 rgba($shadow-color, 0.19);
+$wide-shadow-centered: 0 4px 8px 0 rgba($shadow-color, 0.2),
+                       0 0px 20px 0 rgba($shadow-color, 0.19);
+$slim-shadow-bottom: 0 1px 1px rgba($shadow-color, 0.5);
+$slim-shadow-top: 0 -1px 3px rgba($shadow-color, 0.7);
+$slim-frame-shadow: 0 0 2px $section-content-shadow-color;
+$stats-section-text-shadow: 0.5px 0.5px 0.5px $color-lightest;
+$popup-menu-shadow: 1px 1px 6px rgba($shadow-color, 0.85);
+$input-inset-shadow: inset 0 1px 10px -5px $shadow-color;
+$input-shadow: 0 0 5px $input-border-color;
+$input-highlight-shadow: 0 0 3px 2px $highlight-background;
+$highlighted-text-shadow: 0 0 1px $highlight-background-light;
+$button-focus-shadow: 0 0 4px 2px $button-shadow-color-focus;
+$contrast-text-shadow: 0.5px 0.5px 0.5px $contrast-shadow-color,
+                       0px 0px 5px $contrast-shadow-color,
+                       0px 0px 10px $contrast-shadow-color;
+
+$vertical-fading-border: linear-gradient(
+  to bottom, transparent, $border-color-dark, transparent) 0 100%;
+
+// =============================================================================
+//   Test section
+// =============================================================================
+
+$test-section-background: darken(indianred,15%);  // firebrick
+$test-section-color: whitesmoke;
+$test-section-color-light: darkgrey; 
+$test-section-color-lightest: lightgrey; 
+$test-section-color-medium: mix(whitesmoke, darkgrey, 65%);
+$test-section-color-dark: mix(whitesmoke, darkgrey, 40%);
+$test-section-correct-color: lawngreen;
+$test-section-incorrect-color: orange;
+$test-section-status-shadow-color: rgba(0, 0, 0, 0.2);
+$test-section-test-item-shadow-color: rgba(0, 0, 0, 0.1);
+
+// #75054b; // darken(mediumvioletred, 10%); // darken(darkorchid, 10%);
+$test-section-item-type-word-meaning: $test-section-background;
+$test-section-item-type-word-reading: #7b0853;
+$test-section-item-type-kanji-meaning: darkslateblue;
+$test-section-item-type-kanji-on-yomi: darkslateblue;
+$test-section-item-type-kanji-kun-yomi: darkolivegreen;
+$test-section-item-type-hanzi-meaning: $test-section-item-type-kanji-meaning;
+$test-section-item-type-hanzi-reading: $test-section-item-type-kanji-on-yomi;
+

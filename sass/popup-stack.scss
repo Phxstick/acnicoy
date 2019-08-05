@@ -23,7 +23,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  box-shadow: 0 0 3px var(--shadow-color, gray);
+  box-shadow: 0 0 3px 1px var(--shadow-color, transparent);
 }
 
 ::slotted(option) {

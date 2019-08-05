@@ -141,7 +141,10 @@ class LanguageTable extends Widget {
             row.classList.toggle("hidden", !hidden);
             this.settingsSubsection.broadcastLanguageSetting(
                 "visibility", config.language);
-            events.emit("language-visibility-changed", config.language);
+            events.emit("update-srs-status-cache");
+            events.once("update-srs-status", () => {
+                events.emit("language-visibility-changed", config.language);
+            });
         });
 
         // Remove language if a remove-icon is clicked
@@ -335,9 +338,9 @@ class LanguageTable extends Widget {
             const programUpdateRequired =
                 dataManager.content.programUpdateRequired(language, secondary);
             if (contentUpdateRequired) {
-                elements.contentUpdateRequiredIcon.show();
+                elements.contentUpdateRequiredIcon.show("flex");
             } else if (programUpdateRequired) {
-                elements.programUpdateRequiredIcon.show();
+                elements.programUpdateRequiredIcon.show("flex");
             } else {
                 elements.loadStatusLabel.show();
             }
@@ -473,7 +476,7 @@ class LanguageTable extends Widget {
                     "button", updateAvailable);
                 config.downloadReady = updateAvailable;
                 elements.programUpdateRecommendedIcon.toggleDisplay(
-                        programUpdateRecommended);
+                        programUpdateRecommended, "flex");
             }
         } catch (error) {
             onError(error);

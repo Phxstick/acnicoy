@@ -139,6 +139,7 @@ module.exports = function (basePath) {
     paths.template = (name) => path.resolve(templatePath, name + ".hbs");
 
     // CSS
+    paths.design = (design) => path.resolve(basePath, "css", design);
     paths.css = (name, design) =>
         path.resolve(basePath, "css", design, name + ".css");
     paths.layers = path.resolve(basePath, "css", "default", "layers.css");

@@ -88,7 +88,7 @@
         "ignore-answer": "CmdOrCtrl+I",
         "add-solution": "CmdOrCtrl+Plus",
         "edit-test-item": "CmdOrCtrl+M",
-        "wrap-up-test": "CmdOrCtrl+Escape",
+        "wrap-up-test": "CmdOrCtrl+L",
 
         "save-input": "CmdOrCtrl+Enter"
     }

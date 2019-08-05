@@ -7,6 +7,23 @@ module.exports = function (paths, modules) {
     const defaultSettings = require(paths.defaultSettings);
     let data;
 
+    // If combinations for new shortcuts would cause collision, deactivate them
+    function updateShortcuts(assigned, defaults) {
+        const assignedKeyCombinations = new Set();
+        for (const shortcutName in assigned) {
+            assignedKeyCombinations.add(assigned[shortcutName]);
+        }
+        for (const shortcutName in defaults) {
+            if (!assigned.hasOwnProperty(shortcutName)) {
+                if (assignedKeyCombinations.has(defaults[shortcutName])) {
+                    assigned[shortcutName] = "";
+                } else {
+                    assigned[shortcutName] = defaults[shortcutName];
+                }
+            }
+        }
+    }
+
     // Recursively fills in missing values in user settings using default values
     function assureCompleteness(settingsObj, defaultsObj) {
         for (const key in defaultsObj) {
@@ -14,7 +31,12 @@ module.exports = function (paths, modules) {
                 settingsObj[key] = defaultsObj[key];
             } else if (defaultsObj[key] instanceof Object &&
                     !Array.isArray(defaultsObj[key])) {
-                assureCompleteness(settingsObj[key], defaultsObj[key]);
+                // Special handling for shortcuts
+                if (key === "shortcuts") {
+                    updateShortcuts(settingsObj[key], defaultsObj[key]);
+                } else {
+                    assureCompleteness(settingsObj[key], defaultsObj[key]);
+                }
             }
         }
     }

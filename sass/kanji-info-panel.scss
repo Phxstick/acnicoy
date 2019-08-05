@@ -131,41 +131,38 @@
     }
   }
   #add-button {
-    flex: 1;
-    padding: 5px;
     font-family: $header-font;
-    color: $add-button-color;
+    padding: 5px;
     border-top: 1px solid transparent;
     border-bottom: 1px solid transparent;
+    color: $add-button-color;
+
     &:hover {
-      text-shadow: 0 0 1px $add-button-shadow-color;
-      background: $view-hover-background;
-      border-top: 1px solid darken($view-hover-background, 10%);
-      border-bottom: 1px solid darken($view-hover-background, 10%);
-    }
-    &:active {
-      background-color: $add-button-background-active;
+      background-color: mix($add-button-color, $background-color-medium, 8%);
+      border-top-color: mix($add-button-color, $border-color-medium, 40%);
+      border-bottom-color: mix($add-button-color, $border-color-medium, 40%);
     }
   }
   .control-button {
     font-family: $header-font;
     padding: 6px;
-    display: block;
     border-right: 1px solid $border-color-dark;
-    &:hover {
-      background-color: $view-hover-background;
-      border-top: 1px solid darken($view-hover-background, 10%);
-      border-bottom: 1px solid darken($view-hover-background, 10%);
-      padding: 5px;
+    border-top: 1px solid transparent;
+
+    &:hover:not(.selected) {
+      background-color: $background-color-medium;
+      border-top-color: $border-color-medium;
+      + button:not(.selected) {
+        border-top-color: $border-color-medium;
+      }
     }
+
     &.selected {
       background-color: $background-color;
-      border-top: 1px solid $border-color-dark;
-      border-bottom: 1px solid $border-color-dark;
-      padding: 5px;
+      border-top-color: $border-color-dark;
       border-right: 1px solid transparent;
-      &:last-child {
-        border-bottom: 1px solid transparent;
+      + button {
+        border-top-color: $border-color-dark !important;
       }
     }
   }
@@ -180,7 +177,7 @@
     top: 0;
     bottom: 0;
     left: 0;
-    right: 50px;  // Space for close button
+    right: 50px;  // Space for control buttons on the right
   }
   #info-frame {
     display: flex;
@@ -334,9 +331,6 @@
       border-top: 1px solid $border-color-dark;
       border-bottom: 1px solid $border-color-dark;
 
-      &.detailed-entries {
-      }
-
       &.small-entries > example-word-entry {
         border-bottom: 1px solid $border-color-light;
         &:last-child {
@@ -346,7 +340,18 @@
           background-color: $view-background-dark;
         }
       }
+
       overflow: auto;
+      &::-webkit-scrollbar {
+        width: $scrollbar-width;
+        height: $scrollbar-width;
+      }
+      &::-webkit-scrollbar-track {
+        background-color: $background-color;
+      }
+      &::-webkit-scrollbar-thumb {
+        border: 0;
+      }
     }
   }
 }

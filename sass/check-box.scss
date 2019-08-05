@@ -10,6 +10,7 @@
   border: 1px solid dimgray;
   box-shadow: inset 0 1px 10px -5px black;
   background-color: whitesmoke;
+  cursor: pointer;
   // standard checkmark
   #checkmark::before{ content:"\f00c" }
 }

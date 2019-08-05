@@ -53,9 +53,6 @@ span {
         text-shadow: 0 0 1px $add-button-shadow-color;
         background: $view-hover-background;
       }
-      &:active {
-        background-color: $add-button-background-active;
-      }
     }
     #strokes-link, #examples-link {
       font-size: 80%;

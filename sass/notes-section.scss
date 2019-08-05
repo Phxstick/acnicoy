@@ -18,6 +18,7 @@ body {
   max-width: 400px;
   resize: horizontal;
   border-right: 1px solid $border-color-dark;
+  background-color: $view-background-dark;
 }
 
 #button-bar {
@@ -38,7 +39,7 @@ body {
     box-sizing: border-box;
     padding-top: 0;
     padding-bottom: 0;
-    --tooltip-delay: 0.3s;
+    --tooltip-delay: 0.5s;
   }
 
   #search-groups-button {
@@ -87,6 +88,7 @@ body {
   overflow: auto;
   flex: 1;
   margin-bottom: -1px;  // Hide bottom border of last node
+  background-color: $view-background-medium;
 
   // &:not(.ready-to-drag-note) .notes-container > * {
   //   cursor: $auto-cursor;

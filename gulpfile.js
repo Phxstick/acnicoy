@@ -63,10 +63,10 @@ gulp.task("style", function() {
                 fs.createReadStream(designPath).pipe(fs.createWriteStream(varPath))
                 .on("finish", () => {
                     gulp.src(sassPath)
-                        .pipe(sourcemaps.init())
+                        // .pipe(sourcemaps.init())
                         .pipe(sass().on("error", sass.logError))
                         .pipe(postcss([autoprefixer()]))
-                        .pipe(sourcemaps.write("./sourcemaps"))
+                        // .pipe(sourcemaps.write("./sourcemaps"))
                         .pipe(gulp.dest(cssPath))
                     .on("finish", () => resolve());
                 });

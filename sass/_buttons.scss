@@ -34,10 +34,6 @@ button.styled {
     background-color: $button-background-active;
     color: $button-color-active;
   }
-  &:disabled {
-    background-color: $button-background-disabled;
-    color: $button-color-disabled;
-  }
 }
 
 button.rounded {
@@ -58,7 +54,7 @@ button.light {
   }
   &:hover {
     color: $button-light-color-hover;
-    text-shadow: 0 0 1px $button-light-color;
+    text-shadow: 0 0 1px $button-light-icon-color-lightest;
     i {
       color: $button-light-icon-color-hover;
     }

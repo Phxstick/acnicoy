@@ -29,16 +29,21 @@
   position: relative;
 
   #language-popup {
-    --label-background-hover: #{$main-window-background-hover};
+    --label-color: #{$main-window-color};
     --label-color-hover: #{$main-window-color-hover};
+    --label-background-hover: #{$main-window-background-hover};
+
     --menu-background: #{$button-background};
     --menu-color: #{$button-color};
     --menu-background-hover: #{$button-background-hover};
     --menu-color-hover: #{$button-color-hover};
-    --menu-background-selected: #{$highlight-background};
-    --menu-color-selected: #{$highlight-color};
+    --menu-background-selected: #{$button-background-selected};
+    --menu-color-selected: #{$button-color-selected};
     --menu-separator-color: #{$button-border-color};
-    --highlight-text-shadow: 0 0 1px var(--menu-color);
+    --highlight-text-shadow: 0 0 0.5px #{$button-color};
+    --outline-color-hover: #{$main-window-color};
+    z-index: 1;
+
     &:focus {
       outline: none;
     }
@@ -54,7 +59,8 @@
       box-sizing: border-box;
       width: 45px;
       font-size: 140%;
-      transition: background-color 0.15s, color 0.15s, border-width 0.15s;
+      transition: background-color 0.15s, color 0.15s, border-color 0.15s,
+                  border-left-color 0.15s;
       border-left: 1px solid $main-window-border-color;
       --tooltip-delay: 0.5s;
 
@@ -66,7 +72,10 @@
       &:hover {
         background: $main-window-background-hover;
         color: $main-window-color-hover;
-        border-left: 6px solid $main-window-color;
+        border-color: $main-window-color;
+        + button {
+          border-left-color: $main-window-color;
+        }
       }
     }
   }
@@ -86,9 +95,12 @@
     font-size: 140%;
     border-left: 1px solid $main-window-border-color;
     --tooltip-delay: 0.5s;
+    transition: background-color 0.1s, color 0.1s, border-color 0.1s;
+
     &:hover, &.selected {
-      background: $main-window-background-hover;
+      background-color: $main-window-background-hover;
       color: $main-window-color-hover;
+      border-color: $main-window-color;
     }
     &.highlighted {
       box-shadow: 0 0 15px 2px $highlight-background;
@@ -144,15 +156,10 @@
       margin-right: 8px;
 
       &.highlighted {
-        // background-color: $highlight-background-light;
         .title {
           font-weight: bold;
-          // color: $highlight-background;
         }
       }
-      // &:hover {
-      //   background-color: $view-background-medium;
-      // }
       .upper {
         display: flex;
         flex-direction: row;
@@ -194,23 +201,49 @@
   display: flex;
   flex-direction: column;
   z-index: var(--side-bar-layer);
+  position: relative;
   background-color: $main-window-background;
   color: $main-window-color;
-  border-top: 1px solid $main-window-border-color;
 
   button {
     display: flex;
     flex-direction: column;
     line-height: 140%;
-    transition: background-color 0.1s linear, color 0.1s linear;
-    border-bottom: 1px solid $main-window-border-color;
+    transition: background-color 0.1s linear, color 0.1s linear,
+                border-color 0.1s linear, border-top-color 0.1s linear;
+    border-top: 1px solid $main-window-border-color;
     font-size: 150%;
     font-family: $button-font;
     padding-top: 8px;
     padding-bottom: 8px;
+    border-bottom: 1px solid $main-window-border-color;
+    background-color: $main-window-background;  // Hide bottom border of next
+
+    &:not(:first-child) {
+      margin-top: -1px; // Overlap bottom border of prev sibling with top border
+    }
+    &:last-child {
+      border-bottom: 1px solid $main-window-border-color;
+    }
     &:hover {
       background-color: $main-window-background-hover;
       color: $main-window-color-hover;
+      border-color: $main-window-color;
+      z-index: $num-side-bar-buttons + 1;  // Make top border go above bottom
+                                           // border of previous sibling
+
+      // Following prevents flickering of bottom border when hovering downwards
+      ~ button {
+        border-top-color: $main-window-color;
+        z-index: $num-side-bar-buttons + 2;
+      }
+      // NOTE: previous-sibling selector would allow same for upwards direction
+    }
+    // Make top border of next button go below bottom border of previous button
+    @for $i from 1 through $num-side-bar-buttons {
+      &:nth-child(#{$i}):not(:hover) {
+        z-index: #{$num-side-bar-buttons - $i};
+      }
     }
   }
 
@@ -226,13 +259,14 @@
     #num-srs-items, #num-srs-items+span {
       line-height: 120%;
       font-size: 60%;
-      text-shadow: 0 0 1px $main-window-color;
+      // text-shadow: 0 0 1px $main-window-color;
     }
     &.no-items {
       color: mix($main-window-color, $main-window-background, 55%);
       &:hover {
         background-color: $main-window-background;
         color: mix($main-window-color, $main-window-background, 55%);
+        border-color: $main-window-border-color;
       }
     }
   }

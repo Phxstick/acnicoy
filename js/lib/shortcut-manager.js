@@ -12,8 +12,10 @@ let allShortcutsDisabled = false;
  */
 function initialize() {
     for (const shortcutName in dataManager.settings.shortcuts) {
-        keyCombinationToShortcutName.set(
-            dataManager.settings.shortcuts[shortcutName], shortcutName);
+        const keyCombination = dataManager.settings.shortcuts[shortcutName];
+        if (keyCombination.length > 0) {  // I.e. combination did not collide
+            keyCombinationToShortcutName.set(keyCombination, shortcutName);
+        }
         if (!shortcutNameToCallbacks.has(shortcutName)) {
             shortcutNameToCallbacks.set(shortcutName, []);
         }
@@ -96,13 +98,25 @@ function enableAll() {
 }
 
 /**
+ * Return true if there are shortcuts that have no assigned key combination.
+ */
+function hasUnassigned() {
+    for (const shortcutName in dataManager.settings.shortcuts) {
+        if (!dataManager.settings.shortcuts[shortcutName].length) return true;
+    }
+    return false;
+}
+
+/**
  * Bind given key combination to shortcut with given name.
  * @param {String} shortcutName
  * @param {String} keyCombination
  */
 function bindKeyCombination(shortcutName, keyCombination) {
-    keyCombinationToShortcutName.delete(
-        dataManager.settings.shortcuts[shortcutName]);
+    const oldKeyCombination = dataManager.settings.shortcuts[shortcutName];
+    if (keyCombinationToShortcutName.has(oldKeyCombination)) {
+        keyCombinationToShortcutName.delete(oldKeyCombination);
+    }
     dataManager.settings.shortcuts[shortcutName] = keyCombination;
     keyCombinationToShortcutName.set(keyCombination, shortcutName);
 }
@@ -181,6 +195,8 @@ module.exports.disable = disable;
 module.exports.enable = enable;
 module.exports.disableAll = disableAll;
 module.exports.enableAll = enableAll;
+
+module.exports.hasUnassigned = hasUnassigned;
 module.exports.bindKeyCombination = bindKeyCombination;
 module.exports.getBoundKeyCombination = getBoundKeyCombination;
 module.exports.isKeyCombinationUsed = isKeyCombinationUsed;

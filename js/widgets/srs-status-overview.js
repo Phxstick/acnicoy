@@ -3,7 +3,7 @@
 class SrsStatusOverview extends PinwallWidget {
     constructor() {
         super("srs-status-overview");
-        this.minSpinnerDisplayTimePromise = Promise.resolve();
+        this.minSpinnerDisplayTimePromise = null;
         this.$("update-button").addEventListener("click", () => {
             this.$("update-button").hide();
             this.$("updating-spinner").show("table-cell");
@@ -72,7 +72,9 @@ class SrsStatusOverview extends PinwallWidget {
             utility.fragmentFromString(rowsHtml.join("")));
 
         // Wait minimum time before hiding spinner and showing button again
-        await this.minSpinnerDisplayTimePromise;
+        if (this.minSpinnerDisplayTimePromise !== null) {
+            await this.minSpinnerDisplayTimePromise;
+        }
         this.$("update-button").show("table-cell");
         this.$("updating-spinner").hide();
     }

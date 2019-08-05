@@ -910,23 +910,19 @@ function getTimelineMarkers(intervals, unit) {
  * @returns {Array}
  */
 function getDistantColors(n) {
-    // Good-looking colors for a small amount of languages
-    const red = "#b56262";
-    const green = "#6ab673";  // #62b562
-    const blue = "#6262b5";
-    const yellow = "#b5b562";
-    const brown = "#ba956d";
-    const pink = "#b56ab0";
-    const colors = [
-        [red],
-        [red, green],
-        [red, green, blue],
-        [red, green, blue, yellow],
-        [red, green, blue, yellow, pink],
-        [red, green, blue, yellow, pink, brown]
-    ];
+    // Use hand-picked colors for a small amount of languages
+    let colors;
+    if (dataManager.settings.design.colorScheme.startsWith("solarized")) {
+        // orange, green, violet, yellow, magenta, cyan, red, blue
+        colors = ["#cb4b16", "#859900", "#6c71c4", "#b58900",
+                  "#d33682", "#2aa198", "#dc322f", "#268bd2"];
+    } else {
+        // red, green, blue, yellow, brown, pink
+        colors = ["#b56262", "#6ab673", "#6262b5",
+                  "#b5b562", "#ba956d", "#b56ab0"];
+    }
     if (n <= colors.length) 
-        return colors[n - 1];
+        return colors.slice(0, n);
 
     // 21 colors taken from here: https://stackoverflow.com/a/309193
     // Not very aesthetically pleasing, but sufficiently distinguishable

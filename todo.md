@@ -1,3 +1,10 @@
+- Fix: don't always switch to dictionary when clicking in kanji-info-panel
+- Update screenshots
+- Make it possible to add names to dictionary (disregard IDs for now?)
+- Add solarized dark color scheme (and maybe more)
+- Add functionality for choosing test section colors
+- Add setting for increasing font size in vocab section
+
 ### Primary goals
 - Extend notes section:
   - Implement simple undo-function and add corresponding button to bar
@@ -11,7 +18,7 @@
   - Add shortcuts for both searches + add-button
 - Design:
   - Add separate functionality for choosing custom background colors for reviews
-  - Make dark default, Solarized (Light/Dark), Ubuntu (Light/Dark) color schemes
+  - Make dark default and Ubuntu (Light/Dark) color schemes
   - Use translations-font and readings-font in some places instead of vocab-font
 - Performance/Memory:
   - Try to reduce memory consumption
@@ -181,6 +188,7 @@ Japanese
 - Have option to only show a single combined search entry (like in Jisho.org)
   - Otherwise, detect when searching for English term in JA-entry, suggest
     interpreting as ENG-query instead
+- Add option to use larger font size (150%) and huge (190%, line-height 2.1rem)
 - Allow switching between additive and non-additive kanji/word/name search?
 - Somehow handle multiple concurrent searches (maybe in utility.js)
 - Implement tags like #words, #names, #jlpt:x, etc.

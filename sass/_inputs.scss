@@ -125,6 +125,7 @@ select {
   border: 1px solid $input-border-color;
   background-color: $input-background;
   font-size: 110%;
+  color: inherit;
 
   &:hover {
     border-color: $input-border-color-hover;
@@ -148,6 +149,7 @@ check-box {
   box-shadow: none;
   background-color: $input-background;
   border-color: $border-color-dark;
+  color: $color-light;
 
   &:not(.light) {
     &:focus {

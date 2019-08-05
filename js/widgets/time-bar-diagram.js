@@ -6,7 +6,7 @@ class TimeBarDiagram extends Widget {
         this.unitButtons = {};
         this.reverse = false;
         this.minMaxValue = null;
-        this.$("diagram").margin = { top: 30, left: 25, right: 25, bottom: 40 };
+        this.$("diagram").margin = { top: 15, left: 25, right: 25, bottom: 40 };
         this.$("diagram").barWidth = 20;
         this.$("diagram").barSpacing = 10;
         this.$("diagram").textMarginTop = 6;
@@ -50,7 +50,7 @@ class TimeBarDiagram extends Widget {
                 utility.getDistantColors(dataList[0].length) : null;
         this.$("diagram").draw(dataList, { descriptions: labels, separators,
             colors, showValueLabels: true, showSmallSeparators: true,
-            stackBars: true, reverse: this.reverse,
+            stackBars: true, stackSpacing: 1, reverse: this.reverse,
             minMaxValue: this.minMaxValue });
         if (this.reverse && !this.$("diagram").isHidden()) {
             this.moveViewToRightEnd();

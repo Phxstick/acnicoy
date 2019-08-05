@@ -12,6 +12,8 @@
     stroke: var(--bar-border-color, transparent);
     stroke-width: var(--bar-border-width, 0);
     fill: var(--bar-background, gray);
+    opacity: var(--bar-opacity, initial);
+
     &:hover {
       fill: var(--bar-background-hover, dimgray);
     }
@@ -85,6 +87,7 @@
     width: 14px;
     border-radius: 3px;
     margin-right: 6px;
+    opacity: var(--bar-opacity, initial);
   }
   .legend-label {
     font-size: var(--legend-font-size, initial);

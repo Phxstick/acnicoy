@@ -138,7 +138,7 @@ class Application {
         // Load and process language content for all languages if not disabled
         if (dataManager.settings.general.autoLoadLanguageContent) {
             start = performance.now();
-            this.openWindow("loading", "Loading language content...");
+            this.openWindow("loading", "Loading language data...");
             //    "This might take a bit.<br>" +
             //    "Content loading on application launch<br>" +
             //    "can be disabled in the settings.";
@@ -158,23 +158,39 @@ class Application {
     async initialize() {
         await new Promise((resolve) => { window.onload = resolve; });
         document.title = this.name;
+        document.body.hide();  // Don't show anything until elements are loaded
 
         // Immediately initialize global data if data path is already set
+        let colorScheme = "default";
         if (paths.existsDataPath()) {
             paths.init();
-            dataManager.initialize();
+            await dataManager.initialize();
+            await shortcuts.initialize();
+
+            // Get design from settings (or use default if files are missing)
+            const specifiedDesign = dataManager.settings.design.colorScheme;
+            if (utility.existsDirectory(paths.design(specifiedDesign))) {
+                colorScheme = specifiedDesign;
+            }
         }
 
         // Create interface (using design settings if already loaded above)
+        const indexStyle = document.createElement("link");
+        indexStyle.rel = "stylesheet";
+        indexStyle.href = `../css/${colorScheme}/index.css`;
+        document.head.appendChild(indexStyle);
         await this.createWindows();
         window.main = this.windows["main"];
         Component.setStyleClass("cursor", "default");
+        await utility.finishEventQueue();
+        document.body.show();
 
         // If user data location is not set, let user choose it
         if (!paths.existsDataPath()) {
             const newPath = await this.openWindow("init-path");
             paths.setDataPath(newPath);
-            dataManager.initialize();
+            await dataManager.initialize();
+            await shortcuts.initialize();
         }
 
         // Create sections, panels and suggestion panes in main-window

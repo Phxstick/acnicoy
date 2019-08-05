@@ -29,6 +29,17 @@ tbody tr {
 
   .content-load-status-frame, .content-status-label-frame {
     @include center-content;
+
+    .icon {
+      @include center-content("vertical");
+      margin-left: 5px;
+      font-size: 120%;
+      --tooltip-delay: .2s;
+
+      > i {
+        line-height: 1rem;  // Apply only to icon so as to not mess up tooltip
+      }
+    }
   }
 
   .content-status-label {
@@ -47,7 +58,7 @@ tbody tr {
     }
   }
 
-  .content-load-status-label {
+  .content-load-status-frame {
     margin-bottom: 3px;
   }
 
@@ -158,18 +169,11 @@ tbody tr {
 }
 
 .program-update-required-icon, .content-update-required-icon {
-  display: inline-block;
   color: $warning-icon-color;
-  font-size: 120%;
-  --tooltip-delay: .4s;
 }
 
 .program-update-recommended-icon {
-  display: inline-block;
-  margin-left: 5px;
   color: $info-icon-color;
-  font-size: 120%;
-  --tooltip-delay: .4s;
 }
 
 #last-content-status-update-time {

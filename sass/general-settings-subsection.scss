@@ -11,13 +11,14 @@
     margin-right: 10px;
     border-radius: 6px;
     border: 1px solid $border-color-medium;
-    background-color: $view-background-dark;
+    background-color: $input-background;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: $pointer-cursor;
 
     &:hover {
-      background-color: $view-background;
+      background-color: $input-background-hover;
       border-color: $border-color-dark;
     }
   }

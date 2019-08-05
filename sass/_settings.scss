@@ -51,7 +51,7 @@
   background-color: $input-background;
 
   &.fixed {
-    background-color: darken($background-color, 5%);
+    background-color: $background-color-medium;
   }
   &:not(.fixed) {
     cursor: $pointer-cursor;

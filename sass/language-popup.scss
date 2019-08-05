@@ -10,9 +10,14 @@
   box-sizing: border-box;
   padding: 10px;
   transition: background-color 0.15s, color 0.15s;
+  color: var(--label-color);
+  transition: outline-color 0.1s;
+  outline: 1px solid transparent;
+
   &:hover {
     background-color: var(--label-background-hover);
     color: var(--label-color-hover);
+    outline-color: var(--outline-color-hover, transparent);
   }
 }
 
@@ -31,6 +36,7 @@
   > div {
     display: table-row;
     background-color: var(--menu-background);
+    color: var(--menu-color);
 
     &:hover {
       background-color: var(--menu-background-hover);
@@ -40,12 +46,14 @@
     &.selected {
       background-color: var(--menu-background-selected);
       color: var(--menu-color-selected);
+      > div:nth-child(2) {
+        color: var(--menu-color-selected);
+      }
     }
 
     > div {
       display: table-cell;
       text-align: center;
-      color: var(--menu-color);
       padding: 8px;
       cursor: $pointer-cursor;
 
