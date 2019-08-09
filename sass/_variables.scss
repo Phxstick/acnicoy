@@ -51,27 +51,3 @@ $contrast-text-shadow: 0.5px 0.5px 0.5px $contrast-shadow-color,
 $vertical-fading-border: linear-gradient(
   to bottom, transparent, $border-color-dark, transparent) 0 100%;
 
-// =============================================================================
-//   Test section
-// =============================================================================
-
-$test-section-background: darken(indianred,15%);  // firebrick
-$test-section-color: whitesmoke;
-$test-section-color-light: darkgrey; 
-$test-section-color-lightest: lightgrey; 
-$test-section-color-medium: mix(whitesmoke, darkgrey, 65%);
-$test-section-color-dark: mix(whitesmoke, darkgrey, 40%);
-$test-section-correct-color: lawngreen;
-$test-section-incorrect-color: orange;
-$test-section-status-shadow-color: rgba(0, 0, 0, 0.2);
-$test-section-test-item-shadow-color: rgba(0, 0, 0, 0.1);
-
-// #75054b; // darken(mediumvioletred, 10%); // darken(darkorchid, 10%);
-$test-section-item-type-word-meaning: $test-section-background;
-$test-section-item-type-word-reading: #7b0853;
-$test-section-item-type-kanji-meaning: darkslateblue;
-$test-section-item-type-kanji-on-yomi: darkslateblue;
-$test-section-item-type-kanji-kun-yomi: darkolivegreen;
-$test-section-item-type-hanzi-meaning: $test-section-item-type-kanji-meaning;
-$test-section-item-type-hanzi-reading: $test-section-item-type-kanji-on-yomi;
-

@@ -31,9 +31,9 @@ $green: #859900;
 $background-color: mix($bg-light, $bg-light-darker, 50%);
 $background-color-dark: #e8e1cc;  // Bit darker than $bg-light-darker, grayish
 $background-color-medium: mix($background-color, $background-color-dark, 40%);
-$color: darken($fg-darkest, 3%);
-$color-light: mix($fg-darkest, $fg-light, 25%);
-$color-lightest: lighten($fg-light, 10%);
+$color: darken($fg-darkest, 8%);
+$color-light: darken($fg-lightest, 12%); // mix($fg-darkest, $fg-light, 25%);
+$color-lightest: lighten($fg-lightest, 4%);
 $color-dark: darken($color, 10%);
 $text-shadow-color: lighten($color, 60%);
 $border-color-light: lighten($color-light, 35%);
@@ -58,7 +58,9 @@ $button-light-icon-color-hover: $color-light;
 $button-light-shadow-color-active: lighten($button-light-color, 25%);
 
 // Views
-$view-color: mix($fg-dark, $fg-darkest, 60%);
+$view-color: darken($fg-darkest, 2%);
+$view-hover-color: $bg-dark;
+$view-edit-color: $view-hover-color;
 $view-color-greyed-out: lighten($color-lightest, 3%);
 $view-background: $bg-light;
 $view-background-medium: mix($bg-light, $bg-light-darker, 80%);
@@ -68,9 +70,10 @@ $view-background-dark: mix($bg-light, $bg-light-darker, 50%);
 $input-background: mix($bg-light, $bg-light-darker, 40%);
 $input-background-hover: mix($bg-light, $bg-light-darker, 70%);
 $input-background-focus: $view-background;
+$input-background-invalid: mix($input-background, $red, 80%);
 $input-color: $color;
-$input-color-focus: $input-color;
-$input-color-hover: $input-color;
+$input-color-hover: $view-hover-color;
+$input-color-focus: $view-edit-color;
 $input-color-placeholder: $color-light;
 $input-border-color: $border-color-medium;
 $input-border-color-hover: $border-color-dark;
@@ -102,9 +105,9 @@ $highlight-background-dark: lighten(mix($orange, $color, 80%), 3%);
 $border-color-highlight: $highlight-background;
 $highlight-color: $select-color;
 $button-shadow-color-focus: $highlight-background-dark;
+$input-border-color-focus: $border-color-highlight;
 
 // View highlight / select
-$view-hover-color: $bg-dark;
 $view-hover-background: rgba($orange, 0.14);
 $view-hover-background-light: rgba($orange, 0.03);
     // mix($view-background-medium, $view-background, 50%); 
@@ -113,7 +116,6 @@ $view-select-color: $select-color;
 $view-select-background: $select-background;
 $view-select-background-hover: $select-background-hover;
 $view-edit-background: $view-background;  // #fde8ec;
-$view-edit-color: $view-hover-color;
 $view-edit-border-color: $highlight-background;
 
 // Local links (to open another section/panel/overlay)
@@ -143,7 +145,7 @@ $scrollbar-light-thumb-background-active: rgba(255, 255, 255, 0.9);
 // =============================================================================
 
 // Main window
-$main-window-background: #586e75;
+$main-window-background: $fg-darkest;
 $main-window-background-hover: lighten($main-window-background, 8%);
 $main-window-background-light: lighten($main-window-background, 8%);
 $main-window-background-lightest: lighten($main-window-background-light, 6%);

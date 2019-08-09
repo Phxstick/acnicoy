@@ -11,16 +11,12 @@ class SrsSchemesOverlay extends Overlay {
         this.hideSchemeDetails();
         // Add all event listeners
         this.$("done-button").addEventListener("click", async () => {
-            if (this.editModeActive) {
-                const confirmed = await dialogWindow.confirm(
-                    `The current scheme has unsaved changes.
-                     Do you want to save those changes?`)
-                if (confirmed === null) return;
-                if (confirmed && !(await this.saveChanges())) return;
-            }
-            this.resolve();
+            const changesHandled = await this.handleUnsavedChanges();
+            if (changesHandled) this.resolve();
         });
-        this.$("add-scheme-button").addEventListener("click", () => {
+        this.$("add-scheme-button").addEventListener("click", async () => {
+            const changesHandled = await this.handleUnsavedChanges();
+            if (!changesHandled) return;
             if (this.selectedSchemeItem !== null) {
                 this.selectedSchemeItem.classList.remove("selected");
                 this.selectedSchemeItem = null;
@@ -82,14 +78,8 @@ class SrsSchemesOverlay extends Overlay {
             if (event.target.parentNode !== this.$("schemes-list")) return;
             const item = event.target;
             if (this.selectedSchemeItem === item) return;
-            if (this.editModeActive) {
-                const confirmed = await dialogWindow.confirm(
-                    `The current scheme has unsaved changes.
-                     Do you want to save those changes?`);
-                if (confirmed === null) return;
-                if (confirmed && !(await this.saveChanges())) return;
-                this.exitEditMode();
-            }
+            const changesHandled = await this.handleUnsavedChanges();
+            if (!changesHandled) return;
             if (this.selectedSchemeItem !== null)
                 this.selectedSchemeItem.classList.remove("selected");
             this.selectedSchemeItem = item;
@@ -168,6 +158,17 @@ class SrsSchemesOverlay extends Overlay {
         if (this.selectedSchemeItem === null) {
             this.hideSchemeDetails();
         }
+    }
+
+    async handleUnsavedChanges() {
+        if (!this.editModeActive) return true;
+        const confirmed = await dialogWindow.confirm(
+            `The current scheme has unsaved changes.
+             Do you want to save those changes?`);
+        if (confirmed === null) return false;
+        if (confirmed && !(await this.saveChanges())) return false;
+        this.exitEditMode();
+        return true;
     }
     
     /**

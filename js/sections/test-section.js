@@ -33,7 +33,6 @@ class TestSection extends Section {
         // Variables
         this.isOpen = false;
         this.testInfo = null;
-        this.currentBackgroundClass = null;
         this.timeOfLastAction = 0;
         this.currentlySelectedLevel = null;
         this.stopFuncs = [];
@@ -268,10 +267,6 @@ class TestSection extends Section {
             const newSize = dataManager.settings.test.fontSize;
             this.$("test-item").classList.add(newSize);
         });
-        events.on("settings-test-use-background-colors", () => {
-            this.classList.toggle("colored-background",
-                dataManager.settings.test.useBackgroundColors);
-        });
         events.on("settings-test-enable-ignore-shortcut", () => {
             if (!dataManager.settings.test.enableIgnoreShortcut) {
                 shortcuts.disable("ignore-answer");
@@ -358,6 +353,11 @@ class TestSection extends Section {
     
     open() {
         this.isOpen = true;
+
+        // Reset colors since the color scheme might have been modified
+        this.colors = {};
+        this.previousColors = null;
+
         // If no test session is currently running, create one
         if (this.testInfo === null) {
             this.createTest();
@@ -382,6 +382,8 @@ class TestSection extends Section {
                     this.$("answer-entry").focus();
                 }
             }
+            // Reapply colors since they might have been changed
+            this._applyColors();
         }
         if (!main.barsHidden) main.toggleBarVisibility();
     }
@@ -960,7 +962,7 @@ class TestSection extends Section {
         Preparing next answer step
     ===================================================================== */
 
-    _prepareMode(mode, part) {
+    _prepareMode(mode, part, instant=false) {
         this.$("status").classList.remove("correct");
         this.$("status").classList.remove("incorrect");
 
@@ -1008,7 +1010,7 @@ class TestSection extends Section {
             this.$("status").textContent = text;
         }
 
-        this._applyColors(mode, part);
+        this._applyColors(instant);
 
         // Animate status label if needed
         if (this.$("status").style.visibility === "hidden") {
@@ -1021,28 +1023,124 @@ class TestSection extends Section {
         }
     }
 
-    // Use colors according to item type (mode and part)
-    _applyColors(mode, part) {
+    // Assemble colors for the given item type according to the color scheme
+    assembleColors(type) {
+        const colorScheme = dataManager.settings.getTestSectionColors();
+        const colors = {};
+
+        // Get background color from scheme (can be multi-color or unicolor)
+        if ("background-colors" in colorScheme) {
+            colors["background-color"] = colorScheme["background-colors"][type];
+        } else {
+            colors["background-color"] = colorScheme["background-color"];
+        }
+        const isDarkBackground = colorLib.isDark(colors["background-color"]);
+
+        // Get color from scheme or choose one based on the background color
+        if ("colors" in colorScheme) {
+            colors["color"] = colorScheme["colors"][type];
+        } else if ("color" in colorScheme) {
+            colors["color"] = colorScheme["color"];
+        } else {
+            // TODO: improve this by generating a color based on distance
+            colors["color"] = isDarkBackground ? "f5f5f5" : "303030";
+        }
+
+        // Generate lighter/darker colors for control buttons etc.
+        colors["color-weak"] = colorLib.mix(
+            colors["color"], colors["background-color"], 85);
+        colors["color-weaker"] = colorLib.mix(
+            colors["color"], colors["background-color"], 75);
+        colors["color-weakest"] = colorLib.mix(
+            colors["color"], colors["background-color"], 50);
+        colors["hover-color"] = colorLib.mix(
+            colors["color"], colors["background-color"], 15);
+
+        // Choose greenish/reddish light/dark colors for status message etc.
+        if ("color-correct" in colorScheme) {
+            colors["color-correct"] = colorScheme["color-correct"];
+        } else {
+            colors["color-correct"] = isDarkBackground ? "7cfc00" : "32cd32";
+        }
+        if ("color-wrong" in colorScheme) {
+            colors["color-wrong"] = colorScheme["color-wrong"];
+        } else {
+            colors["color-wrong"] = isDarkBackground ? "ffa500" : "ff8c00";
+        }
+
+        // Generate lighter versions of greenish/reddish colors
+        colors["color-correct-weak"] =
+            colorLib.applyAlpha(colors["color-correct"], 0.5);
+        colors["background-color-correct"] =
+            colorLib.applyAlpha(colors["color-correct"], 0.2);
+        colors["background-correct-strong"] = colorLib.applyAlpha(
+            colorLib.mix(colors["color-correct"], colors["color"], 50), 0.3);
+        colors["color-wrong-weak"] =
+            colorLib.applyAlpha(colors["color-wrong"], 0.5);
+        colors["background-color-wrong"] =
+            colorLib.applyAlpha(colors["color-wrong"], 0.2);
+        colors["background-wrong-strong"] = colorLib.applyAlpha(
+            colorLib.mix(colors["color-wrong"], colors["color"], 50), 0.3);
+
+        // Get shadow colors from scheme or generate them to improve contrast
+        if ("status-shadow-color" in colorScheme) {
+            colors["status-shadow-color"] = colorScheme["status-shadow-color"];
+        } else {
+            colors["status-shadow-color"] = isDarkBackground ?
+                "rgba(0, 0, 0, 0.2)" : "rgba(255, 255, 255, 0.2)";
+        }
+        if ("item-shadow-color" in colorScheme) {
+            colors["item-shadow-color"] = colorScheme["item-shadow-color"];
+        } else {
+            colors["item-shadow-color"] = isDarkBackground ?
+                "rgba(0, 0, 0, 0.1)" : "rgba(255, 255, 255, 0.1)";
+        }
+
+        return colors;
+    }
+
+    // Color elements according to item type (mode and part)
+    _applyColors(instant=false) {
+        const mode = this.testInfo.currentItem.mode;
+        const part = this.testInfo.currentPart;
+
+        // Create string key for scheme according to item type and part
+        let type;
         const modes = dataManager.test.mode;
-        let className;
         switch (mode) {
             case modes.WORDS:
-                if (part === "meanings") className = "word-meaning";
-                if (part === "readings") className = "word-reading";
+                if (part === "meanings") type = "word-meaning";
+                if (part === "readings") type = "word-reading";
                 break;
-            case modes.KANJI_MEANINGS: className = "kanji-meaning"; break;
-            case modes.KANJI_ON_YOMI: className = "kanji-on-yomi"; break;
-            case modes.KANJI_KUN_YOMI: className = "kanji-kun-yomi"; break;
-            case modes.HANZI_MEANINGS: className = "hanzi-meaning"; break;
-            case modes.HANZI_READINGS: className = "hanzi-reading"; break;
+            case modes.KANJI_MEANINGS: type = "kanji-meaning"; break;
+            case modes.KANJI_ON_YOMI: type = "kanji-on-yomi"; break;
+            case modes.KANJI_KUN_YOMI: type = "kanji-kun-yomi"; break;
+            case modes.HANZI_MEANINGS: type = "hanzi-meaning"; break;
+            case modes.HANZI_READINGS: type = "hanzi-reading"; break;
         }
-        if (this.currentBackgroundClass !== className) {
-            if (this.currentBackgroundClass !== null) {
-                this.classList.remove(this.currentBackgroundClass);
-            }
-            this.currentBackgroundClass = className;
-            this.classList.add(this.currentBackgroundClass);
+
+        // Assemble colors for this type if not done yet, else just use cached
+        if (!(type in this.colors)) {
+            this.colors[type] = this.assembleColors(type);
         }
+        const colors = this.colors[type];
+
+        // Don't do anything if item is of type as previous one
+        if (this.previousColors === colors) return;
+
+        // Disable animations if change should happen instantly
+        this.$("top").style.transition = instant ? "none" : "";
+        this.$("bottom").style.transition = instant ? "none" : "";
+
+        // Apply all colors (only if they are different to previous ones)
+        for (const varName in colors) {
+            let color = colors[varName];
+            if (this.previousColors !== null && varName in this.previousColors
+                    && this.previousColors[varName] === color) continue;
+            if (!color.startsWith("rgb")) color = "#" + color;
+            this.style.setProperty(`--${varName}`, color);
+        }
+        this.previousColors = colors;
     }
 
     async _createQuestion(newLevel) {
@@ -1354,7 +1452,7 @@ class TestSection extends Section {
             });
         }
 
-        this._prepareMode(newItem.mode, part);
+        this._prepareMode(newItem.mode, part, previousItem === null);
 
         // Adjust button bar and level indicator
         if (previousItem !== null && dataManager.settings.test.animate) {

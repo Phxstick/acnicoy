@@ -76,9 +76,9 @@ app.on('ready', function() {
     // Load window state or set default values
     let mainWindowState = storage.get("windowState");
     if (mainWindowState) {
+        mainWindow.setContentBounds(mainWindowState);
         if (mainWindowState.isMaximized) mainWindow.maximize();
         if (mainWindowState.isFullScreen) mainWindow.setFullScreen(true);
-        mainWindow.setContentBounds(mainWindowState);
     } else {
         mainWindowState = {};
         mainWindow.setContentSize(755, 465);

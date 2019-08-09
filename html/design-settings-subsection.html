@@ -1,31 +1,27 @@
 <div class="settings-list">
-  <div class="section-separator">
-    <div class="section-header">Animations</div>
-    <div class="separator-line"><hr></div>
+  <div>
+    <check-box id="enable-animations"></check-box>
+    <span>Enable animations (e.g. fading when switching between sections)</span>
+  </div>
+  <div class="general-color-scheme-row">
+    <div class="scheme-selection-row">
+      <span>General color scheme:</span>
+      <select id="general-color-scheme"></select>
+      <span id="general-colors-preview"></span>
+    </div>
+    <div class="note">The general color scheme takes effect after
+      <button id="reload" class="link">reloading</button> the application.</div>
   </div>
   <div>
-    <check-box id="animate-sliding-panels"></check-box>
-    <span>Animate sliding panes (used for adding/editing words)</span>
-  </div>
-  <div>
-    <check-box id="animate-popup-stacks"></check-box>
-    <span>Animate sliding stacks (used for for choosing SRS level)</span>
-  </div>
-  <div>
-    <check-box id="fade-section-switching"></check-box>
-    <span>Animate switching between sections</span>
-  </div>
-
-
-  <div class="section-separator">
-    <div class="section-header">Appearance</div>
-    <div class="separator-line"><hr></div>
-  </div>
-  <div>
-    <span>Color scheme:</span>
-    <span class="select">
-      <select id="color-scheme"></select>
-    </span>
-    <div class="note">Color scheme takes effect after <button id="reload" class="link">reloading</button> the application.</div>
+    <div class="scheme-selection-row">
+      <span>Review session colors:</span>
+      <select id="test-color-scheme"></select>
+      <span id=""></span>
+      <span>
+        <check-box id="use-multicolor-test-scheme"></check-box>
+        <span>Use multiple colors</span>
+      </span>
+    </div>
+    <div id="test-colors-preview"></div>
   </div>
 </div>

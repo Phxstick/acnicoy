@@ -635,13 +635,23 @@ class MainWindow extends Window {
         this.nextSection = name;
         await this.sections[currentSection].close();
         if (dataManager.settings.design.fadeSectionSwitching && !noFading) {
+
+            // Set background color of section container to that of next section
+            if (name === "test") {
+                const colors = dataManager.settings.getTestSectionColors();
+                this.$("section-frame").style.setProperty(
+                    "--test-section-background", "background-color" in colors ?
+                    "#" + colors["background-color"] : "");
+            }
             this.$("section-frame").classList.toggle("alternative-background",
                 name === "home" || name === "stats" || name === "kanji");
             this.$("section-frame").classList.toggle("default-test-background",
                 name === "test");
+
             this.fadingOutPreviousSection = true;
             await Velocity(this.sections[currentSection], "fadeOut",
                 { duration: this.sectionFadeDuration });
+
             // Make sure section is already displayed when "open" called
             this.fadingOutPreviousSection = false;
             const nextSection = this.nextSection;

@@ -1,71 +1,47 @@
 @import "base";
 
+// Various sizes
 $answer-input-width: 300px;
 $answer-input-max-width: 500px;
 $answer-input-font-size: 1.3rem;
 $answer-input-padding: 5px;
+$solution-fade-distance: 12px;
+$scroll-overflow-shadow-size: 25px;
 
-$item-fade-in-timing: cubic-bezier(0.390, 0.575, 0.565, 1.000);  // Ease-out-sine
-$item-fade-in-duration: .25;
+// Define animation for fading in next test item
+$item-fade-in-timing: cubic-bezier(0.390, 0.575, 0.565, 1.000); // Ease-out-sine
+$item-fade-in-duration: .25s;
 $item-fade-in-distance: 25px;
-$item-fade-in-delay: .08;
+$item-fade-in-delay: .08s;
 
-$item-fade-out-timing: cubic-bezier(0.390, 0.575, 0.565, 1.000);  // Ease-out-sine
-$item-fade-out-duration: .23;
+// Define animation for fading out current test item
+$item-fade-out-timing: cubic-bezier(0.390,0.575,0.565,1.000);  // Ease-out-sine
+$item-fade-out-duration: .23s;
 $item-fade-out-distance: 25px;
 
-$solution-fade-distance: 12px;
+// General colors
+$test-section-background: var(--background-color);
+$test-section-color: var(--color);
+$test-section-color-weak: var(--color-weak);
+$test-section-color-weaker: var(--color-weaker);
+$test-section-color-weakest: var(--color-weakest);
+$test-section-hover-color: var(--hover-color);
+$test-section-status-shadow-color: var(--status-shadow-color);
+$test-section-test-item-shadow-color: var(--item-shadow-color);
 
-$scroll-overflow-shadow-size: 25px;
-$fade-color: var(--test-frame-fade-color);
-$test-frame-background: var(--test-frame-background);
-
-:host {
-  --test-frame-background: #{$test-section-background};
-  --test-frame-fade-color: #{mix($test-section-background,
-                                 $test-section-color, 80%)};
-}
-
-:host(.colored-background.word-meaning) {
-  --test-frame-background: #{$test-section-item-type-word-meaning};
-  --test-frame-fade-color: #{mix($test-section-item-type-word-meaning,
-                                 $test-section-color, 80%)};
-}
-:host(.colored-background.word-reading) {
-  --test-frame-background: #{$test-section-item-type-word-reading};
-  --test-frame-fade-color: #{mix($test-section-item-type-word-reading,
-                                 $test-section-color, 80%)};
-}
-:host(.colored-background.kanji-meaning) {
-  --test-frame-background: #{$test-section-item-type-kanji-meaning};
-  --test-frame-fade-color: #{mix($test-section-item-type-kanji-meaning,
-                                 $test-section-color, 80%)};
-}
-:host(.colored-background.kanji-on-yomi) {
-  --test-frame-background: #{$test-section-item-type-kanji-on-yomi};
-  --test-frame-fade-color: #{mix($test-section-item-type-kanji-on-yomi,
-                                 $test-section-color, 80%)};
-}
-:host(.colored-background.kanji-kun-yomi) {
-  --test-frame-background: #{$test-section-item-type-kanji-kun-yomi};
-  --test-frame-fade-color: #{mix($test-section-item-type-kanji-kun-yomi,
-                                 $test-section-color, 80%)};
-}
-:host(.colored-background.hanzi-meaning) {
-  --test-frame-background: #{$test-section-item-type-hanzi-meaning};
-  --test-frame-fade-color: #{mix($test-section-item-type-hanzi-meaning,
-                                 $test-section-color, 80%)};
-}
-:host(.colored-background.hanzi-reading) {
-  --test-frame-background: #{$test-section-item-type-hanzi-reading};
-  --test-frame-fade-color: #{mix($test-section-item-type-hanzi-reading,
-                                 $test-section-color, 80%)};
-}
+// Greenish/reddish colors for highlighting something as correct or wrong
+$test-section-color-wrong: var(--color-wrong);
+$test-section-color-correct: var(--color-correct);
+$test-section-color-wrong-weak: var(--color-wrong-weak);
+$test-section-color-correct-weak: var(--color-correct-weak);
+$test-section-background-color-wrong: var(--background-color-wrong);
+$test-section-background-color-correct: var(--background-color-correct);
+$test-section-background-color-wrong-strong: var(--background-wrong-strong);
+$test-section-background-color-correct-strong: var(--background-correct-strong);
 
 body {
   display: flex;
   flex-direction: column;
-  background-color: $test-section-background;
 }
 
 #top {
@@ -75,7 +51,7 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  background-color: $test-frame-background;
+  background-color: $test-section-background;
   color: $test-section-color;
   align-items: center;
   padding-left: 12%;
@@ -92,7 +68,7 @@ body {
 
   // Set backgrounds so that solutions don't overlap when fading in
   &.animate #notes-wrapper, &.animate #button-bar {
-    background-color: $test-frame-background;
+    background-color: $test-section-background;
   }
 }
 
@@ -104,7 +80,7 @@ body {
   flex-direction: column;
   position: relative;
   align-items: center;
-  background-color: $test-frame-background;
+  background-color: $test-section-background;
 
   &.animate {
     // Timing function is ease-out-sine
@@ -121,10 +97,10 @@ body {
   font-size: 120%;
   text-shadow: 1px 1px 0 $test-section-status-shadow-color;
   &.correct {
-    color: $test-section-correct-color;
+    color: $test-section-color-correct;
   }
   &.incorrect {
-    color: $test-section-incorrect-color;
+    color: $test-section-color-wrong;
   }
 }
 
@@ -166,7 +142,7 @@ body {
       position: absolute;
       left: -$solution-fade-distance;
       right: -$item-fade-out-distance;
-      background-color: $test-frame-background;
+      background-color: $test-section-background;
       content: "";
       transition-property: background-color;
       transition-timing-function: $item-fade-out-timing;
@@ -237,14 +213,14 @@ body {
       top: 0;
       height: var(--top-shadow-height, 0px);
       background: linear-gradient(
-          to bottom, $test-frame-background, transparent);
+          to bottom, $test-section-background, transparent);
     }
     &::after {
       @extend %scroll-overflow-shadow;
       bottom: 0;
       height: var(--bottom-shadow-height, 0px);
       background: linear-gradient(
-          to top, $test-frame-background, transparent);
+          to top, $test-section-background, transparent);
     }
 
     &.stretch-shadows {
@@ -259,14 +235,14 @@ body {
   }
 
   #notes {
-    @include fading-border($test-section-color-light, "horizontal");
+    @include fading-border($test-section-color-weakest, "horizontal");
     border-top-width: 1px;
     border-bottom-width: 0;
 
     padding-top: 5px;
     padding-bottom: 5px;
     margin-top: 5px;
-    color: $test-section-color-lightest;
+    color: $test-section-color-weak;
 
     > div {
       line-height: 1.2rem;
@@ -287,16 +263,16 @@ body {
 #level-arrow {
   font-size: 1rem;
   &.correct {
-    color: $test-section-correct-color;
+    color: $test-section-color-correct;
   }
   &.incorrect {
-    color: $test-section-incorrect-color;
+    color: $test-section-color-wrong;
   }
 }
 
 #new-level > option {
   font-size: 100%;
-  background-color: $test-frame-background;
+  background-color: $test-section-background;
   color: $test-section-color;
   border: 1px solid transparent;
   font-family: $text-font;
@@ -305,7 +281,7 @@ body {
     border-color: $test-section-color;
   }
   &[selected] {
-    border-color: $test-section-color-light;
+    border-color: $test-section-color-weakest;
     &:hover {
       border-color: $test-section-color;
     }
@@ -346,8 +322,8 @@ body {
     bottom: 0;
     font-size: 120%;
     font-family: $header-font;
-    &.positive { color: $test-section-correct-color; }
-    &.negative { color: $test-section-incorrect-color; }
+    &.positive { color: $test-section-color-correct; }
+    &.negative { color: $test-section-color-wrong; }
   }
 }
 
@@ -372,12 +348,12 @@ body {
 
   margin-top: 11px;  // Stack with bottom border of continue-button
   color: $test-section-color;
-  border-bottom: 1px solid $test-section-color-light;
+  border-bottom: 1px solid $test-section-color-weakest;
 
   &:empty:not(:focus):before {
     cursor: text;
     content: "Enter your answer here";
-    color: $test-section-color-medium;
+    color: $test-section-color-weak;
   }
   &:empty:hover:not(:focus):before {
     color: $test-section-color;
@@ -391,7 +367,7 @@ body {
 }
 
 #continue-button, #show-solutions-button {
-  @include fading-border($test-section-color-medium, "horizontal");
+  @include fading-border($test-section-color-weak, "horizontal");
   border-top-width: 1px;
   border-bottom-width: 1px;
 
@@ -403,13 +379,13 @@ body {
   font-family: $button-font;
   font-size: $answer-input-font-size;
   margin-top: 0px;
-  color: $test-section-color-medium;
+  color: $test-section-color-weak;
 
   &:hover {
     color: $test-section-color;
     border-color: $test-section-color;
     background-image: linear-gradient(
-        to right, transparent, $fade-color, transparent);
+        to right, transparent, $test-section-hover-color, transparent);
   }
 
   &:focus {
@@ -418,14 +394,14 @@ body {
 }
 
 #evaluation-buttons {
-  @include fading-border($test-section-color-medium, "horizontal");
+  @include fading-border($test-section-color-weak, "horizontal");
   border-top-width: 1px;
   border-bottom-width: 1px;
 
   display: flex;
   flex-direction: row;
   width: 460px;
-  color: $test-section-color-medium;
+  color: $test-section-color-weak;
 
   > button {
     flex: 1;
@@ -452,9 +428,9 @@ body {
     border-bottom: 1px solid $test-section-color;
   }
   &:hover, &:focus, &.highlighted {
-    $incorrect-fade: rgba(mix(white, $test-section-incorrect-color, 50%), 0.3);
-    background-image: linear-gradient(to left,$incorrect-fade,transparent 95%);
-    text-shadow: 0 0 1px $test-section-incorrect-color;
+    background-image: linear-gradient(
+        to left, $test-section-background-color-wrong-strong, transparent 95%);
+    text-shadow: 0 0 1px $test-section-color-wrong;
   }
 }
 
@@ -463,14 +439,14 @@ body {
     border-bottom: 1px solid $test-section-color;
   }
   &:hover, &:focus, &.highlighted {
-    $correct-fade: rgba(mix(white, $test-section-correct-color, 50%), 0.3);
-    background-image: linear-gradient(to right, $correct-fade, transparent 95%);
-    text-shadow: 0 0 1px $test-section-correct-color;
+    background-image: linear-gradient(
+        to right,$test-section-background-color-correct-strong,transparent 95%);
+    text-shadow: 0 0 1px $test-section-color-correct;
   }
 }
 
 #button-bar {
-  @include fading-border($test-section-color-medium, "horizontal");
+  @include fading-border($test-section-color-weak, "horizontal");
   border-top-width: 1px;
   border-bottom-width: 0px;
 
@@ -479,12 +455,12 @@ body {
   flex-direction: row;
   height: 35px;
   width: 460px;
-  @include fading-border($test-section-color-medium, "horizontal");
+  @include fading-border($test-section-color-weak, "horizontal");
 
   button {
     @include center-content;
     flex: 1;
-    color: $test-section-color-medium;
+    color: $test-section-color-weak;
     font-family: $button-font;
 
     &:not(:last-child) {
@@ -498,21 +474,23 @@ body {
     // Make text light up upon hovering
     &:hover, &:focus {
       color: $test-section-color;
-      text-shadow: 0 0 0.5px $test-section-color-dark;
+      text-shadow: 0 0 0.5px $test-section-color-weaker;
     }
 
     // Make background light up upon hovering, use gradient if it's first/last
     &:not(.flashcard-mode) {
       &:not(:first-child):not(:last-child) {
         &:hover, &:focus {
-          background-color: $fade-color;
+          background-color: $test-section-hover-color;
         }
       }
       &:first-child:hover, &:first-child:focus {
-        background-image: linear-gradient(to left,$fade-color,transparent 95%);
+        background-image: linear-gradient(
+            to left, $test-section-hover-color, transparent 95%);
       }
       &:last-child:hover, &:last-child:focus {
-        background-image: linear-gradient(to right,$fade-color,transparent 95%);
+        background-image: linear-gradient(
+            to right, $test-section-hover-color, transparent 95%);
       }
     }
 
@@ -520,7 +498,7 @@ body {
     &.flashcard-mode {
       &:hover, &:focus {
         background-image: linear-gradient(
-            to right, transparent 5%, $fade-color, transparent 95%);
+            to right,transparent 5%,$test-section-hover-color,transparent 95%);
       }
     }
   }
@@ -535,7 +513,7 @@ body {
     background-color: transparent;
   }
   &::-webkit-progress-value {
-      background-color: $test-section-color-light;
+      background-color: $test-section-color-weakest;
   }
   &::-webkit-progress-inner-element {
     border: 0;
@@ -548,7 +526,7 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  color: $test-section-color-light;
+  color: $test-section-color-weakest;
   font-size: 1.1rem;
   margin-bottom: 10px;
 
@@ -571,14 +549,14 @@ body {
 }
 
 #srs-levels-bar {
-  @include fading-border($test-section-color-dark, "horizontal");
+  @include fading-border($test-section-color-weaker, "horizontal");
   border-bottom-width: 1px;
   border-top-width: 0;
 
   display: flex;
   flex-direction: row;
   justify-content: center;
-  color: darken($test-section-color, 20%);
+  color: $test-section-color-weaker;
   font-size: 1.2rem;
   --tooltip-speed: 0s;
 
@@ -590,7 +568,7 @@ body {
     font-family: $light-font;
 
     &:hover {
-      background-color: $fade-color;
+      background-color: $test-section-hover-color;
     }
 
     // Transparent placeholder for border
@@ -600,56 +578,54 @@ body {
     }
 
     &.next-if-correct {
-      background-color: rgba($test-section-correct-color, 0.20);
-      color: darken($test-section-color, 5%);
+      background-color: $test-section-background-color-correct;
+      color: $test-section-color;
 
-      border-left: 1px solid rgba($test-section-correct-color, 0.5);
+      border-left: 1px solid $test-section-color-correct-weak;
       + button {
-        border-left: 1px solid rgba($test-section-correct-color, 0.5);
+        border-left: 1px solid $test-section-color-correct-weak;
       }
       &:last-child {
-        border-right: 1px solid rgba($test-section-correct-color, 0.5);
+        border-right: 1px solid $test-section-color-correct-weak;
       }
 
       &:hover {
-        background-color:
-          rgba(mix(white, $test-section-correct-color, 50%), 0.25);
+        background-color: $test-section-background-color-correct-strong;
       }
     }
 
     &.next-if-wrong {
-      background-color: rgba($test-section-incorrect-color, 0.20);
-      color: darken($test-section-color, 5%);
+      background-color: $test-section-background-color-wrong;
+      color: $test-section-color;
 
-      border-left: 1px solid rgba($test-section-incorrect-color, 0.5);
+      border-left: 1px solid $test-section-color-wrong-weak;
       + button {
-        border-left: 1px solid rgba($test-section-incorrect-color, 0.5);
+        border-left: 1px solid $test-section-color-wrong-weak;
       }
       &:last-child {
-        border-right: 1px solid rgba($test-section-incorrect-color, 0.5);
+        border-right: 1px solid $test-section-color-wrong-weak;
       }
 
       &:hover {
-        background-color:
-          rgba(mix(white, $test-section-incorrect-color, 50%), 0.25);
+        background-color: $test-section-background-color-wrong-strong;
       }
     }
 
     &.selected {
-      background-color: rgba(white, 0.45);
+      background-color: $test-section-color-weakest;
       color: white;
-      text-shadow: 0 0 1px $test-frame-background;
+      text-shadow: 0 0 1px $test-section-background;
 
-      border-left: 1px solid rgba(white, 0.8) !important;
+      border-left: 1px solid $test-section-color-weak !important;
       + button {
-        border-left: 1px solid rgba(white, 0.8);
+        border-left: 1px solid $test-section-color-weak;
       }
       &:last-child {
-        border-right: 1px solid rgba(white, 0.8);
+        border-right: 1px solid $test-section-color-weak;
       }
 
       &:hover {
-        background-color: rgba(white, 0.55);
+        background-color: $test-section-color-weakest;
       }
     }
   }

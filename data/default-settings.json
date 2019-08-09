@@ -16,8 +16,8 @@
         "showScore": false,
         "animate": true,
         "useSerifFont": false,
-        "useBackgroundColors": false,
         "fontSize": "normal",
+        "useBackgroundColors": false,
         "sortByLevel": false
     },
     "design": {
@@ -25,7 +25,32 @@
         "animatePopupStacks": true,
         "fadeSectionSwitching": true,
         "cursor": "default",
-        "colorScheme": "default"
+        "colorScheme": "default",
+        "testColorScheme": "default",
+        "customTestUnicolorScheme": {
+            "color": "f5f5f5",
+            "background-color": "a93434"
+        },
+        "customTestMulticolorScheme": {
+            "colors": {
+                "word-meaning": "f5f5f5",
+                "word-reading": "f5f5f5",
+                "kanji-meaning": "f5f5f5",
+                "kanji-on-yomi": "f5f5f5",
+                "kanji-kun-yomi": "f5f5f5",
+                "hanzi-meaning": "f5f5f5",
+                "hanzi-reading": "f5f5f5"
+            },
+            "background-colors": {
+                "word-meaning": "a93434",
+                "word-reading": "356288",
+                "kanji-meaning": "7b0853",
+                "kanji-on-yomi": "483d8b",
+                "kanji-kun-yomi": "556b2f",
+                "hanzi-meaning": "7b0853",
+                "hanzi-reading": "483d8b"
+            }
+        }
     },
     "dictionary": {
         "partOfSpeechInJapanese": false,

@@ -1,0 +1,48 @@
+{
+    "unicolor": {
+        "default": {
+            "name": "Default",
+            "color": "f5f5f5",
+            "color-correct": "7cfc00",
+            "color-wrong": "ffa500",
+            "status-shadow-color": "rgba(0, 0, 0, 0.2)",
+            "item-shadow-color": "rgba(0, 0, 0, 0.1)",
+            "background-color": "a93434"
+        },
+        "metallic": {
+            "name": "Metallic",
+            "color": "f5f5f5",
+            "background-color": "586e75"
+        },
+        "solarized-dark": {
+            "name": "Solarized Dark",
+            "color": "93a1a1",
+            "background-color": "002b36"
+        },
+        "custom": {
+            "name": "Custom"
+        }
+    },
+    "multicolor": {
+        "default": {
+            "name": "Default",
+            "color": "f5f5f5",
+            "color-correct": "7cfc00",
+            "color-wrong": "ffa500",
+            "status-shadow-color": "rgba(0, 0, 0, 0.2)",
+            "item-shadow-color": "rgba(0, 0, 0, 0.1)",
+            "background-colors": {
+                "word-meaning": "a93434",
+                "word-reading": "356288",
+                "kanji-meaning": "7b0853",
+                "kanji-on-yomi": "483d8b",
+                "kanji-kun-yomi": "556b2f",
+                "hanzi-meaning": "7b0853",
+                "hanzi-reading": "483d8b"
+            }
+        },
+        "custom": {
+            "name": "Custom"
+        }
+    }
+}

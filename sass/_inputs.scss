@@ -52,35 +52,49 @@ input.styled {
   padding: 5px;
   font-size: 120%;
   border: 1px solid $input-border-color;
-  transition: box-shadow .2s, border .2s;
   box-shadow: $input-inset-shadow;
 
-  &:focus {
-    box-shadow: $input-shadow;
-    background-color: $input-background-focus;
-    color: $input-color-focus;
-  }
-  &:not(:focus):hover {
-    background: $input-background-hover;
-    color: $input-color-hover;
-  }
   &::placeholder {
     color: $input-color-placeholder;
+  }
+  &:hover {
+    border-color: $input-border-color-hover;
+    background: $input-background-hover;
+    color: $input-color-hover;
+    &::placeholder {
+      color: $input-color;
+    }
+  }
+  &:focus {
+    box-shadow: none;
+    border-color: $input-border-color-focus;
+    background-color: $input-background-focus;
+    color: $input-color-focus;
   }
 }
 
 input.trench {
   color: $view-color;
-  background-color: $input-background-focus;
+  background-color: $view-background-medium;
   border: 1px solid lightgrey;
   border-radius: 5px;
   box-shadow: $input-inset-shadow;
 
-  &:focus {
-    box-shadow: $input-shadow;
-  }
   &::placeholder {
     color: $input-color-placeholder;
+  }
+  &:hover {
+    border-color: $input-border-color-hover;
+    color: $input-color-hover;
+    &::placeholder {
+      color: $input-color;
+    }
+  }
+  &:focus {
+    box-shadow: none;
+    border-color: $input-border-color-focus;
+    background-color: $view-background;
+    color: $input-color-focus;
   }
 }
 
@@ -133,9 +147,8 @@ select {
   }
   &:focus {
     outline: none !important;
-    border-color: $border-color-highlight;
+    border-color: $input-border-color-focus;
     background-color: $input-background-focus;
-    // box-shadow: $input-shadow;
   }
   option:first-child[value=""] {
     color: $input-color-placeholder;

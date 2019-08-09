@@ -23,6 +23,7 @@ const overlays = require(paths.js.lib("overlay-manager"));
 const templates = require(paths.js.lib("template-manager"));
 const contextMenu = require(paths.js.lib("context-menu"));
 const networkManager = require(paths.js.lib("network-manager"));
+const colorLib = require(paths.js.lib("color-utility"));
 const View = require(paths.js.lib("view"));
 
 // Load base classes

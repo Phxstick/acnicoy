@@ -1,10 +1,108 @@
 @import "settings";
 
-#color-scheme {
-  width: 300px;
+select {
+  display: inline-block;
+  width: 230px;
   margin-left: 15px;
+  margin-right: 15px;
 }
 
 #reload {
   display: inline-block;
+}
+
+.color-preview {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+
+  .title {
+    font-family: $header-font;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    text-align: center;
+  }
+  .color-box {
+    @include center-content;
+    border: 1px solid $border-color-dark;
+    border-radius: 3px;
+    height: 30px;
+    width: 50px;
+    font-size: 120%;
+  }
+  .input-container {
+    margin-top: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .input-title {
+      font-family: $header-font;
+      font-size: 0.9rem;
+    }
+
+    input {
+      width: 60px;
+      margin-left: 6px;
+      padding-left: 2px;
+      padding-right: 2px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid $input-border-color;
+      color: $input-color;
+
+      &:hover {
+        color: $input-color-hover;
+        border-bottom-color: $border-color-darkest;
+      }
+      &:focus {
+        color: $input-color-focus;
+        border-bottom-color: $input-border-color-focus;
+      }
+
+      &.invalid-color {
+        background-color: $input-background-invalid;
+        border-radius: 3px;
+      }
+    }
+  }
+}
+
+.scheme-selection-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#general-colors-preview {
+  display: inline-block;
+
+  > .color-preview:not(:last-child) {
+    margin-right: 10px;
+  }
+}
+
+.general-color-scheme-row {
+  // Some manual adjustment to make the space even and not too wide
+  padding-bottom: 8px;
+  margin-top: -2px;
+}
+
+#test-colors-preview {
+  margin-top: 8px;
+
+  > .color-preview {
+    margin-bottom: 8px;
+
+    &:not(:last-child) {
+      margin-right: 20px;
+    }
+  }
+
+  .color-preview {
+    .color-box {
+      width: 90px;
+      height: 40px;
+      font-size: 1.5rem;
+    }
+  }
 }

@@ -39,6 +39,7 @@
     #schemes-list {
       flex-grow: 1;
       border: 1px solid $border-color-light;
+      border-radius: 5px;
 
       > div {
         font-size: 1.1rem;
@@ -87,6 +88,7 @@
           @extend input.trench;
           padding: 0px;
           min-width: 1px;  // Stretch with flex
+          margin-right: 4px;
         }
         #scheme-name, #scheme-name-input {
           flex-grow: 1;
@@ -112,6 +114,7 @@
         font-family: $small-font;
         overflow: auto;
         padding: 3px;
+        padding-left: 4px;
         margin-bottom: 6px;
         flex-shrink: 0;
       }
@@ -170,6 +173,7 @@
     height: 26px;
     margin: auto;
     padding: 0;
+    opacity: 0.7;
   }
 
   #add-level-frame {
@@ -179,6 +183,10 @@
 
     #add-level-input {
       width: 200px;
+      border-radius: 5px;
+      padding: 5px;
+      padding-left: 8px;
+      font-size: 120%;
     }
     #add-level-button {
       padding: 0;

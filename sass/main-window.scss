@@ -301,7 +301,7 @@
     background-color: $section-background;
   }
   &.default-test-background {
-    background-color: $test-section-background;
+    background-color: var(--test-section-background, $section-background);
   }
 }
 

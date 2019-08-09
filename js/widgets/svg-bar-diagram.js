@@ -219,6 +219,7 @@ class SvgBarDiagram extends Widget {
                                  : this.margin.left,
                       y: this.margin.top + this.topLineWidth + height };
         for (let i = 0; i < numValues; ++i) {
+            if (i > 0) pos.x += (1-2*reverse) * (barWidth + barSpacing);
             if (typeof fractions[i] === "number") {
                 if (i !== 0 && fractions[i] === 0) continue;
 
@@ -307,7 +308,6 @@ class SvgBarDiagram extends Widget {
                     if (valueSum === 0) valueLabel.hide();
                 }
             }
-            pos.x += (1-2*reverse) * (barWidth + barSpacing);
         }
 
         // =====================================================================

@@ -1,6 +1,7 @@
 "use strict";
 
 const fs = require("fs");
+const testSectionColorSchemes = require(paths.testSectionColorSchemes);
 
 module.exports = function (paths, modules) {
     const settings = {};
@@ -57,6 +58,23 @@ module.exports = function (paths, modules) {
 
     settings.saveGlobal = function () {
         fs.writeFileSync(paths.globalSettings, JSON.stringify(data, null, 4));
+    };
+
+    settings.getTestSectionColors = function(schemeName, multiColor) {
+        if (schemeName === undefined) schemeName = data.design.testColorScheme;
+        if (multiColor === undefined) multiColor = data.test.useBackgroundColors
+        let colorScheme;
+        if (schemeName === "custom") {
+            if (multiColor) {
+                colorScheme = data.design.customTestMulticolorScheme;
+            } else {
+                colorScheme = data.design.customTestUnicolorScheme;
+            }
+        } else {
+            const groupKey = multiColor ? "multicolor" : "unicolor";
+            colorScheme = testSectionColorSchemes[groupKey][schemeName];
+        }
+        return colorScheme;
     };
 
     return new Proxy(settings, {

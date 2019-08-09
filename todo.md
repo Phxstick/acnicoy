@@ -1,8 +1,10 @@
+- Fix: test-complete overlay is sometimes not shown
 - Fix: don't always switch to dictionary when clicking in kanji-info-panel
+- Fix: panels flicker when opening them with animations disabled
+- Add section separators in design-settings
 - Update screenshots
 - Make it possible to add names to dictionary (disregard IDs for now?)
 - Add solarized dark color scheme (and maybe more)
-- Add functionality for choosing test section colors
 - Add setting for increasing font size in vocab section
 
 ### Primary goals
@@ -17,7 +19,6 @@
   - Somehow invalidate notes in search result if group is deleted
   - Add shortcuts for both searches + add-button
 - Design:
-  - Add separate functionality for choosing custom background colors for reviews
   - Make dark default and Ubuntu (Light/Dark) color schemes
   - Use translations-font and readings-font in some places instead of vocab-font
 - Performance/Memory:
@@ -45,6 +46,7 @@
 - Test section: fix bug where overflow-shadow below item solutions is now shown
 - How to prevent SQLITE conflicting journals accumulating in the dropbox folder?
 - Fix visual bug in item fade-in animation when menu bar is hidden
+- No transition of background-gradient of continue-button in multicolor scheme
 
 
 By category

@@ -33,18 +33,21 @@ $button-light-shadow-color-active: lighten($button-light-color, 30%);
 
 // Views
 $view-color: $color;
+$view-hover-color: black;
+$view-edit-color: black;
 $view-color-greyed-out: darkgrey;
-$view-background: darken(white, 2%);
-$view-background-medium: darken(white, 3.5%);
+$view-background: darken(white, 1.5%);
+$view-background-medium: darken(white, 2.5%);
 $view-background-dark: darken(white, 5%);
 
 // Inputs
 $input-background: $view-background-dark;
-$input-background-focus: white;
 $input-background-hover: $view-background;
+$input-background-focus: white;
+$input-background-invalid: mix($input-background, crimson, 80%);
 $input-color: $color;
-$input-color-focus: $input-color;
-$input-color-hover: $input-color;
+$input-color-hover: $view-hover-color;
+$input-color-focus: $view-edit-color;
 $input-color-placeholder: darken($input-background, 40%);
 $input-border-color: $border-color-medium;
 $input-border-color-hover: $border-color-dark;
@@ -75,9 +78,9 @@ $highlight-background-dark: darkred;
 $border-color-highlight: $highlight-background;
 $highlight-color: $select-color;
 $button-shadow-color-focus: $highlight-background-dark;
+$input-border-color-focus: $border-color-highlight;
 
 // View highlight / select
-$view-hover-color: black;
 $view-hover-background: peachpuff;
 $view-hover-background-light: lighten(peachpuff, 6%);
 $view-hover-border-color: darken($view-hover-background, 30%);
@@ -85,7 +88,6 @@ $view-select-color: $select-color;
 $view-select-background: $select-background;
 $view-select-background-hover: $view-select-background;
 $view-edit-background: #fde8ec;
-$view-edit-color: black;
 $view-edit-border-color: $highlight-background;
 
 // Local links (to open another section/panel/overlay)

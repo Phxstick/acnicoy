@@ -1,0 +1,19 @@
+<div class="color-preview">
+  <div class="title">{{title}}</div>
+  <div class="color-box" {{#if valueId}}data-name="{{valueName}}"{{/if}}
+       style="background-color:{{bgColor}};color:{{fgColor}}">
+    {{text}}
+  </div>
+  {{#if showValues}}
+    <div class="input-container">
+      <span class="input-title">BG</span>
+      <input data-type="bg" data-name="{{valueName}}" value="{{bgColor}}"
+             maxlength="7"></input>
+    </div>
+    <div class="input-container">
+      <span class="input-title">FG</span>
+      <input data-type="fg" data-name="{{valueName}}" value="{{fgColor}}"
+             maxlength="7"></input>
+    </div>
+  {{/if}}
+</div>
