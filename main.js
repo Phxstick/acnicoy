@@ -36,31 +36,29 @@ app.on('window-all-closed', function() {
 app.on('ready', function() {
     // Get active color scheme (or take default if settings not yet initialized)
     let colorScheme = "default";
+    const colorSchemesInfo =
+        require(path.resolve("data", "general-color-schemes.json"));
     if (storage.has("data-path")) {
         const dataPath = storage.get("data-path");
         const settingsPath = path.resolve(dataPath, "settings.json");
         if (fs.existsSync(settingsPath)) {
             const settings = require(settingsPath);
             if (settings.hasOwnProperty("design") &&
-                    settings.design.hasOwnProperty("colorScheme")) {
+                    settings.design.hasOwnProperty("colorScheme") &&
+                    settings.design.colorScheme in colorSchemesInfo) {
                 colorScheme = settings.design.colorScheme;
             }
         }
-    }
-
-    // Set BG color of window to the BG used for "#loading-window" in the scheme
-    let windowColor = "white";
-    if (colorScheme === "default") {
-        windowColor = "#800000";
-    } else if (colorScheme === "solarized-light") {
-        windowColor = "#586e75";
     }
 
     // Initialize app window
     mainWindow = new BrowserWindow({
         // Don't set width/height here, hide application menu first
         // Minimum width/height here don't respect "useContentSize"
-        backgroundColor: windowColor,
+        backgroundColor: colorSchemesInfo[colorScheme].loadBg,
+        webPreferences: {
+            nodeIntegration: true,
+        },
         icon: "./img/icon.png",
         show: false
     });

@@ -10,13 +10,22 @@
 }
 
 .detail-row {
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   flex: 2;
 }
 
-.detail-row-list-wrapper {
+.fade-anchor {
   flex: 1;
+  position: relative;
+  @include fade-content-at-edges($background-color);
+}
+
+.detail-row-list-wrapper {
+  position: absolute;
+  top: 0;
+  bottom: 0;
   overflow: auto;
 }
 
@@ -38,7 +47,7 @@
 }
 
 .add-button {
-  @extend button.lightest;
+  @extend button.light;
   @extend button.no-shadow;
   padding: 3px;
 }

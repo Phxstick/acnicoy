@@ -8,6 +8,10 @@
   #word-wrapper {
     @extend .light-item-view;
     @include center-content("vertical");
+    padding-left: 0px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-right: 44px;
     flex: 1;
     
     #word {
@@ -63,6 +67,12 @@
       border-color: $border-color-darkest;
     }
   }
+}
+
+#srs-level-frame {
+  // Use absolute positioning to keep opened stack visible despite overflow
+  position: absolute;
+  right: 15px;
 }
 
 #srs-level {

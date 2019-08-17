@@ -15,6 +15,16 @@
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
   }
+
+  #button-frame {
+    // Set rounded borders here too (contains inset shadow when clicking button)
+    > button:first-child {
+      border-bottom-left-radius: 8px;
+    }
+    > button:last-child {
+      border-bottom-right-radius: 8px;
+    }
+  }
 }
 
 :host(:focus) {

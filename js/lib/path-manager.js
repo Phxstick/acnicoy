@@ -97,6 +97,8 @@ module.exports = function (basePath) {
         path.resolve(basePath, "data", "min-content-versions.json");
     paths.contentReleasePrefixes =
         path.resolve(basePath, "data", "content-release-prefixes.json");
+    paths.generalColorSchemes =
+        path.resolve(basePath, "data", "general-color-schemes.json")
     paths.testSectionColorSchemes =
         path.resolve(basePath, "data", "test-section-designs.json")
 

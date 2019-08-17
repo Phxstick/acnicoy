@@ -466,7 +466,7 @@ def parse_proper_names(filename, cursor):
                                 translation_string.replace("abbr, ", "")
                         translation_string = \
                                 translation_string.replace(", abbr", "")
-                    translations.append(translation_string.strip())
+                translations.append(translation_string.strip())
             cursor.execute("""
                 INSERT INTO proper_names (id, name, tags, reading, translations)
                 VALUES (?, ?, ?, ?, ?) """, 

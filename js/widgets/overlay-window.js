@@ -55,26 +55,32 @@ class OverlayWindow extends Widget {
             overlay.elementFocussedByDefault = overlay.sentinel;
         overlay.elementFocussedByDefault.focus();
         await utility.finishEventQueue();
-        switch (mode) {
-        case "slide-down":
-            Velocity.mock = true;
-            Velocity(overlay, { translateY: `-=${distance}px` });
-            Velocity.mock = false;
-            Velocity(filter, "fadeIn", { duration: speed });
-            Velocity(overlay, "fadeIn", { duration: speed });
-            Velocity(overlay, { translateY: `+=${distance}px` },
-                              { duration: speed,
-                                queue: false });
-            break;
-        case "fade":
-            Velocity(filter, "fadeIn", { duration: speed });
-            Velocity(overlay, "fadeIn", { duration: speed });
-            break;
-        case "instant":
+        if (dataManager.settings.design.enableAnimations) {
+            switch (mode) {
+            case "slide-down":
+                Velocity.mock = true;
+                Velocity(overlay, { translateY: `-=${distance}px` });
+                Velocity.mock = false;
+                Velocity(filter, "fadeIn", { duration: speed });
+                Velocity(overlay, "fadeIn", { duration: speed });
+                Velocity(overlay, { translateY: `+=${distance}px` },
+                                  { duration: speed,
+                                    queue: false });
+                break;
+            case "fade":
+                Velocity(filter, "fadeIn", { duration: speed });
+                Velocity(overlay, "fadeIn", { duration: speed });
+                break;
+            case "instant":
+                filter.show();
+                overlay.show();
+                overlay.style.opacity = "1";
+                break;
+            }
+        } else {
             filter.show();
             overlay.show();
             overlay.style.opacity = "1";
-            break;
         }
         return promise;
     }
@@ -93,26 +99,31 @@ class OverlayWindow extends Widget {
         Promise.resolve().then(() => {
             // Undisplay the filter and overlay according to its display mode
             const { mode, speed, distance } = overlay.displayOptions;
-            switch (mode) {
-            case "slide-down":
-                Velocity(filter, "fadeOut", { duration: speed });
-                Velocity(overlay, "fadeOut", { duration: speed });
-                return Velocity(
-                        overlay, { translateY: `-=${distance}px` },
-                                 { duration: speed,
-                                   queue: false })
-                .then(() => {
-                    Velocity.mock = true;
-                    Velocity(overlay, { translateY: `+=${distance}px` });
-                    Velocity.mock = false;
-                });
-            case "fade":
-                Velocity(filter, "fadeOut", { duration: speed });
-                return Velocity(overlay, "fadeOut", { duration: speed });
-            case "instant":
+            if (dataManager.settings.design.enableAnimations) {
+                switch (mode) {
+                case "slide-down":
+                    Velocity(filter, "fadeOut", { duration: speed });
+                    Velocity(overlay, "fadeOut", { duration: speed });
+                    return Velocity(
+                            overlay, { translateY: `-=${distance}px` },
+                                     { duration: speed,
+                                       queue: false })
+                    .then(() => {
+                        Velocity.mock = true;
+                        Velocity(overlay, { translateY: `+=${distance}px` });
+                        Velocity.mock = false;
+                    });
+                case "fade":
+                    Velocity(filter, "fadeOut", { duration: speed });
+                    return Velocity(overlay, "fadeOut", { duration: speed });
+                case "instant":
+                    filter.hide();
+                    overlay.hide();
+                    break;
+                }
+            } else {
                 filter.hide();
                 overlay.hide();
-                break;
             }
         }).then(() => {
             overlay.close();

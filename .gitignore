@@ -9,4 +9,5 @@ package-lock.json
 /test/
 /dist/
 /img/bg/
+/screenshots/
 /sass/_design.scss

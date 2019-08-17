@@ -1,6 +1,6 @@
 "use strict";
 
-const { remote, nativeImage } = require("electron");
+const { remote } = require("electron");
 const { dialog } = remote;
 
 function confirm(text, focusYes=false, title) {
@@ -16,10 +16,9 @@ function error(text, title="Error") {
 }
 
 function chooseDataPath(defaultPath) {
-    const result = dialog.showOpenDialog({
-        title: "Choose directory for program data",
-        defaultPath: defaultPath,
-        properties: ["openDirectory"]
+    const result = dialog.showOpenDialogSync({
+        title: "Choose directory for user data",
+        defaultPath, properties: ["openDirectory"]
     });
     return result === undefined ? defaultPath : result[0];
 }

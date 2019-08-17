@@ -1,6 +1,8 @@
 "use strict";
 
 const fs = require("fs");
+const path = require("path");
+const { desktopCapturer, remote } = require("electron");
 
 /**
  * Return the current time in SECONDS since 1970/01/01.
@@ -1030,6 +1032,38 @@ function removeMultipleNodes(nodesToDelete, container) {
     container.appendChild(fragment);
 }
 
+async function takeScreenshot(name, outputDirectory, includeBorder=true) {
+    const browserWindow = remote.getCurrentWindow();
+    const screenshot = await browserWindow.capturePage({
+        x: 0, y: 0, width: window.innerWidth, height: window.innerHeight });
+
+    if (!fs.existsSync(outputDirectory)) {
+        fs.mkdirSync(outputDirectory);
+    }
+    const filepath = path.join(outputDirectory, name + ".png");
+    if (!includeBorder) {
+        fs.writeFileSync(filepath, screenshot.toPNG());
+        return;
+    }
+
+    const image = new Image();
+    image.src = "data:image/png;base64," + screenshot.toPNG().toString("base64")
+    await new Promise((resolve) => { image.onload = resolve });
+    const canvas = document.createElement("canvas");
+    const imgWidth = window.innerWidth + 2;
+    const imgHeight = window.innerHeight + 2;
+    canvas.width = imgWidth;
+    canvas.height = imgHeight;
+    const context = canvas.getContext("2d");
+    context.imageSmoothingEnabled = false;
+    context.fillStyle = "#000000";
+    context.fillRect(0, 0, imgWidth, imgHeight);
+    context.drawImage(image, 1, 1, imgWidth - 1, imgHeight -1);
+    const dataUrl = canvas.toDataURL("image/png");
+    const data = dataUrl.replace(/^data:image\/png;base64,/, "");
+    fs.writeFileSync(filepath, data, "base64");
+}
+
 // Non DOM-related functions
 module.exports.getTime = getTime;
 module.exports.getShortDateString = getShortDateString;
@@ -1075,3 +1109,4 @@ module.exports.drawArrowOnCanvas = drawArrowOnCanvas;
 module.exports.handleKeyDownEvent = handleKeyDownEvent;
 module.exports.measureSvgElementSize = measureSvgElementSize;
 module.exports.removeMultipleNodes = removeMultipleNodes;
+module.exports.takeScreenshot = takeScreenshot;

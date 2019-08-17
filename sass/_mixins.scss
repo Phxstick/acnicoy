@@ -85,3 +85,31 @@
     width: $size;
   }
 }
+
+@mixin fade-content-at-edges($background-color, $transition-duration: 0.15s) {
+  &::before {
+    top: 0;
+    height: var(--top-shadow-height, 0px);
+    background: linear-gradient(to bottom, $background-color, transparent);
+
+    content: "";
+    position: absolute;
+    left: 0;
+    right: $scrollbar-width + 2 * $scrollbar-padding;
+    transition-property: background;
+    transition-duration: $transition-duration;
+    z-index: 1;  // Show up above the actual content despite being in front
+  }
+  &::after {
+    bottom: 0;
+    height: var(--bottom-shadow-height, 0px);
+    background: linear-gradient(to top, $background-color, transparent);
+
+    content: "";
+    position: absolute;
+    left: 0;
+    right: $scrollbar-width + 2 * $scrollbar-padding;
+    transition-property: background;
+    transition-duration: $transition-duration;
+  }
+}

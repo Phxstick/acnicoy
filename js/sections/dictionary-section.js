@@ -106,6 +106,8 @@ class DictionarySection extends Section {
                     dataManager.content.getProperNameEntryInfo(entryId);
                 const resultEntry = 
                     document.createElement("dictionary-search-result-entry");
+                info.associatedVocabEntry = await
+                    dataManager.content.guessAssociatedVocabEntry(null, info);
                 info.properName = true;
                 resultEntry.setInfo(info);
                 return resultEntry;
@@ -181,10 +183,11 @@ class DictionarySection extends Section {
 
     registerCentralEventListeners() {
         const updateWordStatus = (word, dictionaryId, isAdded) => {
-            const searchResultEntries = [
-                ...this.$("search-results-words").children,
-                ...this.$("search-results-names").children
-            ];
+            const searchResultEntries = dictionaryId !== null ||
+                !this.loadedCategories.has("names") ?
+                [...this.$("search-results-words").children] : 
+                [...this.$("search-results-names").children,
+                 ...this.$("search-results-words").children];
             for (const searchResultEntry of searchResultEntries) {
                 // TODO: if ID not provided, first check if entry really matches
                 if (parseInt(searchResultEntry.dataset.id) === dictionaryId ||
@@ -195,7 +198,7 @@ class DictionarySection extends Section {
             }
         };
         events.on("word-added", (word, dictionaryId) => {
-            updateWordStatus(word, dictionaryId, true)
+            updateWordStatus(word, dictionaryId, true);
         });
         events.on("word-deleted", (word, dictionaryId) => {
             updateWordStatus(word, dictionaryId, false);

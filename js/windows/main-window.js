@@ -530,9 +530,7 @@ class MainWindow extends Window {
         // Notify user if there are shortcuts without assigned key combinations
         const notifyUnassigned = storage.get("show-shortcuts-unassigned-notice")
         if (shortcuts.hasUnassigned()) {
-            console.log("k")
             if (notifyUnassigned || notifyUnassigned === undefined) {
-                console.log("k2")
                 storage.set("show-shortcuts-unassigned-notice", false);
                 const goToShortcuts = await dialogWindow.confirm(
                     "For some of the newly added shortcuts, the default key " +
@@ -545,7 +543,6 @@ class MainWindow extends Window {
                 }
             }
         } else if (!notifyUnassigned) {
-                console.log("wtf")
             storage.set("show-shortcuts-unassigned-notice", true);
         }
     }
@@ -670,22 +667,22 @@ class MainWindow extends Window {
         this.sections[this.nextSection].open();
     }
 
-    async openPanel(name, { dictionaryId, entryName }={}) {
+    async openPanel(name, { dictionaryId, entryName, isProperName=false }={}) {
 
         // If a different panel is already open, close it first
+        let deferDimming = false;
         const currentPanel = this.currentPanel;
         if (currentPanel !== null) {
             this.closePanel(currentPanel, currentPanel === name);
             if (currentPanel === name) return;
         } else {
-            // Otherwise, fade in the background dimming
+            // Otherwise, fade in the background dimming (if animations enabled)
             if (dataManager.settings.design.animateSlidingPanels) {
                 Velocity(this.$("filter"), "stop");
                 Velocity(this.$("filter"), "fadeIn",
                     { duration: this.panelSlideDuration });
             } else {
-                this.$("filter").style.opacity = "1";
-                this.$("filter").show();
+                deferDimming = true;
             }
             // Remember which element in the section had focus
             this.lastFocussedSectionElement =
@@ -694,7 +691,7 @@ class MainWindow extends Window {
 
         // Load the given entry
         if (name.startsWith("edit")) {
-            await this.panels[name].load(entryName, dictionaryId);
+            await this.panels[name].load(entryName, dictionaryId, isProperName);
         }
 
         // Open the panel
@@ -712,15 +709,16 @@ class MainWindow extends Window {
         // Load suggestions (if available)
         let showSuggestions = false;
         const dictionaryAvailable = dataManager.content.isDictionaryAvailable();
-        if (entryName !== undefined && dictionaryAvailable) {
+        if (entryName !== undefined && dictionaryAvailable && !isProperName) {
             if (name.endsWith("kanji")) {
                 showSuggestions = true;
-                this.suggestionPanes[name].load(entryName);
+                await this.suggestionPanes[name].load(entryName);
             } else if (name.endsWith("vocab")) {
                 // Load suggestions by dictionary ID if one is given
                 if (dictionaryId !== undefined) {
                     showSuggestions = true;
-                    this.suggestionPanes[name].load(dictionaryId, entryName);
+                    await this.suggestionPanes[name].load(
+                        dictionaryId, entryName);
                 }
                 // If no dictionary ID is given, look it up or guess an ID
                 else {
@@ -732,12 +730,18 @@ class MainWindow extends Window {
                     }
                     if (dictionaryId !== null) {
                         showSuggestions = true;
-                        this.suggestionPanes[name].load(dictionaryId, entryName)
+                        await this.suggestionPanes[name].load(
+                            dictionaryId, entryName);
                     }
                 }
             }
         }
 
+        // If animations are disabled, dim after loading to prevent flickering
+        if (deferDimming) {
+            this.$("filter").style.opacity = "1";
+            this.$("filter").show();
+        }
 
         let showPanelShortcuts = storage.get("show-panel-shortcuts-info");
         if (showPanelShortcuts === undefined) showPanelShortcuts = true;
@@ -854,23 +858,27 @@ class MainWindow extends Window {
     }
 
     async toggleBarVisibility() {
-        // this.$("side-bar").toggleDisplay();
-        // this.$("menu-bar").toggleDisplay();
         Velocity(this.$("side-bar"), "stop");
         Velocity(this.$("menu-bar"), "stop");
-        let prom;
-        if (this.barsHidden) {
-            prom = Velocity(this.$("side-bar"), { "width": this.sideBarWidth },
-                { complete: () => {
-                      this.$("side-bar").style.overflow = "initial"; }})
-            Velocity(this.$("menu-bar"), { "height": this.menuBarHeight },
-                { complete: () => {
-                      this.$("menu-bar").style.overflow = "initial"; }})
+        let prom = Promise.resolve();
+        if (dataManager.settings.design.enableAnimations) {
+            if (this.barsHidden) {
+                prom = Velocity(this.$("side-bar"),
+                    { "width": this.sideBarWidth },
+                    { complete: () => {
+                          this.$("side-bar").style.overflow = "initial"; }})
+                Velocity(this.$("menu-bar"), { "height": this.menuBarHeight },
+                    { complete: () => {
+                          this.$("menu-bar").style.overflow = "initial"; }})
+            } else {
+                this.$("menu-bar").style.overflow = "hidden";
+                this.$("side-bar").style.overflow = "hidden";
+                prom = Velocity(this.$("side-bar"), { "width": "0px" });
+                Velocity(this.$("menu-bar"), { "height": "0px" });
+            }
         } else {
-            this.$("menu-bar").style.overflow = "hidden";
-            this.$("side-bar").style.overflow = "hidden";
-            prom = Velocity(this.$("side-bar"), { "width": "0px" });
-            Velocity(this.$("menu-bar"), { "height": "0px" });
+            this.$("side-bar").toggleDisplay(this.barsHidden, "flex");
+            this.$("menu-bar").toggleDisplay(this.barsHidden, "flex");
         }
         this.barsHidden = !this.barsHidden;
         await prom;

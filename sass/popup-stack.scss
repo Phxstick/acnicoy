@@ -1,11 +1,75 @@
 @import "mixins";
 
+$border-radius: var(--border-radius, 5px);
+
 :host {
   display: flex;
   align-items: stretch;
   align-content: stretch;
+
   &[disabled] {
     --shadow-color: transparent;
+  }
+}
+
+:host([animate]) {
+  ::slotted(option) {
+    transition: border-radius 0.3s;
+  }
+  #shadow {
+    transition: box-shadow 0.3s;
+  }
+}
+
+:host([direction="right"]), :host(:not([direction])) {
+  #frame.opened {
+    ::slotted(option:first-child) {
+      border-top-left-radius: $border-radius;
+      border-bottom-left-radius: $border-radius;
+    }
+    ::slotted(option:last-child) {
+      border-top-right-radius: $border-radius;
+      border-bottom-right-radius: $border-radius;
+    }
+  }
+}
+
+:host([direction="left"]) {
+  #frame.opened {
+    ::slotted(option:first-child) {
+      border-top-right-radius: $border-radius;
+      border-bottom-right-radius: $border-radius;
+    }
+    ::slotted(option:last-child) {
+      border-top-left-radius: $border-radius;
+      border-bottom-left-radius: $border-radius;
+    }
+  }
+}
+
+:host([direction="up"]) {
+  #frame.opened {
+    ::slotted(option:first-child) {
+      border-bottom-right-radius: $border-radius;
+      border-bottom-left-radius: $border-radius;
+    }
+    ::slotted(option:last-child) {
+      border-top-right-radius: $border-radius;
+      border-top-left-radius: $border-radius;
+    }
+  }
+}
+
+:host([direction="down"]) {
+  #frame.opened {
+    ::slotted(option:first-child) {
+      border-top-right-radius: $border-radius;
+      border-top-left-radius: $border-radius;
+    }
+    ::slotted(option:last-child) {
+      border-bottom-right-radius: $border-radius;
+      border-bottom-left-radius: $border-radius;
+    }
   }
 }
 
@@ -15,6 +79,16 @@
   min-height: 10px;
   width: 100%;
   height: 100%;
+
+  &.opened {
+    ::slotted(option), ::slotted(option:checked) {
+      border-radius: 0;
+    }
+  
+    #shadow {
+      box-shadow: 0 0 3px 1px var(--shadow-color, transparent);
+    }
+  }
 }
 
 #shadow {
@@ -23,7 +97,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  box-shadow: 0 0 3px 1px var(--shadow-color, transparent);
+  box-shadow: none;
+  border-radius: $border-radius;
+  // TODO: use attr-function or css variable to keep equal to attribute value
 }
 
 ::slotted(option) {
@@ -35,4 +111,11 @@
   top: 0;
   padding: 0px;
   cursor: pointer;
+  // Give higher border radius so they won't show through below selected option
+  border-radius: calc(#{$border-radius} + 3px);
+  // TODO: use attr-function or css variable to keep equal to attribute value
+}
+
+::slotted(option:checked) {
+  border-radius: $border-radius;
 }

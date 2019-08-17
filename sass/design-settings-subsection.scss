@@ -1,8 +1,11 @@
 @import "settings";
 
 select {
-  display: inline-block;
   width: 230px;
+}
+
+.select {
+  display: inline-block;
   margin-left: 15px;
   margin-right: 15px;
 }
@@ -42,7 +45,7 @@ select {
     }
 
     input {
-      width: 60px;
+      width: 62px;
       margin-left: 6px;
       padding-left: 2px;
       padding-right: 2px;
@@ -81,10 +84,16 @@ select {
   }
 }
 
+// Some manual adjustments to make the space even and not too wide
 .general-color-scheme-row {
-  // Some manual adjustment to make the space even and not too wide
-  padding-bottom: 8px;
-  margin-top: -2px;
+  margin-top: -9px;
+  margin-bottom: 16px;
+}
+.test-color-scheme-row {
+  margin-top: 4px;
+}
+#use-multicolor-test-scheme {
+  margin-left: 8px;
 }
 
 #test-colors-preview {

@@ -33,7 +33,7 @@
         background-color: $view-select-background;
         border-radius: 5px;
       }
-      &:hover {
+      &:hover:not(.selected) {
         background-color: $view-hover-background;
         color: $view-hover-color;
       }

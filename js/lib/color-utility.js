@@ -12,7 +12,7 @@ function h2d(h) { return parseInt(h, 16); }
  * @param {Float} weight - Between 0 and 100.
 */
 function mix(color_1, color_2, weight) {
-  let startsWithSharp = color_1.startsWith("#") || color_2.startsWith("#");
+  const startsWithSharp = color_1.startsWith("#") || color_2.startsWith("#");
   if (color_1.startsWith("#")) color_1 = color_1.slice(1);
   if (color_2.startsWith("#")) color_2 = color_2.slice(1);
   let color = "";
@@ -45,6 +45,7 @@ function mix(color_1, color_2, weight) {
  * @returns {Float} Ratio between 0 and 1.
 */
 function getDarknessRatio(color) {
+  if (color.startsWith("#")) color = color.slice(1);
   let sum = 0;
 
   for(let i = 0; i <= 5; i += 2) {
@@ -94,8 +95,99 @@ function isHex(input) {
     return true;
 }
 
+/**
+ * Assemble colors of the given item type according to the given color scheme.
+ * Take the background color from the scheme, then take various foreground
+ * or shadow colors from the scheme if they have been specified, otherwise
+ * generate them based on the background color in a way that keeps contrast
+ * high enough to be easily readible while still being pleasant on the eyes.
+ */
+function assembleColors(colorScheme, type) {
+    const colors = {};
+
+    // Get background color from scheme (can be multi-color or unicolor)
+    if ("background-colors" in colorScheme) {
+        colors["background-color"] = colorScheme["background-colors"][type];
+    } else {
+        colors["background-color"] = colorScheme["background-color"];
+    }
+    const darknessRatio = colorLib.getDarknessRatio(colors["background-color"]);
+    const isDarkBackground = colorLib.isDark(colors["background-color"]);
+
+    // Main color (used for test item and question)
+    if ("colors" in colorScheme && colorScheme["colors"][type].length > 0) {
+        colors["color"] = colorScheme["colors"][type];
+    } else if ("color" in colorScheme && colorScheme["color"].length > 0) {
+        colors["color"] = colorScheme["color"];
+    } else {
+        colors["color"] = isDarkBackground ?
+            colorLib.mix("808080", "ffffff", (darknessRatio - 0.5) * 200) :
+            colorLib.mix("000000", "808080", darknessRatio * 200);
+    }
+
+    // Lighter/darker colors for control buttons and session buttons
+    colors["color-weak"] = colorLib.mix(
+        colors["color"], colors["background-color"], 85);
+    colors["color-weaker"] = colorLib.mix(
+        colors["color"], colors["background-color"], 75);
+    colors["color-weakest"] = colorLib.mix(
+        colors["color"], colors["background-color"], 50);
+    colors["hover-color"] = colorLib.applyAlpha(colors["color"], 0.15);
+
+    // Greenish/reddish colors to signal whether something is correct/wrong
+    if ("color-correct" in colorScheme) {
+        colors["color-correct"] = colorScheme["color-correct"];
+    } else {
+        colors["color-correct"] = isDarkBackground ?
+            colorLib.mix("408000", "80ff00", (darknessRatio - 0.5) * 200) :
+            colorLib.mix("80ff00", "408000", darknessRatio * 200);
+    }
+    if ("color-wrong" in colorScheme) {
+        colors["color-wrong"] = colorScheme["color-wrong"];
+    } else {
+        colors["color-wrong"] = isDarkBackground ? 
+            colorLib.mix("dd6c00", "ffb600", (darknessRatio - 0.5) * 200) :
+            colorLib.mix("ffb600", "dd6c00", darknessRatio * 200);
+    }
+
+    // Lighter versions of greenish/reddish colors for gradients/shadows
+    colors["color-correct-weak"] =
+        colorLib.applyAlpha(colors["color-correct"], 0.5);
+    colors["background-color-correct"] =
+        colorLib.applyAlpha(colors["color-correct"], 0.2);
+    colors["background-correct-strong"] = colorLib.applyAlpha(
+        colorLib.mix(colors["color-correct"], colors["color"], 50), 0.3);
+    colors["color-wrong-weak"] =
+        colorLib.applyAlpha(colors["color-wrong"], 0.5);
+    colors["background-color-wrong"] =
+        colorLib.applyAlpha(colors["color-wrong"], 0.2);
+    colors["background-wrong-strong"] = colorLib.applyAlpha(
+        colorLib.mix(colors["color-wrong"], colors["color"], 50), 0.3);
+
+    // Shadow color for improving contrast of test item and question
+    if ("status-shadow-color" in colorScheme) {
+        colors["status-shadow-color"] = colorScheme["status-shadow-color"];
+    } else {
+        const alpha = isDarkBackground ?
+            (1 - (darknessRatio - 0.5) * 2) * 0.4 : darknessRatio * 2 * 0.4;
+        colors["status-shadow-color"] = isDarkBackground ?
+            `rgba(0, 0, 0, ${alpha})` : `rgba(255, 255, 255, ${alpha})`;
+    }
+    if ("item-shadow-color" in colorScheme) {
+        colors["item-shadow-color"] = colorScheme["item-shadow-color"];
+    } else {
+        const alpha = isDarkBackground ?
+            (1 - (darknessRatio - 0.5) * 2) * 0.2 : darknessRatio * 2 * 0.2;
+        colors["item-shadow-color"] = isDarkBackground ?
+            `rgba(0, 0, 0, ${alpha})` : `rgba(255, 255, 255, ${alpha})`;
+    }
+
+    return colors;
+}
+
 module.exports.mix = mix;
 module.exports.getDarknessRatio = getDarknessRatio;
 module.exports.isDark = isDark;
 module.exports.applyAlpha = applyAlpha;
 module.exports.isHex = isHex;
+module.exports.assembleColors = assembleColors;

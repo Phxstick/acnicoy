@@ -11,31 +11,41 @@
       <div id="meanings-header" class="detail-row-header">
         <span class="header-text">Meanings</span>
         <hr>
-        <popup-stack id="srs-level-meanings"></popup-stack>
+        <div class="srs-level-container">
+          <popup-stack id="srs-level-meanings"></popup-stack>
+        </div>
       </div>
-      <div id="meanings-wrapper" class="detail-row-list-wrapper">
-        <div id="meanings" class="detail-row-list"></div>
-        <button id="add-meaning-button" class="add-button">
-          <i class="fa fa-plus"></i>
-        </button>
+      <div class="fade-anchor">
+        <div id="meanings-wrapper" class="detail-row-list-wrapper">
+          <div id="meanings" class="detail-row-list"></div>
+          <button id="add-meaning-button" class="add-button">
+            <i class="fa fa-plus"></i>
+          </button>
+        </div>
       </div>
     </div>
     <div id="readings-frame" class="detail-row">
       <div id="readings-header" class="detail-row-header">
         <span class="header-text">Readings</span>
         <hr>
-        <popup-stack id="srs-level-readings"></popup-stack>
+        <div class="srs-level-container">
+          <popup-stack id="srs-level-readings"></popup-stack>
+        </div>
       </div>
-      <div id="readings-wrapper" class="detail-row-list-wrapper">
-        <div id="readings" class="detail-row-list"></div>
-        <button id="add-reading-button" class="add-button">
-          <i class="fa fa-plus"></i>
-        </button>
+      <div class="fade-anchor">
+        <div id="readings-wrapper" class="detail-row-list-wrapper">
+          <div id="readings" class="detail-row-list"></div>
+          <button id="add-reading-button" class="add-button">
+            <i class="fa fa-plus"></i>
+          </button>
+        </div>
       </div>
     </div>
     <div id="all-levels-div">
       <span>Set all SRS levels at once:</span>
-      <popup-stack id="all-srs-levels"></popup-stack>
+      <div class="srs-level-container">
+        <popup-stack id="all-srs-levels"></popup-stack>
+      </div>
     </div>
   </div>
   <div id="button-frame">

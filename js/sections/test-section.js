@@ -49,9 +49,8 @@ class TestSection extends Section {
         this.$("button-bar").style.visibility = "hidden";
         this.$("new-level").removeAttribute("tabindex"); // Use shortcut instead
         this.$("test-item").contextMenu(menuItems, ["copy-test-item"]);
-        // TODO: fix this functionality
         // this.$("solutions").addEventListener("scroll", () => {
-        //     this.$("solutions").fadeScrollableBorders();
+        //     this.$("solutions").fadeContentAtBorders();
         // });
 
         // ====================================================================
@@ -908,7 +907,7 @@ class TestSection extends Section {
         }
         this.$("solutions").appendChild(fragment);
         this.$("solutions-wrapper").show();
-        this.$("solutions").fadeScrollableBorders();
+        // this.$("solutions").fadeContentAtBorders();
         this.$("test-item").style.marginBottom = this.testItemMarginBottom;
 
         // If animation flag is set, slide up item to make space for solutions
@@ -1023,84 +1022,9 @@ class TestSection extends Section {
         }
     }
 
-    // Assemble colors for the given item type according to the color scheme
-    assembleColors(type) {
-        const colorScheme = dataManager.settings.getTestSectionColors();
-        const colors = {};
-
-        // Get background color from scheme (can be multi-color or unicolor)
-        if ("background-colors" in colorScheme) {
-            colors["background-color"] = colorScheme["background-colors"][type];
-        } else {
-            colors["background-color"] = colorScheme["background-color"];
-        }
-        const isDarkBackground = colorLib.isDark(colors["background-color"]);
-
-        // Get color from scheme or choose one based on the background color
-        if ("colors" in colorScheme) {
-            colors["color"] = colorScheme["colors"][type];
-        } else if ("color" in colorScheme) {
-            colors["color"] = colorScheme["color"];
-        } else {
-            // TODO: improve this by generating a color based on distance
-            colors["color"] = isDarkBackground ? "f5f5f5" : "303030";
-        }
-
-        // Generate lighter/darker colors for control buttons etc.
-        colors["color-weak"] = colorLib.mix(
-            colors["color"], colors["background-color"], 85);
-        colors["color-weaker"] = colorLib.mix(
-            colors["color"], colors["background-color"], 75);
-        colors["color-weakest"] = colorLib.mix(
-            colors["color"], colors["background-color"], 50);
-        colors["hover-color"] = colorLib.mix(
-            colors["color"], colors["background-color"], 15);
-
-        // Choose greenish/reddish light/dark colors for status message etc.
-        if ("color-correct" in colorScheme) {
-            colors["color-correct"] = colorScheme["color-correct"];
-        } else {
-            colors["color-correct"] = isDarkBackground ? "7cfc00" : "32cd32";
-        }
-        if ("color-wrong" in colorScheme) {
-            colors["color-wrong"] = colorScheme["color-wrong"];
-        } else {
-            colors["color-wrong"] = isDarkBackground ? "ffa500" : "ff8c00";
-        }
-
-        // Generate lighter versions of greenish/reddish colors
-        colors["color-correct-weak"] =
-            colorLib.applyAlpha(colors["color-correct"], 0.5);
-        colors["background-color-correct"] =
-            colorLib.applyAlpha(colors["color-correct"], 0.2);
-        colors["background-correct-strong"] = colorLib.applyAlpha(
-            colorLib.mix(colors["color-correct"], colors["color"], 50), 0.3);
-        colors["color-wrong-weak"] =
-            colorLib.applyAlpha(colors["color-wrong"], 0.5);
-        colors["background-color-wrong"] =
-            colorLib.applyAlpha(colors["color-wrong"], 0.2);
-        colors["background-wrong-strong"] = colorLib.applyAlpha(
-            colorLib.mix(colors["color-wrong"], colors["color"], 50), 0.3);
-
-        // Get shadow colors from scheme or generate them to improve contrast
-        if ("status-shadow-color" in colorScheme) {
-            colors["status-shadow-color"] = colorScheme["status-shadow-color"];
-        } else {
-            colors["status-shadow-color"] = isDarkBackground ?
-                "rgba(0, 0, 0, 0.2)" : "rgba(255, 255, 255, 0.2)";
-        }
-        if ("item-shadow-color" in colorScheme) {
-            colors["item-shadow-color"] = colorScheme["item-shadow-color"];
-        } else {
-            colors["item-shadow-color"] = isDarkBackground ?
-                "rgba(0, 0, 0, 0.1)" : "rgba(255, 255, 255, 0.1)";
-        }
-
-        return colors;
-    }
-
     // Color elements according to item type (mode and part)
     _applyColors(instant=false) {
+        if (this.testInfo.currentItem === null) return;
         const mode = this.testInfo.currentItem.mode;
         const part = this.testInfo.currentPart;
 
@@ -1121,11 +1045,12 @@ class TestSection extends Section {
 
         // Assemble colors for this type if not done yet, else just use cached
         if (!(type in this.colors)) {
-            this.colors[type] = this.assembleColors(type);
+            const colorScheme = dataManager.settings.getTestSectionColors();
+            this.colors[type] = colorLib.assembleColors(colorScheme, type);
         }
         const colors = this.colors[type];
 
-        // Don't do anything if item is of type as previous one
+        // Don't do anything if item is of the same type as previous one
         if (this.previousColors === colors) return;
 
         // Disable animations if change should happen instantly

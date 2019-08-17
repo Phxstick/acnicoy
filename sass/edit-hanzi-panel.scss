@@ -40,10 +40,13 @@
   font-family: $pinyin-font;
 }
 
-#srs-level-meanings, #srs-level-readings {
+popup-stack {
+  // Use absolute positioning to keep opened stack visible despite overflow
+  position: absolute;
+}
+.srs-level-container, popup-stack {
   width: 30px;
   height: 30px;
-  font-size: 1rem;
 }
 
 .detail-row-header {
@@ -56,9 +59,7 @@
   align-items: center;
   margin-top: 5px;
 
-  #all-srs-levels {
+  .srs-level-container {
     margin-left: 15px;
-    width: 30px;
-    height: 30px;
   }
 }

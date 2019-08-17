@@ -1,7 +1,8 @@
 <div class="color-preview">
   <div class="title">{{title}}</div>
   <div class="color-box" {{#if valueId}}data-name="{{valueName}}"{{/if}}
-       style="background-color:{{bgColor}};color:{{fgColor}}">
+       style="background-color: {{bgColor}}; color: {{fgColor}};
+       {{#if shadowColor}}text-shadow: 1px 1px 0 {{shadowColor}};{{/if}}">
     {{text}}
   </div>
   {{#if showValues}}

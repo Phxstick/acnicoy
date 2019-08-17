@@ -63,7 +63,7 @@ button.light {
     box-shadow: $button-focus-shadow;
   }
   &:active {
-    box-shadow: inset 0px 2px 13px -2px $button-light-shadow-color-active;
+    box-shadow: $button-shadow-active;
   }
 }
 
@@ -150,7 +150,7 @@ button.simple {
     color: $color-dark;
   }
   &:active {
-    box-shadow: inset 0px 2px 13px -2px $button-light-shadow-color-active;
+    box-shadow: $button-shadow-active;
   }
   &:focus:not(:hover) {
     box-shadow: none;
@@ -164,7 +164,7 @@ button.simple {
       box-shadow: 0 0 3px $highlight-background;
     }
     &:active {
-      box-shadow: inset 0px 2px 13px -2px $button-light-shadow-color-active;
+      box-shadow: $button-shadow-active;
     }
   }
 }

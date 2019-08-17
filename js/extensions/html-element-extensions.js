@@ -484,22 +484,24 @@ HTMLElement.prototype.removeTooltip = function () {
  * fade out borders at the top/bottom of the scrollable content.
  * This function only sets two CSS variables --top-shadow-height and 
  * --bottom-shadow-height in the element, actual CSS must be applied separately.
- * @param {Integer} [fadeDistance=30]
+ * The parent should not have the `overflow` property set and should contain the
+ * gradients as pseudo-elements (and non-static `position` to be their anchor).
+ * @param {Integer} [maxFadeDistance=30]
  */
-HTMLElement.prototype.fadeScrollableBorders = function (fadeDistance=30) {
+HTMLElement.prototype.fadeContentAtBorders = function (maxFadeDistance=30) {
     if (this.scrollHeight <= this.clientHeight) {
-        this.style.setProperty("--top-shadow-height", `0px`);
-        this.style.setProperty("--bottom-shadow-height", `0px`);
+        this.parentNode.style.setProperty("--top-shadow-height", `0px`);
+        this.parentNode.style.setProperty("--bottom-shadow-height", `0px`);
         return;
     }
     const distanceFromTop = this.scrollTop;
     const distanceFromBottom =
         this.scrollHeight - this.scrollTop - this.clientHeight;
-    const topShadowHeight = Math.min(fadeDistance, distanceFromTop);
-    const bottomShadowHeight = Math.min(fadeDistance, distanceFromBottom);
-    this.style.setProperty(
+    const topShadowHeight = Math.min(maxFadeDistance, distanceFromTop);
+    const bottomShadowHeight = Math.min(maxFadeDistance, distanceFromBottom);
+    this.parentNode.style.setProperty(
         "--top-shadow-height", `${topShadowHeight}px`);
-    this.style.setProperty(
+    this.parentNode.style.setProperty(
         "--bottom-shadow-height", `${bottomShadowHeight}px`);
 }
 

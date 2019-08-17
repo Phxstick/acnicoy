@@ -58,6 +58,7 @@
     margin-left: 10px;
     border-left: 1px solid $border-color-dark;
     padding-left: 10px;
+    overflow: hidden;
 
     #choose-scheme-info {
       color: $color-light;
@@ -70,6 +71,7 @@
       display: flex;
       flex-direction: column;
       align-self: stretch;
+      overflow: hidden;
 
       #scheme-header {
         display: flex;

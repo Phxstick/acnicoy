@@ -18,6 +18,8 @@ $border-color-dark: grey;
 $border-color-darkest: dimgray;
 $code-background: rgba(27, 31, 35, 0.05);
 $shadow-color: black;
+
+// Maximum contrast
 $contrast-color: black;
 $contrast-shadow-color: white;
 $dark-contrast-color: $contrast-shadow-color;
@@ -42,8 +44,8 @@ $view-background-dark: darken(white, 5%);
 
 // Inputs
 $input-background: $view-background-dark;
-$input-background-hover: $view-background;
-$input-background-focus: white;
+$input-background-hover: $view-background-medium;
+$input-background-focus: $view-background;
 $input-background-invalid: mix($input-background, crimson, 80%);
 $input-color: $color;
 $input-color-hover: $view-hover-color;
@@ -73,7 +75,7 @@ $add-button-shadow-color: coral;
 $select-background: lighten(firebrick, 15%);
 $select-color: white;
 $highlight-background: crimson;
-$highlight-background-light: lighten(crimson, 10%);
+$highlight-background-light: lighten(crimson, 30%);  // 10%);
 $highlight-background-dark: darkred;
 $border-color-highlight: $highlight-background;
 $highlight-color: $select-color;
@@ -129,6 +131,7 @@ $main-window-color-light: whitesmoke;
 $main-window-color-lightest: lighten($main-window-color, 6%);
 $main-window-color-hover: $main-window-color;
 $main-window-border-color: grey;
+$main-window-border-color-hover: $main-window-color;
 
 // Panel buttons
 $button-color: $main-window-color-light;
@@ -189,8 +192,8 @@ $dictionary-surname-name-background: #F0E0F7;  // shade of 'darkorchid'
 
 // Kanji stroke SVGs
 $kanji-strokes-color: #888;
+$kanji-strokes-color-highlighted: black;
 $kanji-strokes-background: $view-background;
-$kanji-strokes-highlighted-color: black;
 $kanji-strokes-middle-marker-color: #e5e5e5;
 $kanji-strokes-brush-start-color: red;
 

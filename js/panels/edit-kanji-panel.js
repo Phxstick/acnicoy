@@ -26,7 +26,7 @@ const menuItems = contextMenu.registerItems({
         click: ({ currentNode, data: {section} }) => {
             currentNode.remove();
             if (section.$("meanings").children.length === 0)
-                section.$("srs-level-meaning").hide();
+                section.$("srs-level-meaning").parentNode.hide();
         }
     },
     "modify-meaning": {
@@ -46,7 +46,7 @@ const menuItems = contextMenu.registerItems({
         click: ({ currentNode, data: {section} }) => {
             currentNode.remove();
             if (section.$("on-yomi").children.length === 0)
-                section.$("srs-level-on-yomi").hide();
+                section.$("srs-level-on-yomi").parentNode.hide();
         }
     },
     "modify-on-yomi": {
@@ -66,7 +66,7 @@ const menuItems = contextMenu.registerItems({
         click: ({ currentNode, data: {section} }) => {
             currentNode.remove();
             if (section.$("kun-yomi").children.length === 0)
-                section.$("srs-level-kun-yomi").hide();
+                section.$("srs-level-kun-yomi").parentNode.hide();
         }
     },
     "modify-kun-yomi": {
@@ -246,9 +246,9 @@ class EditKanjiPanel extends EditPanel {
             this.$("kun-yomi").empty();
             this.$("header").textContent = "Add kanji";
             this.$("all-srs-levels").setByIndex(0);
-            this.$("srs-level-meaning").hide();
-            this.$("srs-level-on-yomi").hide();
-            this.$("srs-level-kun-yomi").hide();
+            this.$("srs-level-meaning").parentNode.hide();
+            this.$("srs-level-on-yomi").parentNode.hide();
+            this.$("srs-level-kun-yomi").parentNode.hide();
             return;
         }
         this.$("header").textContent = "Edit kanji";
@@ -276,9 +276,17 @@ class EditKanjiPanel extends EditPanel {
         this.$("srs-level-kun-yomi").setByIndex(info.kunYomiLevel - 1);
 
         // Hide level popups if there are no values in a field
-        this.$("srs-level-meaning").toggleDisplay(info.meanings.length > 0)
-        this.$("srs-level-on-yomi").toggleDisplay(info.onYomi.length > 0)
-        this.$("srs-level-kun-yomi").toggleDisplay(info.kunYomi.length > 0)
+        this.$("srs-level-meaning").parentNode.toggleDisplay(
+            info.meanings.length > 0)
+        this.$("srs-level-on-yomi").parentNode.toggleDisplay(
+            info.onYomi.length > 0)
+        this.$("srs-level-kun-yomi").parentNode.toggleDisplay(
+            info.kunYomi.length > 0)
+
+        // Fade content at view borders if there are overflows
+        this.$("meanings-wrapper").fadeContentAtBorders(this.fadeDistance);
+        this.$("on-yomi-wrapper").fadeContentAtBorders(this.fadeDistance);
+        this.$("kun-yomi-wrapper").fadeContentAtBorders(this.fadeDistance);
     }
 
     createListItem(type, text="") {
@@ -295,12 +303,12 @@ class EditKanjiPanel extends EditPanel {
 
         // Show srs-level selector if this is the first item of the given type
         if (this.viewNodes[type].children.length === 1) {
-            this.$(`srs-level-${type}`).show();
+            this.$(`srs-level-${type}`).parentNode.show();
         }
 
         // Hide srs-level-selector if there are no items left of the given type
         node.addEventListener("focusout", () => {
-            this.$(`srs-level-${type}`).toggleDisplay(
+            this.$(`srs-level-${type}`).parentNode.toggleDisplay(
                 this.viewNodes[type].children.length > 0);
         });
 

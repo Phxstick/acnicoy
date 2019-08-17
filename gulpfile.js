@@ -6,10 +6,6 @@ const glob = require("glob");
 const fs = require("fs");
 const path = require("path");
 
-gulp.task("default", function() {
-    gulp.start("style");
-});
-
 gulp.task("style", function() {
     const sass = require("gulp-sass");
     const postcss = require("gulp-postcss");
@@ -82,3 +78,5 @@ gulp.task("style", function() {
         }
     });
 });
+
+gulp.task("default", gulp.series("style"));

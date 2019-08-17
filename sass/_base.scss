@@ -82,7 +82,7 @@ body {
     padding: 3px;
 
     #header {
-      color: dimgray;
+      color: $color-light;
       flex: 1;
       font-size: 130%;
       display: flex;
@@ -106,6 +106,7 @@ body {
     display: flex;
     flex-direction: column;
     padding: 10px;
+    overflow: hidden;
 
     > *:not(:last-child) {
       margin-bottom: 10px;
@@ -249,7 +250,7 @@ hr {
     list-style-type: none;
     padding-left: 25px;
     text-align: left;
-    height: 100%;
+    height: inherit;
     display: flex;
     flex-direction: column;
     justify-content: space-around;

@@ -34,6 +34,8 @@ The basic features for every language include:
   ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-notes-section.png))
 * Use shortcuts to speed up frequently used procedures.
   ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-shortcut-settings.png))
+* Change the design by choosing a color scheme or making your own.
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-shortcut-settings.png))
 
 For learners of the Japanese language, the program additionally offers:
 
@@ -51,7 +53,7 @@ Installation
 You can download the [latest releases for Windows and Linux](https://github.com/phxstick/acnicoy/releases/latest) from GitHub.
 
 ### Building from source
-Acnicoy requires [Node.js] v8.11 and uses the [npm package manager][npm].
+Acnicoy requires [Node.js] v12.x and uses the [npm package manager][npm].
 The build process is simple:
 ```sh
 $ git clone https://github.com/phxstick/acnicoy

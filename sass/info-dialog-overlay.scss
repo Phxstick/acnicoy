@@ -11,6 +11,6 @@
   line-height: 150%;
 }
 
-#ok-button:focus {
+#ok-button:focus:not(:active) {
   box-shadow: none;
 }

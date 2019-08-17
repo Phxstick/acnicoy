@@ -76,7 +76,7 @@ input.styled {
 input.trench {
   color: $view-color;
   background-color: $view-background-medium;
-  border: 1px solid lightgrey;
+  border: 1px solid $border-color-light;
   border-radius: 5px;
   box-shadow: $input-inset-shadow;
 
@@ -113,7 +113,6 @@ span.select {
 .select {
   > select {
     appearance: none;
-    width: 100%;
   }
   // Custom arrow
   position: relative;
@@ -150,11 +149,19 @@ select {
     border-color: $input-border-color-focus;
     background-color: $input-background-focus;
   }
-  option:first-child[value=""] {
-    color: $input-color-placeholder;
+  option {
+    background-color: $view-background;
+    color: $view-color;
+
+    &:first-child[value=""] {
+      color: $input-color-placeholder;
+    }
+    // One can style selection, but not hovering (JS doesn't work either)
+    // &:checked {
+    //   background-color: $view-select-background;
+    //   color: $view-select-color;
+    // }
   }
-  // line-height: 100px;
-  // transition: box-shadow .2s, background-color .2s;
 }
 
 

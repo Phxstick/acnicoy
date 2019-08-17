@@ -6,18 +6,7 @@ const { remote } = require("electron");
 const mainBrowserWindow = remote.getCurrentWindow();
 
 const testColorSchemes = require(paths.testSectionColorSchemes);
-const generalColorSchemes = {
-    "default": {
-        name: "Default", 
-        generalBg: "#f5f5f5", highlightBg: "#dc143c", navBg: "#8b0000",
-        generalFg: "#303030", highlightFg: "#ffffff", navFg: "#dddddd"
-    },
-    "solarized-light": { 
-        name: "Solarized Light",
-        generalBg: "#f6efdc", highlightBg: "#da7e54", navBg: "#586e75",
-        generalFg: "#46585e", highlightFg: "#ffffff", navFg: "#d8d6c7"
-    },
-};
+const generalColorSchemes = require(paths.generalColorSchemes);
 
 const itemTypeNames = {
     "word-meaning": "Word meaning",
@@ -50,15 +39,21 @@ class DesignSettingsSubsection extends SettingsSubsection {
             dataManager.settings.design.fadeSectionSwitching = checked;
             dataManager.settings.design.animatePopupStacks = checked;
             dataManager.settings.design.animateSlidingPanels = checked;
+            dataManager.settings.design.enableAnimations = checked;
             this.broadcastGlobalSetting("animate-sliding-panels");
             this.broadcastGlobalSetting("animate-popup-stacks");
             this.broadcastGlobalSetting("fade-section-switching");
+            this.broadcastGlobalSetting("enable-animations");
         });
         this.useMultiColorTestScheme = null;
 
         // ====================================================================
         //   General color scheme
         // ====================================================================
+        if (!(dataManager.settings.design.colorScheme in generalColorSchemes)) {
+            this.$("general-color-scheme").appendChild(
+                utility.createDefaultOption("Select color scheme"));
+        }
         for (const colorScheme in generalColorSchemes) {
             const option = document.createElement("option");
             if (colorScheme === dataManager.settings.design.colorScheme) {
@@ -98,21 +93,27 @@ class DesignSettingsSubsection extends SettingsSubsection {
             if (dataManager.settings.design.testColorScheme !== "custom")
                 return;
             const useMultiColor = dataManager.settings.test.useBackgroundColors;
-            const colors = useMultiColor ?
+            const baseColors = useMultiColor ?
                 dataManager.settings.design.customTestMulticolorScheme :
                 dataManager.settings.design.customTestUnicolorScheme;
 
-            // Check if value is a valid hex color
-            if (colorLib.isHex(target.value)) {
+            // Check if value is a valid hex color or can be left out
+            if (colorLib.isHex(target.value) || (target.value.length === 0 &&
+                    target.dataset.type === "fg")) {
+                const itemType = target.dataset.name;
                 const key = target.dataset.type === "bg" ?
                         "background-color" : "color";
 
                 // Update settings
-                const newValue = target.value.slice(1);
+                let newValue = target.value.slice(1);
+                if (newValue.length === 3) {
+                    newValue = newValue[0] + newValue[0] + newValue[1]
+                               + newValue[1] + newValue[2] + newValue[2];
+                }
                 if (useMultiColor) {
-                    colors[key + "s"][target.dataset.name] = newValue;
+                    baseColors[key + "s"][itemType] = newValue;
                 } else {
-                    colors[key] = newValue;
+                    baseColors[key] = newValue;
                 }
 
                 // Update preview
@@ -120,7 +121,11 @@ class DesignSettingsSubsection extends SettingsSubsection {
                 while (!node.classList.contains("color-preview")) {
                     node = node.parentNode;
                 }
-                node.querySelector(".color-box").style[key] = target.value;
+                const colors = colorLib.assembleColors(baseColors, itemType);
+                const preview = node.querySelector(".color-box");
+                preview.style[key] = "#" + colors[key];
+                preview.style["text-shadow"] = 
+                    `1px 1px 0 ${colors["item-shadow-color"]}`;
                 target.classList.remove("invalid-color");
             } else {
                 target.classList.add("invalid-color");
@@ -130,9 +135,8 @@ class DesignSettingsSubsection extends SettingsSubsection {
 
     registerCentralEventListeners() {
         events.on("settings-design-enable-animations", () => {
-            // All three settings should have same value now, so just pick one
             this.$("enable-animations").checked =
-                dataManager.settings.design.animateSlidingPanels;
+                dataManager.settings.design.enableAnimations;
         });
         events.on("settings-design-general-color-scheme", () => {
             this.showGeneralColorsPreview(
@@ -173,6 +177,10 @@ class DesignSettingsSubsection extends SettingsSubsection {
     }
 
     showGeneralColorsPreview(schemeName) {
+        if (!(schemeName in generalColorSchemes)) {
+            this.$("general-colors-preview").empty();
+            return;
+        }
         const colors = generalColorSchemes[schemeName];
         const colorPreviewTemplate = templates.get("color-preview");
         const previews = [];
@@ -194,13 +202,15 @@ class DesignSettingsSubsection extends SettingsSubsection {
     showTestColorsPreview(schemeName) {
         const useMultiColor = dataManager.settings.test.useBackgroundColors;
         const colorPreviewTemplate = templates.get("color-preview");
-        const colors = dataManager.settings.getTestSectionColors(schemeName);
+        const colorBase = dataManager.settings.getTestSectionColors(schemeName);
         if (!useMultiColor) {
+            const colors = colorLib.assembleColors(colorBase);
             this.$("test-colors-preview").innerHTML = colorPreviewTemplate({
                 title: "Preview", text: "Word",
                 showValues: schemeName === "custom",
                 bgColor: "#" + colors["background-color"],
-                fgColor: "#" + colors["color"]
+                fgColor: colorBase["color"] === "" ? "" : "#" + colors["color"],
+                shadowColor: colors["item-shadow-color"]
             });
         } else {
             const types = ["word-meaning", "word-reading"];
@@ -211,15 +221,14 @@ class DesignSettingsSubsection extends SettingsSubsection {
 
             const previews = [];
             for (const type of types) {
+                const colors = colorLib.assembleColors(colorBase, type);
                 previews.push(colorPreviewTemplate({
                     title: itemTypeNames[type],
                     text: itemTypeTexts[type],
                     showValues: schemeName === "custom",
-                    fgColor: "colors" in colors ?
-                        "#" + colors["colors"][type] : "#" + colors["color"],
-                    bgColor: "background-colors" in colors ?
-                        "#" + colors["background-colors"][type] :
-                        "#" + colors["background-color"],
+                    fgColor: colorBase["color"]==="" ? "" : "#"+colors["color"],
+                    bgColor: "#" + colors["background-color"],
+                    shadowColor: colors["item-shadow-color"],
                     valueName: type }));
             }
             this.$("test-colors-preview").innerHTML = previews.join("\n");

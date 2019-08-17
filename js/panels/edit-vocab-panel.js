@@ -212,6 +212,12 @@ class EditVocabPanel extends EditPanel {
             const result = dataManager.vocabLists.searchForList(query);
             return result.filter((listName) => !addedLists.has(listName));
         });
+
+        // Fade content at view borders if there are overflows
+        this.$("translations-wrapper").fadeContentAtBorders(this.fadeDistance);
+        this.$("readings-wrapper").fadeContentAtBorders(this.fadeDistance);
+        this.$("vocab-lists-wrapper").fadeContentAtBorders(this.fadeDistance);
+        this.$("notes-wrapper").fadeContentAtBorders(this.fadeDistance);
     }
 
     registerCentralEventListeners() {
@@ -259,7 +265,7 @@ class EditVocabPanel extends EditPanel {
         this.closed = true;
     }
 
-    async load(word, givenDictionaryId=null) {
+    async load(word, givenDictionaryId=null, isProperName=false) {
         // Check if the word is already in the vocabulary
         if (word !== undefined && await dataManager.vocab.contains(word)) {
             this.originalWord = word;
@@ -268,7 +274,7 @@ class EditVocabPanel extends EditPanel {
             this.lastEnteredWord = null;
         }
 
-        // If a new word is getting added, just clear all fields
+        // If a new word is getting added, clear all fields
         if (this.originalWord === null) {
             this.$("word").textContent = "";
             this.$("translations").empty();
@@ -277,7 +283,26 @@ class EditVocabPanel extends EditPanel {
             this.$("notes").empty();
             this.$("header").textContent = "Add word";
             this.$("srs-level").setByIndex(0);
-            this.dictionaryId = givenDictionaryId;
+
+            if (!isProperName) {
+                this.dictionaryId = givenDictionaryId;
+            }
+            // If it's a proper name + language data is available, show details
+            else if (dataManager.content.isDictionaryAvailable()) {
+                this.dictionaryId = null;
+                const info = await dataManager.content.getProperNameEntryInfo(
+                    givenDictionaryId);
+                this.$("word").textContent = info.wordsAndReadings[0].word ?
+                    info.wordsAndReadings[0].word :
+                    info.wordsAndReadings[0].reading;
+                const reading = info.wordsAndReadings[0].reading;
+                for (const translation of info.meanings[0].translations) {
+                    if (translation.toKana("hiragana") === reading ||
+                            translation.toKana("katakana") == reading) continue;
+                    this.createListItem("translation", translation);
+                }
+                this.createListItem("reading", reading);
+            }
             return;
         }
         this.$("header").textContent = "Edit word";

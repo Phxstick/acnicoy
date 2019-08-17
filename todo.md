@@ -1,11 +1,6 @@
-- Fix: test-complete overlay is sometimes not shown
-- Fix: don't always switch to dictionary when clicking in kanji-info-panel
-- Fix: panels flicker when opening them with animations disabled
-- Add section separators in design-settings
+- Make dark default color scheme
 - Update screenshots
-- Make it possible to add names to dictionary (disregard IDs for now?)
-- Add solarized dark color scheme (and maybe more)
-- Add setting for increasing font size in vocab section
+- Try to fix problem with antivirus programs
 
 ### Primary goals
 - Extend notes section:
@@ -18,13 +13,10 @@
   - Make sure that displayed label in group search identifies group uniquely
   - Somehow invalidate notes in search result if group is deleted
   - Add shortcuts for both searches + add-button
-- Design:
-  - Make dark default and Ubuntu (Light/Dark) color schemes
-  - Use translations-font and readings-font in some places instead of vocab-font
+- Use translations-font and readings-font in some places instead of vocab-font
 - Performance/Memory:
   - Try to reduce memory consumption
   - Call garbage collector after unloading language data to actually unload it?
-- Indicate that something can be scrolled using shadows (only where necessary)
 - Reverse completion list order if it's shown above entry instead of below
   - Extend the utility view function for this purpose
 - Add most important missing features to dictionary search (see further below)
@@ -36,17 +28,15 @@
 - Also consider notes when searching vocabulary items in vocab section?
 - Use String.matchAll for test comparisons after updating to Chome 73
 - Offer language data for EN if not available for the chosen source language?
+- Rework popup stack design in panels? (using borders and uniform colors)
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
-- Strange error if autostart is not enabled. How to make it work on linux?
 - Don't preload words in vocab section - data revealed by scrolling is outdated
 - Make it possibly to scroll while pressing Ctrl (for moving notes).
-- Fix visual bug when opening overlays (e.g. when opening help on SRS migration)
-- Test section: fix bug where overflow-shadow below item solutions is now shown
+- Add overflow shadow to item solutions/notes in test-section again
 - How to prevent SQLITE conflicting journals accumulating in the dropbox folder?
-- Fix visual bug in item fade-in animation when menu bar is hidden
-- No transition of background-gradient of continue-button in multicolor scheme
+- Text-overflow in tree-view is not working anymore (node becomes invisible)
 
 
 By category
@@ -71,9 +61,11 @@ By category
   - Make sure no additional program file is loaded after start for safe update
 - Display number of notes in each group?
 - Disallow closing loading-overlay via shortcut?
+- Add option to increase font size in vocab section? (1.2 rem for JP/ZH)
 
 ### Design
 - Use font-family "Trajan" for roman numerals?
+- Make Ubuntu color schemes
 - Adjust scrollbars to corresponding background color so that they're always
   visible well. Also consider using thin, rounded scrollbars with margin
 

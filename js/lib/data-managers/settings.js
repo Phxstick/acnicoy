@@ -72,7 +72,12 @@ module.exports = function (paths, modules) {
             }
         } else {
             const groupKey = multiColor ? "multicolor" : "unicolor";
-            colorScheme = testSectionColorSchemes[groupKey][schemeName];
+            // Check if specified scheme is available in this program version
+            if (schemeName in testSectionColorSchemes[groupKey]) {
+                colorScheme = testSectionColorSchemes[groupKey][schemeName];
+            } else {
+                colorScheme = testSectionColorSchemes[groupKey]["default"];
+            }
         }
         return colorScheme;
     };

@@ -4,6 +4,7 @@ class EditPanel extends Panel {
     constructor(name, itemTypes, mainItem) {
         super(name);
         this.nextElementToFocus = null;
+        this.fadeDistance = 8;
 
         // Dummy element which holds focus if no other element has it
         this.focusHolder = document.createElement("div");
@@ -31,6 +32,12 @@ class EditPanel extends Panel {
             });
             this.$(`add-${type}-button`).addEventListener("focusin", () => {
                 this.createListItem(type);
+            });
+
+            // Fade content at borders in case of overflow
+            const viewWrapper = this.viewNodes[type].parentNode;
+            viewWrapper.addEventListener("scroll", () => {
+                viewWrapper.fadeContentAtBorders(this.fadeDistance);
             });
         }
     }

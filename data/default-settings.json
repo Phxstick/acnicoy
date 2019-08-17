@@ -24,6 +24,7 @@
         "animateSlidingPanels": true,
         "animatePopupStacks": true,
         "fadeSectionSwitching": true,
+        "enableAnimations": true,
         "cursor": "default",
         "colorScheme": "default",
         "testColorScheme": "default",

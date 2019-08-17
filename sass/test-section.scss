@@ -39,6 +39,27 @@ $test-section-background-color-correct: var(--background-color-correct);
 $test-section-background-color-wrong-strong: var(--background-wrong-strong);
 $test-section-background-color-correct-strong: var(--background-correct-strong);
 
+%scroll-overflow-bar {
+  position: absolute;
+  left: -$solution-fade-distance;
+  right: -$item-fade-out-distance;
+  background-color: $test-section-background;
+  content: "";
+  transition-property: background-color;
+  transition-timing-function: $item-fade-out-timing;
+  transition-duration: $item-fade-out-duration;
+}
+
+%scroll-overflow-shadow {
+  content: "";
+  position: absolute;
+  left: -$solution-fade-distance;
+  right: $scrollbar-light-width;
+  transition-property: background;
+  transition-timing-function: $item-fade-out-timing;
+  transition-duration: $item-fade-out-duration;
+}
+
 body {
   display: flex;
   flex-direction: column;
@@ -138,26 +159,16 @@ body {
     flex-direction: row;
     overflow-y: hidden;
 
-    %scroll-overflow-bar {
-      position: absolute;
-      left: -$solution-fade-distance;
-      right: -$item-fade-out-distance;
-      background-color: $test-section-background;
-      content: "";
-      transition-property: background-color;
-      transition-timing-function: $item-fade-out-timing;
-      transition-duration: $item-fade-out-duration;
-    }
-    &::before {
-      @extend %scroll-overflow-bar;
-      bottom: 100%;
-      top: -$scroll-overflow-shadow-size;
-    }
-    &::after {
-      @extend %scroll-overflow-bar;
-      top: 100%;
-      bottom: -$scroll-overflow-shadow-size;
-    }
+    // &::before {
+    //   @extend %scroll-overflow-bar;
+    //   bottom: 100%;
+    //   top: -$scroll-overflow-shadow-size;
+    // }
+    // &::after {
+    //   @extend %scroll-overflow-bar;
+    //   top: 100%;
+    //   bottom: -$scroll-overflow-shadow-size;
+    // }
   }
 
   #solutions, #notes {
@@ -199,39 +210,30 @@ body {
       }
     }
 
-    %scroll-overflow-shadow {
-      content: "";
-      position: absolute;
-      left: -$solution-fade-distance;
-      right: $scrollbar-light-width;
-      transition-property: background;
-      transition-timing-function: $item-fade-out-timing;
-      transition-duration: $item-fade-out-duration;
-    }
-    &::before {
-      @extend %scroll-overflow-shadow;
-      top: 0;
-      height: var(--top-shadow-height, 0px);
-      background: linear-gradient(
-          to bottom, $test-section-background, transparent);
-    }
-    &::after {
-      @extend %scroll-overflow-shadow;
-      bottom: 0;
-      height: var(--bottom-shadow-height, 0px);
-      background: linear-gradient(
-          to top, $test-section-background, transparent);
-    }
+    // &::before {
+    //   @extend %scroll-overflow-shadow;
+    //   top: 0;
+    //   height: var(--top-shadow-height, 0px);
+    //   background: linear-gradient(
+    //       to bottom, $test-section-background, transparent);
+    // }
+    // &::after {
+    //   @extend %scroll-overflow-shadow;
+    //   bottom: 0;
+    //   height: var(--bottom-shadow-height, 0px);
+    //   background: linear-gradient(
+    //       to top, $test-section-background, transparent);
+    // }
 
-    &.stretch-shadows {
-      overflow: visible;
-      &::before { 
-        right: -$item-fade-in-distance;  // Or should it be fade-out-distance?
-      }
-      &::after { 
-        right: -$item-fade-in-distance;  // Or should it be fade-out-distance?
-      }
-    }
+    // &.stretch-shadows {
+    //   overflow: visible;
+    //   &::before { 
+    //     right: -$item-fade-in-distance;  // Or should it be fade-out-distance?
+    //   }
+    //   &::after { 
+    //     right: -$item-fade-in-distance;  // Or should it be fade-out-distance?
+    //   }
+    // }
   }
 
   #notes {
@@ -275,6 +277,7 @@ body {
   background-color: $test-section-background;
   color: $test-section-color;
   border: 1px solid transparent;
+  border-radius: 5px;
   font-family: $text-font;
 
   &:hover {

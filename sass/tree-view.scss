@@ -28,8 +28,8 @@
 
 .node-name-frame {
   white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+  // TODO: Try to get this to work again
+  // text-overflow: ellipsis;
 
   .open-node-button {
     &::after {

@@ -46,6 +46,7 @@ class DictionarySearchResultEntry extends Widget {
 
     setInfo(info) {
         // Set entry class by frequency (determines background color)
+        this.isProperName = !!info.properName;
         if (!info.properName) {
             if (info.newsFreq > 0 && info.newsFreq < 25) {
                 info.entryClass = "semi-frequent";
@@ -57,6 +58,7 @@ class DictionarySearchResultEntry extends Widget {
                 info.entryClass = `tag-${info.tags[0]}`;
             }
         }
+
         // Instantiate handlebars template
         info.added = info.associatedVocabEntry !== null;
         this.root.innerHTML +=
@@ -124,18 +126,21 @@ class DictionarySearchResultEntry extends Widget {
 
         // Click a translation or reading to search the dictionary for it
         this.addEventListener("click", (event) => {
+            const categories = info.properName ? ["names"] : ["words"];
             const target = event.path[0];
             if (target.classList.contains("translation")) {
                 // Remove parentheses and their content to match more stuff
                 const query = target.textContent.replace(/\([^)]*\)/g,"").trim()
-                main.sections["dictionary"].search(query, "meaning");
+                main.sections["dictionary"].search(query, "meaning", categories)
             } else if (target.classList.contains("reading")) {
                 const query = target.dataset.reading;
-                main.sections["dictionary"].search(query, "reading");
+                main.sections["dictionary"].search(query, "reading", categories)
             } else if (target.id === "main-reading" ||
                        target.classList.contains("word")) {
                 const query = target.textContent.trim();
-                main.sections["dictionary"].search(query, "reading");
+                main.sections["dictionary"].search(query, "reading", categories)
+            } else {
+                return;
             }
             // If the dictionary is not opened, open it
             if (main.currentSection !== "dictionary") {
@@ -162,8 +167,9 @@ class DictionarySearchResultEntry extends Widget {
 
     addWord() {
         main.openPanel("edit-vocab", {
+            entryName: this.dataset.mainWord,
             dictionaryId: parseInt(this.dataset.id),
-            entryName: this.dataset.mainWord
+            isProperName: this.isProperName
         });
     }
 

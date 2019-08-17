@@ -125,6 +125,9 @@ class TestCompleteOverlay extends Overlay {
                 this.$("languages-ready-for-testing").close();
             }
         }, true);
+        this.$("ok-button").addEventListener("keypress", (event) => {
+            if (!this.canBeClosed) event.preventDefault();
+        });
     }
 
     open(testInfo) {
@@ -132,6 +135,8 @@ class TestCompleteOverlay extends Overlay {
         this.mistakes = Array.from(testInfo.mistakes);
         this.classList.toggle("no-mistakes", this.mistakes.length === 0);
         this.mistakesView.load();
+        this.canBeClosed = false;
+        utility.wait(200).then(() => { this.canBeClosed = true; });
 
         // Fill in statistics
         this.$("items-total").textContent = testInfo.numFinished;

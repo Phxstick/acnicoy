@@ -1,0 +1,20 @@
+{
+    "default": {
+        "name": "Default", 
+        "loadBg": "#800000",
+        "generalBg": "#f5f5f5", "highlightBg": "#dc143c", "navBg": "#8b0000",
+        "generalFg": "#303030", "highlightFg": "#ffffff", "navFg": "#dddddd"
+    },
+    "solarized-light": { 
+        "name": "Solarized Light",
+        "loadBg": "#586e75",
+        "generalBg": "#f6efdc", "highlightBg": "#da7e54", "navBg": "#586e75",
+        "generalFg": "#46585e", "highlightFg": "#ffffff", "navFg": "#d8d6c7"
+    },
+    "solarized-dark": {
+        "name": "Solarized Dark",
+        "loadBg": "#FFFFFF",
+        "generalBg": "#04313c", "highlightBg": "#196468", "navBg": "#003745",
+        "generalFg": "#a1adad", "highlightFg": "#ffffff", "navFg": "#75888a"
+    }
+}

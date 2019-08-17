@@ -359,14 +359,23 @@ module.exports = async function (paths, contentPaths, modules) {
     }
 
     /**
-     * Given a dictionary entry by its ID (and optionally its associated data),
-     * return the corresponding entry in the vocabulary (or null if no match).
+     * Given a dictionary entry by its ID, return the corresponding entry from
+     * the vocabulary (or null if there's no match). If the data associated with
+     * the dictionary entry has already been loaded, it can be passed as the
+     * second argument to prevent loading it twice and speed up the procedure.
+     *
      * First check whether an entry in the vocabulary has this ID associated.
      * If not, try to guess which vocabulary entry most likely matches this
      * dictionary entry by comparing the words, readings and translations.
+     *
+     * In order to find a vocabulary entry matching a proper name from the
+     * dictionary, one can set the parameter dictionaryId to null and pass
+     * the associated data as the second argument.
+     *
      * @param {Integer} dictionaryId
      * @param {Object} [dictionaryInfo] If info for this entry has already been
      *     extracted from the dictionary, pass it in here (performance boost).
+     *     Can also be used to match proper names to vocabulary entries.
      * @returns {String|null}
      */
     async function guessAssociatedVocabEntry(dictionaryId, dictionaryInfo) {
@@ -375,10 +384,12 @@ module.exports = async function (paths, contentPaths, modules) {
         }
 
         // Try to match dictionary ID first
-        const idQueryResult = await data.query(
-            "SELECT word FROM trainer.vocabulary WHERE dictionary_id = ?",
-            dictionaryId);
-        if (idQueryResult.length > 0) return idQueryResult[0].word;
+        if (dictionaryId !== null) {
+            const idQueryResult = await data.query(
+                "SELECT word FROM trainer.vocabulary WHERE dictionary_id = ?",
+                dictionaryId);
+            if (idQueryResult.length > 0) return idQueryResult[0].word;
+        }
 
         // Add kana variants as word variants as well (after kanji variants)
         const wordsAndReadings = [...dictionaryInfo.wordsAndReadings];
@@ -396,13 +407,12 @@ module.exports = async function (paths, contentPaths, modules) {
         for (const wordAndReading of wordsAndReadings) {
             const { word, reading } = wordAndReading;
             const wordContainsKanji = word.length > 0;
-            const wordMatch = await modules.vocab.contains(
-                wordContainsKanji ? word : reading);
+            const vocabEntry = wordContainsKanji ? word : reading;
+            const wordMatch = await modules.vocab.contains(vocabEntry);
 
             // If the word variant doesn't match, skip it and try the next one
             if (!wordMatch) continue;
-            const vocabEntryData =
-                await modules.vocab.getInfo(wordContainsKanji ? word : reading);
+            const vocabEntryData = await modules.vocab.getInfo(vocabEntry);
 
             // If this word variant contains kanji, check whether its reading
             // is registered as one of the readings of the vocabulary entry
@@ -435,7 +445,7 @@ module.exports = async function (paths, contentPaths, modules) {
                 }
             }
             // If at least one translation matched, consider word as matching
-            if (translationMatch) return wordContainsKanji ? word : reading;
+            if (translationMatch) return vocabEntry;
         }
         return null;
     }

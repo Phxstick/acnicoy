@@ -138,6 +138,8 @@ class PopupStack extends Widget {
     open() {
         if (this.isOpen || this.children.length === 0) return;
         this.isOpen = true;
+        this.$("frame").classList.add("opened");
+
         // Set names of the properties to be changed depending on direction
         let propertyNames;
         if (this._attributes["direction"] === "left" ||
@@ -151,9 +153,10 @@ class PopupStack extends Widget {
                 size: "offsetHeight", offset: "top", dimension: "height"
             };
         }
+
+        // Open the popup-stack by animating/setting these property names
         const sign = (this._attributes["direction"] === "up" ||
                       this._attributes["direction"] === "left") ? -1 : 1;
-        // Open the popup-stack by animating/setting these property names
         const itemSize = this.children[0][propertyNames.size];
         let current = 0;
         for (let i = 0; i < this.children.length; ++i) {
@@ -169,6 +172,7 @@ class PopupStack extends Widget {
             }
             current += sign * (itemSize - this._attributes["overlap"]);
         }
+
         // Also expand the shadow
         this.topItem.style.zIndex = this.children.length;
         if (this._attributes["animate"]) {
@@ -188,6 +192,8 @@ class PopupStack extends Widget {
         this.style.pointerEvents = "none";
         this.closing = true;
         this.isOpen = false;
+        this.$("frame").classList.remove("opened");
+
         // Set names of the properties to be changed depending on direction
         let propertyNames;
         if (this._attributes["direction"] === "left" ||
@@ -201,6 +207,7 @@ class PopupStack extends Widget {
                 size: "offsetHeight", offset: "top", dimension: "height"
             };
         }
+
         // Close the popup-stack by animating/setting these property names
         if (this._attributes["animate"]) {
             for (const child of this.children) {
@@ -214,6 +221,7 @@ class PopupStack extends Widget {
                 child.style[propertyNames.offset] = "0px";
             }
         }
+
         // Also shrink shadow again
         const closedSize = this.$("frame")[propertyNames.size];
         let promise = Promise.resolve();

@@ -11,6 +11,9 @@
     // height: calc(100% - #{$menu-bar-height});
     display: flex;
     flex-direction: row;
+    // Had to comment following out to prevent strange bugs with side-bar or
+    // section-container growing too large. Not sure why I even set this here.
+    // overflow: hidden;
 
     #section-frame {
       flex: 1;
@@ -20,6 +23,7 @@
 
 #menu-bar {
   height: $menu-bar-height;
+  flex-shrink: 0;
   display: flex;
   z-index: var(--menu-bar-layer);
   flex-direction: row;
@@ -72,9 +76,9 @@
       &:hover {
         background: $main-window-background-hover;
         color: $main-window-color-hover;
-        border-color: $main-window-color;
+        border-color: $main-window-border-color-hover;
         + button {
-          border-left-color: $main-window-color;
+          border-left-color: $main-window-border-color-hover;
         }
       }
     }
@@ -100,7 +104,7 @@
     &:hover, &.selected {
       background-color: $main-window-background-hover;
       color: $main-window-color-hover;
-      border-color: $main-window-color;
+      border-color: $main-window-border-color-hover;
     }
     &.highlighted {
       box-shadow: 0 0 15px 2px $highlight-background;
@@ -204,8 +208,10 @@
   position: relative;
   background-color: $main-window-background;
   color: $main-window-color;
+  overflow: hidden;
 
   button {
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     line-height: 140%;
@@ -228,13 +234,13 @@
     &:hover {
       background-color: $main-window-background-hover;
       color: $main-window-color-hover;
-      border-color: $main-window-color;
+      border-color: $main-window-border-color-hover;
       z-index: $num-side-bar-buttons + 1;  // Make top border go above bottom
                                            // border of previous sibling
 
       // Following prevents flickering of bottom border when hovering downwards
       ~ button {
-        border-top-color: $main-window-color;
+        border-top-color: $main-window-border-color-hover;
         z-index: $num-side-bar-buttons + 2;
       }
       // NOTE: previous-sibling selector would allow same for upwards direction
@@ -277,15 +283,16 @@
   #side-bar.content-loaded {
     button {
       font-size: 130%;
-      padding-bottom: 2px;  // Leads to equal padding to due line-height of text
+      padding-bottom: 0px;  // Leads to equal padding to due line-height of text
+      padding-top: 6px;  // Leads to equal padding to due line-height of text
     }
     #test-button {
       font-size: 180%;
-      padding-top: 12px;
-      padding-bottom: 12px;
+      padding-top: 7px;
+      padding-bottom: 7px;
 
       #num-srs-items {
-        margin-top: 6px;
+        margin-top: 4px;
       }
     }
   }
