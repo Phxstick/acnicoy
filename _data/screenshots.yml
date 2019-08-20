@@ -13,13 +13,19 @@
         You can create your own schemes and define custom time intervals for them.
       filename: "acnicoy-screenshot-srs-schemes.png"
 
+    - label: "Switching<br>SRS schemes"
+      description: >
+        You can switch between SRS schemes at any time and specify<br>
+        how to migrate your existing SRS items to the new scheme.
+      filename: "acnicoy-screenshot-change-srs-scheme.png"
+
 - name: "Vocabulary"
   screenshots:
 
     - label: "Vocabulary lists"
       description: >
-        View, search and modify vocabulary items using the left column.<br>
-        Create lists in the middle column and view their contents in the right.
+        Create vocabulary lists in the middle column and view their contents on the right.<br>
+        Add words to your lists via drag & drop from your vocabulary in the left column.
       filename: "acnicoy-screenshot-vocab-section.png"
 
     - label: "Dictionary<br>(currently only<br>for Japanese)"
@@ -34,10 +40,10 @@
         You can select specific translations using the suggestions on the right side.
       filename: "acnicoy-screenshot-edit-word-suggestions.png"
 
-    - label: "Kanji overview<br>(currently only<br>for Japanese)"
+    - label: "Kanji overview<br>(for Japanese)"
       description: >
-        Divide kanji into groups by criteria such as stroke number or school grade.<br>
-        Click a kanji to view all its details, including stroke order and words containing it.
+        Divide kanji into groups by criteria such as stroke number or JLPT level.<br>
+        Click a kanji to view its details, including stroke order and words containing it.
       filename: "acnicoy-screenshot-kanji-overview.png"
 
 - name: "Review<br>Sessions" 
@@ -47,13 +53,13 @@
       description: >
         Items get scheduled for review according to the chosen spaced repetition scheme.<br>
         By default, the answer must be typed, but you can also switch to flashcard mode.
-      filename: "acnicoy-screenshot-test-section-1.png"
+      filename: "acnicoy-screenshot-test-section-answer-phase.png"
 
     - label: "Review session<br>(Solutions)"
       description: >
         After answering, the solutions are shown and the item moves to another level.<br>
         You can also manually choose a level, ignore the answer or modify the solutions.
-      filename: "acnicoy-screenshot-test-section-2.png"
+      filename: "acnicoy-screenshot-test-section-eval-phase.png"
 
     - label: "Review session<br>(Results)"
       description: >
@@ -62,17 +68,22 @@
 
     - label: "Customizing<br>review sessions"
       description: >
-        Customize review sessions, e.g. by enabling prioritization of items with low level.
+        Customize review sessions, e.g. by enabling prioritization of low level items.
       filename: "acnicoy-screenshot-test-settings.png"
 
 - name: "Other<br>features"
   screenshots:
 
-    - label: "Statistics"
+    - label: "Statistics<br>(tables)"
       description: >
         The statistics table shows the number of items added/reviewed for each language.<br>
-        The diagrams at the bottom illustrate the numbers over the last days or months.
-      filename: "acnicoy-screenshot-stats-section.png"
+        If you're learning Japanese, you can also view statistics on your kanji vocabulary.
+      filename: "acnicoy-screenshot-stats-section-tables.png"
+
+    - label: "Statistics<br>(diagrams)"
+      description: >
+        Diagrams illustrate your statistics over the last days or months.
+      filename: "acnicoy-screenshot-stats-section-diagrams.png"
 
     - label: "Writing notes"
       description: >
@@ -82,6 +93,12 @@
 
     - label: "Shortcuts"
       description: >
-        Common procedures (such as adding words) can be done more quickly using shortcuts.
+        Common procedures can be done more efficiently using customizable shortcuts.
       filename: "acnicoy-screenshot-shortcut-settings.png"
+
+    - label: "Design"
+      description: >
+        You can change the design of the program by choosing a different color scheme.<br>
+        Colors for review sessions can be chosen separately and set manually if desired.
+      filename: "acnicoy-screenshot-design-settings.png"
 

@@ -5,13 +5,20 @@ body {
   font-family: "Open Sans";
 }
 
-/*
- * Sectioning
- */
+#content {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+// ============================================================================
+//   Sectioning
+// ============================================================================
 
 .section {
-  padding-bottom: 20px;
-  border-top: 1px solid dimgray;
+  border: 0;
+  border-top-width: 1px;
+  border-style: solid;
+  border-image: linear-gradient(to left, transparent, 30%, #999, 90%, transparent) 1 1%;
   padding-top: 20px;
   display: flex;
   flex-direction: row;
@@ -19,7 +26,7 @@ body {
 }
 
 .section-header {
-  width: 180px;
+  width: 170px;
   height: 150px;
   text-align: center;
   margin: 0;
@@ -31,20 +38,33 @@ body {
 }
 
 .screenshot-wrapper {
-  margin-right: 30px;
+  margin-bottom: 20px;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
+
+  &:not(:last-child) {
+    margin-right: 25px;
+  }
 }
 
-/*
- * Screenshot and description
- */
+// ============================================================================
+//   Screenshot and description
+// ============================================================================
 
 .screenshot {
   width: 200px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   cursor: pointer;
+  border-radius: 5px;
+  box-shadow: 1px 1px 3px -1px #999;
+  opacity: 0.8;
+  transition: box-shadow 0.15s, opacity 0.15s;
+
+  &:hover {
+    opacity: 1;
+    box-shadow: 1px 1px 3px -1px black;
+  }
 }
 
 .screenshot-label {
@@ -53,21 +73,42 @@ body {
   flex: 1;
 }
 
-.description {
-  $gc: rgba(0, 0, 0, 0.75);
+.title, .description {
   position: absolute;
-  background: linear-gradient(to right, transparent, $gc, $gc, $gc, $gc, transparent);
   color: white;
-  text-shadow: 0 0 1px black; 
-  font-size: 1rem;
-  padding: 4px;
   text-align: center;
   line-height: normal;  // Not sure why it doesn't work without this
+  text-shadow: 0 0 1px black, 0 0 3px black, 0 0 5px black, 0 0 10px black;
 }
 
-/*
- * Custom arrows for navigating the gallery.
- */
+.title {
+  padding-bottom: 12px;
+  font-weight: 300;
+  font-size: 2rem;  // Must be rem for some reason, % doesn't work
+  background: radial-gradient(farthest-side at bottom, rgba(0,0,0,0.4),
+                              rgba(0,0,0,0.3), rgba(0,0,0,0.2), transparent);
+}
+
+.description {
+  padding-top: 5px;
+  padding-bottom: 4px;
+  font-size: 1rem;  // Must be rem for some reason, % doesn't work
+  background: radial-gradient(farthest-side at top, rgba(0,0,0,0.6), rgba(0,0,0,0.6),
+                              rgba(0,0,0,0.5), rgba(0,0,0,0.3), transparent);
+}
+
+// Override some values from in viewer library
+.viewer-backdrop {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+.viewer-canvas img {
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px black;  // Looks better than border for some reason
+}
+
+// ============================================================================
+//   Custom arrows for navigating the gallery.
+// ============================================================================
 
 #arrow-prev {
   transform: scaleX(-1.5) scaleY(1.5);

@@ -1,16 +1,78 @@
 ---
 ---
 
+// Stretch content across window, use background dimming and light font
+#content {
+  min-height: calc(100vh - 50px);
+  background-color: rgba(50, 50, 50, 0.5);
+  color: whitesmoke;
+  text-shadow: 1px 1px 1px black, 1px 1px 3px black;
+}
+
+// And background image to body
+body {
+  background-repeat: no-repeat;
+  background-image: url("../img/background.jpg");
+  background-size: cover;
+}
+
+// Make navbar transcluent above the background image
+#nav-bar {
+  background-color: rgba(darkred, 0.75);
+  color: #e8e8e8;
+  box-shadow: 0 0 6px 0px white;
+
+  > *:hover {
+    background-color: rgba(darkred, 0.4);
+    color: white;
+  }
+}
+
 #main-header {
   font-size: 600%;
-  margin-top: 45px;
+  padding-top: 45px;
+  margin-top: 0;
   margin-bottom: 55px;
   text-align: center;
 }
 
-#coming-soon {
-  font-size: 220%;
-  font-family: Questrial, sans-serif;
-  text-align: center;
-  margin-bottom: 20px;
+a {
+  text-decoration: none;
+
+  &:link, &:visited {
+    color: lighten(salmon, 5%);
+  }
+
+  &:hover {
+    color: lighten(lightsalmon, 10%);
+  }
 }
+
+#downloads-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding-top: 30px;
+
+  > *:not(:last-child) {
+    padding-right: 30px;
+    margin-right: 30px;
+  }
+}
+
+.download-button {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 1.5rem;
+  transition: box-shadow 0.15s, background-color 0.15s;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #eee;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-color: white;
+  }
+}
+

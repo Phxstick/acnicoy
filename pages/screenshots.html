@@ -18,7 +18,7 @@ To check out all features, start with the first and browse them using the arrow 
       <div class="section-content">
         {%- for screenshot in section.screenshots -%}
           <div class="screenshot-wrapper">
-            <img class="screenshot" data-description="{{screenshot.description}}" src="img/screenshots/{{screenshot.filename}}"></img>
+            <img class="screenshot" data-description="{{screenshot.description}}" src="img/screenshots/{{screenshot.filename}}" data-title="{{screenshot.label}}"></img>
             <div class="screenshot-label">{{screenshot.label}}</div>
           </div>
         {%- endfor -%}

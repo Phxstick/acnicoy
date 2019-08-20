@@ -5,27 +5,36 @@ document.addEventListener("DOMContentLoaded", () => {
     const arrowPrev = document.getElementById("arrow-prev");
     const pageWrapper = document.getElementById("screenshots");
     const screenshots = document.querySelectorAll(".screenshot");
-    let description;
+    const navbarHeight = document.getElementById("nav-bar").offsetHeight;
     const gallery = new Viewer(pageWrapper, {
         toolbar: false,
         rotatable: false,
+        zoomable: false,
+        movable: false,
         title: false,
         tooltip: false,
         transition: false,
         navbar: false,
         loop: false,
         viewed: (event) => {
-            // Show image with original dimensions
-            gallery.zoomTo(1);
-
             // Get the image and its wrapper
             const viewerCanvas = document.querySelector(".viewer-canvas");
+            const viewerContainer = viewerCanvas.parentNode;
             const image = viewerCanvas.querySelector("img");
 
-            // Calculate arrow positions (unresponsive design for now)
+            // Get dimensions of screen and image and calculate margin inbetween
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
             const imageWidth = image.offsetWidth;
+            const imageHeight = image.offsetHeight;
+            const availableMarginX = (screenWidth - imageWidth) / 2;
+            let availableMarginY = (screenHeight - imageHeight) / 2;
+
+            // ================================================================
+            //   Arrows for cycling between screenshots in the gallery
+            // ================================================================
+
+            // Calculate arrow positions (unresponsive design for now)
             const arrowWidth = parseInt(arrowNext.getAttribute("width"));
             const arrowHeight = parseInt(arrowNext.getAttribute("height"));
             const maxOffset = screenWidth - arrowWidth;
@@ -52,21 +61,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 viewerCanvas.removeChild(arrowNext);
             }
 
-            // Create the description
-            description = document.createElement("div");
+            // ================================================================
+            //   Description of screenshot
+            // ================================================================
+
+            // Create description element
+            const description = document.createElement("div");
             description.classList.add("description");
             description.innerHTML = screenshots[index].dataset.description;
 
-            // Position and display the description
-            const imageHeight = image.offsetHeight;
-            const availableMarginX = (screenWidth - imageWidth) / 2;
+            // Position the description horizontally and display it
             description.style.left = `${availableMarginX}px`;
             description.style.right = `${availableMarginX}px`;
             viewerCanvas.appendChild(description);
 
             // Move the image and description up so that everything is centered
             const descriptionHeight = description.offsetHeight;
-            const availableMarginY = (screenHeight - imageHeight) / 2;
             let moveOffsetY = Math.min(availableMarginY, descriptionHeight / 2);
             if (moveOffsetY < descriptionHeight / 2) {
                 // If there's not enough space, at least make sure that the
@@ -75,7 +85,58 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             const descOffsetTop = imageHeight + availableMarginY;
             description.style.top = `${descOffsetTop - moveOffsetY}px`;
-            gallery.move(0, -moveOffsetY);
+            let imageOffsetY = -moveOffsetY;
+
+            // ================================================================
+            //   Title of screenshot
+            // ================================================================
+
+            // Remove last linebreak from title if given (to compress text)
+            let titleText = screenshots[index].dataset.title;
+            const lastBreakPos = titleText.lastIndexOf("<br>");
+            if (lastBreakPos > 0) titleText = titleText.slice(0, lastBreakPos)
+                + " " + titleText.slice(lastBreakPos + 4);
+
+            // Create title element
+            const title = document.createElement("div");
+            title.classList.add("title");
+            title.innerHTML = titleText;
+
+            // Position the title horizontally and display it
+            title.style.left = `${availableMarginX}px`;
+            title.style.right = `${availableMarginX}px`;
+            viewerCanvas.appendChild(title);
+
+            // Calculate Y-position of title and offset of image and description
+            availableMarginY -= descriptionHeight / 2;
+            const titleHeight = title.offsetHeight;
+            const navbarVisHeight = Math.max(0, navbarHeight - window.scrollY);
+            // If there's enough space, center between navbar and screen bottom
+            if (availableMarginY - titleHeight / 2 >= 0) {
+                moveOffsetY = titleHeight / 2 + navbarVisHeight / 2;
+                // Extend background gradient of the title up to the navbar
+                title.style.paddingTop = `${availableMarginY - moveOffsetY+1}px`
+            // If the title doesn't fit in completely, align to bottom of screen
+            } else {
+                moveOffsetY = availableMarginY;
+            }
+            // Set position of title and move image and description
+            if (availableMarginY > 0) {
+                const titleOffsetBottom =
+                    imageHeight + availableMarginY + descriptionHeight;
+                title.style.bottom = `${titleOffsetBottom - moveOffsetY}px`;
+                imageOffsetY += moveOffsetY;
+                description.style.top =
+                    `${description.offsetTop + moveOffsetY + 1}px`;
+
+                // If the description is close to bottom, extend BG all way down
+                if (availableMarginY - titleHeight / 2 < 80) {
+                    description.style.bottom = "0";
+                }
+            } else {
+                title.remove();
+            }
+            image.style.transform=`translate(0, ${Math.floor(imageOffsetY)}px)`;
         },
         hide: () => {
             // Hide the arrows when the gallery is closed
