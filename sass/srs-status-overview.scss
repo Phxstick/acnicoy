@@ -65,7 +65,7 @@
     flex: 1;
 
     &.highlighted {
-      color: $highlight-background-dark;
+      color: $highlighted-text-color;
       text-shadow: $highlighted-text-shadow;
     }
     &:first-child {

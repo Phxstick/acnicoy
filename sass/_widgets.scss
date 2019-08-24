@@ -31,12 +31,15 @@ popup-stack {
   > option {
     color: $main-window-color;
     background-color: $main-window-background;
+    // border: 1px solid $main-window-background;
+    // box-sizing: border-box;
     font-family: $light-font;
     font-size: 150%;
     cursor: $pointer-cursor;
 
     &:hover {
       background-color: $main-window-background-hover;
+      // border-color: $main-window-background-hover;
       color: $main-window-color-hover;
       // Raise element to make sure tooltips are visible on hovering
       // FIXME: This is a workaround and causes bugs. Try to circumvent issue
@@ -46,6 +49,7 @@ popup-stack {
     &[selected] {
       color: $select-color;
       background-color: $select-background;
+      // border-color: $select-background;
     }
   }
 }
@@ -88,5 +92,5 @@ tabbed-frame {
 tree-view {
   --indentation-line-color: #{$border-color-medium};
   --indentation-padding: 7px;
-  --color-selected: #{$highlight-background};
+  --color-selected: #{$highlighted-text-color};
 }

@@ -173,8 +173,8 @@ check-box {
 
   &:not(.light) {
     &:focus {
-      box-shadow: 0 0 5px $highlight-background;
-      border-color: $border-color-highlight;
+      box-shadow: 0 0 5px $highlight-shadow-color;
+      border-color: $input-border-color-focus;
     }
     &:hover {
       border-color: $border-color-darkest;

@@ -30,6 +30,7 @@
 
 #kanji, #hanzi {
   font-size: 2rem;
+  color: weaken($color, 6%);
   > * {
     display: inline-block;
     padding: 6px;
@@ -158,7 +159,7 @@
     flex: 1;
     &[contenteditable]:focus {
       outline: none;
-      color: $view-edit-color;
+      color: $view-color-edit;
 
       &:empty:before {
         content: "Enter name for list";

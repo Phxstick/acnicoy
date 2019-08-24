@@ -1,9 +1,15 @@
 {
     "default": {
-        "name": "Default", 
+        "name": "Light (default)", 
         "loadBg": "#800000",
         "generalBg": "#f5f5f5", "highlightBg": "#dc143c", "navBg": "#8b0000",
         "generalFg": "#303030", "highlightFg": "#ffffff", "navFg": "#dddddd"
+    },
+    "default-dark": {
+        "name": "Dark",
+        "loadBg": "#3b3b3b",
+        "generalBg": "#2b2b2b", "highlightBg": "#3c5d78", "navBg": "#3b3b3b",
+        "generalFg": "#b0b0b0", "highlightFg": "#ffffff", "navFg": "#909090"
     },
     "solarized-light": { 
         "name": "Solarized Light",
@@ -13,7 +19,7 @@
     },
     "solarized-dark": {
         "name": "Solarized Dark",
-        "loadBg": "#FFFFFF",
+        "loadBg": "#003745",
         "generalBg": "#04313c", "highlightBg": "#196468", "navBg": "#003745",
         "generalFg": "#a1adad", "highlightFg": "#ffffff", "navFg": "#75888a"
     }

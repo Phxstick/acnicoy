@@ -1,4 +1,6 @@
 
+$is-dark-scheme: false;
+
 // =============================================================================
 //   Base colors
 // =============================================================================
@@ -35,12 +37,10 @@ $color: $fg-darkest;
 $color-light: darken($fg-lightest, 12%); // mix($fg-darkest, $fg-light, 25%);
 $color-lightest: lighten($fg-lightest, 4%);
 $color-dark: darken($color, 10%);
-$text-shadow-color: lighten($color, 60%);
 $border-color-light: lighten($color-light, 35%);
 $border-color-medium: lighten($color-light, 25%);
 $border-color-dark: $color-lightest;
 $border-color-darkest: $color-light;
-$code-background: rgba(27, 31, 35, 0.05);
 $shadow-color: black;
 
 // Maximum contrast
@@ -59,8 +59,8 @@ $button-light-shadow-color-active: lighten($button-light-color, 25%);
 
 // Views
 $view-color: $fg-darkest;
-$view-hover-color: $bg-dark;
-$view-edit-color: $view-hover-color;
+$view-color-hover: $bg-dark;
+$view-color-edit: $view-color-hover;
 $view-color-greyed-out: lighten($color-lightest, 3%);
 $view-background: $bg-light;
 $view-background-medium: mix($bg-light, $bg-light-darker, 80%);
@@ -72,8 +72,8 @@ $input-background-hover: mix($bg-light, $bg-light-darker, 70%);
 $input-background-focus: $view-background;
 $input-background-invalid: mix($input-background, $red, 80%);
 $input-color: $color;
-$input-color-hover: $view-hover-color;
-$input-color-focus: $view-edit-color;
+$input-color-hover: $view-color-hover;
+$input-color-focus: $view-color-edit;
 $input-color-placeholder: $color-light;
 $input-border-color: $border-color-medium;
 $input-border-color-hover: $border-color-dark;
@@ -98,25 +98,27 @@ $add-button-shadow-color: lighten($add-button-color, 35%);
 // General highlight / select
 $select-color: white;
 $select-background: mix($orange, $view-background, 70%);  // rgba($orange, 0.6);
-$select-background-hover: $select-background;
-$highlight-background: lighten($orange, 10%);
-$highlight-background-light: lighten($highlight-background, 35%);
-$highlight-background-dark: lighten(mix($orange, $color, 80%), 3%);
-$border-color-highlight: $highlight-background;
-$highlight-color: $select-color;
-$button-shadow-color-focus: $highlight-background-dark;
-$input-border-color-focus: $border-color-highlight;
+$highlighted-text-shadow-color: lighten($orange, 45%);
+$highlighted-text-color: lighten(mix($orange, $color, 80%), 3%);
+$highlight-shadow-color: $highlighted-text-color;
+$input-border-color-focus: $highlighted-text-color;
 
-// View highlight / select
+// List views
 $view-hover-background: rgba($orange, 0.14);
-$view-hover-background-light: rgba($orange, 0.03);
-    // mix($view-background-medium, $view-background, 50%); 
-$view-hover-border-color: $border-color-darkest;
 $view-select-color: $select-color;
 $view-select-background: $select-background;
-$view-select-background-hover: $select-background-hover;
-$view-edit-background: $view-background;  // #fde8ec;
-$view-edit-border-color: $highlight-background;
+$view-select-background-hover: $view-select-background;
+
+// Panel views
+$item-view-background: $view-background-medium;
+$item-view-color: $view-color;
+$item-view-border-color: $border-color-medium;
+$item-view-hover-background: rgba($orange, 0.03);
+$item-view-hover-color: $view-color-hover;
+$item-view-hover-border-color: $border-color-darkest;
+$item-view-edit-background: $view-background;  // #fde8ec;
+$item-view-edit-color: $view-color-edit;
+$item-view-edit-border-color: $highlighted-text-color;
 
 // Local links (to open another section/panel/overlay)
 $link-color: lighten(mix($orange, $color, 80%), 8%);  // darken($red, 10%);
@@ -129,6 +131,9 @@ $http-link-color-hover: $link-color-hover;
 
 // Element with a tooltip
 $info-color: $link-color;
+
+// Progress bar
+$progress-bar-fill-color: $highlighted-text-color;
 
 // Scrollbar
 $scrollbar-thumb-background: rgba($orange, 0.28);
@@ -167,6 +172,10 @@ $button-background-active: $button-background-hover;
 $button-background-selected: lighten($button-background, 12%);
 $button-border-color: darken($button-background, 6%);
 $button-shadow-color-active: darken($button-background-active, 10%);
+
+// Notifications button
+$notifications-button-highlight-background: lighten($orange, 15%);
+$notifications-button-highlight-color: white;
 
 // Loading window
 $loading-window-background: $main-window-background;
@@ -219,7 +228,7 @@ $dictionary-semi-frequent-words-color: darken($color, 2%);
 $dictionary-male-name-background: #E1F3FE;  // shade of 'lightskyblue'
 $dictionary-female-name-background: #FFF0F3;  // shade of 'lightpink'
 $dictionary-place-name-background: #EDE1D1;  // shade of 'tan'
-$dictionary-surname-name-background: #F0E0F7;  // shade of 'darkorchid'
+$dictionary-surname-background: #F0E0F7;  // shade of 'darkorchid'
 
 // Kanji stroke SVGs
 $kanji-strokes-color: $color-lightest;

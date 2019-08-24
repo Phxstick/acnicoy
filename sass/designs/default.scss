@@ -1,4 +1,6 @@
 
+$is-dark-scheme: false;
+
 // =============================================================================
 //   Primary colors
 // =============================================================================
@@ -11,12 +13,10 @@ $color: #303030;
 $color-light: dimgray;
 $color-lightest: grey;
 $color-dark: black;
-$text-shadow-color: lightgrey;
 $border-color-light: darken($background-color, 20%);
 $border-color-medium: darkgrey;
 $border-color-dark: grey;
 $border-color-darkest: dimgray;
-$code-background: rgba(27, 31, 35, 0.05);
 $shadow-color: black;
 
 // Maximum contrast
@@ -35,8 +35,8 @@ $button-light-shadow-color-active: lighten($button-light-color, 30%);
 
 // Views
 $view-color: $color;
-$view-hover-color: black;
-$view-edit-color: black;
+$view-color-hover: black;
+$view-color-edit: black;
 $view-color-greyed-out: darkgrey;
 $view-background: darken(white, 1.5%);
 $view-background-medium: darken(white, 2.5%);
@@ -48,8 +48,8 @@ $input-background-hover: $view-background-medium;
 $input-background-focus: $view-background;
 $input-background-invalid: mix($input-background, crimson, 80%);
 $input-color: $color;
-$input-color-hover: $view-hover-color;
-$input-color-focus: $view-edit-color;
+$input-color-hover: $view-color-hover;
+$input-color-focus: $view-color-edit;
 $input-color-placeholder: darken($input-background, 40%);
 $input-border-color: $border-color-medium;
 $input-border-color-hover: $border-color-dark;
@@ -74,23 +74,27 @@ $add-button-shadow-color: coral;
 // General highlight / select
 $select-background: lighten(firebrick, 15%);
 $select-color: white;
-$highlight-background: crimson;
-$highlight-background-light: lighten(crimson, 30%);  // 10%);
-$highlight-background-dark: darkred;
-$border-color-highlight: $highlight-background;
-$highlight-color: $select-color;
-$button-shadow-color-focus: $highlight-background-dark;
-$input-border-color-focus: $border-color-highlight;
+$highlighted-text-color: darken(crimson, 6%);
+$highlighted-text-shadow-color: lighten(crimson, 40%);
+$highlight-shadow-color: darkred;
+$input-border-color-focus: crimson;
 
-// View highlight / select
+// List views
 $view-hover-background: peachpuff;
-$view-hover-background-light: lighten(peachpuff, 6%);
-$view-hover-border-color: darken($view-hover-background, 30%);
 $view-select-color: $select-color;
 $view-select-background: $select-background;
 $view-select-background-hover: $view-select-background;
-$view-edit-background: #fde8ec;
-$view-edit-border-color: $highlight-background;
+
+// Panel views
+$item-view-background: $view-background-medium;
+$item-view-color: $view-color;
+$item-view-border-color: $border-color-medium;
+$item-view-hover-background: lighten(peachpuff, 6%);
+$item-view-hover-color: $view-color-hover;
+$item-view-hover-border-color: darken($view-hover-background, 30%);
+$item-view-edit-background: #fde8ec;
+$item-view-edit-color: $view-color-edit;
+$item-view-edit-border-color: $input-border-color-focus;
 
 // Local links (to open another section/panel/overlay)
 $link-color: darkred;
@@ -103,6 +107,9 @@ $http-link-color-hover: $http-link-color;
 
 // Element with a tooltip
 $info-color: $link-color;
+
+// Progress bar
+$progress-bar-fill-color: crimson;
 
 // Tooltips
 $tooltip-background: darkred;
@@ -137,13 +144,17 @@ $main-window-border-color-hover: $main-window-color;
 $button-color: $main-window-color-light;
 $button-color-hover: $main-window-color-light;
 $button-color-active: $main-window-color-light;
-$button-color-selected: $highlight-color;
+$button-color-selected: lighten($button-color, 12%);
 $button-background: $main-window-background-light;
 $button-background-hover: $main-window-background-lightest;
 $button-background-active: lighten($button-background, 6%);
-$button-background-selected: $highlight-background;
+$button-background-selected: lighten($button-background, 12%);
 $button-border-color: darken($button-background, 6%);
 $button-shadow-color-active: darken($button-background-active, 10%);
+
+// Notifications button
+$notifications-button-highlight-background: lighten(crimson, 10%);
+$notifications-button-highlight-color: white;
 
 // Loading window
 $loading-window-background: maroon;
@@ -188,7 +199,7 @@ $dictionary-semi-frequent-words-color: $color;
 $dictionary-male-name-background: #E1F3FE;  // shade of 'lightskyblue'
 $dictionary-female-name-background: #FFF0F3;  // shade of 'lightpink'
 $dictionary-place-name-background: #EDE1D1;  // shade of 'tan'
-$dictionary-surname-name-background: #F0E0F7;  // shade of 'darkorchid'
+$dictionary-surname-background: #F0E0F7;  // shade of 'darkorchid'
 
 // Kanji stroke SVGs
 $kanji-strokes-color: #888;

@@ -5,6 +5,7 @@ const mainBrowserWindow = remote.getCurrentWindow();
 // const AutoLaunch = require("auto-launch");
 const marked = require("marked");
 const dateFormat = require("dateformat");
+const colorSchemes = require(paths.generalColorSchemes);
 
 const menuItems = contextMenu.registerItems({
     "copy-kanji": {
@@ -1475,9 +1476,10 @@ class MainWindow extends Window {
             arrowTipPos.y = rect.top - arrowToElementGap;
             arrowBasePos.y = rect.top - textboxElemOffset;
         }
-        dimCtx.shadowColor = "black";
+        const schemeName = dataManager.settings.design.colorScheme;
+        dimCtx.fillStyle = colorSchemes[schemeName]["generalBg"];
+        dimCtx.shadowColor = colorSchemes[schemeName]["generalFg"];
         dimCtx.shadowBlur = "5";
-        dimCtx.fillStyle = "#f5f5f5";
         utility.drawArrowOnCanvas(dimCtx, {
             start: arrowBasePos, end: arrowTipPos,
             headWidth: 30, headLength: 12, baseWidth: 12

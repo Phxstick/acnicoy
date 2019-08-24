@@ -35,7 +35,7 @@
       }
       &:hover:not(.selected) {
         background-color: $view-hover-background;
-        color: $view-hover-color;
+        color: $view-color-hover;
       }
       font-size: 1rem;
       line-height: 1.3rem;

@@ -64,11 +64,11 @@
     }
 
     code {
-      background-color: $code-background;
-      font-family: Courier;
-      padding: 3px;
-      padding-bottom: 0px;
-      border-radius: 5px;
+      font-family: $monospace-font;
+      padding: 4px;
+      border-radius: 4px;
+      background-color: $view-background-medium;
+      border: 1px solid $border-color-light;
     }
 
     ul {

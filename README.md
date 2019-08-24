@@ -10,7 +10,7 @@ information being displayed for a selected kanji. You can browse screenshots for
 more of Acnicoy's features along with short explanations [here](http://phxstick.github.io/acnicoy/screenshots).
 They are also linked in the list of features further below.
 
-![Screenshot of Dictionary Section](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-dictionary.png)
+![Screenshot of Dictionary Section](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-dictionary-kanji-pane.png)
 
 
 Features
@@ -21,7 +21,7 @@ The basic features for every language include:
 * Add words to your vocabulary and organize them into lists.
   ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-vocab-section.png))
 * Review your vocabulary according to a spaced repetition scheduler.
-  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-test-section-1.png))
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-test-section-eval-phase.png))
 * Customize the review sessions, e.g. by switching to flashcard-mode.
   ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-test-settings.png))
 * Get an overview over scheduled reviews and items ready for review.
@@ -29,13 +29,13 @@ The basic features for every language include:
 * Adjust the spaced repetition system with custom intervals.
   ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-srs-schemes.png))
 * View statistics illustrating your learning progress.
-  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-stats-section.png))
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-stats-section-diagrams.png))
 * Write notes using Markdown syntax and organize them into groups.
   ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-notes-section.png))
 * Use shortcuts to speed up frequently used procedures.
   ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-shortcut-settings.png))
-* Change the design by choosing a color scheme or making your own.
-  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-shortcut-settings.png))
+* Change the design by switching to other color schemes.
+  ([screenshot](http://phxstick.github.io/acnicoy/img/screenshots/acnicoy-screenshot-design-settings.png))
 
 For learners of the Japanese language, the program additionally offers:
 

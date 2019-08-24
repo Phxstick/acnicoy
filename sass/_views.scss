@@ -15,7 +15,7 @@
 
     &:hover {
       background-color: $view-hover-background;
-      color: $view-hover-color;
+      color: $view-color-hover;
     }
     &.selected {
       background: $view-select-background;
@@ -27,8 +27,8 @@
     }
     &[contenteditable]:focus {
       outline: none;
-      color: $view-edit-color;
-      background-color: $input-background-focus; // $view-edit-background;
+      color: $view-color-edit;
+      background-color: $input-background-focus; // $item-view-edit-background;
       box-shadow: $input-highlight-shadow;
     }
   }
@@ -74,23 +74,24 @@
   > * {
     display: inline-block;
     padding: 5px;
-    border: 1px solid $border-color-dark;
+    border: 1px solid $item-view-border-color;
     border-radius: 6px;
-    background-color: $view-background-medium;
+    background-color: $item-view-background;
     margin-right: 5px;
     margin-bottom: 2px;
     min-width: 15px;
+    color: $item-view-color;
 
     &:hover {
-      background-color: $view-hover-background-light;
-      border-color: $view-hover-border-color;
-      color: $view-hover-color;
+      background-color: $item-view-hover-background;
+      border-color: $item-view-hover-border-color;
+      color: $item-view-hover-color;
     }
     &:focus {
       outline: none;
-      background-color: $view-edit-background;
-      border-color: $view-edit-border-color;
-      color: $view-edit-color;
+      background-color: $item-view-edit-background;
+      border-color: $item-view-edit-border-color;
+      color: $item-view-edit-color;
     }
     &:empty:before {  // For placeholder text
       color: $color-light;

@@ -102,7 +102,7 @@
       stroke-linecap: round;
       fill: transparent;
       &.highlighted {
-        stroke: $select-background;
+        stroke: $highlighted-text-color;
       }
     }
   }

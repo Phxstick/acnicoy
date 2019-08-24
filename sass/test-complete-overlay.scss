@@ -148,10 +148,10 @@
     --label-color-hover: #{$button-light-color-hover};
     --menu-background: #{$view-background-medium};
     --menu-color: #{$view-color};
-    --menu-background-hover: #{$view-hover-background-light};
-    --menu-color-hover: #{$view-color};
+    --menu-background-hover: #{$view-hover-background};
+    --menu-color-hover: #{$view-color-hover};
     --menu-background-selected: #{$view-hover-background};
-    --menu-color-selected: #{$view-hover-color};
+    --menu-color-selected: #{$view-color-hover};
     --menu-separator-color: #{$border-color-light};
   }
 }

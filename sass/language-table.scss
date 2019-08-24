@@ -80,7 +80,7 @@ tbody tr {
         background-color: $view-background;
       }
       &::-webkit-progress-value {
-        background-color: $highlight-background;
+        background-color: $progress-bar-fill-color;
       }
     }
   }

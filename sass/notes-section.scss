@@ -144,11 +144,11 @@ body {
 }
 
 .highlight-top {
-  box-shadow: 0 -2px 0 $highlight-background;
+  box-shadow: 0 -2px 0 $highlight-shadow-color;
 }
 .highlight-bottom {
   border-bottom-color: transparent;
-  box-shadow: 0 2px 0 $highlight-background;
+  box-shadow: 0 2px 0 $highlight-shadow-color;
 }
 
 #add-button {

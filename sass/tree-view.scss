@@ -83,8 +83,8 @@
       margin-left: -5px;
       padding-left: 5px;
       padding-right: 5px;
-      color: $view-edit-color;
-      background-color: $input-background-focus; // $view-edit-background;
+      color: $view-color-edit;
+      background-color: $input-background-focus; // $item-view-edit-background;
       box-shadow: $input-highlight-shadow;
     }
     &.dragover {
@@ -120,7 +120,7 @@ input.light {
   // Substract -5px from margin because of 5px padding (align with other nodes)
   margin-left: calc(var(--indentation-padding, 5px) * 3 - 5px);
   border-radius: 5px;
-  color: $view-edit-color;
+  color: $view-color-edit;
   background-color: $input-background-focus;
   box-shadow: $input-highlight-shadow;
 }

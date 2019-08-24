@@ -89,17 +89,10 @@ body {
       border-left: 1px solid $border-color-light;
     }
 
-    // &.disabled {
-    //   .search-results-info-header {
-    //     color: $color-light;
-    //   }
-    // }
-
     &.selected {
       background-color: $background-color;
       .search-results-info-header {
         color: $button-light-color-hover;
-        text-shadow: 0 0 1px $text-shadow-color;
       }
     }
 

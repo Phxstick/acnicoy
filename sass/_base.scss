@@ -1,3 +1,14 @@
+
+@function weaken($color, $percentage) {
+  @if $is-dark-scheme { @return darken($color, $percentage); }
+  @else { @return lighten($color, $percentage); }
+}
+
+@function strengthen($color, $percentage) {
+  @if $is-dark-scheme { @return lighten($color, $percentage); }
+  @else { @return darken($color, $percentage); }
+}
+
 @import "assets";
 @import "design";
 @import "variables";
@@ -18,7 +29,8 @@
 
   &::selection {
     color: $select-color;
-    background: $select-background;
+    // can't set alpha to 1 or else Chrome will display the color differently
+    background: rgba($select-background, 0.99);
   }
   &::-webkit-scrollbar {
     width: $scrollbar-width + 2 * $scrollbar-padding;
@@ -344,7 +356,7 @@ hr {
     cursor: $pointer-cursor;
     &:hover {
       background-color: $view-hover-background;
-      color: $view-hover-color;
+      color: $view-color-hover;
     }
   }
 
@@ -475,6 +487,9 @@ hr {
     > li:not(:last-child) {
       margin-bottom: 5px;
     }
+  }
+  strong {
+    color: $color-dark;
   }
 }
 

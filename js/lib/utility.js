@@ -1037,6 +1037,7 @@ async function takeScreenshot(name, outputDirectory, includeBorder=true) {
     const screenshot = await browserWindow.capturePage({
         x: 0, y: 0, width: window.innerWidth, height: window.innerHeight });
 
+    if (outputDirectory === undefined) outputDirectory = "screenshots";
     if (!fs.existsSync(outputDirectory)) {
         fs.mkdirSync(outputDirectory);
     }
@@ -1058,7 +1059,7 @@ async function takeScreenshot(name, outputDirectory, includeBorder=true) {
     context.imageSmoothingEnabled = false;
     context.fillStyle = "#000000";
     context.fillRect(0, 0, imgWidth, imgHeight);
-    context.drawImage(image, 1, 1, imgWidth - 1, imgHeight -1);
+    context.drawImage(image, 1, 1, window.innerWidth, window.innerHeight);
     const dataUrl = canvas.toDataURL("image/png");
     const data = dataUrl.replace(/^data:image\/png;base64,/, "");
     fs.writeFileSync(filepath, data, "base64");

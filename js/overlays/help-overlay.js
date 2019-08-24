@@ -105,7 +105,7 @@ class HelpOverlay extends Overlay {
                     } else if (linkPath[0] === "tour") {
                         const button = document.createElement("button");
                         button.textContent = link.textContent;
-                        button.classList.add("simple", "highlighted");
+                        button.classList.add("simple", "link");
                         button.addEventListener("click", () => {
                             main.startIntroTour(linkPath[1]);
                             overlays.closeTopmost();

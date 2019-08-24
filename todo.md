@@ -1,7 +1,3 @@
-- Make dark default color scheme
-- Update screenshots
-- Try to fix problem with antivirus programs
-
 ### Primary goals
 - Extend notes section:
   - Implement simple undo-function and add corresponding button to bar

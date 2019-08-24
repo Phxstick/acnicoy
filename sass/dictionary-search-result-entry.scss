@@ -42,6 +42,10 @@
     background-color: $dictionary-male-name-background;
     border-bottom: 1px solid darken($dictionary-male-name-background, 10%);
   }
+  &.tag-s {
+    background-color: $dictionary-surname-background;
+    border-bottom: 1px solid darken($dictionary-surname-background, 10%);
+  }
   // Diagonal stripes of male and female color if name has unspecified gender
   &.tag-g {
     $stripe-size: 30px;

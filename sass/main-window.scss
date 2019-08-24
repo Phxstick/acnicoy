@@ -107,19 +107,18 @@
       border-color: $main-window-border-color-hover;
     }
     &.highlighted {
-      box-shadow: 0 0 15px 2px $highlight-background;
-      background-color: $highlight-background;
-      border-color: $highlight-background;
-      text-shadow: 0 0 10px $highlight-color, 0 0 6px $highlight-color;
-      color: $highlight-color;
+      box-shadow: 0 0 15px 2px $notifications-button-highlight-background;
+      background-color: $notifications-button-highlight-background;
+      border-color: $notifications-button-highlight-background;
+      text-shadow: 0 0 10px $notifications-button-highlight-color,
+                   0 0 6px $notifications-button-highlight-color;
+      color: $notifications-button-highlight-color;
       &:hover {
-        $light-background: lighten($highlight-background, 15%);
-        $light-color: lighten($highlight-color, 15%);
-        box-shadow: 0 0 15px 2px $light-background;
-        background-color: $light-background;
-        border-color: $light-background;
-        text-shadow: 0 0 10px $light-color, 0 0 6px $light-color;
-        color: $light-color;
+        $light-bg: lighten($notifications-button-highlight-background, 6%);
+        box-shadow: 0 0 15px 2px $light-bg;
+        background-color: $light-bg;
+        border-color: $light-bg;
+        text-shadow: 0 0 6px lighten($notifications-button-highlight-color, 8%);
       }
     }
   }
@@ -379,7 +378,7 @@
   background-color: $background-color;
   border-radius: 8px;
   padding: 10px;
-  // box-shadow: 0 0 3px $dark-contrast-shadow-color;
+  box-shadow: 0 0 3px rgba($dark-contrast-shadow-color, 0.8);
 
   #intro-tour-textbox-content {
     font-size: 0.9rem;
@@ -391,7 +390,7 @@
       margin-bottom: 0;
     }
     em {
-      color: $highlight-background;
+      color: $highlighted-text-color;
       font-style: normal;
     }
     ul {

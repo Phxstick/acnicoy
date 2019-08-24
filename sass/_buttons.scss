@@ -93,12 +93,13 @@ button.no-shadow {
 }
 
 button.link {
+  text-decoration: none;
   color: $link-color;
   &:hover {
-    text-shadow: 0 0 2px $link-shadow-color-hover;
     color: $link-color-hover;
+    text-shadow: 0 0 2px $link-shadow-color-hover;
+    text-decoration: underline;
   }
-  text-decoration: underline;
 }
 
 .button-bar {
@@ -154,17 +155,5 @@ button.simple {
   }
   &:focus:not(:hover) {
     box-shadow: none;
-  }
-  &.highlighted {
-    color: $highlight-background;
-    border-color: $highlight-background;
-    &:hover {
-      color: darken($highlight-background, 5%);
-      border-color: darken($highlight-background, 5%);
-      box-shadow: 0 0 3px $highlight-background;
-    }
-    &:active {
-      box-shadow: $button-shadow-active;
-    }
   }
 }

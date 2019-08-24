@@ -28,7 +28,7 @@
     font-size: 110%;
 
     &.selected {
-      color: $highlight-background-dark;
+      color: $highlighted-text-color;
       text-shadow: $highlighted-text-shadow;
     }
   }
