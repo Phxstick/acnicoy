@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-  <title>{%- if page.title -%}{{ page.title }} | {%- endif -%}{{ site.program_name }}, tool for learning languages</title>
+  <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.program_name }}{% unless page.title %} | Tool for learning languages{% endunless %}</title>
   <base href="{{ site.baseurl }}/">
   <meta name="author" value="Phxstick">
   <meta charset="UTF-8">

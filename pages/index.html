@@ -2,25 +2,35 @@
 permalink: /
 styles:
   - index
+scripts:
+  - index
+downloads_url: "https://github.com/Phxstick/Acnicoy/releases/latest"
 ---
 <h1 id="main-header">{{site.program_name}}</h1>
 <div class="info">Modern tool for learning Japanese and other languages.</div>
 <div class="info">
   Built on <a href="http://electronjs.org/">Electron</a>
-  for Linux, Windows and Mac OS.
+  for Linux, Windows and macOS.
 </div>
 <div class="info">
-  Check out its <a href="screenshots">features</a>, illustrated using screenshots.
+  Check out its <a href="screenshots">features</a>, illustrated with screenshots.
 </div>
 <div id="downloads-container">
   <div>
     <div class="download-wrapper">
-      <button class="download-button">Download for Windows</button>
+      <a id="download-for-windows" class="download-link"
+         href="{{page.downloads_url}}">Download for Windows</a>
+      <div id="download-details-windows" class="download-details">
+        64 bit, portable, zip, <span id="download-size-windows"></span> MB</div>
     </div>
   </div>
   <div>
     <div class="download-wrapper">
-      <button class="download-button">Download for Linux</button>
+      <a id="download-for-linux" class="download-link"
+         href="{{page.downloads_url}}">Download for Linux</a>
+      <div id="download-details-linux" class="download-details">
+        64 bit, portable, tar.gz, <span id="download-size-linux"></span> MB</div>
     </div>
   </div>
 </div>
+<a id="download-page-link" href="{{page.downloads_url}}">View all download options and release notes</a>

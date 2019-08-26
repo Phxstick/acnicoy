@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
             viewerCanvas.appendChild(description);
 
             // Move the image and description up so that everything is centered
-            const descriptionHeight = description.offsetHeight;
+            const descriptionHeight = Math.max(55, description.offsetHeight);
             let moveOffsetY = Math.min(availableMarginY, descriptionHeight / 2);
             if (moveOffsetY < descriptionHeight / 2) {
                 // If there's not enough space, at least make sure that the
@@ -93,6 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Remove last linebreak from title if given (to compress text)
             let titleText = screenshots[index].dataset.title;
+            titleText = titleText.replace(/<br>/g, " ");
             const lastBreakPos = titleText.lastIndexOf("<br>");
             if (lastBreakPos > 0) titleText = titleText.slice(0, lastBreakPos)
                 + " " + titleText.slice(lastBreakPos + 4);

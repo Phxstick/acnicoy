@@ -7,13 +7,25 @@
   background-color: rgba(50, 50, 50, 0.5);
   color: whitesmoke;
   text-shadow: 1px 1px 1px black, 1px 1px 3px black;
+  padding-bottom: 10px;
+  box-sizing: border-box;
 }
 
 // And background image to body
 body {
   background-repeat: no-repeat;
-  background-image: url("../img/background.jpg");
   background-size: cover;
+}
+
+@media screen and (max-width: 1366px) {
+  body {
+    background-image: url("../img/background-1366x768.jpg");
+  }
+}
+@media screen and (min-width: 1367px) and (max-width: 1920px) {
+  body {
+    background-image: url("../img/background-1920x1080.jpg");
+  }
 }
 
 // Make navbar transcluent above the background image
@@ -37,14 +49,12 @@ body {
 }
 
 a {
-  text-decoration: none;
-
   &:link, &:visited {
-    color: lighten(salmon, 5%);
+    color: #fbbb8b;  // Similar to salmon, but lighter
   }
 
   &:hover {
-    color: lighten(lightsalmon, 10%);
+    color: darken(lightsalmon, 5%);
   }
 }
 
@@ -52,7 +62,7 @@ a {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  padding-top: 30px;
+  padding-top: 15px;
 
   > *:not(:last-child) {
     padding-right: 30px;
@@ -60,14 +70,22 @@ a {
   }
 }
 
-.download-button {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 12px;
+.download-link {
+  display: block;
   font-size: 1.5rem;
   transition: box-shadow 0.15s, background-color 0.15s;
   background-color: rgba(255, 255, 255, 0.05);
-  color: #eee;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding-top: 8px;
+  padding-bottom: 10px;
+  padding-left: 16px;
+  padding-right: 16px;
+  user-select: none;
+
+  &:link, &:visited {
+    color: #eee;
+  }
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.15);
@@ -76,3 +94,14 @@ a {
   }
 }
 
+.download-details {
+  margin-top: 5px;
+  color: #ddd;
+  text-align: center;
+}
+
+#download-page-link {
+  text-align: center;
+  display: block;
+  margin-top: 30px;
+}

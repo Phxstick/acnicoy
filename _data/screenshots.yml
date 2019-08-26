@@ -34,7 +34,7 @@
         (the dictionary feature is currently only supported for the Japanese language)
       filename: "acnicoy-screenshot-dictionary.png"
 
-    - label: "Adding words<br>from dictionary"
+    - label: "Adding words<br>from the dictionary"
       description: >
         Conveniently add words straight from the dictionary with just a few clicks.<br>
         You can select specific translations using the suggestions on the right side.
