@@ -50,10 +50,10 @@ $button-light-color-hover: $color;
 $button-light-icon-color: weaken($color-light, 5%);
 $button-light-icon-color-lightest: weaken($color-light, 15%);
 $button-light-icon-color-hover: strengthen($color-light, 5%);
-$button-light-shadow-color-active: weaken($button-light-color, 20%);
+$button-light-shadow-color-active: weaken($button-light-color, 30%);
 
 // Highlighting and selection
-$select-color: white;
+$select-color: #eee;
 $select-background: $blue-dimmed;
 $highlighted-text-color: $secondary-color;
 $highlighted-text-shadow-color: black;  // Only in SRS status overview
@@ -66,7 +66,7 @@ $highlight-shadow-color: $highlighted-text-color;
 // Views
 $view-color: $color;
 $view-color-hover: $color-dark;
-$view-color-edit: $view-color-hover;
+$view-color-edit: mix($color-dark, $color, 40%);
 $view-color-greyed-out: weaken($color-lightest, 3%);
 $view-background: $view-bg;
 $view-background-medium: mix($view-background, $background-color, 60%);
@@ -151,7 +151,7 @@ $main-window-background: lighten($weak-bg, 5%);
 $main-window-background-hover: lighten($main-window-background, 5%);
 $main-window-background-light: lighten($main-window-background, 5%);
 $main-window-background-lightest: lighten($main-window-background-light, 5%);
-$main-window-color: #909090;
+$main-window-color: #999;
 $main-window-color-light: lighten($main-window-color, 10%);
 $main-window-color-lightest: lighten($main-window-color-light, 5%);
 $main-window-color-hover: $main-window-color-lightest;
@@ -168,7 +168,7 @@ $button-background-hover: lighten($button-background, 4%);
 $button-background-active: $button-background-hover;
 $button-background-selected: lighten($button-background, 8%);
 $button-border-color: lighten($button-background, 6%);
-$button-shadow-color-active: lighten($button-background-active, 12%);
+$button-shadow-color-active: lighten($button-background-active, 6%);
 
 // Notifications button
 $notifications-button-highlight-background: darken($orange, 10%);
@@ -176,12 +176,15 @@ $notifications-button-highlight-color: white;
 
 // Loading window
 $loading-window-background: $main-window-background;
-$loading-window-color: $main-window-color-light;
+$loading-window-color: lighten($main-window-color-light, 10%);
 
 // Sections
 $section-background: lighten($weak-bg, 6%);
 $section-color: $color;
 $section-content-shadow-color: $color;
+$section-scrollbar-color: rgba(white, 0.20);
+$section-scrollbar-color-hover: rgba(white, 0.35);
+$section-scrollbar-color-active: rgba(white, 0.5);
 
 // Tooltips
 $tooltip-background: $main-window-background;
@@ -189,31 +192,34 @@ $tooltip-color: $color;
 $tooltip-shadow-color: $color;
 
 // Background dimming
-$panel-dim-background: rgba(0, 0, 0, 0.6);
-$panel-dim-background-dark: rgba(0, 0, 0, 0.9);
+$panel-dim-background: rgba(20, 20, 20, 0.64);
+$panel-dim-background-dark: rgba(20, 20, 20, 0.92);
 $overlay-dim-background: rgba(0, 0, 0, 0.7);
 
 // Suggestion window
-$suggestions-window-color: rgba(white, 0.9);
-$suggestion-background: rgba(white, 0.7);
-$suggestion-background-hover: rgba(white, 0.8);
-$suggestion-background-selected: rgba(whitesmoke, 0.96);
-$suggestion-color: black;
-$suggestion-color-hover: black;
-$suggestion-color-selected: lighten(black, 20%);
+$suggestions-window-color: $color;
+$suggestion-background: #121212;
+$suggestion-background-hover: lighten($suggestion-background, 6%);
+$suggestion-background-selected: darken($select-background, 18%);
+$suggestion-color: $color;
+$suggestion-color-hover: mix($color, $color-dark, 40%);
+$suggestion-color-selected: $color-dark;
+$suggestion-border-color: #404040;
+$suggestion-border-color-hover: lighten($suggestion-border-color, 14%);
+$suggestion-border-color-selected: $select-background;  // #888;
 $suggestion-group-selector-hover-background: rgba(white, 0.35);
 
 // =============================================================================
 //   Specific colors
 // =============================================================================
 
-$dictionary-frequent-words-background: rgba(0, 48, 0, 0.26);
+$dictionary-frequent-words-background: rgba(0, 32, 0, 0.3);
 $dictionary-frequent-words-border-color: rgba(green, 0.4);
-$dictionary-frequent-words-color: strengthen($color, 6%);
+$dictionary-frequent-words-color: weaken($color, 7%);
 
-$dictionary-semi-frequent-words-background: rgba(0, 48, 0, 0.16);
+$dictionary-semi-frequent-words-background: rgba(0, 32, 0, 0.16);
 $dictionary-semi-frequent-words-border-color: rgba(green, 0.3);
-$dictionary-semi-frequent-words-color: strengthen($color, 3%);
+$dictionary-semi-frequent-words-color: weaken($color, 3.5%);
 
 $dictionary-male-name-background: desaturate(midnightblue, 30%);
 $dictionary-female-name-background: rgba(plum, 0.15);

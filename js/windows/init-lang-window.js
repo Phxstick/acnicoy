@@ -3,6 +3,9 @@
 class InitLangWindow extends Window {
     constructor() {
         super("init-lang");
+        this.$("help-link").addEventListener("click", () => {
+            overlays.open("help", ["Components", "SRS"]);
+        });
         this.$("continue-button").addEventListener("click", () => {
             const configs = this.$("language-table").getLanguageConfigs();
             if (configs.length === 0) {

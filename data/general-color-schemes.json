@@ -8,19 +8,19 @@
     "default-dark": {
         "name": "Dark",
         "loadBg": "#3b3b3b",
-        "generalBg": "#2b2b2b", "highlightBg": "#3c5d78", "navBg": "#3b3b3b",
-        "generalFg": "#b0b0b0", "highlightFg": "#ffffff", "navFg": "#909090"
+        "generalBg": "#2b2b2b", "highlightBg": "#3c5d78", "navBg": "#404040",
+        "generalFg": "#b0b0b0", "highlightFg": "#eeeeee", "navFg": "#999999"
     },
     "solarized-light": { 
         "name": "Solarized Light",
         "loadBg": "#586e75",
         "generalBg": "#f6efdc", "highlightBg": "#da7e54", "navBg": "#586e75",
-        "generalFg": "#46585e", "highlightFg": "#ffffff", "navFg": "#d8d6c7"
+        "generalFg": "#46585e", "highlightFg": "#fdf6e3", "navFg": "#d8d6c7"
     },
     "solarized-dark": {
         "name": "Solarized Dark",
         "loadBg": "#003745",
         "generalBg": "#04313c", "highlightBg": "#196468", "navBg": "#003745",
-        "generalFg": "#a1adad", "highlightFg": "#ffffff", "navFg": "#75888a"
+        "generalFg": "#a1adad", "highlightFg": "#e8e8e8", "navFg": "#75888a"
     }
 }

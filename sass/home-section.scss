@@ -17,6 +17,8 @@ body {
   > * {
     display: block;
     box-shadow: $wide-shadow;
+    border-radius: 5px;
+
     &:not(:last-child) {
       margin-bottom: 12px;
     }

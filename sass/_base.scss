@@ -55,12 +55,12 @@
   }
 
   &.inverse-scrollbar::-webkit-scrollbar-thumb {
-    background-color: mix($background-color, $section-background, 78%);
+    background-color: $section-scrollbar-color;
     &:hover {
-      background-color: mix($background-color, $section-background, 96%);
+      background-color: $section-scrollbar-color-hover;
     }
     &:active {
-      background-color: lighten($background-color, 3%);
+      background-color: $section-scrollbar-color-active;
     }
   }
 }
@@ -140,7 +140,7 @@ body {
   --tooltip-delay: 0.4s;
   &:hover {
     text-shadow: 0 0 2px $link-shadow-color-hover;
-    color: $link-color-hover;
+    color: $link-color;
   }
   cursor: $pointer-cursor;
 }
@@ -183,7 +183,6 @@ hr {
   border: 0px;
   height: 1px;
   background-color: $border-color-medium;
-  background-clip: content-box;
   margin-top: 12px;
   margin-bottom: 12px;
   margin-left: 0;
@@ -361,10 +360,8 @@ hr {
   }
 
   hr {
-    margin-top: 2px;
-    margin-bottom: 2px;
-    padding-top: 5px;
-    padding-bottom: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
   }
 }
 

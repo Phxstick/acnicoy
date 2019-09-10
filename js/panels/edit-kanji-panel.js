@@ -282,11 +282,6 @@ class EditKanjiPanel extends EditPanel {
             info.onYomi.length > 0)
         this.$("srs-level-kun-yomi").parentNode.toggleDisplay(
             info.kunYomi.length > 0)
-
-        // Fade content at view borders if there are overflows
-        this.$("meanings-wrapper").fadeContentAtBorders(this.fadeDistance);
-        this.$("on-yomi-wrapper").fadeContentAtBorders(this.fadeDistance);
-        this.$("kun-yomi-wrapper").fadeContentAtBorders(this.fadeDistance);
     }
 
     createListItem(type, text="") {

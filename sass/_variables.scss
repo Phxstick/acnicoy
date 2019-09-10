@@ -53,3 +53,17 @@ $contrast-text-shadow: 0.5px 0.5px 0.5px $contrast-shadow-color,
 $vertical-fading-border: linear-gradient(
   to bottom, transparent, $border-color-dark, transparent) 0 100%;
 
+// Some default values for unassigned variables
+$suggestion-border-color: transparent !default;
+$suggestion-border-color-hover: transparent !default;
+$suggestion-border-color-selected: transparent !default;
+
+$section-scrollbar-color:
+  mix($background-color, $section-background, 78%) !default;
+$section-scrollbar-color-hover:
+  mix($background-color,$section-background,96%) !default;
+$section-scrollbar-color-active:
+  lighten($background-color, 3%) !default;
+
+$kanji-overview-color: $link-color !default;
+$kanji-overview-color-hover: $link-color-hover !default;

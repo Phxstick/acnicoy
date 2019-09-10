@@ -41,8 +41,12 @@ class ShortcutsSettingsSubsection extends SettingsSubsection {
         for (const label of shortcutLabels) {
             events.on(`settings-shortcuts-${label.dataset.name}`, () => {
                 if (label.dataset.builtin !== undefined) {
-                    label.textContent = label.dataset.builtin + " / " +
-                        shortcuts.getBoundKeyCombination(label.dataset.name);
+                    if (!shortcuts.getBoundKeyCombination(label.dataset.name)) {
+                        label.textContent = label.dataset.builtin;
+                    } else {
+                        label.textContent = label.dataset.builtin + " / " +
+                            shortcuts.getBoundKeyCombination(label.dataset.name)
+                    }
                 } else {
                     label.textContent =
                         shortcuts.getBoundKeyCombination(label.dataset.name);

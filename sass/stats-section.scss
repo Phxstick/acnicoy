@@ -9,8 +9,9 @@ body {
 .frame {
   background-color: $view-background-dark;
   color: $view-color;
-  box-shadow: $slim-frame-shadow;
+  box-shadow: $wide-shadow;
   margin: 10px;
+  border-radius: 5px;
 }
 
 #kanji-stats, #hanzi-stats {

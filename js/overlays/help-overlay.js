@@ -113,6 +113,11 @@ class HelpOverlay extends Overlay {
                         link.parentNode.insertBefore(button, link);
                         link.parentNode.removeChild(link);
                         link.remove();
+                        // Make sure that tour is not accessible before main
+                        // window has loaded (can use any event here, as long
+                        // as it's not fired before initialization has finished)
+                        button.hide();
+                        events.once("settings-loaded", () => button.show());
                     }
                 }
             }

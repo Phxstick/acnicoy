@@ -32,15 +32,14 @@
     padding-top: 2px;
     padding-bottom: 8px;
 
-    &:not(:last-child) {
-      border-right: 1px solid $border-color-medium;
+    &:not(:first-child) {
+      border-left: 1px solid $border-color-medium;
     }
 
     .stat-value {
       display: inline-block;
       font-family: $light-font;
       font-size: 200%;
-      margin-right: 8px;
     }
 
     .stat-name {

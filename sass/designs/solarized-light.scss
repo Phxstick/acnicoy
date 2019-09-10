@@ -60,7 +60,7 @@ $button-light-shadow-color-active: lighten($button-light-color, 25%);
 // Views
 $view-color: $fg-darkest;
 $view-color-hover: $bg-dark;
-$view-color-edit: $view-color-hover;
+$view-color-edit: mix($color-dark, $color, 40%);
 $view-color-greyed-out: lighten($color-lightest, 3%);
 $view-background: $bg-light;
 $view-background-medium: mix($bg-light, $bg-light-darker, 80%);
@@ -80,7 +80,7 @@ $input-border-color-hover: $border-color-dark;
 
 // Icon colors
 $color-negative: $orange;
-$color-positive: darken($green, 5%);
+$color-positive: darken($green, 2%);
 $close-button-color: lighten($red, 20%);
 $warning-icon-color: lighten($orange, 20%);
 $info-icon-color: lighten($blue, 10%);
@@ -96,7 +96,7 @@ $add-button-shadow-color: lighten($add-button-color, 35%);
 // =============================================================================
 
 // General highlight / select
-$select-color: white;
+$select-color: $bg-light;
 $select-background: mix($orange, $view-background, 70%);  // rgba($orange, 0.6);
 $highlighted-text-shadow-color: lighten($orange, 45%);
 $highlighted-text-color: lighten(mix($orange, $color, 80%), 3%);
@@ -113,7 +113,7 @@ $view-select-background-hover: $view-select-background;
 $item-view-background: $view-background-medium;
 $item-view-color: $view-color;
 $item-view-border-color: $border-color-medium;
-$item-view-hover-background: rgba($orange, 0.03);
+$item-view-hover-background: $view-background;
 $item-view-hover-color: $view-color-hover;
 $item-view-hover-border-color: $border-color-darkest;
 $item-view-edit-background: $view-background;  // #fde8ec;
@@ -214,21 +214,21 @@ $suggestion-group-selector-hover-background: rgba(white, 0.35);
 $dictionary-frequent-words-base: lighten($green, 12%);
 
 $dictionary-frequent-words-background:
-  mix($view-background, $dictionary-frequent-words-base, 82%);
+  mix($view-background, $dictionary-frequent-words-base, 84%);
 $dictionary-frequent-words-border-color:
-  mix($dictionary-frequent-words-base, $border-color-dark, 50%);
-$dictionary-frequent-words-color: darken($color, 4%);
+  mix($dictionary-frequent-words-base, $border-color-medium, 35%);
+$dictionary-frequent-words-color: darken($color, 3%);
 
 $dictionary-semi-frequent-words-background:
-  mix($view-background, $dictionary-frequent-words-base, 90%);
+  mix($view-background, $dictionary-frequent-words-base, 92%);
 $dictionary-semi-frequent-words-border-color:
-  mix($dictionary-frequent-words-base, $border-color-medium, 50%);
-$dictionary-semi-frequent-words-color: darken($color, 2%);
+  mix($dictionary-frequent-words-base, $border-color-light, 35%);
+$dictionary-semi-frequent-words-color: darken($color, 1.5%);
 
-$dictionary-male-name-background: #E1F3FE;  // shade of 'lightskyblue'
-$dictionary-female-name-background: #FFF0F3;  // shade of 'lightpink'
-$dictionary-place-name-background: #EDE1D1;  // shade of 'tan'
-$dictionary-surname-background: #F0E0F7;  // shade of 'darkorchid'
+$dictionary-male-name-background: mix(#e1f3fe, $bg-light, 60%);
+$dictionary-female-name-background: #fff0f3;  // shade of 'lightpink'
+$dictionary-place-name-background: mix(#ede1d1, $bg-light, 65%);
+$dictionary-surname-background: lighten(#f0e0f7, 1%);  // shade of 'darkorchid'
 
 // Kanji stroke SVGs
 $kanji-strokes-color: $color-lightest;

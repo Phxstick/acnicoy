@@ -44,6 +44,7 @@ class EditPanel extends Panel {
 
     createListItem(type, text="", createNewItemOnEnter=true) {
         const viewNode = this.viewNodes[type];
+        const viewWrapper = viewNode.parentNode;  // Scrollable wrapper
 
         // Check if an item with this text already exists
         for (const otherNode of viewNode.children) {
@@ -129,13 +130,22 @@ class EditPanel extends Panel {
 
         // Insert item into DOM and attach a context-menu
         viewNode.appendChild(node);
-        viewNode.scrollToBottom();
+
+        // If this is a new item, scroll it into view completely
+        if (text.length === 0) {
+            viewWrapper.scrollToBottom();
+        // If view is not scrolled, manually trigger update of edge gradients
+        } else {
+            viewWrapper.fadeContentAtBorders(this.fadeDistance);
+        }
 
         return node;
     }
 
     removeListItem(type, text) {
         const viewNode = this.viewNodes[type];
+        const viewWrapper = viewNode.parentNode;  // Scrollable wrapper
+
         // If a text is given, remove the node with this text (if it exists)
         if (text !== undefined) {
             for (const node of viewNode.children) {
@@ -148,6 +158,9 @@ class EditPanel extends Panel {
         } else {
             viewNode.empty();
         }
+
+        // Update gradients at edges indicating overflow
+        viewWrapper.fadeContentAtBorders(this.fadeDistance);
     }
 
     getListItems(type) {

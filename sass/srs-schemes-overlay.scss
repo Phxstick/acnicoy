@@ -43,9 +43,7 @@
 
       > div {
         font-size: 1.1rem;
-        padding: 5px;
-        padding-top: 10px;
-        padding-bottom: 10px;
+        padding: 8px;
         cursor: $pointer-cursor;
       }
     }
@@ -127,10 +125,20 @@
         @extend input.trench;
       }
 
-      #scheme-levels {
-        overflow-y: auto;
-        flex-grow: 1;
+      #scheme-levels-wrapper {
         // let flex-shrink be 1 (default), so that only this part shrinks
+        flex-grow: 1;
+        position: relative;
+        @include fade-content-at-edges($background-color);
+      }
+
+      #scheme-levels {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        overflow-y: auto;
       }
 
       #scheme-levels > div {

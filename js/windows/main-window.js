@@ -506,7 +506,9 @@ class MainWindow extends Window {
         // Link achievements module to event emitter and do an initial check
         dataManager.achievements.setEventEmitter(events);
         events.on("achievement-unlocked", (info) => {
-            this.updateStatus(`Unlocked achievement '${info.achievementName}'!`)
+            const achievementName =
+                dataManager.achievements.getName(info.achievement, info.level);
+            this.updateStatus(`Unlocked achievement '${achievementName}'!`)
             this.addNotification("achievement-unlocked", info, true);
         });
         await dataManager.achievements.checkAll();
@@ -529,23 +531,23 @@ class MainWindow extends Window {
         app.closeWindow("loading");
 
         // Notify user if there are shortcuts without assigned key combinations
-        const notifyUnassigned = storage.get("show-shortcuts-unassigned-notice")
-        if (shortcuts.hasUnassigned()) {
-            if (notifyUnassigned || notifyUnassigned === undefined) {
-                storage.set("show-shortcuts-unassigned-notice", false);
-                const goToShortcuts = await dialogWindow.confirm(
-                    "For some of the newly added shortcuts, the default key " +
-                    "combinations collide with the currently assigned ones. " +
-                    "Do you want to assign new key combinations now?",
-                    false, "Notice");
-                if (goToShortcuts) {
-                    main.sections["settings"].openSubsection("shortcuts");
-                    main.openSection("settings");
-                }
-            }
-        } else if (!notifyUnassigned) {
-            storage.set("show-shortcuts-unassigned-notice", true);
-        }
+        // const notifyUnassigned = storage.get("show-shortcuts-unassigned-notice")
+        // if (shortcuts.hasUnassigned()) {
+        //     if (notifyUnassigned || notifyUnassigned === undefined) {
+        //         storage.set("show-shortcuts-unassigned-notice", false);
+        //         const goToShortcuts = await dialogWindow.confirm(
+        //             "For some of the newly added shortcuts, the default key " +
+        //             "combinations collide with the currently assigned ones. " +
+        //             "Do you want to assign new key combinations now?",
+        //             false, "Notice");
+        //         if (goToShortcuts) {
+        //             main.sections["settings"].openSubsection("shortcuts");
+        //             main.openSection("settings");
+        //         }
+        //     }
+        // } else if (!notifyUnassigned) {
+        //     storage.set("show-shortcuts-unassigned-notice", true);
+        // }
     }
 
     async close() {
@@ -616,7 +618,7 @@ class MainWindow extends Window {
         if (!onStart) overlays.closeTopmost();
     }
 
-    async openSection(name, noFading=false) {
+    async openSection(name, noFading=false, args=[]) {
         if (this.fadingOutPreviousSection) {
             this.nextSection = name;
             return;
@@ -665,7 +667,7 @@ class MainWindow extends Window {
             this.sections[this.nextSection].show();
         }
         await utility.finishEventQueue();
-        this.sections[this.nextSection].open();
+        this.sections[this.nextSection].open(...args);
     }
 
     async openPanel(name, { dictionaryId, entryName, isProperName=false }={}) {
@@ -858,7 +860,7 @@ class MainWindow extends Window {
         this.$("filter").classList.remove("dark");
     }
 
-    async toggleBarVisibility() {
+    async toggleBarVisibility(easing="ease-in-out") {
         Velocity(this.$("side-bar"), "stop");
         Velocity(this.$("menu-bar"), "stop");
         let prom = Promise.resolve();
@@ -866,22 +868,24 @@ class MainWindow extends Window {
             if (this.barsHidden) {
                 prom = Velocity(this.$("side-bar"),
                     { "width": this.sideBarWidth },
-                    { complete: () => {
+                    { easing, complete: () => {
                           this.$("side-bar").style.overflow = "initial"; }})
                 Velocity(this.$("menu-bar"), { "height": this.menuBarHeight },
-                    { complete: () => {
+                    { easing, complete: () => {
                           this.$("menu-bar").style.overflow = "initial"; }})
             } else {
                 this.$("menu-bar").style.overflow = "hidden";
                 this.$("side-bar").style.overflow = "hidden";
-                prom = Velocity(this.$("side-bar"), { "width": "0px" });
-                Velocity(this.$("menu-bar"), { "height": "0px" });
+                prom = Velocity(this.$("side-bar"), { "width": "0px" },
+                                                    { easing });
+                Velocity(this.$("menu-bar"), { "height": "0px" }, { easing });
             }
         } else {
             this.$("side-bar").toggleDisplay(this.barsHidden, "flex");
             this.$("menu-bar").toggleDisplay(this.barsHidden, "flex");
         }
         this.barsHidden = !this.barsHidden;
+        this.$("bottom").classList.toggle("stretch", this.barsHidden);
         await prom;
     }
 
@@ -1451,9 +1455,17 @@ class MainWindow extends Window {
             delete textboxPos.top;
             textboxPos.bottom = windowEdgePadding;
         }
+        if (textboxPos.bottom + textboxHeight > totalHeight-windowEdgePadding) {
+            delete textboxPos.bottom;
+            textboxPos.top = windowEdgePadding;
+        }
         if (textboxPos.left + textboxWidth > totalWidth - windowEdgePadding) {
             delete textboxPos.left;
             textboxPos.right = windowEdgePadding;
+        }
+        if (textboxPos.right + textboxWidth > totalWidth - windowEdgePadding) {
+            delete textboxPos.right;
+            textboxPos.left = windowEdgePadding;
         }
         // Draw arrow pointing to the element in focus
         const arrowToElementGap = 3;

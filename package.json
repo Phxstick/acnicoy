@@ -20,7 +20,7 @@
   ],
   "devDependencies": {
     "autoprefixer": "^9.1.3",
-    "electron": "^6.0.0",
+    "electron": "^6.0.4",
     "electron-builder": "^21.2.0",
     "glob": "^7.1.1",
     "gulp": "^4.0.2",

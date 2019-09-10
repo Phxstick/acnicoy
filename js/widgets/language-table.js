@@ -47,6 +47,7 @@ class LanguageTable extends Widget {
                 await dataManager.languages.add(language, config.settings);
                 await dataManager.load(language);
                 events.emit("language-added", language);
+                events.emit("update-srs-status-cache");
             }
             config.interactiveMode = this.interactiveMode;
 
@@ -168,6 +169,7 @@ class LanguageTable extends Widget {
                     }
                 }
                 await dataManager.languages.remove(config.language);
+                events.emit("update-srs-status-cache");
             }
             this.languageConfigs.remove(config);
             this.languageToConfig.delete(config.language);

@@ -89,7 +89,8 @@ $group-number-width: 25px;
     display: inline-block;
     cursor: $pointer-cursor;
     color: $suggestion-color;
-    padding: 5px;
+    padding: 4px;
+    border: 1px solid $suggestion-border-color;
     background-color: $suggestion-background;
     border-radius: 6px;
     margin-right: 5px;
@@ -98,10 +99,12 @@ $group-number-width: 25px;
     &:hover {
       background-color: $suggestion-background-hover;
       color: $suggestion-color-hover;
+      border-color: $suggestion-border-color-hover;
     }
     &[selected] {
       background-color: $suggestion-background-selected;
       color: $suggestion-color-selected;
+      border-color: $suggestion-border-color-selected;
     }
   }
 }

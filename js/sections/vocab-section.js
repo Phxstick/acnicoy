@@ -109,6 +109,9 @@ class VocabSection extends Section {
         this.currentSelection = new Set();
         this.selectionTarget = null;
 
+        this.$("rename-list-button").hide();
+        this.$("delete-list-button").hide();
+        this.$("test-on-list-button").hide();
         this.$("search-kanji-by-on-yomi-entry").enableKanaInput("katakana");
         this.$("search-kanji-by-kun-yomi-entry").enableKanaInput("hiragana");
         this.$("search-hanzi-by-readings-entry").enablePinyinInput();
@@ -1066,7 +1069,7 @@ class VocabSection extends Section {
         events.emit("vocab-list-deselected");
     }
 
-    startTestOnVocabLists(nodes) {
+    async startTestOnVocabLists(nodes) {
         let totalAmountOfWords = 0;
         const listNames = [];
         for (const node of nodes) {
@@ -1083,9 +1086,8 @@ class VocabSection extends Section {
             }
             return;
         }
-        main.sections["test"].createTest(listNames).then((created) => {
-            if (created) main.openSection("test");
-        });
+        const noOtherSessionActive = await main.sections["test"].abortSession();
+        if (noOtherSessionActive) main.openSection("test", true, [listNames]);
     }
 
     // =====================================================================

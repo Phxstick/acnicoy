@@ -1,30 +1,15 @@
-### Primary goals
-- Extend notes section:
-  - Implement simple undo-function and add corresponding button to bar
-  - Implement multiple selection
-  - Option to decrease font size and padding to see more groups at once?
-  - Make it possible to reorder groups via drag & drop
-  - Allow resizing group-overview and remember custom size
-  - Make sure no bugs in view can happen due to asynchronicity
-  - Make sure that displayed label in group search identifies group uniquely
-  - Somehow invalidate notes in search result if group is deleted
-  - Add shortcuts for both searches + add-button
-- Use translations-font and readings-font in some places instead of vocab-font
-- Performance/Memory:
-  - Try to reduce memory consumption
-  - Call garbage collector after unloading language data to actually unload it?
-- Reverse completion list order if it's shown above entry instead of below
-  - Extend the utility view function for this purpose
+
+General
+--------------------------------------------------------------------------------
+
+- Rework functionality for detecting shortcut collisions
+- Implement selecting specific SRS levels for testing in the status overview
+
+### Extensions
 - Add most important missing features to dictionary search (see further below)
+- Extend notes section by most important features (see further below)
 - Add some more achievements and create achievements section
 - Implement changing order of translations by dragging while pressing Ctrl
-- Try to replace request module with axios and check if ESOCKETTIMEDOUTs stop
-- Add option in general settings to choose compact/extended/custom window size
-- Add loading screen where appropriate (loading vocab section, kanji view, ...)
-- Also consider notes when searching vocabulary items in vocab section?
-- Use String.matchAll for test comparisons after updating to Chome 73
-- Offer language data for EN if not available for the chosen source language?
-- Rework popup stack design in panels? (using borders and uniform colors)
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
@@ -33,55 +18,56 @@
 - Add overflow shadow to item solutions/notes in test-section again
 - How to prevent SQLITE conflicting journals accumulating in the dropbox folder?
 - Text-overflow in tree-view is not working anymore (node becomes invisible)
+- Changing the color scheme and not restarting leads to wrong colors being used
+  in places like the dictionary where colors are loaded dynamically
 
+### Performance
+- Use prepared statements for database accesses which are done repeatedly
+- Try to reduce memory consumption
+  - Don't attach separate context menu to every node in dict/kanji/vocab-section
+  - Cut down on event listeners (kanji/vocab section,
+    tooltips/context-menu/kanji-info-links)
+  - Call garbage collector after unloading language data to actually unload it?
+  - Remove example-words-index?
+  - Use JS for exact match search? (then translations table can be deleted)
+- Check if WAL size can exceed original database size
+- Run `VACUUM` on databases once in a while to clean up? Add button to settings?
+- Assign fixed width to side-bar and section-frame instead of flexing #bottom?
+  (don't forget to stretch section frame and use transition when hiding sidebar)
+- Consider adding HTML Canvas as option for bar diagram (and rename the widget)
+- Make searching for vocab lists faster by pre-sorting in datamanger already?
+- Make history view loading more efficient
+- Limit size of search history to a sensible value
+- Limit size of notifications list (since deleting one takes linear time there)
+- Make edit distance calculation more efficient using threshold
 
-By category
---------------------------------------------------------------------------------
+### Design
+- Use font-family "Trajan" for roman numerals?
+- Add color schemes based on Ubuntu colors
+- Use translations-font and readings-font in some places instead of vocab-font
+- Rework popup stack design in panels? (using borders and uniform colors)
 
-### General
-- Remove flickering when quickly dragging vocab item over list contents column
-  - Not a bug in Acnicoy - Events are just fired incorrectly
+### Misc
+- Offer language data for EN if not available for the chosen source language?
 - Improve policy for incorrectly answered SRS items
   - Don't always move down a level, but one with adjusted review time instead?
 - Implement reverse testing?
 - Define proper interface for global settings to detect modifications?
-- Run `VACUUM` on databases once in a while to clean up? Add button to settings?
 - Initialize json-file in local storage somewhere upon first program start?
-- For multi-language shortcuts, make sure to adjust text accordingly
-- Implement showing only vocab entries that are not part of a list yet
-- Implement program updating (make sure user data is saved before an update)
+- For multi-language shortcuts, adjust text accordingly
 - Add functionality for clearing histories
 - Implement program updating functionality (in general settings)
   - Handle the "update-program-status" event there instead
   - Make sure notifications are removed or updated whenever necessary!
   - Make sure no additional program file is loaded after start for safe update
-- Display number of notes in each group?
 - Disallow closing loading-overlay via shortcut?
-- Add option to increase font size in vocab section? (1.2 rem for JP/ZH)
+- Add loading screen where appropriate (loading vocab section, kanji view, ...)
+- Reverse completion list order if it's shown above entry instead of below?
+  - Extend the utility view function for this purpose
 
-### Design
-- Use font-family "Trajan" for roman numerals?
-- Make Ubuntu color schemes
-- Adjust scrollbars to corresponding background color so that they're always
-  visible well. Also consider using thin, rounded scrollbars with margin
 
-### Performance
-- Things got slower when reworking sass? Maybe because main window is flex now?
-  Replace with `calc(100% - x)` or `width: fill`?
-- Cut down on event listeners (kanji/vocab section,
-  tooltips/context-menu/kanji-info-links)
-- Why the significant performance degradation after doing something?
-- Check if WAL size can exceed original database size. How to save disk space?
-- Consider adding HTML Canvas as option for bar diagram (and rename the widget)
-- Use JS for exact match search? (then translations table can be deleted)
-- Remove example-words-index?
-- Make searching for vocab lists faster by pre-sorting in datamanger already
-- Don't attach separate context menu to every node in dict/kanji/vocab-section
-- Make history view loading more efficient
-- Limit size of search history to a sensible value
-- Use prepared statements for database accesses which are done repeatedly
-- Limit size of notifications list (since deleting one takes linear time there)
-- Make edit distance calculation more efficient using threshold
+Components
+--------------------------------------------------------------------------------
 
 ### Init window
 - Make init section feel more welcoming and less plain. Consider including a
@@ -96,24 +82,35 @@ By category
 - Make sure selective-dimmer canvas adjusts to window size on resizing
 - Add contrast shadow to introduction tour textbox? (solve arrow problem then)
 
-### Svg Bar Diagram
-- Use a shadow at both sides to show when scrolling is possible
-- Show percentage in top margin (if maxValues are given)
-- Display tooltips (showing e.g. "current/total") on hover when flag is set
+### Notes section
+- Implement simple undo-function and add corresponding button to bar
+- Implement multiple selection
+- Option to decrease font size and padding to see more groups at once?
+- Make it possible to reorder groups via drag & drop
+- Allow resizing group-overview and remember custom size
+- Make sure no bugs in view can happen due to asynchronicity
+- Make sure that displayed label in group search identifies group uniquely
+- Somehow invalidate notes in search result if group is deleted
+- Add shortcuts for both searches + add-button
+- Add option to display number of notes in each group?
 
 ### Test section
 - Re-evaluate answer after current item has been edited?
 - If item has been renamed, directly display change instead of skipping?
-- Implement a test-mode which just tests low-level items for each language?
 - `text-align: center` impairs fadeIn function. How to work around?
   - Add `text-align` to solution divs again
 - Also fade buttons in evaluation mode?
 - Fix overflow shadow in test section (and add to notes container as well)
 
+### Vocab section
+- Add option to increase font size in vocab section? (1.2 rem for JP/ZH)
+- Implement option to show only vocab entries that are not part of a list yet
+- Also consider associated notes when searching vocabulary?
+- Extend interface to allow access to functionality for sorting views
+
 ### Suggestion panes
 - Consider suggesting vocabulary lists when adding/editing words as well
   - Requires a dataset of predefined vocabulary lists
-- Use events to communicate changes between panel and suggestion pane?
 
 ### Migrate-srs-overlay
 - Make migrating SRS items safer by applying changes to a copy of data and
@@ -121,6 +118,11 @@ By category
   - Or rather use SQLITE3 transactions/savepoints/rollbacks
 - Make sure that connections starting from the same level are always connected
   to a *consecutive* row of levels (otherwise, disallow connection)?
+
+### Svg Bar Diagram
+- Use a shadow at both sides to show when scrolling is possible
+- Show percentage in top margin (if maxValues are given)
+- Display tooltips (showing e.g. "current/total") on hover when flag is set
 
 ### Content downloading
 - Round up download manager with hash checking?
@@ -135,6 +137,7 @@ By category
 - Why does an error occurr in the stream after the download successfully finished
 - Stop download after a certain number of read timeouts?
 - Display button to stop download or retry connecting upon connection timeout
+- Try to replace request module with axios and check if ESOCKETTIMEDOUTs stop
 
 ### Stats
 - Line diagram which shows cumulative growth of vocabulary over diff. periods
@@ -145,6 +148,7 @@ By category
 ### Settings
 - Unify main window animation-settings into a single one (include bar hiding)
 - Add save-button for user data somewhere (with last-saved label)?
+- Add option to choose compact/extended/custom window size?
 
 
 Japanese
@@ -210,6 +214,7 @@ Japanese
 - Implement different sorting criteria for kanji section overview
 - Extend list of counters (maybe find a website for that)
 - Consider parsing the kanjidic2.xml file instead, which contains 2x more kanji
+
 
 Future
 --------------------------------------------------------------------------------
@@ -284,8 +289,10 @@ Future
 - Offer small coding environment for creating cards with extended markdown
 - Link to here for each kanji detail in info panel (like country/measure/number)
 
+
 Code
 --------------------------------------------------------------------------------
+
 ### Naming
 - Rename panels into "panes" or "sliding-panes"?
 - Use folder "widgets" only for base widgets, put everything else directly into
@@ -341,7 +348,7 @@ once? --> Faster loading, centralized resource loading
   disable entity expansion - use lxml instead to keep dictionary tag names.
 - Remove font-awesome from github repo and add as node package instead
 
-### Adaptations
+### Changes
 - Don't assign font family for every element and let it be inherited instead
 - Use `position: sticky` for kanji info panel in kanji section?
 - use split function from sqlite instead of JS version?
@@ -354,3 +361,6 @@ once? --> Faster loading, centralized resource loading
 - Identify SRS schemes by ID instead of name!
 - Use advanced CSS width values where possible (`width: fill`);
 - Replace inputs in srs-schemes-overlay with content-editable attribute
+- Use events to communicate changes between panel and suggestion pane?
+- Use String.matchAll for test comparisons (now that Electron has Chrome 73+)
+

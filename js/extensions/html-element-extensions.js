@@ -95,7 +95,7 @@ HTMLElement.prototype.removeChildAt = function(index) {
  *  Scroll to the end of this element in a certain direction.
  */
 HTMLElement.prototype.scrollToBottom = function() {
-    this.scrollTop = this.scrollHeight;
+    this.scrollTop = this.scrollHeight - this.offsetHeight;
 }
 HTMLElement.prototype.scrollToRight = function() {
     this.scrollLeft = this.scrollWidth;
@@ -486,9 +486,9 @@ HTMLElement.prototype.removeTooltip = function () {
  * --bottom-shadow-height in the element, actual CSS must be applied separately.
  * The parent should not have the `overflow` property set and should contain the
  * gradients as pseudo-elements (and non-static `position` to be their anchor).
- * @param {Integer} [maxFadeDistance=30]
+ * @param {Integer} [maxFadeDistance=15]
  */
-HTMLElement.prototype.fadeContentAtBorders = function (maxFadeDistance=30) {
+HTMLElement.prototype.fadeContentAtBorders = function (maxFadeDistance=15) {
     if (this.scrollHeight <= this.clientHeight) {
         this.parentNode.style.setProperty("--top-shadow-height", `0px`);
         this.parentNode.style.setProperty("--bottom-shadow-height", `0px`);

@@ -99,6 +99,10 @@ class SrsSchemesOverlay extends Overlay {
             if (!event.target.classList.contains("remove-level-button")) return;
             this.$("scheme-levels").removeChild(event.target.parentNode);
         });
+        // Fade content at edges in case of overflow
+        this.$("scheme-levels").addEventListener("scroll", () => {
+            this.$("scheme-levels").fadeContentAtBorders();
+        });
     }
 
     open() {
@@ -132,6 +136,7 @@ class SrsSchemesOverlay extends Overlay {
             fragment.appendChild(this.createLevelItem(intervalText, seconds));
         }
         this.$("scheme-levels").appendChild(fragment);
+        this.$("scheme-levels").fadeContentAtBorders();
     }
 
     hideSchemeDetails(scheme) {
@@ -149,6 +154,7 @@ class SrsSchemesOverlay extends Overlay {
             this.$("scheme-name").textContent;
         this.$("scheme-description-input").value =
             this.$("scheme-description").textContent;
+        this.$("scheme-levels").fadeContentAtBorders();
     }
 
     exitEditMode() {
@@ -158,6 +164,7 @@ class SrsSchemesOverlay extends Overlay {
         if (this.selectedSchemeItem === null) {
             this.hideSchemeDetails();
         }
+        this.$("scheme-levels").fadeContentAtBorders();
     }
 
     async handleUnsavedChanges() {

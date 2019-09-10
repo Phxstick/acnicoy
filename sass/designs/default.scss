@@ -74,9 +74,9 @@ $add-button-shadow-color: coral;
 // General highlight / select
 $select-background: lighten(firebrick, 15%);
 $select-color: white;
-$highlighted-text-color: darken(crimson, 6%);
+$highlighted-text-color: darken(crimson, 8%);
 $highlighted-text-shadow-color: lighten(crimson, 40%);
-$highlight-shadow-color: darkred;
+$highlight-shadow-color: crimson;
 $input-border-color-focus: crimson;
 
 // List views
@@ -91,15 +91,15 @@ $item-view-color: $view-color;
 $item-view-border-color: $border-color-medium;
 $item-view-hover-background: lighten(peachpuff, 6%);
 $item-view-hover-color: $view-color-hover;
-$item-view-hover-border-color: darken($view-hover-background, 30%);
+$item-view-hover-border-color: darken($view-hover-background, 25%);
 $item-view-edit-background: #fde8ec;
 $item-view-edit-color: $view-color-edit;
 $item-view-edit-border-color: $input-border-color-focus;
 
 // Local links (to open another section/panel/overlay)
-$link-color: darkred;
+$link-color: lighten(darkred, 5%);
 $link-color-hover: darkred;
-$link-shadow-color-hover: lightsalmon;
+$link-shadow-color-hover: lighten(lightsalmon, 10%);
 
 // HTTP links
 $http-link-color: #b03636;

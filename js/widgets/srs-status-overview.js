@@ -15,13 +15,11 @@ class SrsStatusOverview extends PinwallWidget {
     connectedCallback() {
         this.updateListener = () => this.update();
         events.onAll(["srs-scheme-edited", "update-srs-status",
-                      "language-added", "language-removed",
                       "language-visibility-changed"], this.updateListener);
     }
 
     disconnectedCallback() {
         events.removeAll(["srs-scheme-edited", "update-srs-status",
-                          "language-added", "language-removed",
                           "language-visibility-changed"], this.updateListener);
     }
 

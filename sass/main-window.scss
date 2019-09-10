@@ -2,13 +2,10 @@
 
 #window {
   height: 100%;
-  display: flex;
-  flex-direction: column;
   position: relative;
   
   #bottom {
-    flex: 1;
-    // height: calc(100% - #{$menu-bar-height});
+    height: calc(100% - #{$menu-bar-height});
     display: flex;
     flex-direction: row;
     // Had to comment following out to prevent strange bugs with side-bar or
@@ -17,6 +14,12 @@
 
     #section-frame {
       flex: 1;
+    }
+
+    // For stretching the window upon hiding the side-bar and menu-bar
+    transition: height 0.4s ease-in-out;  // Keep equal to values in JS!
+    &.stretch {
+      height: 100%;
     }
   }
 }

@@ -99,6 +99,7 @@
     transition-property: background;
     transition-duration: $transition-duration;
     z-index: 1;  // Show up above the actual content despite being in front
+    pointer-events: none;
   }
   &::after {
     bottom: 0;
@@ -111,5 +112,6 @@
     right: $scrollbar-width + 2 * $scrollbar-padding;
     transition-property: background;
     transition-duration: $transition-duration;
+    pointer-events: none;
   }
 }

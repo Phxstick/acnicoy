@@ -112,7 +112,6 @@ class Application {
     async initLanguages() {
         const languages = dataManager.languages.find();
         if (languages.length === 0) {
-            this.closeWindow("loading");
             const configs = await this.openWindow("init-lang");
             this.openWindow("loading", "Creating language files...");
             const promises = [];
@@ -153,7 +152,6 @@ class Application {
             total = performance.now() - start;
             // console.log("Loaded all language content after %f ms", total);
         }
-        this.closeWindow("loading");
     }
 
     async initialize() {
@@ -194,6 +192,9 @@ class Application {
             await shortcuts.initialize();
         }
 
+        // Load registered languages. If none exist, let user register new ones
+        await this.initLanguages();
+
         // Create sections, panels and suggestion panes in main-window
         this.openWindow("loading", "Creating inferface...");
         await utility.finishEventQueue();
@@ -202,9 +203,7 @@ class Application {
             main.createPanels(),
             main.createSuggestionPanes()
         ]);
-
-        // Load registered languages. If none exist, let user register new ones
-        await this.initLanguages();
+        await utility.finishEventQueue();
 
         // Initialize stuff in main-window
         this.openWindow("main");

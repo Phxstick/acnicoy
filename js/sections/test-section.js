@@ -350,7 +350,7 @@ class TestSection extends Section {
         this.testInfo = null;
     }
     
-    open() {
+    open(vocabLists) {
         this.isOpen = true;
 
         // Reset colors since the color scheme might have been modified
@@ -359,7 +359,7 @@ class TestSection extends Section {
 
         // If no test session is currently running, create one
         if (this.testInfo === null) {
-            this.createTest();
+            this.createTest(vocabLists);
         } else {
             // Register shortcut for ignoring answer
             if (this.testInfo.inEvalStep &&

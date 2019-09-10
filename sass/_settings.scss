@@ -52,12 +52,15 @@
 
   &.fixed {
     background-color: $background-color-medium;
+    color: weaken($color, 6%);
+    border-color: weaken($border-color-medium, 7%);
   }
   &:not(.fixed) {
     cursor: $pointer-cursor;
     &:hover {
       background-color: $input-background-hover;
-      border-color: $border-color-dark;
+      border-color: strengthen($border-color-medium, 8%);
+      color: $color-dark;
     }
   }
 }

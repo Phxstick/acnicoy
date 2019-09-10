@@ -2,13 +2,20 @@ appId: "com.electron.acnicoy"
 productName: "Acnicoy"
 artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
 publish: "github"
+nsis:
+  oneClick: false
+  artifactName: "${productName}-${version}-${os}-${arch}-setup.${ext}"
+  allowToChangeInstallationDirectory: true
+  runAfterFinish: false
+  createDesktopShortcut: false
+  perMachine: false
 win:
   icon: "build/icon.ico"
   target:
     - "zip"
-#    - "nsis"
+    - "nsis"
 linux:
   category: "Education"
   target:
     - "tar.gz"
-#    - "deb"
+    - "deb"

@@ -212,12 +212,6 @@ class EditVocabPanel extends EditPanel {
             const result = dataManager.vocabLists.searchForList(query);
             return result.filter((listName) => !addedLists.has(listName));
         });
-
-        // Fade content at view borders if there are overflows
-        this.$("translations-wrapper").fadeContentAtBorders(this.fadeDistance);
-        this.$("readings-wrapper").fadeContentAtBorders(this.fadeDistance);
-        this.$("vocab-lists-wrapper").fadeContentAtBorders(this.fadeDistance);
-        this.$("notes-wrapper").fadeContentAtBorders(this.fadeDistance);
     }
 
     registerCentralEventListeners() {

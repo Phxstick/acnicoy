@@ -37,7 +37,7 @@ app.on('ready', function() {
     // Get active color scheme (or take default if settings not yet initialized)
     let colorScheme = "default";
     const colorSchemesInfo =
-        require(path.resolve("data", "general-color-schemes.json"));
+        require(path.resolve(__dirname, "data", "general-color-schemes.json"));
     if (storage.has("data-path")) {
         const dataPath = storage.get("data-path");
         const settingsPath = path.resolve(dataPath, "settings.json");
@@ -86,8 +86,7 @@ app.on('ready', function() {
     let stateChangeTimer;
     const updateState = () => {
         if (!mainWindow) return;
-        if (!mainWindow.isMaximized() && !mainWindow.isMinimized()
-                && !mainWindow.isFullScreen()) {  // TODO: Replace with isNormal
+        if (mainWindow.isNormal()) {
             const contentBounds = mainWindow.getContentBounds();
             mainWindowState.x = contentBounds.x;
             mainWindowState.y = contentBounds.y;
@@ -108,10 +107,14 @@ app.on('ready', function() {
     mainWindow.on("closed", () => clearTimeout(stateChangeTimer));
 
     // Handle dev tools separately using its corresponding events
-    mainWindow.webContents.on("devtools-opened",
-        () => storage.set("windowState.devToolsOpened", true));
-    mainWindow.webContents.on("devtools-closed",
-        () => storage.set("windowState.devToolsOpened", false));
+    mainWindow.webContents.on("devtools-opened", () => {
+        mainWindowState.isDevToolsOpened = true;
+        storage.set("windowState.isDevToolsOpened", true)
+    });
+    mainWindow.webContents.on("devtools-closed", () => {
+        mainWindowState.isDevToolsOpened = false;
+        storage.set("windowState.isDevToolsOpened", false);
+    });
   
     // Content Security Policy: don't allow loading anything at all.
     // session.defaultSession.webRequest.onHeadersReceived((details, callback)=>{

@@ -238,10 +238,6 @@ class EditHanziPanel extends EditPanel {
         // Hide level popups if there are no values in a field
         this.$("srs-level-meanings").toggleDisplay(info.meanings.length > 0);
         this.$("srs-level-readings").toggleDisplay(info.readings.length > 0);
-
-        // Fade content at view borders if there are overflows
-        this.$("meanings-wrapper").fadeContentAtBorders(this.fadeDistance);
-        this.$("readings-wrapper").fadeContentAtBorders(this.fadeDistance);
     }
 
     createListItem(type, text="") {

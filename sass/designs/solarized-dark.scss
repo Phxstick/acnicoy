@@ -25,7 +25,7 @@ $blue: #268bd2;
 $cyan: #2aa198;
 $green: #859900;
 
-$secondary-color: lighten($cyan, 15%);
+$secondary-color: lighten($cyan, 12%);
 
 // =============================================================================
 //   Primary colors
@@ -39,7 +39,7 @@ $color: strengthen($fg-lightest, 5%);
 $color-light: strengthen($fg-darkest, 6%); // mix($fg-darkest, $fg-light, 25%);
 $color-lightest: $fg-darkest;
 $color-dark: strengthen($color, 15%);
-$border-color-light: strengthen($background-color, 8%);
+$border-color-light: desaturate(strengthen($background-color, 6%), 4%);
 $border-color-medium: weaken($color-light, 10%);
 $border-color-dark: weaken($color-light, 2%);
 $border-color-darkest: $color-light;
@@ -48,8 +48,8 @@ $shadow-color: grey;
 // Maximum contrast
 $contrast-color: black;
 $contrast-shadow-color: white;
-$dark-contrast-color: $contrast-shadow-color;
-$dark-contrast-shadow-color: $contrast-color;
+$dark-contrast-color: #ddd;
+$dark-contrast-shadow-color: black;
 
 // Light button
 $button-light-color: strengthen($color-light, 5%);
@@ -62,7 +62,7 @@ $button-light-shadow-color-active: weaken($button-light-color, 10%);
 // Views
 $view-color: strengthen($fg-lightest, 2%);
 $view-color-hover: $color-dark;
-$view-color-edit: $view-color-hover;
+$view-color-edit: mix($color-dark, $color, 40%);
 $view-color-greyed-out: weaken($color-lightest, 3%);
 $view-background: $bg-dark;
 $view-background-medium: mix($bg-dark, $bg-dark-lighter, 80%);
@@ -74,7 +74,7 @@ $input-background-hover: mix($bg-dark, $bg-dark-lighter, 80%);
 $input-background-focus: $view-background;
 $input-background-invalid: mix($input-background, $red, 80%);
 $input-color: $color;
-$input-color-hover: $view-color-hover;
+$input-color-hover: mix($color-dark, $color, 40%);
 $input-color-focus: $view-color-edit;
 $input-color-placeholder: $color-light;
 $input-border-color: $border-color-medium;
@@ -98,12 +98,12 @@ $add-button-shadow-color: weaken($add-button-color, 35%);
 // =============================================================================
 
 // General highlight / select
-$select-color: white;
+$select-color: #e0e0e0;
 $select-background: mix($secondary-color, $view-background, 35%);
 $highlighted-text-color: mix($secondary-color, $color, 80%);
 $highlighted-text-shadow-color: black;
 $highlight-shadow-color: $highlighted-text-color;
-$input-border-color-focus: weaken($secondary-color, 10%);
+$input-border-color-focus: weaken($secondary-color, 8%);
 
 // List views
 $view-hover-background: rgba($secondary-color, 0.14);
@@ -116,14 +116,14 @@ $item-view-background: $view-background-medium;
 $item-view-color: $view-color;
 $item-view-border-color: $border-color-medium;
 $item-view-hover-background: $view-background;
-$item-view-hover-color: $view-color-hover;
+$item-view-hover-color: $input-color-hover;
 $item-view-hover-border-color: $border-color-darkest;
 $item-view-edit-background: $view-background;
 $item-view-edit-color: $view-color-edit;
 $item-view-edit-border-color: $input-border-color-focus;
 
 // Local links (to open another section/panel/overlay)
-$link-color: weaken(mix($secondary-color, $color, 80%), 8%);
+$link-color: darken(saturate($secondary-color, 25%), 6%);
 $link-color-hover: strengthen($link-color, 15%);
 $link-shadow-color-hover: weaken($link-color, 35%);
 
@@ -181,12 +181,15 @@ $button-shadow-color-active: lighten($button-background-active, 12%);
 
 // Loading window
 $loading-window-background: $main-window-background;
-$loading-window-color: strengthen($main-window-color, 5%);
+$loading-window-color: strengthen($main-window-color, 15%);
 
 // Sections
 $section-background: lighten($bg-dark-lighter, 3%);
 $section-color: strengthen($fg-light, 3%);
 $section-content-shadow-color: $color;
+$section-scrollbar-color: rgba(white, 0.22);
+$section-scrollbar-color-hover: rgba(white, 0.36);
+$section-scrollbar-color-active: rgba(white, 0.5);
 
 // Tooltips
 $tooltip-background: $main-window-background;
@@ -213,24 +216,24 @@ $suggestion-group-selector-hover-background: rgba(white, 0.35);
 // =============================================================================
 
 // Dictionary 
-$dictionary-frequent-words-base: lighten($green, 2%);
+$dictionary-frequent-words-base: darken($green, 6%);
 
-$dictionary-frequent-words-background:
-  mix($view-background, $dictionary-frequent-words-base, 86%);
-$dictionary-frequent-words-border-color:
-  mix($dictionary-frequent-words-base, $border-color-dark, 25%);
-$dictionary-frequent-words-color: strengthen($color, 4%);
+$dictionary-frequent-words-background: rgba(0, 32, 0, 0.3);
+  // mix($view-background, $dictionary-frequent-words-base, 86%);
+$dictionary-frequent-words-border-color: rgba(green, 0.4);
+  // mix($dictionary-frequent-words-base, $border-color-dark, 25%);
+$dictionary-frequent-words-color: weaken($color, 3%);
 
-$dictionary-semi-frequent-words-background:
-  mix($view-background, $dictionary-frequent-words-base, 94%);
-$dictionary-semi-frequent-words-border-color:
-  mix($dictionary-frequent-words-base, $border-color-medium, 25%);
-$dictionary-semi-frequent-words-color: strengthen($color, 2%);
+$dictionary-semi-frequent-words-background: rgba(0, 32, 0, 0.16);
+  // mix($view-background, $dictionary-frequent-words-base, 94%);
+$dictionary-semi-frequent-words-border-color: rgba(green, 0.38);
+  // mix($dictionary-frequent-words-base, $border-color-medium, 25%);
+$dictionary-semi-frequent-words-color: weaken($color, 1.5%);
 
-$dictionary-male-name-background: #E1F3FE;  // shade of 'lightskyblue'
-$dictionary-female-name-background: #FFF0F3;  // shade of 'lightpink'
-$dictionary-place-name-background: #EDE1D1;  // shade of 'tan'
-$dictionary-surname-background: #F0E0F7;  // shade of 'darkorchid'
+$dictionary-male-name-background: rgba(desaturate(midnightblue, 25%), 0.6);
+$dictionary-female-name-background: rgba(mediumvioletred, 0.28);
+$dictionary-place-name-background: rgba(sienna, 0.35);
+$dictionary-surname-background: rgba(darkgoldenrod, 0.20);
 
 // Kanji stroke SVGs
 $kanji-strokes-color: $color-lightest;
@@ -257,3 +260,5 @@ $diagram-graphics-color-hover: mix($main-window-background,
 $diagram-label-color: $color;
 $diagram-bar-opacity: 0.75;
 
+$kanji-overview-color: desaturate($secondary-color, 14%);
+$kanji-overview-color-hover: lighten($kanji-overview-color, 20%);

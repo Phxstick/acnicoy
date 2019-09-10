@@ -107,8 +107,12 @@ body {
 }
 
 .notes-container > * {
-  &:first-child:not(.location-label) {
-    border-top: 1px solid $border-color-medium;
+  &:first-child {
+    border-top: 1px solid transparent;
+
+    &:not(.location-label):not(.editing) {
+      border-top-color: $border-color-medium;
+    }
   }
 
   &.location-label {
@@ -131,14 +135,20 @@ body {
   }
 
   &.editing {
-    border-top-color: $input-background-focus;
     border-bottom-color: $input-background-focus;
     background-color: $input-background-focus;
     box-shadow: $input-highlight-shadow;
     color: $input-color-focus;
+    cursor: text;
 
-    .note-content {
-      white-space: pre-wrap;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+
+    &:empty:before {
+      content: "Enter note content";
+      color: $color-light;
     }
   }
 }

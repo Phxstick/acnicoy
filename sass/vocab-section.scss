@@ -24,6 +24,12 @@
   flex-direction: column;
 }
 
+// Manually remove right border since those two buttons are not visible at the
+// same time but the middle child also shouldn't have a right border
+#kanji-tab-button, #hanzi-tab-button {
+  border-right-width: 0;
+}
+
 #kanji-frame, #hanzi-frame {
   flex: 1;
 }
@@ -33,9 +39,16 @@
   color: weaken($color, 6%);
   > * {
     display: inline-block;
-    padding: 6px;
     line-height: 2rem;
+    padding: 6px;
   }
+}
+
+// Glyphs in font used for Chinese are strangely off-center, use workaround here
+// (note: only tested this on Windows 8, might look differently on Ubuntu)
+#hanzi > * {
+  padding-top: 4px;
+  padding-bottom: 7px;
 }
 
 .column {
@@ -106,7 +119,7 @@
 .search-entry-frame {
   display: flex;
   flex-direction: row;
-  border-bottom: 1px solid $border-color-dark;
+  border-bottom: 1px solid $border-color-medium;
  
   .search-entry-subframe {
     flex: 1;

@@ -1,8 +1,8 @@
 {
     "unicolor": {
         "default": {
-            "name": "Red",
-            "color": "f5f5f5",
+            "name": "Red (default)",
+            "color": "eeeeee",
             "color-correct": "7cfc00",
             "color-wrong": "ffa500",
             "status-shadow-color": "rgba(0, 0, 0, 0.2)",
@@ -11,24 +11,27 @@
         },
         "blue": {
             "name": "Blue",
-            "color": "f5f5f5",
+            "color": "eeeeee",
             "background-color": "356288"
         },
         "metallic": {
             "name": "Grey",
-            "color": "f5f5f5",
+            "color": "eeeeee",
             "background-color": "586e75"
         },
         "dark-red": {
             "name": "Dark red",
+            "color": "bbb",
             "background-color": "5d1d1d"
         },
         "dark-blue": {
             "name": "Dark blue",
+            "color": "b6b6b6",
             "background-color": "203b52"
         },
         "dark-grey": {
             "name": "Dark grey",
+            "color": "b6b6b6",
             "background-color": "242424"
         },
         "solarized-dark": {
@@ -36,18 +39,13 @@
             "color": "93a1a1",
             "background-color": "002b36"
         },
-        "light-grey": {
-            "name": "Light grey",
-            "color": "444444",
-            "background-color": "cccccc"
-        },
         "custom": {
             "name": "Custom"
         }
     },
     "multicolor": {
         "default": {
-            "name": "Default",
+            "name": "Medium (default)",
             "color": "f5f5f5",
             "color-correct": "7cfc00",
             "color-wrong": "ffa500",
@@ -64,7 +62,7 @@
             }
         },
         "default-dark": {
-            "name": "Default Dark",
+            "name": "Dark",
             "background-colors": {
                 "word-meaning": "5d1d1d",
                 "word-reading": "203b52",
@@ -76,7 +74,7 @@
             }
         },
         "default-light": {
-            "name": "Default Light",
+            "name": "Light",
             "color": "f5f5f5",
             "status-shadow-color": "rgba(0, 0, 0, 0.4)",
             "item-shadow-color": "rgba(0, 0, 0, 0.2)",
