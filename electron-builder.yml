@@ -2,6 +2,7 @@ appId: "com.electron.acnicoy"
 productName: "Acnicoy"
 artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
 publish: "github"
+
 nsis:
   oneClick: false
   artifactName: "${productName}-${version}-${os}-${arch}-setup.${ext}"
@@ -14,8 +15,11 @@ win:
   target:
     - "zip"
     - "nsis"
+
+appImage:
+  artifactName: "${productName}-${version}-${os}-${arch}-portable.${ext}"
 linux:
   category: "Education"
   target:
-    - "tar.gz"
+    - "AppImage"
     - "deb"

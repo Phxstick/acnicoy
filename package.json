@@ -2,7 +2,7 @@
   "name": "acnicoy",
   "version": "1.2.0",
   "description": "A tool for learning Japanese and other languages.",
-  "homepage": "https://github.com/Phxstick/acnicoy",
+  "homepage": "https://phxstick.github.io/acnicoy",
   "author": {
     "name": "Phxstick",
     "email": "Phxstick@gmail.com"
@@ -11,8 +11,10 @@
   "repository": "github:Phxstick/acnicoy",
   "main": "main.js",
   "keywords": [
-    "electron",
-    "languages",
+    "Vocabulary Trainer",
+    "Spaced Repetition",
+    "SRS",
+    "Languages",
     "Japanese"
   ],
   "browserslist": [
@@ -20,7 +22,7 @@
   ],
   "devDependencies": {
     "autoprefixer": "^9.1.3",
-    "electron": "^6.0.4",
+    "electron": "^6.0.9",
     "electron-builder": "^21.2.0",
     "glob": "^7.1.1",
     "gulp": "^4.0.2",

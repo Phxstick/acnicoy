@@ -101,6 +101,16 @@ app.on('ready', function() {
         clearTimeout(stateChangeTimer);
         stateChangeTimer = setTimeout(updateState, 1000);
     }
+    // Workaround on Linux for https://github.com/electron/electron/issues/10388
+    mainWindow.once("move", () => {
+        let x = mainWindowState.x;
+        let y = mainWindowState.y;
+        const wrongBounds = mainWindow.getContentBounds();
+        x -= wrongBounds.x - x;
+        y -= wrongBounds.y - y;
+        mainWindow.setContentBounds({ x, y,
+            width: mainWindowState.width, height: mainWindowState.height });
+    });
     mainWindow.on("resize", stateChangeHandler);
     mainWindow.on("move", stateChangeHandler);
     mainWindow.on("close", updateState);

@@ -4,7 +4,8 @@
   </button>
   <button slot="tabs" data-tab-name="kanji" id="kanji-tab-button">Kanji</button>
   <button slot="tabs" data-tab-name="hanzi" id="hanzi-tab-button">Hanzi</button>
-  <div slot="panels" data-tab-name="words" id="words-tab">
+  <div slot="panels" data-tab-name="words"
+       data-display-type="flex" id="words-tab">
     <div id="vocab-column" class="column">
       <div id="empty-vocabulary-info" class="info-frame">
         Your vocabulary is empty!<br>
@@ -61,7 +62,8 @@
       </div>
     </div>
   </div>
-  <div slot="panels" data-tab-name="kanji" id="kanji-tab">
+  <div slot="panels" data-tab-name="kanji"
+       data-display-type="flex" id="kanji-tab">
     <div id="no-kanji-info" class="info-frame">
       No kanji have been added so far!<br>
       Add kanji using the button on the side bar.
@@ -96,7 +98,8 @@
       <div id="kanji" class="list-view"></div>
     </div>
   </div>
-  <div slot="panels" data-tab-name="hanzi" id="hanzi-tab">
+  <div slot="panels" data-tab-name="hanzi"
+       data-display-type="flex" id="hanzi-tab">
     <div id="no-hanzi-info" class="info-frame">
       No hanzi have been added so far!<br>
       Add hanzi using the button on the side bar.

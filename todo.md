@@ -4,6 +4,11 @@ General
 
 - Rework functionality for detecting shortcut collisions
 - Implement selecting specific SRS levels for testing in the status overview
+- Error when clicking margin in notes container, stop climbing if cont. reached
+- Word notes are also being displayed for kanji/hanzi with the same name, fix!
+- Include exception handling code that removes faulty backups that do not
+  contain an info.json for some reason!
+- Check if workaround for move-window bug on Linux also affects Windows build
 
 ### Extensions
 - Add most important missing features to dictionary search (see further below)

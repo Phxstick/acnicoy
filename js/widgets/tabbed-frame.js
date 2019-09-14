@@ -20,7 +20,8 @@ class TabbedFrame extends Widget {
                     this.nameToPanel.get(this.selectedTabName).hide();
                     tabNode.setAttribute("selected", "");
                 }
-                this.nameToPanel.get(tabNode.dataset.tabName).show();
+                const container = this.nameToPanel.get(tabNode.dataset.tabName);
+                container.show(container.dataset.displayType);
                 this.selectedTabName = tabNode.dataset.tabName;
             });
         }
