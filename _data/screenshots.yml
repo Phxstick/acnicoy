@@ -10,7 +10,7 @@
     - label: "Managing<br>SRS schemes"
       description: >
         Each language can use a different set of time intervals for spaced repetition.<br>
-        You can create your own schemes and define custom time intervals for them.
+        You can create your own schemes and define custom time intervals.
       filename: "acnicoy-screenshot-srs-schemes.png"
 
     - label: "Switching<br>SRS schemes"

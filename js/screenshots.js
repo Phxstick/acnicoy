@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 title.style.bottom = `${titleOffsetBottom - moveOffsetY}px`;
                 imageOffsetY += moveOffsetY;
                 description.style.top =
-                    `${description.offsetTop + moveOffsetY + 1}px`;
+                    `${Math.floor(description.offsetTop + moveOffsetY + 1)}px`;
 
                 // If the description is close to bottom, extend BG all way down
                 if (availableMarginY - titleHeight / 2 < 80) {
