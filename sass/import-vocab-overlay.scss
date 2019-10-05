@@ -1,0 +1,47 @@
+@import "overlay";
+
+#buttons {
+  display: flex;
+  flex-direction: row;
+  margin: 15px;
+  margin-top: 0;
+
+  > button:not(:first-child) {
+    margin-left: 15px;
+  }
+}
+
+#parse-options, #general-parse-options, #import-options {
+  margin-bottom: 0;
+
+  > div {
+    margin-bottom: 10px;
+
+    &.radiobutton-row {
+      margin-bottom: 5px;
+    }
+  }
+}
+
+#parse-error-message, #only-errors-message, #language-data-warning {
+  color: $color-negative;
+}
+
+#num-errors-message {
+  color: $color-negative;
+}
+
+#num-items-parsed, #num-errors {
+  font-weight: bold;
+}
+
+#vocab-list {
+  margin-left: 15px;
+}
+
+#spinner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 15px;
+}

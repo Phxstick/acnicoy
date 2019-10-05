@@ -20,5 +20,9 @@
   > .filter {
     position: fixed;
     background-color: $overlay-dim-background;
+
+    &:not(.top-level) {
+      border-radius: 7px;  // Still not perfect because of the visual border bug
+    }
   }
 }

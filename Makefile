@@ -1,6 +1,6 @@
 PYTHON = python3
 DATA_SCRIPT_PATH = ./generate-japanese-data.py
-RESOURCE_PATH = ~/Dropbox/Acnicoy/Resources
+RESOURCE_PATH = ~/Dropbox/Acnicoy/Resources/Japanese
 OUTPUT_PATH = ./Japanese-English
 ELECTRON_PATH = ./node_modules/.bin/electron
 

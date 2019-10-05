@@ -22,10 +22,8 @@ body {
 
   > button {
     @extend button.light;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 0;
+    width: 40px;
     font-size: 140%;
   }
 
@@ -119,7 +117,7 @@ body {
 }
 
 #search-results {
-  background-color: $view-background;
+  background-color: $view-background-medium;
   color: $view-color;
   height: 100%;
   overflow: auto;
@@ -156,14 +154,20 @@ dd {
   height: 300px;
   min-width: 200px;
   max-width: 300px;
+  border-radius: 5px;
+  contain: content;
 }
 
 #history {
   flex: 1;
   font-size: 1.1rem;
   font-family: $vocab-font;
+  background-color: $view-background-medium;
+
   > * {
     cursor: $pointer-cursor;
+    padding: 4px;
+    padding-left: 7px;
   }
 }
 
@@ -176,8 +180,14 @@ dd {
   right: 0;
   top: 100%;
   width: 220px;
+  border-radius: 5px;
+  contain: content;
 }
 
 #no-search-results-info {
   @include center-content;
+}
+
+.labeled-checkbox check-box {
+  margin-left: 2px;
 }

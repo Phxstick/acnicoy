@@ -8,10 +8,6 @@ module.exports = function (paths, modules) {
     const dataMap = {};
     let data;
 
-    content.getReleasePrefix = (language, secondary) => {
-
-    };
-
     content.isAvailableFor = (language, secondary) => {
         const contentPaths = paths.content(language, secondary);
         return utility.existsDirectory(contentPaths.directory);

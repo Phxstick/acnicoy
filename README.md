@@ -58,9 +58,18 @@ The build process is simple:
 ```sh
 $ git clone https://github.com/phxstick/acnicoy
 $ npm install
-$ gulp
+$ npx gulp
 ```
 You can then run the program using `npm start`.
+
+### Generating language-specific data
+If you would like to generate language data for Japanese yourself, you can find
+all necessary files in my [Dropbox](https://www.dropbox.com/sh/rgb5cukj3vf9r10/AAB6tA7FTWBTPhFm2u_RMuyxa?dl=0).
+The JMdict file in that folder could be a bit outdated, so you might want to
+download the latest version from [here](http://www.edrdg.org/jmdict/edict_doc.html)
+first. You can then set the variable `RESOURCE_PATH` to point to the folder
+containing all the raw data files and run `make data`, which will generate all
+data and put it the directory specified by the variable `OUTPUT_PATH`.
 
 License
 ----

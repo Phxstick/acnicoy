@@ -68,6 +68,16 @@ const menuItems = contextMenu.registerItems({
             section.copySelected(itemType);
         }
     },
+    "export-selected": {
+        label: "Export selected items",
+        click: ({ currentNode, data: { section, itemType } }) => {
+            if (itemType === "list-contents") {
+                section.exportItems("vocab", true);
+            } else {
+                section.exportItems(itemType, true);
+            }
+        }
+    },
     "delete-selected": {
         label: "Delete selected items",
         click: ({ currentNode, data: { section, itemType } }) => {
@@ -112,6 +122,9 @@ class VocabSection extends Section {
         this.$("rename-list-button").hide();
         this.$("delete-list-button").hide();
         this.$("test-on-list-button").hide();
+        this.$("import-export-vocab-buttons").hide();
+        this.$("control-selected-vocab-buttons").hide();
+        this.$("control-selected-list-contents-buttons").hide();
         this.$("search-kanji-by-on-yomi-entry").enableKanaInput("katakana");
         this.$("search-kanji-by-kun-yomi-entry").enableKanaInput("hiragana");
         this.$("search-hanzi-by-readings-entry").enablePinyinInput();
@@ -119,7 +132,27 @@ class VocabSection extends Section {
             menuItems, ["create-list"], { section: this });
 
         // =====================================================================
-        //   Add event listeners to vocab list control buttons
+        //   Add event listeners to vocab control buttons
+        // =====================================================================
+        this.$("export-vocab-button").addEventListener("click", () => {
+            this.exportItems("vocab", false);
+        });
+        this.$("import-vocab-button").addEventListener("click", () => {
+            overlays.open("import-vocab");
+        });
+
+        this.$("copy-selected-vocab-button").addEventListener("click", () => {
+            this.copySelected("vocab");
+        });
+        this.$("export-selected-vocab-button").addEventListener("click", () => {
+            this.exportItems("vocab", true);
+        });
+        this.$("delete-selected-vocab-button").addEventListener("click", () => {
+            this.deleteSelected("vocab");
+        });
+
+        // =====================================================================
+        //   Add event listeners to list control buttons
         // =====================================================================
         this.$("add-list-button").addEventListener("click", () => {
             this.addVocabList();
@@ -147,6 +180,18 @@ class VocabSection extends Section {
         });
 
         // =====================================================================
+        //   Add event listeners to list content control buttons
+        // =====================================================================
+        this.$("copy-selected-list-contents-button").addEventListener("click",
+            () => this.copySelected("list-contents"));
+        this.$("export-selected-list-contents-button").addEventListener("click",
+            () => this.exportItems("vocab", true));
+        this.$("delete-selected-list-contents-button").addEventListener("click",
+            () => this.deleteSelected("list-contents"));
+        this.$("remove-selected-from-list-button").addEventListener("click",
+            () => this.removeSelectedFromList());
+
+        // =====================================================================
         //   Drag and drop functionality
         // =====================================================================
 
@@ -166,7 +211,7 @@ class VocabSection extends Section {
             });
             node.addEventListener("mouseleave", () => {
                 if (this.draggedItemType !== "vocab") return;
-                this.currentlyHoveredNode = node;
+                this.currentlyHoveredNode = null;
                 node.classList.remove("dragover");
             });
         }
@@ -332,7 +377,8 @@ class VocabSection extends Section {
                 deterministic: false,
                 loadOnResize: true
             });
-            this.viewData[viewName] = { srsLevels: null, datesAdded: null };
+            this.viewData[viewName] = { srsLevels: null, datesAdded: null,
+                                        ids: null };
 
             // Add search functionality
             let searchEntryNames;
@@ -413,6 +459,7 @@ class VocabSection extends Section {
                         if (prev !== null && this.currentSelection.has(prev))
                             prev.classList.add("last-selected");
                     }
+                    this.onSelectionChange();
                 }
 
                 if (event.shiftKey) {
@@ -429,6 +476,7 @@ class VocabSection extends Section {
                         this.currentSelection.add(target);
                         target.classList.add("selected");
                         target.classList.add("last-selected");
+                        this.onSelectionChange();
                         return;
                     }
 
@@ -441,6 +489,7 @@ class VocabSection extends Section {
                     while (node !== null) {
                         if (this.currentSelection.has(node)) {
                             node.classList.remove("last-selected");
+                            const selectionChanged = node !== target;
                             while (node !== target) {
                                 node = node.nextSibling;
                                 this.currentSelection.add(node);
@@ -448,6 +497,7 @@ class VocabSection extends Section {
                             }
                             if (next===null || !this.currentSelection.has(next))
                                 target.classList.add("last-selected");
+                            if (selectionChanged) this.onSelectionChange();
                             return;
                         }
                         node = node.previousSibling;
@@ -455,11 +505,13 @@ class VocabSection extends Section {
 
                     // If there's no selected node above, select bottomwards
                     node = target;
+                    const selectionChanged = !this.currentSelection.has(node);
                     while (!this.currentSelection.has(node)) {
                         this.currentSelection.add(node);
                         node.classList.add("selected");
                         node = node.nextSibling;
                     }
+                    if (selectionChanged) this.onSelectionChange();
                     return;
                 }
             });
@@ -512,9 +564,10 @@ class VocabSection extends Section {
                     if (!this.currentSelection.has(selected.nextSibling))
                         selected.classList.add("last-selected");
                 }
-                this.$("add-list-button").show();
-                this.$("delete-list-button").show();
-                this.$("test-on-list-button").show();
+                this.$("delete-list-button").toggleDisplay(
+                    this.currentSelection.size > 0);
+                this.$("test-on-list-button").toggleDisplay(
+                    this.currentSelection.size > 0);
             } else {
                 this.selectVocabList(node);
             }
@@ -533,10 +586,25 @@ class VocabSection extends Section {
             const dateAdded = await dataManager.vocab.getDateAdded(word);
             const srsLevel = await dataManager.srs.getLevel(
                     word, dataManager.test.mode.WORDS);
+            const id = await dataManager.vocab.getId(word);
             this.viewData["vocab"].datesAdded.set(word, dateAdded);
             this.viewData["vocab"].srsLevels.set(word, srsLevel);
+            this.viewData["vocab"].ids.set(word, id);
             if (!this.isViewLoaded["vocab"]) return;
             this.insertEntryIntoSortedView("vocab", word);
+        });
+        events.on("vocab-imported", async () => {
+            if (this.isViewLoaded["vocab"])
+                this.viewStates["vocab"].load("");
+            if (this.isViewLoaded["vocab-lists"])
+                this.viewStates["vocab-lists"].load("");
+            if (this.selectedList !== null)
+                this.viewStates["list-contents"].load("");
+            const language = dataManager.currentLanguage;
+            if (language === "Japanese" && this.isViewLoaded["kanji"])
+                this.viewStates["kanji"].load("");
+            if (language === "Chinese" && this.isViewLoaded["hanzi"])
+                this.viewStates["hanzi"].load("");
         });
         // ====================================================================
         // Update views if content of a vocabulary list changed
@@ -594,17 +662,17 @@ class VocabSection extends Section {
         // ====================================================================
         // Display correct columns and whether they're empty or not
         // ====================================================================
-        events.onAll(["language-changed", "word-added", "word-deleted"],
-        () => { 
+        events.onAll(["language-changed", "word-added", "word-deleted",
+                      "vocab-imported"], () => { 
             dataManager.vocab.sizeFor(dataManager.currentLanguage)
             .then((size) => {
                 this.$("vocab-frame").toggleDisplay(size > 0);
                 this.$("empty-vocabulary-info").toggleDisplay(size === 0);
+                this.$("import-export-vocab-buttons").toggleDisplay(size > 0);
             });
         });
-        events.onAll(
-            ["language-changed", "vocab-list-created", "vocab-list-deleted"],
-        () => {
+        events.onAll(["language-changed", "vocab-list-created",
+                      "vocab-list-deleted", "vocab-imported"], () => {
             const noLists = dataManager.vocabLists.getLists().length === 0;
             this.$("vocab-lists-frame").toggleDisplay(!noLists, "flex");
             this.$("list-contents-column").toggleDisplay(!noLists, "flex");
@@ -630,8 +698,11 @@ class VocabSection extends Section {
                     !noContents, "flex");
                 this.$("no-list-contents-info").toggleDisplay(
                     noContents, "flex");
+                if (noContents)
+                    this.$("control-selected-list-contents-buttons").hide();
             } else {
                 this.$("no-list-contents-info").hide();
+                this.$("control-selected-list-contents-buttons").hide();
             }
         });
         // ====================================================================
@@ -643,12 +714,14 @@ class VocabSection extends Section {
         });
         events.on("kanji-added", async (kanji) => {
             const dateAdded = await dataManager.kanji.getDateAdded(kanji);
+            const id = await dataManager.kanji.getId(kanji);
             this.viewData["kanji"].datesAdded.set(kanji, dateAdded);
+            this.viewData["kanji"].ids.set(kanji, id);
             if (!this.isViewLoaded["kanji"]) return;
             this.insertEntryIntoSortedView("kanji", kanji);
         });
-        events.onAll(["language-changed", "kanji-added", "kanji-removed"],
-        () => { 
+        events.onAll(["language-changed", "kanji-added", "kanji-removed",
+                      "vocab-imported"], () => { 
             if (dataManager.currentLanguage !== "Japanese") return;
             dataManager.kanji.getAmountAdded().then((amountAdded) => {
                 this.$("kanji-frame").toggleDisplay(amountAdded > 0);
@@ -664,12 +737,14 @@ class VocabSection extends Section {
         });
         events.on("hanzi-added", async (hanzi) => {
             const dateAdded = await dataManager.hanzi.getDateAdded(hanzi);
+            const id = await dataManager.hanzi.getId(hanzi);
             this.viewData["hanzi"].datesAdded.set(hanzi, dateAdded);
+            this.viewData["hanzi"].ids.set(hanzi, id);
             if (!this.isViewLoaded["hanzi"]) return;
             this.insertEntryIntoSortedView("hanzi", hanzi);
         });
-        events.onAll(["language-changed", "hanzi-added", "hanzi-removed"],
-        () => { 
+        events.onAll(["language-changed", "hanzi-added", "hanzi-removed",
+                      "vocab-imported"], () => { 
             if (dataManager.currentLanguage !== "Chinese") return;
             dataManager.hanzi.getAmountAdded().then((amountAdded) => {
                 this.$("hanzi-frame").toggleDisplay(amountAdded > 0);
@@ -682,7 +757,7 @@ class VocabSection extends Section {
         this.deselectVocabList();
         this.listNameToAmountLabel.clear();
         this.listNameToViewNode.clear();
-        this.currentSelection.clear();
+        this.clearSelection();
 
         // Display necessary tabs
         this.$("words-tab-button").click();
@@ -699,13 +774,19 @@ class VocabSection extends Section {
             await dataManager.vocab.getDateAddedForEachWord();
         this.viewData["vocab"].srsLevels =
             await dataManager.vocab.getLevelForEachWord();
+        this.viewData["vocab"].ids =
+            await dataManager.vocab.getIdForEachWord();
         if (language === "Japanese") {
             this.viewData["kanji"].datesAdded =
                 await dataManager.kanji.getDateAddedForEachKanji();
+            this.viewData["kanji"].ids =
+                await dataManager.kanji.getIdForEachKanji();
         }
         if (language === "Chinese") {
             this.viewData["hanzi"].datesAdded =
                 await dataManager.hanzi.getDateAddedForEachHanzi();
+            this.viewData["hanzi"].ids =
+                await dataManager.hanzi.getIdForEachHanzi();
         }
 
         // Defer initial loading of views until section is actually opened
@@ -774,7 +855,7 @@ class VocabSection extends Section {
         // Add context menu
         item.contextMenu(menuItems, () => this.selectionTarget === "vocab" &&
             this.currentSelection.size > 1 && this.currentSelection.has(item) ?
-            ["copy-selected", "delete-selected"] :
+            ["copy-selected", "export-selected", "delete-selected"] :
             ["edit-item", "copy-item", "delete-item"],
             { section: this, itemType: "vocab" });
         return item;
@@ -785,7 +866,7 @@ class VocabSection extends Section {
         item.textContent = kanji;
         item.contextMenu(menuItems, () => this.selectionTarget === "kanji" &&
             this.currentSelection.size > 1 && this.currentSelection.has(item) ?
-            ["copy-selected", "delete-selected"] :
+            ["copy-selected", "export-selected", "delete-selected"] :
             ["edit-item", "copy-item", "delete-item"],
             { section: this, itemType: "kanji" });
         return item;
@@ -796,7 +877,7 @@ class VocabSection extends Section {
         item.textContent = hanzi;
         item.contextMenu(menuItems, () => this.selectionTarget === "hanzi" &&
             this.currentSelection.size > 1 && this.currentSelection.has(item) ?
-            ["copy-selected", "delete-selected"] :
+            ["copy-selected", "export-selected", "delete-selected"] :
             ["edit-item", "copy-item", "delete-item"],
             { section: this, itemType: "hanzi" });
         return item;
@@ -808,7 +889,8 @@ class VocabSection extends Section {
         item.contextMenu(menuItems, () =>
             this.selectionTarget === "list-contents" &&
             this.currentSelection.size > 1 && this.currentSelection.has(item) ?
-            ["copy-selected", "delete-selected", "remove-selected-from-list"] :
+            ["copy-selected", "export-selected", "delete-selected",
+             "remove-selected-from-list"] :
             ["edit-item", "copy-item", "delete-item", "remove-from-list"],
             { section: this, itemType: "list-contents" });
         return item;
@@ -933,7 +1015,7 @@ class VocabSection extends Section {
             this.currentSelection.size > 1 && this.currentSelection.has(node) ?
                 ["test-on-selected", "delete-selected"] :
                 ["test-on-list", "delete-list", "rename-list"],
-                { section: this, itemType: "vocab-list" });
+                { section: this, itemType: "vocab-lists" });
         return node;
     }
 
@@ -957,6 +1039,20 @@ class VocabSection extends Section {
                 strings.push(node.textContent);
         }
         clipboard.writeText(strings.join("\n"));
+        main.updateStatus(
+            `Copied ${this.currentSelection.size} items to the clipboard.`);
+    }
+
+    async exportItems(type, onlySelected) {
+        const items = !onlySelected ? undefined :
+            Array.from(this.currentSelection).map((node) => node.textContent);
+        const filepath = await dialogWindow.chooseExportFile(
+            `acnicoy-${dataManager.currentLanguage}-${type}-export.tsv`);
+        if (!filepath) return;
+        await dataManager[type].export(filepath, items);
+        const numItems = onlySelected ? items.length :
+            await dataManager[type].getAmountAdded();
+        main.updateStatus(`Exported ${numItems} vocabulary items.`);
     }
 
     // =====================================================================
@@ -1013,16 +1109,40 @@ class VocabSection extends Section {
         for (const node of this.currentSelection) {
             this.deleteItem(node, type, false)
         }
-        this.currentSelection.clear();
+        this.clearSelection();
     }
+
+    // =====================================================================
+    // Functions for handling selections
+    // =====================================================================
 
     clearSelection() {
         for (const element of this.currentSelection) {
             element.classList.remove("selected");
             element.classList.remove("last-selected");
         }
-        this.currentSelection.clear();
         this.selectionTarget = null;
+        this.currentSelection.clear();
+        this.onSelectionChange();
+    }
+
+    onSelectionChange() {
+        // Vocab control buttons
+        this.$("import-export-vocab-buttons").toggleDisplay(
+            this.selectionTarget !== "vocab" || this.currentSelection.size===0);
+        this.$("control-selected-vocab-buttons").toggleDisplay(
+            this.selectionTarget === "vocab" && this.currentSelection.size > 0);
+
+        // List control buttons
+        const listsSelected = this.selectedListNode !== null ||
+            (this.selectionTarget==="vocab-lists"&&this.currentSelection.size);
+        this.$("delete-list-button").toggleDisplay(listsSelected);
+        this.$("test-on-list-button").toggleDisplay(listsSelected);
+
+        // List contents control buttons
+        this.$("control-selected-list-contents-buttons").toggleDisplay(
+            this.selectionTarget === "list-contents"
+            && this.currentSelection.size > 0);
     }
 
     // =====================================================================
@@ -1129,7 +1249,7 @@ class VocabSection extends Section {
         for (const node of this.currentSelection) {
             events.emit("removed-from-list",node.textContent,this.selectedList);
         }
-        this.currentSelection.clear();
+        this.clearSelection();
     }
 
     // =====================================================================
@@ -1141,19 +1261,21 @@ class VocabSection extends Section {
         if (fieldName === "vocab") {
             const datesAdded = this.viewData["vocab"].datesAdded;
             const srsLevels = this.viewData["vocab"].srsLevels;
+            const ids = this.viewData["vocab"].ids;
             if (sortingCriterion === "alphabetical") {
                 return (word) => word;
             } else if (sortingCriterion === "dateAdded") {
-                return (word) => datesAdded.get(word);
+                return (word) => [datesAdded.get(word), ids.get(word)];
             } else if (sortingCriterion === "level") {
-                return (word) => srsLevels.get(word);
+                return (word) => [srsLevels.get(word), ids.get(word)];
             }
         } else if (fieldName === "vocab-lists") {
             if (sortingCriterion === "alphabetical") {
                 return (listName) => listName;
             } else if (sortingCriterion === "length") {
-                return (listName) => 
-                    dataManager.vocabLists.getWordsForList(listName).length;
+                return (listName) =>
+                    [dataManager.vocabLists.getWordsForList(listName).length,
+                     listName];
             }
         } else if (fieldName === "list-contents") {
             if (sortingCriterion === "alphabetical") {
@@ -1161,17 +1283,19 @@ class VocabSection extends Section {
             }
         } else if (fieldName === "kanji") {
             const datesAdded = this.viewData["kanji"].datesAdded;
+            const ids = this.viewData["kanji"].ids;
             if (sortingCriterion === "alphabetical") {
                 return (kanji) => kanji;
             } else if (sortingCriterion === "dateAdded") {
-                return (kanji) => datesAdded.get(kanji);
+                return (kanji) => [datesAdded.get(kanji), ids.get(kanji)];
             }
         } else if (fieldName === "hanzi") {
             const datesAdded = this.viewData["hanzi"].datesAdded;
+            const ids = this.viewData["hanzi"].ids;
             if (sortingCriterion === "alphabetical") {
                 return (hanzi) => hanzi;
             } else if (sortingCriterion === "dateAdded") {
-                return (hanzi) => datesAdded.get(hanzi);
+                return (hanzi) => [datesAdded.get(hanzi), ids.get(hanzi)];
             }
         }
     }
@@ -1252,7 +1376,7 @@ class VocabSection extends Section {
     // =====================================================================
 
     async search(fieldName, query, searchMethod) {
-        if (this.selectionTarget === fieldName) this.currentSelection.clear();
+        if (this.selectionTarget === fieldName) this.clearSelection();
         const sortingCriterion = this.viewConfigs[fieldName].sortingCriterion;
         const sortBackwards = this.viewConfigs[fieldName].sortBackwards;
         let searchResults;

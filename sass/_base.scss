@@ -215,13 +215,27 @@ hr {
 }
 
 .radiobutton-row {
+  display: flex;
+  flex-direction: row;
+
   .description {
-    display: inline-block;
     margin-right: 30px;
+    white-space: nowrap;
+    text-align: right;
   }
-  .option:not(:last-child) {
-    display: inline-block;
-    margin-right: 30px;
+  .options {
+    .option {
+      display: inline-block;
+      white-space: nowrap;
+      margin-bottom: 5px;
+
+      &:not(:last-child) {
+        margin-right: 30px;
+      }
+      .radiobutton {
+        margin-right: 3px;
+      }
+    }
   }
 }
 
@@ -342,7 +356,7 @@ hr {
     > .group-header {
       padding: 5px;
       padding-left: $group-indent + 3px;
-      font-family: $header-font;
+      color: $color-light;
     }
     > *:not(.group-header, .group, hr) {
       padding: 3px;
@@ -362,6 +376,8 @@ hr {
   hr {
     margin-top: 5px;
     margin-bottom: 5px;
+    margin-left: 8px;
+    margin-right: 8px;
   }
 }
 
@@ -371,7 +387,6 @@ hr {
   align-items: center;
 
   check-box {
-    margin-left: 2px;
     margin-right: 8px;
   }
   span {

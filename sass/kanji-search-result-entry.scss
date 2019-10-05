@@ -7,26 +7,31 @@ span {
 #frame {
   display: flex;
   flex-direction: row;
-  padding: 3px;
+  padding-top: 3px;
+  padding-bottom: 8px;
+  padding-left: 3px;
+  margin-left: 8px;
+  margin-right: 8px;
   border-bottom: 1px solid $border-color-light;
 
   #left-frame {
     display: flex;
     flex-direction: column;
-    margin-left: 3px;
-    margin-right: 4px;
+    margin-left: 2px;
+    margin-right: 11px;
     width: 60px;
 
     #kanji {
       font-size: 250%;
       padding: 5px;
-      text-shadow: -0.5px -0.5px 0.5px $color;
+      padding-top: 8px;
+      // text-shadow: -0.5px -0.5px 0.5px $color;
       text-align: center;
       font-family: $vocab-font;
 
       &.rare {
-        color: $kanji-search-results-rare-color;
-        text-shadow:-0.5px -0.5px 0.5px $kanji-search-results-rare-shadow-color;
+        color: $color-light;
+        // text-shadow:-0.5px -0.5px 0.5px $color-lightest;
         &:hover {
           @extend .kanji-info-link;
         }
@@ -46,6 +51,7 @@ span {
     }
     #add-button {
       padding: 3px;
+      border-radius: 5px;
       font-family: $header-font;
       text-align: center;
       color: $add-button-color;
@@ -71,17 +77,19 @@ span {
     }
 
     #details-bar > span {
-      padding-top: 2px;
-      padding-bottom: 2px;
+      // padding-top: 2px;
+      // padding-bottom: 2px;
+      margin-top: 2px;
+      margin-bottom: 2px;
       font-size: 80%;
 
       &:not(:last-child) {
         border-right: 1px solid transparent;
         border-image: $vertical-fading-border;
-        padding-right: 5px;
+        padding-right: 10px;
       }
       &:not(:first-child) {
-        padding-left: 6px;
+        padding-left: 10px;
       }
       color: $color-light;
     }
@@ -94,15 +102,29 @@ span {
         font-size: 80%;
         font-color: $color-light;
         font-family: $header-font;
-        margin-right: 5px;
+        // margin-right: 5px;
+        width: 30px;
+        transform: translate(0, -2px);  // Attempt to center it
       }
 
       .yomi {
-        margin-top: 3px;
-        padding: 2px;
-        border-radius: 4px;
-        margin-right: 6px;
-        background-color: $kanji-search-results-yomi-background;
+        margin-top: 4px;
+        padding: 3px;
+        border-radius: 5px;
+        margin-right: 4px;
+        background-color: $view-background-medium;
+        border: 1px solid mix($border-color-light, $border-color-medium, 50%);
+
+        &:hover {
+          background-color: $view-background-dark;
+          border: 1px solid $border-color-dark;
+          color: $color-dark;
+          cursor: $pointer-cursor;
+        }
+
+        // &:not(:last-child)::after {
+        //   content: "、";
+        // }
       }
     }
   }

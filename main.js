@@ -108,8 +108,9 @@ app.on('ready', function() {
         const wrongBounds = mainWindow.getContentBounds();
         x -= wrongBounds.x - x;
         y -= wrongBounds.y - y;
-        mainWindow.setContentBounds({ x, y,
-            width: mainWindowState.width, height: mainWindowState.height });
+        if ("width" in mainWindowState && "height" in mainWindowState)
+            mainWindow.setContentBounds({ x, y,
+                width: mainWindowState.width, height: mainWindowState.height });
     });
     mainWindow.on("resize", stateChangeHandler);
     mainWindow.on("move", stateChangeHandler);

@@ -50,6 +50,9 @@ input.styled {
   color: $input-color;
   background-color: $input-background;
   padding: 5px;
+  padding-left: 8px;  // Account for vertical margins in glyps of OpenSans font
+  padding-right: 8px;  // Account for vertical margins in glyps of OpenSans font
+  border-radius: 5px;
   font-size: 120%;
   border: 1px solid $input-border-color;
   box-shadow: $input-inset-shadow;

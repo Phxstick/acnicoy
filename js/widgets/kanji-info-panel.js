@@ -324,8 +324,9 @@ class KanjiInfoPanel extends Widget {
         }
         this.$("length-unit-frame").toggleDisplay(isUnitOfLength);
         // Display 'added' sign or button for adding the kanji
-        this.$("added-label").toggleDisplay(info.added);
-        this.$("add-button").toggleDisplay(!info.added);
+        const isAdded = await dataManager.kanji.isAdded(kanji);
+        this.$("added-label").toggleDisplay(isAdded);
+        this.$("add-button").toggleDisplay(!isAdded);
         // Display number of strokes, radical and kanji parts
         this.$("stroke-count").textContent = info.strokes;
         this.$("radical").textContent = info.radical;

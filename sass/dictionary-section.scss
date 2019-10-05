@@ -146,6 +146,8 @@ body {
   height: 300px;
   min-width: 200px;
   max-width: 300px;
+  border-radius: 5px;
+  contain: content;
 }
 
 #history {
@@ -155,6 +157,8 @@ body {
 
   > * {
     cursor: $pointer-cursor;
+    padding: 4px;
+    padding-left: 7px;
   }
 }
 
@@ -167,6 +171,8 @@ body {
   right: 0;
   top: 100%;
   width: 240px;
+  border-radius: 5px;
+  contain: content;
 }
 
 #search-spinner {
@@ -175,4 +181,8 @@ body {
 
 #no-search-results-info {
   @include center-content;
+}
+
+.labeled-checkbox check-box {
+  margin-left: 2px;
 }

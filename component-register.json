@@ -2,7 +2,7 @@
     "modules": [
         "languages", "settings", "language-settings", "database", "vocab-lists",
         "notes", "content", "vocab", "kanji", "hanzi", "srs", "stats", "test",
-        "history", "achievements", "notifications"
+        "history", "achievements", "notifications", "import"
     ],
     "windows": [
         "init-path", "init-lang", "loading", "main"
@@ -10,7 +10,7 @@
     "overlays": [
         "add-lang", "info-dialog", "confirm-dialog", "srs-schemes",
         "migrate-srs", "choose-shortcut", "test-complete", "about", "resources",
-        "help", "loading", "introduction"
+        "help", "loading", "introduction", "import-vocab"
     ],
     "sections": [
         "home", "stats", "settings", "vocab", "test", "dictionary", "kanji",

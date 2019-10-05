@@ -44,6 +44,11 @@ class CompletionTooltip extends Widget {
         this.items.addEventListener("mousedown", (event) => {
             if (event.target.parentNode !== this.items) return;
             this.selectedItem = event.target;
+            if (this.activeNode instanceof HTMLInputElement) {
+                this.activeNode.value = this.selectedItem.textContent;
+            } else {
+                this.activeNode.textContent = this.selectedItem.textContent;
+            }
             this.selectionCallback(this.activeNode);
         });
     }
@@ -62,16 +67,14 @@ class CompletionTooltip extends Widget {
     }
 
     setSelectionCallback(callback) {
-        this.selectionCallback = (node) => {
-            node.textContent = this.selectedItem.textContent;
-            callback(node, this.selectedItem);
-        };
+        this.selectionCallback = (node) => callback(node, this.selectedItem);
     }
 
     attachTo(node) {
         // Attach this widget to the DOM if it's not there yet
+        this.attachedNodeRoot = node.getRoot();
         if (this.offsetParent === null) {
-            document.body.appendChild(this);
+            this.attachedNodeRoot.appendChild(this);
         }
 
         // Hide tooltip when node loses focus
@@ -112,6 +115,11 @@ class CompletionTooltip extends Widget {
                         this.selectedItem.previousSibling;
             } else if (event.key === "Enter" && !event.ctrlKey) {
                 if (this.selectedItem !== null) {
+                    if (node instanceof HTMLInputElement) {
+                        node.value = this.selectedItem.textContent;
+                    } else {
+                        node.textContent = this.selectedItem.textContent;
+                    }
                     this.selectionCallback(node);
                 }
             }
@@ -148,12 +156,19 @@ class CompletionTooltip extends Widget {
 
         // Position list selection wrapper
         const { left, top, bottom } = node.getBoundingClientRect();
-        this.wrapper.style.left = `${left}px`;
+        const rootElement = this.attachedNodeRoot.host === undefined ?
+            this.attachedNodeRoot : this.attachedNodeRoot.host;
+        const { left: rootLeft, top: rootTop, bottom: rootBottom }
+            = rootElement.getBoundingClientRect();
+        this.wrapper.style.left = `${left - rootLeft}px`;
         if (this.direction === "up") {
-            this.wrapper.style.bottom = `${window.innerHeight - top}px`;
+            // 2 * because bottom of rect is given starting from top of window
+            this.wrapper.style.bottom = `${rootBottom - top}px`;
+                // `${window.innerHeight - rootBottom + rootHeight - top}px`;
+                // `${2 * window.innerHeight - top - rootBottom}px`;
             this.wrapper.style.top = "initial";
         } else if (this.direction === "down") {
-            this.wrapper.style.top = `${bottom}px`;
+            this.wrapper.style.top = `${bottom - rootTop}px`;
             this.wrapper.style.bottom = "initial";
         }
     }

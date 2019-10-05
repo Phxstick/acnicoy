@@ -432,8 +432,14 @@ class MainWindow extends Window {
 
     async open() {
         app.openWindow("loading", "Initializing...");
+
+        // Enable all shortcuts
+        for (const shortcutName in this.shortcutMap) {
+            shortcuts.enable(shortcutName);
+        }
+
         // Load info about incomplete downloads
-        networkManager.load();  // TODO: Move this
+        networkManager.load();  // TODO: Move this somewhere else?
 
         // Initialize all subcomponents
         const results = [];
@@ -441,11 +447,6 @@ class MainWindow extends Window {
             results.push(this.sections[name].initialize());
         }
         await Promise.all(results);
-
-        // Enable all shortcuts
-        for (const shortcutName in this.shortcutMap) {
-            shortcuts.enable(shortcutName);
-        }
 
         // Open the language which was open when the program was closed last
         let lastOpenedLanguage = storage.get("last-opened-language");
@@ -503,6 +504,12 @@ class MainWindow extends Window {
         // Run clean-up-code from now on whenever attempting to close the window
         ipcRenderer.send("activate-controlled-closing");
 
+        // Load notifications
+        const notifications = dataManager.notifications.get();
+        for (const notification of notifications) {
+            this.displayNotification(notification);
+        }
+
         // Link achievements module to event emitter and do an initial check
         dataManager.achievements.setEventEmitter(events);
         events.on("achievement-unlocked", (info) => {
@@ -513,22 +520,13 @@ class MainWindow extends Window {
         });
         await dataManager.achievements.checkAll();
 
-        // Load notifications
-        const notifications = dataManager.notifications.get();
-        for (const notification of notifications) {
-            this.displayNotification(notification);
-        }
-        this.$("selective-dimmer").hide();
-        this.$("intro-tour-textbox").hide();
-
         // Display introduction overlay if not displayed yet
         const showIntroOverlay = storage.get("show-introduction-overlay");
         if (showIntroOverlay === undefined || showIntroOverlay) {
             overlays.open("introduction");
         }
-
-        await utility.finishEventQueue();
-        app.closeWindow("loading");
+        this.$("selective-dimmer").hide();
+        this.$("intro-tour-textbox").hide();
 
         // Notify user if there are shortcuts without assigned key combinations
         // const notifyUnassigned = storage.get("show-shortcuts-unassigned-notice")
@@ -548,6 +546,23 @@ class MainWindow extends Window {
         // } else if (!notifyUnassigned) {
         //     storage.set("show-shortcuts-unassigned-notice", true);
         // }
+
+        // Load language content for visible languages if auto-load is enabled
+        if (dataManager.settings.general.autoLoadLanguageContent) {
+            app.openWindow("loading", "Loading language data...");
+            //    "This might take a bit.<br>" +
+            //    "Content loading on application launch<br>" +
+            //    "can be disabled in the settings.";
+            const languages = dataManager.languages.visible;
+            for (const language of languages) {
+                const secondary = dataManager.languageSettings.getFor(
+                    language, "secondaryLanguage");
+                await this.loadLanguageContent(language, secondary, true);
+            }
+        }
+
+        await utility.finishEventQueue();
+        app.closeWindow("loading");
     }
 
     async close() {
@@ -601,7 +616,7 @@ class MainWindow extends Window {
     async loadLanguageContent(language, secondary, onStart=false) {
         if (!dataManager.content.isAvailableFor(language, secondary) ||
             !dataManager.content.isCompatibleFor(language, secondary)) return;
-        if (!onStart) overlays.open("loading");
+        if (!onStart) overlays.open("loading", "Loading language data");
         await dataManager.content.load(language);
         const processed = [];
         for (const name in this.sections) {
@@ -893,9 +908,9 @@ class MainWindow extends Window {
         if (this.statusFadeOutCallbackId !== null) {
             window.clearTimeout(this.statusFadeOutCallbackId);
         }
-        if (!this.barsHidden) this.$("status-text").fadeOut();
+        if (!this.barsHidden) this.$("status-text").fadeOut({ distance: 150 });
         this.$("status-text").textContent = text;
-        if (!this.barsHidden) this.$("status-text").fadeIn();
+        if (!this.barsHidden) this.$("status-text").fadeIn({ distance: 150 });
         this.statusFadeOutCallbackId = window.setTimeout(() => {
             if (!this.barsHidden) this.$("status-text").fadeOut({
                     distance: 0, easing: "easeInSine", duration: 350 });

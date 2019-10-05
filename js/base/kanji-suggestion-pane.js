@@ -70,9 +70,13 @@ class KanjiSuggestionPane extends Widget {
         const node = document.createElement("span");
         node.textContent = content;
         node.classList.add("suggestion");
-        // Select on left click
+        // Toggle selection status on left click
         node.addEventListener("click", () => {
-            this.selectSuggestionNode(node, type);
+            if (!node.hasAttribute("selected")) {
+                this.selectSuggestionNode(node, type);
+            } else {
+                this.deselectSuggestionNode(node, type);
+            }
         });
         // Deselect on right click
         node.addEventListener("contextmenu", () => {

@@ -2,19 +2,33 @@
 General
 --------------------------------------------------------------------------------
 
+- Check if workaround for move-window bug on Linux also affects Windows build
+- Fix: edge cases in pinyin conversion
+- Fix: items get added to vocab list even if not dropping them on contents view
 - Rework functionality for detecting shortcut collisions
 - Implement selecting specific SRS levels for testing in the status overview
-- Error when clicking margin in notes container, stop climbing if cont. reached
+- Make sure to reattach user database to content database whenever necessary
+- Error when clicking margin in notes container, stop prop. if container reached
 - Word notes are also being displayed for kanji/hanzi with the same name, fix!
 - Include exception handling code that removes faulty backups that do not
   contain an info.json for some reason!
-- Check if workaround for move-window bug on Linux also affects Windows build
+- Make sure overlays can't be interacted with while they're fading away
+- Dynamically adjust size of popup stack and tooltip to fit it into the window
+- Now that light button has no shadow by default, remove .no-shadow class
 
 ### Extensions
 - Add most important missing features to dictionary search (see further below)
 - Extend notes section by most important features (see further below)
 - Add some more achievements and create achievements section
+- Keep working on list of improved kanji meanings
 - Implement changing order of translations by dragging while pressing Ctrl
+- Implement importing general color schemes as scss files
+- Implement change logs (show up on first launch, accessible from settings)
+- Implement organization of imported items that are not assigned to a level yet
+- Improve SRS system or add options to use a different variant
+  - Improve policy for incorrectly answered SRS items, e.g. by taking mistake
+    count into account to move items down several levels
+  - Implement an interval-based version of SRS 
 
 ### Fixes
 - Correctly resize svg-bar-diagram when resizing window (set width + height)
@@ -54,8 +68,6 @@ General
 
 ### Misc
 - Offer language data for EN if not available for the chosen source language?
-- Improve policy for incorrectly answered SRS items
-  - Don't always move down a level, but one with adjusted review time instead?
 - Implement reverse testing?
 - Define proper interface for global settings to detect modifications?
 - Initialize json-file in local storage somewhere upon first program start?
@@ -69,6 +81,7 @@ General
 - Add loading screen where appropriate (loading vocab section, kanji view, ...)
 - Reverse completion list order if it's shown above entry instead of below?
   - Extend the utility view function for this purpose
+- Make wrap-up feature only show items that have actually been started?
 
 
 Components

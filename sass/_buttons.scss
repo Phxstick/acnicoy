@@ -62,9 +62,9 @@ button.light {
   &:focus {
     box-shadow: $button-focus-shadow;
   }
-  &:active {
-    box-shadow: $button-shadow-active;
-  }
+  // &:active {
+  //   box-shadow: $button-shadow-active;
+  // }
 }
 
 button.red-icon {
@@ -140,6 +140,8 @@ button.link {
 
 button.simple {
   padding: 6px;
+  padding-left: 8px;
+  padding-right: 8px;
   border: 1px solid $border-color-medium;
   border-radius: 3px;
   font-family: $button-font;

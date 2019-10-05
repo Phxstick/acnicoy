@@ -11,8 +11,6 @@ class KanjiSearchResultEntry extends Widget {
             info.rare = true;
         }
         info.meanings = info.meanings.join(", ");
-        // info.onYomi = info.onYomi.join("、 ");
-        // info.kunYomi = info.kunYomi.join("、 ");
         this.root.innerHTML += templates.get("kanji-search-result-entry")(info);
         main.makeKanjiInfoLink(this.$("kanji"), kanji);
         this.$("kanji").addEventListener("click", () => {
@@ -31,6 +29,15 @@ class KanjiSearchResultEntry extends Widget {
         const detailSpans =
             main.$("kanji-info-panel").getKanjiDetailSpans(kanji, info);
         detailSpans.forEach((span) => detailsBar.appendChild(span));
+
+        // Click a reading to search the kanji dictionary for it
+        this.addEventListener("click", (event) => {
+            const target = event.path[0];
+            if (target.classList.contains("yomi")) {
+                const query = target.textContent.trim();
+                main.sections["kanji"].search(query, "by-readings");
+            }
+        });
     }
 
     toggleAdded(added) {

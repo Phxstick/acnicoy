@@ -23,7 +23,24 @@ function chooseDataPath(defaultPath) {
     return result === undefined ? defaultPath : result[0];
 }
 
+function chooseImportFile() {
+    const result = dialog.showOpenDialogSync({
+        title: "Choose file to import", properties: ["openFile"]
+    });
+    return result === undefined ? null : result[0];
+}
+
+function chooseExportFile(defaultPath) {
+    const result = dialog.showSaveDialogSync({
+        title: "Save file", buttonLabel: "Export", defaultPath
+    });
+    return result === undefined ? null : result;
+}
+
 module.exports.confirm = confirm;
 module.exports.info = info;
 module.exports.error = error;
 module.exports.chooseDataPath = chooseDataPath;
+module.exports.chooseImportFile = chooseImportFile;
+module.exports.chooseExportFile = chooseExportFile;
+

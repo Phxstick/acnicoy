@@ -346,7 +346,7 @@ class EditHanziPanel extends EditPanel {
             dataChanged = result === "updated";
             if (dataChanged) events.emit("hanzi-changed", hanzi);
         } else {
-            await dataManager.hanzi.add(hanzi, values, levels);
+            await dataManager.hanzi.add({ hanzi, values, levels });
             events.emit("hanzi-added", hanzi);
         }
 

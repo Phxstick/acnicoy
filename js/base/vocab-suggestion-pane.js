@@ -125,15 +125,20 @@ class VocabSuggestionPane extends Widget {
         const node = document.createElement("span");
         node.textContent = content;
         node.classList.add("suggestion");
-        // Select on left click
+        // Toggle selection status on left click
         node.addEventListener("click", () => {
-            if (type === "word" && this.selectedVariantNode !== null) {
-                this.deselectSuggestionNode(this.selectedVariantNode, type);
+            if (node.hasAttribute("selected")) {
+                if (type !== "word") this.deselectSuggestionNode(node, type);
+            } else {
+                if (type === "word" && this.selectedVariantNode !== null) {
+                    this.deselectSuggestionNode(this.selectedVariantNode, type);
+                }
+                this.selectSuggestionNode(node, type);
             }
-            this.selectSuggestionNode(node, type);
         });
-        // Deselect on right click
+        // Deselect on right click (unless it's a word variant)
         node.addEventListener("contextmenu", () => {
+            if (type === "word") return;
             this.deselectSuggestionNode(node, type);
         });
         return node;

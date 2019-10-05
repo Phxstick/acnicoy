@@ -1,5 +1,7 @@
 "use strict";
 
+const csv = require("fast-csv");
+
 module.exports = function (paths, modules) {
     const vocab = {};
 
@@ -12,6 +14,17 @@ module.exports = function (paths, modules) {
         return modules.database.query(
             `SELECT level FROM vocabulary WHERE word = ?`, word)
         .then(([{level}]) => level);
+    }
+
+    /**
+     * Return the ID of the given word (as assigned internally by the database).
+     * @param {String} word
+     * @returns {Promise[Integer]}
+     */
+    vocab.getId = function (word) {
+        return modules.database.query(
+            `SELECT rowid FROM vocabulary WHERE word = ?`, word)
+        .then(([{rowid}]) => rowid);
     }
 
     /**
@@ -28,7 +41,7 @@ module.exports = function (paths, modules) {
         const sortingDirection = sortBackwards ? "DESC" : "ASC";
         return modules.database.query(
             `SELECT word FROM vocabulary
-             ORDER BY ${columnToSortBy} ${sortingDirection}`)
+             ORDER BY ${columnToSortBy} ${sortingDirection}, rowid DESC`)
         .then((rows) => rows.map((row) => row.word));
     }
 
@@ -41,6 +54,16 @@ module.exports = function (paths, modules) {
         return modules.database.query(
             "SELECT COUNT(word) AS amount FROM vocabulary WHERE word = ?", word)
         .then(([{amount}]) => amount > 0);
+    }
+
+    /**
+     * Return amount of words in the vocabulary.
+     * @returns {Promise[Integer]}
+     */
+    vocab.getAmountAdded = function () {
+        return modules.database.query(
+            "SELECT COUNT(word) AS amount FROM vocabulary")
+        .then(([{amount}]) => amount);
     }
 
     /**
@@ -113,18 +136,12 @@ module.exports = function (paths, modules) {
      * Add given word to the vocabulary with given details. If the word is
      * already added, new translations or readings are added without deleting
      * any old ones, and the SRS level and review date always stay the same.
-     * Status information about the process is returned in form of an array
-     * [wasWordAlreadyAdded, numNewTranslationsAdded, numNewReadingsAdded].
-     * @param {String} word
-     * @param {Array[String]} translations
-     * @param {Array[String]} readings
-     * @param {Integer} level
-     * @param {Integer} [dictionaryId=null] Id of the entry in the dictionary
-     *     this word corresponds to. Optional.
-     * @returns {Promise[Array[String]}
+     * Returns true if the word has been newly added.
      */
-    vocab.add = async function (word, translations, readings, notes, level,
-                                dictionaryId=null) {
+    vocab.add = async function ({ word, translations=[], readings=[], notes=[],
+                                  level=1, correctCount=0, mistakeCount=0,
+                                  reviewDate=null, creationDate=null,
+                                  dictionaryId=null }) {
         translations = utility.removeDuplicates(translations);
         readings = utility.removeDuplicates(readings);
         notes = utility.removeDuplicates(notes);
@@ -132,17 +149,25 @@ module.exports = function (paths, modules) {
             "SELECT * FROM vocabulary WHERE word = ?", word);
         if (!rows.length) {
             // Word not added. Insert new row into the vocabulary table
-            const spacing = modules.srs.currentScheme.intervals[level];
+            if (reviewDate === null) {
+                const spacing = modules.srs.currentScheme.intervals[level];
+                reviewDate = utility.getTime() + spacing;
+            }
+            if (creationDate === null) {
+                creationDate = utility.getTime();
+            }
             modules.stats.updateScore(modules.test.mode.WORDS, 0, level);
             await modules.database.run(`
                 INSERT INTO vocabulary
                 (word, date_added, level, review_date,
-                 translations, readings, notes, dictionary_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                word, utility.getTime(), level, utility.getTime() + spacing,
+                 translations, readings, notes,
+                 correct_count, mistake_count, dictionary_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                word, creationDate, level, reviewDate,
                 translations.length > 0 ? translations.join(";") : null,
                 readings.length > 0 ? readings.join(";") : null,
-                notes.length > 0 ? notes.join(";") : null, dictionaryId);
+                notes.length > 0 ? notes.join(";") : null,
+                correctCount, mistakeCount, dictionaryId);
             return true;
         }
 
@@ -363,7 +388,6 @@ module.exports = function (paths, modules) {
 
     /**
      * Return a mapping from words to date added (in seconds).
-     * @returns {Promise[Object[Integer]]}
      */
     vocab.getDateAddedForEachWord = function () {
         return modules.database.query(`SELECT word, date_added FROM vocabulary`)
@@ -378,7 +402,6 @@ module.exports = function (paths, modules) {
 
     /**
      * Return a mapping from words to their current SRS levels.
-     * @returns {Promise[Object[Integer]]}
      */
     vocab.getLevelForEachWord = function () {
         return modules.database.query(`SELECT word, level FROM vocabulary`)
@@ -388,6 +411,60 @@ module.exports = function (paths, modules) {
                 map.set(word, level);
             }
             return map;
+        });
+    }
+
+    /**
+     * Return a mapping from words to their internal database IDs.
+     */
+    vocab.getIdForEachWord = function () {
+        return modules.database.query(`SELECT word, rowid FROM vocabulary`)
+        .then((rows) => {
+            const map = new Map();
+            for (const { word, rowid } of rows) {
+                map.set(word, rowid);
+            }
+            return map;
+        });
+    }
+
+    /**
+     * Write the given words including all associated information into a CSV
+     * file at the given path. If no list of words is given, export all words.
+     * @param {Array[String]} words
+     */
+    vocab.export = async function (filepath, words) {
+        let rows;
+        if (words === undefined) {
+            rows = await modules.database.query(
+                `SELECT * FROM vocabulary ORDER BY date_added DESC, rowid DESC`)
+        } else {
+            rows = [];
+            for (const word of words) {
+                rows.push((await modules.database.query(
+                    `SELECT * FROM vocabulary WHERE word = ?`, word))[0]);
+            }
+        }
+        if (rows.length === 0) return;
+        csv.writeToPath(filepath, rows, {
+            headers: true,
+            delimiter: "\t",
+            transform: (row) => ({
+                "Word": row.word,
+                "Creation date": row.date_added,
+
+                "Meanings": row.translations,
+                "Readings": row.readings,
+                "Notes": row.notes,
+
+                "SRS level": row.level,
+                "Review date": row.review_date,
+                "Correct count": row.correct_count,
+                "Mistake count": row.mistake_count,
+                "Tags": modules.vocabLists.getListsForWord(row.word)
+                        .map(listName => listName.replace(";", "")).join(";"),
+                "Dictionary ID": row.dictionary_id
+            })
         });
     }
 

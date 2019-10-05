@@ -6,15 +6,13 @@
      {{#unless added}}style="display:none"{{/unless}}>Added</button>
     <button id="add-button"
      {{#if added}}style="display:none"{{/if}}>Add</button>
-    <!--div id="strokes-link">Strokes</div>
-    <div id="examples-link">Examples</div-->
   </div>
   <div id="right-frame">
     <div id="meanings">{{meanings}}</div>
     <div id="details-bar"></div>
     {{#if onYomi.length}}
       <div class="yomi-frame">
-        <span class="yomi-header">On:</span>
+        <span class="yomi-header">On</span>
         {{#each onYomi}}
           <span class="yomi">{{this}}</span>
         {{/each}}
@@ -22,7 +20,7 @@
     {{/if}}
     {{#if kunYomi.length}}
       <div class="yomi-frame">
-        <span class="yomi-header">Kun:</span>
+        <span class="yomi-header">Kun</span>
         {{#each kunYomi}}
           <span class="yomi">{{this}}</span>
         {{/each}}

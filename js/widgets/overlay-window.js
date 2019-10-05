@@ -28,6 +28,7 @@ class OverlayWindow extends Widget {
         // Create a filter to dim the overlay below
         const filter = document.createElement("div");
         filter.classList.add("filter");
+        if (this.filters.length === 0) filter.classList.add("top-level");
         const background = this.overlays.length === 0 ?
             this.wrapper : this.overlays.last();
         filter.style.width = `${background.offsetWidth}px`;

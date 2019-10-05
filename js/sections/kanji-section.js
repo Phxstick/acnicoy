@@ -10,20 +10,27 @@ class KanjiSection extends Section {
         this.addedAmountPerGroup = {};
         this.overviewSettings = {};
         this.searchSettings = {};
+
         // Initially hide some elements
         this.$("search-results").hide();
         this.$("no-search-results-info").hide();
+        this.$("show-overview-button").hide();
+
         // =================================================================
-        // Start search when clicking a search example
+        //   Start search when clicking a search example
         // =================================================================
+
         this.$("search-info").addEventListener("click", (event) => {
             if (event.target.classList.contains("search-example")) {
-                this.search(event.target.textContent, event.target.dataset.type)
+                this.search(event.target.textContent.trim(),
+                            event.target.dataset.type);
             }
         });
+
         // =================================================================
-        // Control bar event listeners
+        //   Control bar event listeners
         // =================================================================
+
         this.$("search-by-readings-input").enableKanaInput();
         utility.selectAllOnFocus(this.$("search-by-kanji-input"));
         utility.selectAllOnFocus(this.$("search-by-meanings-input"));
@@ -58,9 +65,11 @@ class KanjiSection extends Section {
             const query = this.$("search-by-readings-input").value.trim();
             this.search(query, "by-readings");
         });
+
         // =================================================================
-        // Kanji search functionality
+        //   Kanji search functionality
         // =================================================================
+
         this.kanjiSearchViewState = new View({
             viewElement: this.$("search-results"),
             getData: async (query, method) => {
@@ -74,18 +83,20 @@ class KanjiSection extends Section {
             },
             createViewItem: async (kanji) => {
                 const info = await dataManager.content.getKanjiInfo(kanji);
-                const ResultEntry =
-                    customElements.get("kanji-search-result-entry");
-                return new ResultEntry(kanji, info);
+                info.added = await dataManager.kanji.isAdded(kanji);
+                const Entry = customElements.get("kanji-search-result-entry");
+                return new Entry(kanji, info);
             },
             initialDisplayAmount: 10,
             displayAmount: 10,
             placeholder: this.$("search-info"),
             noDataPane: this.$("no-search-results-info")
         });
+
         // =================================================================
-        // Overview/Search settings
+        //   Overview settings
         // =================================================================
+
         this.overviewSettings.splittingCriterion =
             dataManager.settings.kanjiOverview.splittingCriterion;
         utility.bindRadiobuttonGroup(
@@ -138,9 +149,11 @@ class KanjiSection extends Section {
             this.overviewSettings.onlyMissing = !value;
             this.displayKanji();
         };
+
         // =================================================================
-        // Search history
+        //   Search history
         // =================================================================
+
         this.$("history-button").addEventListener("click", () => {
             this.$("history-popup").toggleDisplay();
             this.$("history-popup").closeInThisIteration = false;
@@ -195,6 +208,16 @@ class KanjiSection extends Section {
                 }
             }
         });
+        events.on("kanji-imported", async (items) => {
+            if (!this.contentLoaded) return;
+            for (const { kanji } of items) {
+                const isKnownKanji=await dataManager.content.isKnownKanji(kanji)
+                if (!isKnownKanji) return;
+                this.$(kanji).classList.add("added");
+                if (this.overviewSettings.onlyMissing) this.$(kanji).hide();
+                this.updateAddedCounter(kanji, true);
+            }
+        });
     }
 
     open() {
@@ -224,11 +247,15 @@ class KanjiSection extends Section {
     showOverview() {
         this.$("overview-pane").show();
         this.$("search-pane").hide();
+        this.$("show-overview-button").hide();
+        this.$("settings-button").show();
     }
 
     showSearchResults() {
         this.$("overview-pane").hide();
         this.$("search-pane").show();
+        this.$("show-overview-button").show();
+        this.$("settings-button").hide();
     }
 
     createKanjiOverviewNodes(kanjiList) {
@@ -372,6 +399,19 @@ class KanjiSection extends Section {
             this.$("history").insertBefore(
                 this.createHistoryViewItem(query, method),
                 this.$("history").firstChild);
+
+            // Show given query in the corresponding input and clear all others
+            this.$("search-by-kanji-input").value = "";
+            this.$("search-by-meanings-input").value = "";
+            this.$("search-by-readings-input").value = "";
+            if (method === "by-kanji") {
+                this.$("search-by-kanji-input").value = query;
+            } else if (method === "by-meanings") {
+                this.$("search-by-meanings-input").value = query;
+            } else if (method === "by-readings") {
+                this.$("search-by-readings-input").value = query;
+            }
+
             // if (method === "by-kanji") {
             //     this.$("search-by-kanji-button").classList.add("searching");
             // } else if (method === "by-meanings") {

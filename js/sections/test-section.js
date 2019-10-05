@@ -349,6 +349,13 @@ class TestSection extends Section {
     adjustToLanguage() {
         this.testInfo = null;
     }
+
+    initialize() {
+        // Disable some test-section shortcuts, enable only when needed
+        shortcuts.disable("ignore-answer");
+        shortcuts.disable("count-as-correct");
+        shortcuts.disable("count-as-wrong");
+    }
     
     open(vocabLists) {
         this.isOpen = true;
@@ -361,11 +368,14 @@ class TestSection extends Section {
         if (this.testInfo === null) {
             this.createTest(vocabLists);
         } else {
-            // Register shortcut for ignoring answer
-            if (this.testInfo.inEvalStep &&
-                   !dataManager.settings.test.useFlashcardMode &&
-                   dataManager.settings.test.enableIgnoreShortcut) {
-                shortcuts.enable("ignore-answer");
+            // Register shortcut for ignoring/evaluating answer
+            if (this.testInfo.inEvalStep) {
+                if (dataManager.settings.test.useFlashcardMode) {
+                    shortcuts.enable("count-as-correct");
+                    shortcuts.enable("count-as-wrong");
+                } else if (dataManager.settings.test.enableIgnoreShortcut) {
+                    shortcuts.enable("ignore-answer");
+                }
             }
             // Put focus on correct element
             if (dataManager.settings.test.useFlashcardMode) {
@@ -396,6 +406,8 @@ class TestSection extends Section {
     close() {
         this.isOpen = false;
         shortcuts.disable("ignore-answer");
+        shortcuts.disable("count-as-correct");
+        shortcuts.disable("count-as-wrong");
         if (main.barsHidden) main.toggleBarVisibility();
     }
 
@@ -837,6 +849,10 @@ class TestSection extends Section {
         this.$("evaluation-buttons").show();
         this.$("modify-item").removeAttribute("disabled");
 
+        // Enable shortcuts
+        shortcuts.enable("count-as-correct");
+        shortcuts.enable("count-as-wrong");
+
         // Mark potential next SRS levels for when item is counted correct/wrong
         if (item.parts.length === 0 && !this.testInfo.vocabListMode) {
             if (this.currentlySelectedLevel !== null)
@@ -1079,6 +1095,8 @@ class TestSection extends Section {
         this.$("ignore-answer").setAttribute("disabled", "");
         this.$("add-answer").setAttribute("disabled", "");
         this.$("modify-item").setAttribute("disabled", "");
+        shortcuts.disable("count-as-correct");
+        shortcuts.disable("count-as-wrong");
         if (dataManager.settings.test.enableIgnoreShortcut) {
             shortcuts.disable("ignore-answer");
         }

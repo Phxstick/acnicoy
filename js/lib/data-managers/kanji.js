@@ -1,5 +1,7 @@
 "use strict";
 
+const csv = require("fast-csv");
+
 module.exports = function (paths, modules) {
     const kanjiModule = {};
 
@@ -14,7 +16,8 @@ module.exports = function (paths, modules) {
      *     each attribute ("meanings", "on_yomi", "kun_yomi") to an integer.
      * @returns {Promise}
      */
-    kanjiModule.add = async function (kanji, values, levels) {
+    kanjiModule.add = async function ({ kanji, values, levels={},
+            reviewDates={}, correctCounts={}, mistakeCounts={}, creationDate }){
         let newStatus = "no-change";
         const attributes = ["meanings", "on_yomi", "kun_yomi"];
         const modes = {
@@ -23,21 +26,26 @@ module.exports = function (paths, modules) {
             "kun_yomi": modules.test.mode.KANJI_KUN_YOMI
         };
         // Fill in missing values
-        if (levels === undefined) {
-            levels = {};
-        }
         for (const attribute of attributes) {
             if (!values.hasOwnProperty(attribute)) values[attribute] = [];
             if (!levels.hasOwnProperty(attribute)) levels[attribute] = 1;
+            if (!reviewDates.hasOwnProperty(attribute))
+                reviewDates[attribute] = utility.getTime()
+                    + modules.srs.currentScheme.intervals[levels[attribute]];
+            if (!correctCounts.hasOwnProperty(attribute))
+                correctCounts[attribute] = 0;
+            if (!mistakeCounts.hasOwnProperty(attribute))
+                mistakeCounts[attribute] = 0;
         }
         // Add kanji if it's not already added yet
         const alreadyAdded = await kanjiModule.isAdded(kanji);
         if (!alreadyAdded) {
             newStatus = "added";
+            if (creationDate === undefined) creationDate = utility.getTime();
             modules.stats.incrementKanjiAddedToday();
             await modules.database.run(
                 "INSERT INTO kanji (kanji, date_added) VALUES (?, ?)",
-                kanji, utility.getTime());
+                kanji, creationDate);
         }
         const promises = [];
         // Update kanji data for each attribute
@@ -46,8 +54,7 @@ module.exports = function (paths, modules) {
             const table = modules.test.modeToTable(mode);
             const newValues = values[attribute];
             const newLevel = levels[attribute];
-            const newReviewDate = utility.getTime()
-                + modules.srs.currentScheme.intervals[newLevel];
+            const newReviewDate = reviewDates[attribute];
             let oldValues;
             let oldLevel;
             let oldReviewDate;
@@ -77,9 +84,11 @@ module.exports = function (paths, modules) {
                     modules.stats.updateScore(mode, 0, newLevel);
                     await modules.database.run(
                         `INSERT INTO ${table}
-                         (kanji, ${attribute}, level, review_date)
-                         VALUES (?, ?, ?, ?)`,
-                        kanji, newValues.join(";"), newLevel, newReviewDate);
+                         (kanji, ${attribute}, level, review_date,
+                          correct_count, mistake_count)
+                         VALUES (?, ?, ?, ?, ?, ?)`,
+                        kanji, newValues.join(";"), newLevel, newReviewDate,
+                        correctCounts[attribute], mistakeCounts[attribute]);
                 }
                 if (newStatus !== "added" &&
                     !utility.setEqual(new Set(newValues),
@@ -375,7 +384,7 @@ module.exports = function (paths, modules) {
         const sortingDirection = sortBackwards ? "DESC" : "ASC";
         return modules.database.query(
             `SELECT kanji FROM kanji
-             ORDER BY ${columnToSortBy} ${sortingDirection}`)
+             ORDER BY ${columnToSortBy} ${sortingDirection}, rowid DESC`)
         .then((rows) => rows.map((row) => row.kanji));
     };
 
@@ -404,6 +413,28 @@ module.exports = function (paths, modules) {
             }
             return map;
         });
+    }
+
+    /**
+     * Return a mapping from all kanji to their internal database ID.
+     */
+    kanjiModule.getIdForEachKanji = function () {
+        return modules.database.query(`SELECT kanji, rowid FROM kanji`)
+        .then((rows) => {
+            const map = new Map();
+            for (const { kanji, rowid } of rows) {
+                map.set(kanji, rowid);
+            }
+            return map;
+        });
+    }
+
+    /**
+     * Return the internal database ID of the given kanji (for sorting purposes)
+     */
+    kanjiModule.getId = function (kanji) {
+        return modules.database.query(`SELECT rowid FROM kanji WHERE kanji = ?`,
+            kanji).then(([{rowid}]) => rowid);
     }
 
     /**
@@ -437,6 +468,79 @@ module.exports = function (paths, modules) {
             `SELECT kanji FROM ${tableName} WHERE ${conditions.join(" OR ")}`,
             ...args)
         return rows.map((row) => row.kanji);
+    }
+
+    /**
+     * Write the given kanji including all associated information into a CSV
+     * file at the given path. If no list of kanji is given, export all kanji.
+     * @param {Array[String]} kanjiList
+     */
+    kanjiModule.export = async function (filepath, kanjiList) {
+        // Get all kanji from database if no list is given
+        if (kanjiList === undefined) {
+            kanjiList = await modules.database.query(
+                `SELECT kanji FROM kanji ORDER BY rowid ASC`);
+            kanjiList = kanjiList.map(({ kanji }) => kanji);
+        }
+        if (kanjiList.length === 0) return;
+
+        // Assemble values from database for each kanji
+        const rows = []
+        for (let i = 0; i < kanjiList.length; ++i) {
+            const kanji = kanjiList[i];
+            rows.push({
+                kanji: await modules.database.query(
+                    `SELECT * FROM kanji k WHERE k.kanji = ?`, kanji),
+                meanings: await modules.database.query(
+                    `SELECT * FROM kanji_meanings k WHERE k.kanji = ?`, kanji),
+                onYomi: await modules.database.query(
+                    `SELECT * FROM kanji_on_yomi k WHERE k.kanji = ?`, kanji),
+                kunYomi: await modules.database.query(
+                    `SELECT * FROM kanji_kun_yomi k WHERE k.kanji = ?`, kanji)
+            });
+        }
+
+        // Transform rows and write them to the given file
+        csv.writeToPath(filepath, rows, {
+            headers: true,
+            delimiter: "\t",
+            transform: (row) => ({
+                "Kanji": row.kanji[0].kanji,
+                "Creation date": row.kanji[0].date_added,
+
+                "Meanings": row.meanings.length ? row.meanings[0].meanings:null,
+                "On yomi": row.onYomi.length ? row.onYomi[0].on_yomi : null,
+                "Kun yomi": row.kunYomi.length ? row.kunYomi[0].kun_yomi : null,
+
+                "Meanings SRS level":
+                    row.meanings.length ? row.meanings[0].level : null,
+                "On yomi SRS level":
+                    row.onYomi.length ? row.onYomi[0].level : null,
+                "Kun Yomi SRS level":
+                    row.kunYomi.length ? row.kunYomi[0].level : null,
+
+                "Meanings review date":
+                    row.meanings.length ? row.meanings[0].review_date : null,
+                "On yomi review date":
+                    row.onYomi.length ? row.onYomi[0].review_date : null,
+                "Kun Yomi review date":
+                    row.kunYomi.length ? row.kunYomi[0].review_date : null,
+
+                "Meanings mistake count":
+                    row.meanings.length ? row.meanings[0].mistake_count : null,
+                "On yomi mistake count": 
+                    row.onYomi.length ? row.onYomi[0].mistake_count : null,
+                "Kun Yomi mistake count":
+                    row.kunYomi.length ? row.kunYomi[0].mistake_count : null,
+
+                "Meanings correct count":
+                    row.meanings.length ? row.meanings[0].correct_count : null,
+                "On yomi correct count":
+                    row.onYomi.length ? row.onYomi[0].correct_count : null,
+                "Kun Yomi correct count":
+                    row.kunYomi.length ? row.kunYomi[0].correct_count : null
+            })
+        });
     }
 
     return kanjiModule;

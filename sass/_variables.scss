@@ -51,7 +51,7 @@ $contrast-text-shadow: 0.5px 0.5px 0.5px $contrast-shadow-color,
                        0px 0px 10px $contrast-shadow-color;
 
 $vertical-fading-border: linear-gradient(
-  to bottom, transparent, $border-color-dark, transparent) 0 100%;
+  to bottom, transparent, 20%, $border-color-medium, 80%, transparent) 0 100%;
 
 // Some default values for unassigned variables
 $suggestion-border-color: transparent !default;

@@ -21,7 +21,8 @@
       { "name": "Vocabulary",
         "children": [
           { "name": "Adding words" },
-          { "name": "Managing lists" }
+          { "name": "Managing lists" },
+          { "name": "Importing items" }
         ]
       },
       { "name": "Notes" }
@@ -34,7 +35,13 @@
         "children": [
           { "name": "Dictionary" },
           { "name": "Kanji section" },
-          { "name": "Suggestions" }
+          { "name": "Suggestions" },
+          { "name": "Importing data",
+            "children": [
+                { "name": "Kanji" },
+                { "name": "Houhou SRS" }
+            ]
+          }
         ]
       },
       { "name": "Chinese" }

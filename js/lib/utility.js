@@ -584,7 +584,9 @@ function removeEntryFromSortedList(
     if (container.children.length === 0) return false;
     const index = findIndex(container, value, key, sortedBackwards);
     if (index < 0 || index >= container.children.length) return false;
-    if (key(container.children[index]) === value) {
+    // Don't test equality with "===" to make it work with arrays
+    const valueAtIndex = key(container.children[index]);
+    if (!(valueAtIndex > value) && !(valueAtIndex < value)) {
         container.removeChildAt(index);
         return true;
     }
@@ -605,7 +607,9 @@ function getEntryFromSortedList(
     if (container.children.length === 0) return null;
     const index = findIndex(container, value, key, sortedBackwards);
     if (index < 0 || index >= container.children.length) return null;
-    if (key(container.children[index]) === value) {
+    // Don't test equality with "===" to make it work with arrays
+    const valueAtIndex = key(container.children[index]);
+    if (!(valueAtIndex > value) && !(valueAtIndex < value)) {
         return container.children[index];
     }
     return null;

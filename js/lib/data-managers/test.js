@@ -78,19 +78,26 @@ module.exports = function (paths, modules) {
         switch (mode) {
             case test.mode.WORDS:
                 if (part === "meanings")
-                    return modules.vocab.add(item, [newSolution], [], []);
+                    return modules.vocab.add({ word: item,
+                                               translations: [newSolution] });
                 else if (part === "readings")
-                    return modules.vocab.add(item, [], [newSolution], []);
+                    return modules.vocab.add({ word: item,
+                                               readings: [newSolution] });
             case test.mode.KANJI_MEANINGS:
-                return modules.kanji.add(item, { "meanings": [newSolution] });
+                return modules.kanji.add({
+                    kanji: item, values: { meanings: [newSolution] } });
             case test.mode.KANJI_ON_YOMI:
-                return modules.kanji.add(item, { "on_yomi": [newSolution] });
+                return modules.kanji.add({
+                    kanji: item, values: { on_yomi: [newSolution] } });
             case test.mode.KANJI_KUN_YOMI:
-                return modules.kanji.add(item, { "kun_yomi": [newSolution] });
+                return modules.kanji.add({
+                    kanji: item, values: { kun_yomi: [newSolution] } });
             case test.mode.HANZI_MEANINGS:
-                return modules.hanzi.add(item, { "meanings": [newSolution] });
+                return modules.hanzi.add({
+                    hanzi: item, values: { meanings: [newSolution] } });
             case test.mode.HANZI_READINGS:
-                return modules.hanzi.add(item, { "readings": [newSolution] });
+                return modules.hanzi.add({
+                    hanzi: item, values: { readings: [newSolution] } });
         }
     }
 

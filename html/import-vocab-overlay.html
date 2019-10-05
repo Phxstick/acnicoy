@@ -1,0 +1,141 @@
+<div id="partitioned-window">
+  <div id="header-frame">
+    <div id="header">Import vocabulary</div>
+    <button id="close-button" class="x-shape"></span>
+  </div>
+  <div id="main-frame">
+
+
+    <div id="parse-options">
+      <div>
+        Acnicoy supports importing vocabulary items from UTF-8 encoded CSV files.
+        <button id="import-help-link" class="link">See here</button> for
+        information on accepted fields.
+      </div>
+      <div class="radiobutton-row" id="data-type">
+        <span class="description">Data type:</span>
+        <div class="options">
+          <span class="option">
+            <check-box data-value="vocab" class="radiobutton"></check-box>
+            <span>Vocabulary</span>
+          </span>
+          <span class="option">
+            <check-box data-value="kanji" class="radiobutton"></check-box>
+            <span>Kanji</span>
+          </span>
+          <span class="option">
+            <check-box data-value="hanzi" class="radiobutton"></check-box>
+            <span>Hanzi</span>
+          </span>
+          <span class="option">
+            <check-box data-value="Houhou" class="radiobutton"></check-box>
+            <span>Houhou SRS</span>
+          </span>
+        </div>
+      </div>
+      <div id="houhou-note">
+        Please note that there exist some incompatibilities between Houhou SRS
+        and Acnicoy, which can lead to data loss during the import procedure.
+        <button id="houhou-help-link" class="link">See here</button> for more
+        information.
+      </div>
+      <div id="language-data-warning">
+        Language data for Japanese must be available to allow correct assignment
+        of kanji readings importing data from Houhou SRS. You can download that
+        data from the language settings.
+      </div>
+      <div id="general-parse-options">
+        <div class="radiobutton-row" id="field-separator">
+          <span class="description">Field separator:</span>
+          <div class="options">
+            <span class="option">
+              <check-box data-value="	" class="radiobutton"></check-box>
+              <span>Tab</span>
+            </span>
+            <span class="option">
+              <check-box data-value=";" class="radiobutton"></check-box>
+              <span>Semicolon</span>
+            </span>
+            <span class="option">
+              <check-box data-value="," class="radiobutton"></check-box>
+              <span>Comma</span>
+            </span>
+          </div>
+        </div>
+        <div class="radiobutton-row" id="item-separator">
+          <span class="description">Item separator:</span>
+          <div class="options">
+            <span class="option">
+              <check-box data-value=";" class="radiobutton"></check-box>
+              <span>Semicolon</span>
+            </span>
+            <span class="option">
+              <check-box data-value="," class="radiobutton"></check-box>
+              <span>Comma</span>
+            </span>
+            <span class="option">
+              <check-box data-value="/" class="radiobutton"></check-box>
+              <span>Slash</span>
+            </span>
+          </div>
+        </div>
+        <div class="labeled-checkbox">
+          <check-box id="count-levels-from-zero"></check-box>
+          <span>SRS levels start at 0 (instead of 1)</span>
+        </div>
+      </div>
+      <div id="parse-error-message">The specified file could not be parsed.</div>
+      <div id="only-errors-message">
+        Errors occurred while attempting to extract data from the file.
+        The file contents are either not valid or don't match the options.
+      </div>
+    </div>
+
+
+    <div id="import-options">
+      <div id="num-items-message">
+        Successfully parsed <span id="num-items-parsed"></span> items.<br>
+        Press "Import items" to add them to your vocabulary.
+      </div>
+      <div id="num-errors-message">
+        Errors occured while parsing <span id="num-errors"></span> items.
+        They will be discarded.</div>
+      <div class="radiobutton-row" id="import-order">
+        <span class="description">Import order:</span>
+        <div class="options">
+          <span class="option">
+            <check-box data-value="first-is-newest" class="radiobutton"></check-box>
+            <span>First file entry is newest</span>
+          </span>
+          <span class="option">
+            <check-box data-value="first-is-oldest" class="radiobutton"></check-box>
+            <span>Last file entry is newest</span>
+          </span>
+          <span class="option">
+            <check-box data-value="shuffle" class="radiobutton"></check-box>
+            <span>Shuffle randomly</span>
+          </span>
+        </div>
+      </div>
+      <div id="add-to-list-option" class="labeled-checkbox">
+        <check-box id="add-to-list"></check-box>
+        <span>Add all items to a list</span>
+        <input id="vocab-list" class="styled"
+               placeholder="Enter list name"></input>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="buttons">
+    <div class="flex-spacer"></div>
+    <button class="simple" id="cancel-button">Cancel</button>
+    <button class="simple" id="choose-file-button">Choose file</button>
+    <button class="simple" id="import-items-button">Import items</button>
+    <div id="spinner" class="pulsating-triple-dots">
+      <div class="bounce1"></div>
+      <div class="bounce2"></div>
+      <div class="bounce3"></div>
+    </div>
+  </div>
+</div>

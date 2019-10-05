@@ -133,25 +133,7 @@ class Application {
         }
         await Promise.all(promises);
         let total = performance.now() - start;
-        // console.log("Loaded all language data after %f ms", total);
-
-        // Load and process language content for all languages if not disabled
-        if (dataManager.settings.general.autoLoadLanguageContent) {
-            start = performance.now();
-            this.openWindow("loading", "Loading language data...");
-            //    "This might take a bit.<br>" +
-            //    "Content loading on application launch<br>" +
-            //    "can be disabled in the settings.";
-            promises.length = 0;
-            for (const language of languages) {
-                const secondary = dataManager.languageSettings.getFor(
-                    language, "secondaryLanguage");
-                promises.push(main.loadLanguageContent(language,secondary,true))
-            }
-            await Promise.all(promises);
-            total = performance.now() - start;
-            // console.log("Loaded all language content after %f ms", total);
-        }
+        // console.log("Loaded all user data after %f ms", total);
     }
 
     async initialize() {

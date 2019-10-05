@@ -456,7 +456,8 @@ class EditVocabPanel extends EditPanel {
             if (dataChanged) events.emit("vocab-changed", word);
         } else {
             await dataManager.vocab.add(
-                word, translations, readings, notes, level, this.dictionaryId);
+                { word, translations, readings, notes, level,
+                  dictionaryId: this.dictionaryId });
             events.emit("word-added", word, this.dictionaryId);
         }
 

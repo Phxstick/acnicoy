@@ -1,5 +1,7 @@
 "use strict";
 
+const csv = require("fast-csv");
+
 module.exports = function (paths, modules) {
     const hanziModule = {};
 
@@ -14,29 +16,34 @@ module.exports = function (paths, modules) {
      *     each attribute ("meanings", "readings") to an integer.
      * @returns {Promise}
      */
-    hanziModule.add = async function (hanzi, values, levels) {
+    hanziModule.add = async function ({ hanzi, values, levels={},
+            reviewDates={}, correctCounts={}, mistakeCounts={}, creationDate }){
         let newStatus = "no-change";
         const attributes = ["meanings", "readings"];
         const modes = {
             "meanings": modules.test.mode.HANZI_MEANINGS,
             "readings": modules.test.mode.HANZI_READINGS
         };
-        // Fill in missing values
-        if (levels === undefined) {
-            levels = {};
-        }
         for (const attribute of attributes) {
             if (!values.hasOwnProperty(attribute)) values[attribute] = [];
             if (!levels.hasOwnProperty(attribute)) levels[attribute] = 1;
+            if (!reviewDates.hasOwnProperty(attribute))
+                reviewDates[attribute] = utility.getTime()
+                    + modules.srs.currentScheme.intervals[levels[attribute]];
+            if (!correctCounts.hasOwnProperty(attribute))
+                correctCounts[attribute] = 0;
+            if (!mistakeCounts.hasOwnProperty(attribute))
+                mistakeCounts[attribute] = 0;
         }
         // Add hanzi if it's not already added yet
         const alreadyAdded = await hanziModule.isAdded(hanzi);
         if (!alreadyAdded) {
             newStatus = "added";
+            if (creationDate === undefined) creationDate = utility.getTime();
             modules.stats.incrementHanziAddedToday();
             await modules.database.run(
                 "INSERT INTO hanzi (hanzi, date_added) VALUES (?, ?)",
-                hanzi, utility.getTime());
+                hanzi, creationDate);
         }
         const promises = [];
         // Update hanzi data for each attribute
@@ -45,8 +52,7 @@ module.exports = function (paths, modules) {
             const table = modules.test.modeToTable(mode);
             const newValues = values[attribute];
             const newLevel = levels[attribute];
-            const newReviewDate = utility.getTime()
-                + modules.srs.currentScheme.intervals[newLevel];
+            const newReviewDate = reviewDates[attribute];
             let oldValues;
             let oldLevel;
             let oldReviewDate;
@@ -76,9 +82,11 @@ module.exports = function (paths, modules) {
                     modules.stats.updateScore(mode, 0, newLevel);
                     await modules.database.run(
                         `INSERT INTO ${table}
-                         (hanzi, ${attribute}, level, review_date)
-                         VALUES (?, ?, ?, ?)`,
-                        hanzi, newValues.join(";"), newLevel, newReviewDate);
+                         (hanzi, ${attribute}, level, review_date,
+                          correct_count, mistake_count)
+                         VALUES (?, ?, ?, ?, ?, ?)`,
+                        hanzi, newValues.join(";"), newLevel, newReviewDate,
+                        correctCounts[attribute], mistakeCounts[attribute]);
                 }
                 if (newStatus !== "added" &&
                     !utility.setEqual(new Set(newValues),
@@ -296,7 +304,7 @@ module.exports = function (paths, modules) {
         const sortingDirection = sortBackwards ? "DESC" : "ASC";
         return modules.database.query(
             `SELECT hanzi FROM hanzi
-             ORDER BY ${columnToSortBy} ${sortingDirection}`)
+             ORDER BY ${columnToSortBy} ${sortingDirection}, rowid DESC`)
         .then((rows) => rows.map((row) => row.hanzi));
     };
 
@@ -328,6 +336,28 @@ module.exports = function (paths, modules) {
     }
 
     /**
+     * Return a mapping from all hanzi to their internal database ID.
+     */
+    hanziModule.getIdForEachHanzi = function () {
+        return modules.database.query(`SELECT hanzi, rowid FROM hanzi`)
+        .then((rows) => {
+            const map = new Map();
+            for (const { hanzi, rowid } of rows) {
+                map.set(hanzi, rowid);
+            }
+            return map;
+        });
+    }
+
+    /**
+     * Return the internal database ID of the given hanzi (for sorting purposes)
+     */
+    hanziModule.getId = function (hanzi) {
+        return modules.database.query(`SELECT rowid FROM hanzi WHERE hanzi = ?`,
+            hanzi).then(([{rowid}]) => rowid);
+    }
+
+    /**
      * Get a list of hanzi containing the given query string in their meanings
      * or readings.
      * @param {String} query
@@ -353,6 +383,68 @@ module.exports = function (paths, modules) {
             `SELECT hanzi FROM ${tableName} WHERE ${conditions.join(" OR ")}`,
             ...args)
         return rows.map((row) => row.hanzi);
+    }
+
+    /**
+     * Write the given hanzi including all associated information into a CSV
+     * file at the given path. If no list of hanzi is given, export all hanzi.
+     * @param {Array[String]} hanziList
+     */
+    hanziModule.export = async function (filepath, hanziList) {
+        // Get all hanzi from database if no list is given
+        if (hanziList === undefined) {
+            hanziList = await modules.database.query(
+                `SELECT hanzi FROM hanzi ORDER BY rowid ASC`);
+            hanziList = hanziList.map(({ hanzi }) => hanzi);
+        }
+        if (hanziList.length === 0) return;
+
+        // Assemble values from database for each hanzi
+        const rows = []
+        for (let i = 0; i < hanziList.length; ++i) {
+            const hanzi = hanziList[i];
+            rows.push({
+                hanzi: await modules.database.query(
+                    `SELECT * FROM hanzi k WHERE k.hanzi = ?`, hanzi),
+                meanings: await modules.database.query(
+                    `SELECT * FROM hanzi_meanings k WHERE k.hanzi = ?`, hanzi),
+                readings: await modules.database.query(
+                    `SELECT * FROM hanzi_readings k WHERE k.hanzi = ?`, hanzi)
+            });
+        }
+
+        // Transform rows and write them to the given file
+        csv.writeToPath(filepath, rows, {
+            headers: true,
+            delimiter: "\t",
+            transform: (row) => ({
+                "Hanzi": row.hanzi[0].hanzi,
+                "Creation date": row.hanzi[0].date_added,
+
+                "Meanings": row.meanings.length ? row.meanings[0].meanings:null,
+                "Readings": row.readings.length ? row.readings[0].readings:null,
+
+                "Meanings SRS level":
+                    row.meanings.length ? row.meanings[0].level : null,
+                "Readings SRS level":
+                    row.readings.length ? row.readings[0].level : null,
+
+                "Meanings review date":
+                    row.meanings.length ? row.meanings[0].review_date : null,
+                "Readings review date":
+                    row.readings.length ? row.readings[0].review_date : null,
+
+                "Meanings mistake count":
+                    row.meanings.length ? row.meanings[0].mistake_count : null,
+                "Readings mistake count":
+                    row.readings.length ? row.readings[0].mistake_count : null,
+
+                "Meanings correct count":
+                    row.meanings.length ? row.meanings[0].correct_count : null,
+                "Readings correct count":
+                    row.readings.length ? row.readings[0].correct_count : null,
+            })
+        });
     }
 
     return hanziModule;

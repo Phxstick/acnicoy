@@ -58,7 +58,10 @@ class HelpOverlay extends Overlay {
                 const headers = this.$("content").querySelectorAll("h3");
                 for (const header of headers) {
                     if (header.textContent === headerName) {
-                        header.scrollIntoView();
+                        utility.finishEventQueue().then(() => {
+                            header.scrollIntoView();
+                            this.$("content").scrollTop -= 20;
+                        });
                         break;
                     }
                 }

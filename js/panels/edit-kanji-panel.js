@@ -118,6 +118,10 @@ class EditKanjiPanel extends EditPanel {
                 this.originalKanji = null;  // To stay in "add-mode"
             } else {
                 this.$("header").textContent = "Add kanji";
+                this.$("save-button").textContent = "Add";
+                // Remove focus (move somewhere else first if activeElem = null)
+                this.$("kanji").focus();
+                this.$("kanji").blur();
             }
 
             // If language data is available, load suggestions as well
@@ -245,6 +249,7 @@ class EditKanjiPanel extends EditPanel {
             this.$("on-yomi").empty();
             this.$("kun-yomi").empty();
             this.$("header").textContent = "Add kanji";
+            this.$("save-button").textContent = "Add";
             this.$("all-srs-levels").setByIndex(0);
             this.$("srs-level-meaning").parentNode.hide();
             this.$("srs-level-on-yomi").parentNode.hide();
@@ -252,6 +257,7 @@ class EditKanjiPanel extends EditPanel {
             return;
         }
         this.$("header").textContent = "Edit kanji";
+        this.$("save-button").textContent = "Save";
 
         // Otherwise, fill in the data associated with this kanji 
         const info = await dataManager.kanji.getInfo(kanji);
@@ -399,7 +405,7 @@ class EditKanjiPanel extends EditPanel {
             dataChanged = result === "updated";
             if (dataChanged) events.emit("kanji-changed", kanji);
         } else {
-            await dataManager.kanji.add(kanji, values, levels);
+            await dataManager.kanji.add({ kanji, values, levels });
             events.emit("kanji-added", kanji);
         }
 

@@ -20,6 +20,15 @@
         </div>
         <div id="vocab" class="list-view"></div>
       </div>
+      <div class="control-button-container" id="control-selected-vocab-buttons">
+        <button id="copy-selected-vocab-button">Copy</button>
+        <button id="export-selected-vocab-button">Export</button>
+        <button id="delete-selected-vocab-button">Delete</button>
+      </div>
+      <div class="control-button-container" id="import-export-vocab-buttons">
+        <button id="import-vocab-button">Import</button>
+        <button id="export-vocab-button">Export</button>
+      </div>
     </div>
     <div id="vocab-lists-column" class="column">
       <div id="no-lists-info" class="info-frame">
@@ -35,12 +44,14 @@
         </div>
         <div id="vocab-lists" class="list-view"></div>
       </div>
-      <div id="vocab-lists-button-frame">
+      <div class="control-button-container" id="vocab-lists-button-frame">
         <button id="add-list-button"><i class="fa fa-plus"></i></button>
         <button id="rename-list-button"><i class="fa fa-pencil"></i></button>
         <button id="delete-list-button"><i class="fa fa-trash"></i></button>
       </div>
-      <button id="test-on-list-button">Test on selected lists</button>
+      <div class="control-button-container">
+        <button id="test-on-list-button">Test on selected lists</button>
+      </div>
     </div>
     <div id="list-contents-column" class="column">
       <div id="no-list-selected-info" class="info-frame">
@@ -59,6 +70,16 @@
             <i class="fa fa-search"></i></button>
         </div>
         <div id="list-contents" class="list-view"></div>
+      </div>
+      <div id="control-selected-list-contents-buttons">
+        <div class="control-button-container">
+          <button id="copy-selected-list-contents-button">Copy</button>
+          <button id="export-selected-list-contents-button">Export</button>
+          <button id="delete-selected-list-contents-button">Delete</button>
+        </div>
+        <div class="control-button-container">
+         <button id="remove-selected-from-list-button">Remove from list</button>
+        </div>
       </div>
     </div>
   </div>

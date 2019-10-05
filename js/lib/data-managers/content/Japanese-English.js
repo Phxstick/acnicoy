@@ -25,8 +25,7 @@ module.exports = async function (paths, contentPaths, modules) {
                     k.jlpt AS jlptLevel,
                     r.radical AS radical,
                     r.id AS radicalId,
-                    r.name AS radicalName,
-                    (k.entry IN (SELECT kanji FROM trainer.kanji)) AS added
+                    r.name AS radicalName
              FROM kanji k JOIN radicals r ON k.radical_id = r.id
              WHERE k.entry = ?`, kanji)
         .then(([row]) => {
@@ -899,10 +898,16 @@ module.exports = async function (paths, contentPaths, modules) {
         await db.exec(createIndicesSql);
         // Detach content database again
         await db.run("DETACH DATABASE ?", "content");
-        return (query, ...params) => db.all(query, ...params);
+        const queryFunction = (query, ...params) => db.all(query, ...params);
+        const updateUserData = async () => {
+            await db.run("DETACH DATABASE ?", "trainer");
+            await db.run("ATTACH DATABASE ? AS ?",
+                paths.languageData("Japanese").database, "trainer");
+        };
+        return { queryFunction, updateUserData };
     }
 
-    const queryFunction = await loadDatabaseIntoMemory();
+    const { queryFunction, updateUserData } = await loadDatabaseIntoMemory();
     const [amountPerGrade, amountPerLevel] = await Promise.all([
         // Get information about kanji grades and jlpt levels
         queryFunction(`SELECT grade, COUNT(*) AS amount FROM kanji
@@ -929,6 +934,7 @@ module.exports = async function (paths, contentPaths, modules) {
     // Gather all the content into a frozen object
     data = Object.freeze({
         query: queryFunction,
+        updateUserData,
 
         // Data objects
         numKanjiPerGrade: Object.freeze(kanjiPerGrade),
