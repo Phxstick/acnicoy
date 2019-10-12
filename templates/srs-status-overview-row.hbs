@@ -1,27 +1,18 @@
 <div class="row-frame">
   <div class="language-label">{{language}}</div>
-  <div class="subrows-frame">
-    <div class="subrow all-items">
-      {{#each amounts}}
-        {{#if @index}}
-          <div>{{#if total}}{{total}}{{/if}}</div>
-        {{else}}
-          <div>{{total}}</div>
-        {{/if}}
-      {{/each}}
-    </div>
-    <div class="subrow">
-      {{#each amounts}}
-        {{#if @index}}
-          <div {{#if due}}class="highlighted"{{/if}}>
-            {{#if due}}{{due}}{{/if}}
-          </div>
-        {{else}}
-          <div {{#if due}}class="highlighted"{{/if}}>
-            {{due}}
-          </div>
-        {{/if}}
-      {{/each}}
-    </div>
+  <div class="subrow" data-language="{{language}}">
+    {{#each amounts}}
+      {{#if @index}}
+        <div data-level="{{@index}}">
+         <div class="total">{{#if total}}{{total}}{{/if}}</div>
+         <div class="due highlighted">{{#if due}}{{due}}{{/if}}</div>
+        </div>
+      {{else}}
+        <div class="all-items">
+          <div class="total">{{total}}</div>
+          <div class="due{{#if due}} highlighted{{/if}}">{{due}}</div>
+        </div>
+      {{/if}}
+    {{/each}}
   </div>
 </div>

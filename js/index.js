@@ -178,7 +178,7 @@ class Application {
         await this.initLanguages();
 
         // Create sections, panels and suggestion panes in main-window
-        this.openWindow("loading", "Creating inferface...");
+        this.openWindow("loading", "Creating interface...");
         await utility.finishEventQueue();
         await Promise.all([
             main.createSections(),

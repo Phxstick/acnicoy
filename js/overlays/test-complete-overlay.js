@@ -10,7 +10,8 @@ class TestCompleteOverlay extends Overlay {
             this.resolve(null);
         });
         this.$("ok-button").addEventListener("click", () => {
-            this.resolve(false);
+            // Keep test section open if there's a session plan
+            this.resolve(this.sessionPlan !== undefined);
         });
         this.$("languages-ready-for-testing").callback = async (language) => {
             await main.setLanguage(language);
@@ -157,7 +158,12 @@ class TestCompleteOverlay extends Overlay {
             this.numTotalParts += dataManager.test.modeToParts(mode).length;
         }
         
-        if (testInfo.vocabListMode) {
+        // If session plan is given, store it and display next language
+        this.sessionPlan = testInfo.sessionPlan;
+        this.$("ok-button").textContent = testInfo.sessionPlan !== undefined ?
+            `Continue with ${testInfo.sessionPlan.keys().next().value}` : "OK"; 
+
+        if (testInfo.vocabListMode || testInfo.sessionPlan !== undefined) {
             this.$("start-new-test-frame").hide();
             return;
         }

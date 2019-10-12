@@ -12,6 +12,19 @@
   color: $view-color;
   background-color: $view-background-dark;
   border-radius: 5px;
+
+  &.modifier-pressed {
+    .subrow > div:not(:first-child):not(.selected),
+    .language-label, #column-headers > div {
+      &:hover {
+        background-color: $view-hover-background;
+        color: $view-color-hover;
+      }
+    }
+    .subrow > div, .language-label, #column-headers > div {
+      cursor: $pointer-cursor;
+    }
+  }
 }
 
 #header-row {
@@ -27,9 +40,15 @@
     font-size: 0.9rem;
     text-align: center;
     > * {
-      padding-top: 4px;
-      padding-bottom: 4px;
+      padding-top: 5px;
+      padding-bottom: 3px;
       flex: 1;
+
+      // Add padding to keep same width as bordered row cells below
+      &:first-child {
+        padding-left: 1px;
+        padding-right: 1px;
+      }
     }
   }
 }
@@ -48,38 +67,56 @@
     padding-left: 10px;
     padding-right: 10px;
   }
-  .subrows-frame {
-    display: table-cell;
-    padding-top: 4px;
-    padding-bottom: 4px;
-    font-family: $light-font;
-  }
 }
 
 .subrow {
+  display: table-cell;
   display: flex;
   flex-direction: row;
-  font-size: 1.25rem;
 
   > * {
-    text-align: center;
     flex: 1;
+    text-align: center;
 
-    &.highlighted {
-      color: $highlighted-text-color;
-      text-shadow: $highlighted-text-shadow;
+    .total {
+      pointer-events: none;
+      color: $color-light;
+      font-size: 0.9rem;
+      font-family: $text-font;
     }
-    &:first-child {
+    .due {
+      pointer-events: none;
+      font-size: 1.25rem;
+      font-family: $light-font;
+
+      &.highlighted {
+        color: $highlighted-text-color;
+        text-shadow: $highlighted-text-shadow;
+      }
+    }
+    &.selected {
+      background-color: $select-background;
+
+      .due.highlighted {
+        color: $select-color;
+      }
+      .total {
+        // TODO: put these into variables in each color scheme?
+        color: lighten($select-background, 25%);
+        text-shadow: darken($select-background, 15%);
+      }
+    }
+    &:first-child {  // Shows total number of items for this language
       border-right: 1px solid $border-color-light;
       border-left: 1px solid $border-color-light;
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
+    &:not(:first-child) {
+      padding-top: 4px;
+      padding-bottom: 4px;
     }
   }
-}
-
-.all-items {
-  color: $color-light;
-  font-size: 0.9rem;
-  font-family: $text-font;
 }
 
 #updating-spinner, #update-button {

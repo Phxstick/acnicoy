@@ -167,6 +167,10 @@ $main-window-border-color-hover: $main-window-color-light;
 $notifications-button-highlight-background: lighten($orange, 15%);
 $notifications-button-highlight-color: white;
 
+// Test button
+$test-button-background-highlighted: darken($select-background, 2%);
+$test-button-color-highlighted: mix($select-background, $select-color, 30%);
+
 // Panel buttons
 $button-color: $main-window-color-light;
 $button-color-hover: $main-window-color-hover;

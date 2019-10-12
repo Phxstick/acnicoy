@@ -150,9 +150,6 @@ class ImportVocabOverlay extends Overlay {
         await utility.addMinDelay(
             dataManager.import.importItems(items, importSettings), 700);
         await main.saveData();
-        if (dataManager.content.isLoadedFor("Japanese", "English")) {
-            await dataManager.content.get("Japanese","English").updateUserData()
-        }
         events.emit("update-srs-status-cache");
         events.emit("vocab-imported");
         if (this.parseSettings.dataType === "Houhou" ||

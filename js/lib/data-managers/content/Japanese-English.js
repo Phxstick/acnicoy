@@ -57,13 +57,12 @@ module.exports = async function (paths, contentPaths, modules) {
         if (!includeHyougai) whereClauses.push("k.grade != 0");
         const whereClause = (whereClauses.length > 0 ? "WHERE " : "") +
                 whereClauses.map((clause) => "(" + clause + ")").join(" AND ");
+        const addedKanji = new Set(await modules.kanji.getAll());
         if (splittingCriterion === undefined) {
-            return data.query(`
-                SELECT k.entry AS kanji,
-                       (k.entry IN (SELECT kanji FROM trainer.kanji)) AS added
-                FROM kanji k
-                ${whereClause}
-            `);
+            const rows = await data.query(
+                `SELECT k.entry AS kanji FROM kanji k ${whereClause}`);
+            for (const row of rows) row.added = addedKanji.has(row.kanji);
+            return rows;
         }
         let splitColumn;
         switch (splittingCriterion) {
@@ -189,17 +188,17 @@ module.exports = async function (paths, contentPaths, modules) {
                     `${splitColumn} BETWEEN ${value[0]} AND ${value[1]}`;
             }
             promises.push(data.query(`
-                SELECT k.entry AS kanji,
-                       (k.entry IN (SELECT kanji FROM trainer.kanji)) AS added
+                SELECT k.entry AS kanji
                 FROM kanji k JOIN radicals r ON k.radical_id = r.id
                 ${whereClause}
                 ${whereClauseGroup}
             `).then((rows) => {
                 const kanjiList = [];
                 let numAdded = 0;
-                for (const { kanji, added } of rows) {
-                    if (includeAdded || !added) kanjiList.push(kanji);
-                    if (added) ++numAdded;
+                for (const row of rows) {
+                    row.added = addedKanji.has(row.kanji);
+                    if (includeAdded || !row.added) kanjiList.push(row.kanji);
+                    numAdded += row.added;
                 }
                 return {
                     groupName: name,
@@ -384,8 +383,8 @@ module.exports = async function (paths, contentPaths, modules) {
 
         // Try to match dictionary ID first
         if (dictionaryId !== null) {
-            const idQueryResult = await data.query(
-                "SELECT word FROM trainer.vocabulary WHERE dictionary_id = ?",
+            const idQueryResult = await modules.database.query(
+                "SELECT word FROM vocabulary WHERE dictionary_id = ?",
                 dictionaryId);
             if (idQueryResult.length > 0) return idQueryResult[0].word;
         }

@@ -528,6 +528,10 @@ class MainWindow extends Window {
         this.$("selective-dimmer").hide();
         this.$("intro-tour-textbox").hide();
 
+        // When selecting fields in SRS overview, show amount on test button
+        this.sections["home"].$("srs-status-overview").onSelectionChange =
+            (selectionNotEmpty) => this.updateTestButton(selectionNotEmpty);
+
         // Notify user if there are shortcuts without assigned key combinations
         // const notifyUnassigned = storage.get("show-shortcuts-unassigned-notice")
         // if (shortcuts.hasUnassigned()) {
@@ -918,24 +922,38 @@ class MainWindow extends Window {
         }, this.statusFadeOutDelay);
     }
 
-    async updateTestButton() {
-        const amount = this.srsItemAmountsDueTotal[dataManager.currentLanguage];
+    updateTestButton(onlySelected=false) {
+        const amount = onlySelected ?
+            this.sections["home"].$("srs-status-overview").getSelectedAmount() :
+            this.srsItemAmountsDueTotal[dataManager.currentLanguage];
         this.$("num-srs-items").innerHTML = `${amount}<br>items`;
+        this.$("test-button").classList.toggle("highlighted", onlySelected);
         this.$("test-button").classList.toggle("no-items", amount === 0);
     }
 
     async openTestSection() {
-        const amount = await
-            dataManager.srs.getTotalAmountDueFor(dataManager.currentLanguage);
-        this.srsItemAmountsDueTotal[dataManager.currentLanguage] = amount;
-        // Update test button label and open section if there are items to test
-        this.updateTestButton();
-        if (amount > 0) {
-            this.openSection("test");
-        } else {
-            this.updateStatus("There are currently no items " +
-                              "available for testing!");
+        const selection =
+            this.sections["home"].$("srs-status-overview").getSelection();
+        const amount = selection === null ? await
+            dataManager.srs.getTotalAmountDueFor(dataManager.currentLanguage) :
+            this.sections["home"].$("srs-status-overview").getSelectedAmount();
+        if (selection === null) {
+            this.srsItemAmountsDueTotal[dataManager.currentLanguage] = amount;
         }
+        if (amount > 0) {
+            this.openSection("test", false, [selection !== null ? selection : 
+                                                                  undefined]);
+        } else {
+            if (selection === null) {
+                this.updateStatus("There are currently no items " +
+                                  "available for review!");
+            } else {
+                this.updateStatus("The selected levels currently " +
+                                  "contain no items available for review!");
+                this.sections["home"].$("srs-status-overview").clearSelection()
+            }
+        }
+        this.updateTestButton();
     }
 
     showSrsNotification() {

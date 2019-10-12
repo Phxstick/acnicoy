@@ -22,6 +22,11 @@ class HomeSection extends Section {
         }
         await Promise.all(promises);
     }
+
+    close() {
+        this.$("srs-status-overview").clearSelection();
+        this.$("srs-status-overview").onSelectionChange();
+    }
 }
 
 customElements.define("home-section", HomeSection);

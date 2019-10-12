@@ -36,6 +36,7 @@ class TestSection extends Section {
         this.timeOfLastAction = 0;
         this.currentlySelectedLevel = null;
         this.stopFuncs = [];
+        this.sessionPlanTransition = false;
 
         // ====================================================================
         // Initial state of some interface elements and general event listeners
@@ -357,7 +358,8 @@ class TestSection extends Section {
         shortcuts.disable("count-as-wrong");
     }
     
-    open(vocabLists) {
+    open(sessionPlan, vocabLists) {
+        if (this.sessionPlanTransition) return;
         this.isOpen = true;
 
         // Reset colors since the color scheme might have been modified
@@ -366,7 +368,7 @@ class TestSection extends Section {
 
         // If no test session is currently running, create one
         if (this.testInfo === null) {
-            this.createTest(vocabLists);
+            this.createTest(sessionPlan, vocabLists);
         } else {
             // Register shortcut for ignoring/evaluating answer
             if (this.testInfo.inEvalStep) {
@@ -404,6 +406,7 @@ class TestSection extends Section {
     }
 
     close() {
+        if (this.sessionPlanTransition) return;
         this.isOpen = false;
         shortcuts.disable("ignore-answer");
         shortcuts.disable("count-as-correct");
@@ -415,7 +418,7 @@ class TestSection extends Section {
     //   Loading test items
     // ====================================================================
 
-    async _createTestItem(entry, mode) {
+    async _createTestItem(entry, mode, level) {
         const newItem = {
             entry: entry,
             marked: false,
@@ -423,9 +426,7 @@ class TestSection extends Section {
             mode: mode,
             parts: []
         };
-        if (!this.testInfo.vocabListMode) {
-            newItem.level = await dataManager.srs.getLevel(entry, mode);
-        }
+        if (!this.testInfo.vocabListMode) newItem.level = level;
         if (mode === dataManager.test.mode.WORDS) {
             if (dataManager.languageSettings.get("readings")) {
                 const readings = await dataManager.vocab.getReadings(entry);
@@ -445,9 +446,11 @@ class TestSection extends Section {
 
         // Assemble vocabulary part of the testitem list
         const vocabPart = dataManager.srs.getDueVocab(since).then((words) => {
-            for (const word of words) {
-                itemPromises.push(
-                    this._createTestItem(word, dataManager.test.mode.WORDS));
+            for (const { word, level } of words) {
+                if (this.testInfo.levels && !this.testInfo.levels.has(level))
+                    continue;
+                itemPromises.push(this._createTestItem(
+                    word, dataManager.test.mode.WORDS, level));
             }
         });
 
@@ -459,8 +462,11 @@ class TestSection extends Section {
                                 dataManager.test.mode.KANJI_KUN_YOMI]) {
                 kanjiParts.push(dataManager.srs.getDueKanji(mode, since)
                 .then((kanjiList) => {
-                    for (const kanji of kanjiList) {
-                        itemPromises.push(this._createTestItem(kanji, mode));
+                    for (const { kanji, level } of kanjiList) {
+                        if (this.testInfo.levels &&
+                                !this.testInfo.levels.has(level)) continue;
+                        itemPromises.push(
+                                this._createTestItem(kanji, mode, level));
                     }
                 }));
             }
@@ -473,8 +479,11 @@ class TestSection extends Section {
                                 dataManager.test.mode.HANZI_READINGS]) {
                 hanziParts.push(dataManager.srs.getDueHanzi(mode, since)
                 .then((hanziList) => {
-                    for (const hanzi of hanziList) {
-                        itemPromises.push(this._createTestItem(hanzi, mode));
+                    for (const { hanzi, level } of hanziList) {
+                        if (this.testInfo.levels &&
+                                !this.testInfo.levels.has(level)) continue;
+                        itemPromises.push(
+                                this._createTestItem(hanzi, mode, level));
                     }
                 }));
             }
@@ -487,8 +496,19 @@ class TestSection extends Section {
         Starting and ending review sessions
     ===================================================================== */
 
-    async createTest(vocabLists) {
+    async createTest(sessionPlan, vocabLists) {
         if (!await this.abortSession()) return false;
+        let levels;
+        if (sessionPlan !== undefined) {
+            const nextLanguage = sessionPlan.keys().next().value;
+            levels = sessionPlan.get(nextLanguage);
+            sessionPlan.delete(nextLanguage);
+            if (sessionPlan.size === 0) sessionPlan = undefined;
+            this.sessionPlanTransition = true;
+            await main.setLanguage(nextLanguage);
+            this.sessionPlanTransition = false;
+        }
+
         const testInfo = {
             pickedItems: [],
             mistakes: new Set(),
@@ -500,7 +520,9 @@ class TestSection extends Section {
             inEvalStep: true,
             skipNextEvaluation: false,
             wrappingUp: false,
-            vocabListMode: vocabLists !== undefined
+            vocabListMode: vocabLists !== undefined,
+            sessionPlan,
+            levels,
         };
         this.testInfo = testInfo;
         this.$("wrap-up").toggleDisplay(
@@ -508,7 +530,7 @@ class TestSection extends Section {
 
         // Prepare session depending on whether testing on SRS items or list
         if (vocabLists === undefined) {
-            this.$("session-info").textContent = "Testing on SRS items";
+            this.$("session-info").textContent = "Reviewing SRS items";
             this.$("vocab-list").hide();
             for (const levelNode of this.$("srs-levels-bar").children) {
                 levelNode.classList.remove("next-if-wrong");
@@ -529,12 +551,12 @@ class TestSection extends Section {
             testInfo.score = 0;
         } else {
             if (vocabLists.length === 1) {
-                this.$("session-info").textContent = "Testing on list";
+                this.$("session-info").textContent = "Reviewing list";
                 this.$("vocab-list").textContent = vocabLists[0];
                 this.$("vocab-list").show();
             } else {
                 this.$("session-info").textContent =
-                    `Testing on ${vocabLists.length} vocabulary lists`;
+                    `Reviewing ${vocabLists.length} vocabulary lists`;
                 this.$("vocab-list").hide();
             }
             this.$("score-frame").hide();
@@ -570,9 +592,6 @@ class TestSection extends Section {
         this.$("progress").max = this.testInfo.numTotal;
         this.$("progress-text").textContent =
             `${this.testInfo.numFinished} / ${this.testInfo.numTotal}`;
-        if (!this.testInfo.vocabListMode) {
-            main.updateTestButton();
-        }
         this.$("wrap-up").hide();
     }
 
@@ -589,6 +608,8 @@ class TestSection extends Section {
             if (!keepGoing) {
                 main.openSection(vocabListMode ? "vocab" : "home");
                 if (!vocabListMode) events.emit("update-srs-status-cache");
+            } else if (oldTestInfo.sessionPlan) {
+                this.createTest(oldTestInfo.sessionPlan);
             }
         } else {
             main.openSection(oldTestInfo.vocabListMode ? "vocab" : "home");
@@ -1132,11 +1153,11 @@ class TestSection extends Section {
                     await dataManager.srs.setLevel(
                         item.entry, newLevel, item.mode);
                     this.testInfo.score += scoreGain;
+                    main.srsItemAmountsDueTotal[dataManager.currentLanguage]--;
                 }
 
                 // Update stats
                 this.testInfo.numFinished++;
-                main.srsItemAmountsDueTotal[dataManager.currentLanguage]--;
                 const itemCorrect = !item.marked && !item.lastAnswerIncorrect;
                 if (itemCorrect) {
                     await dataManager.test.incrementCorrectCounter(

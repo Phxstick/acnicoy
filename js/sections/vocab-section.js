@@ -1207,7 +1207,8 @@ class VocabSection extends Section {
             return;
         }
         const noOtherSessionActive = await main.sections["test"].abortSession();
-        if (noOtherSessionActive) main.openSection("test", true, [listNames]);
+        if (noOtherSessionActive)
+            main.openSection("test", false, [undefined, listNames]);
     }
 
     // =====================================================================

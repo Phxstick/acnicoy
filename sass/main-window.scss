@@ -269,8 +269,30 @@
       font-size: 60%;
       // text-shadow: 0 0 1px $main-window-color;
     }
-    &.no-items {
+    &.highlighted {
+      background-color: $test-button-background-highlighted;
+      color: $test-button-color-highlighted;
+
+      &:not(.no-items):hover {
+        background-color: $test-button-background-highlighted-hover;
+        color: $test-button-color-highlighted-hover;
+      }
+      &.no-items {
+        color: mix($test-button-background-highlighted,
+                   $test-button-color-highlighted, 45%);
+        cursor: $default-cursor;
+
+        &:hover {
+          color: mix($test-button-background-highlighted,
+                     $test-button-color-highlighted, 45%);
+          border-color: $main-window-border-color;
+        }
+      }
+    }
+    &:not(.highlighted).no-items {
       color: mix($main-window-color, $main-window-background, 55%);
+      cursor: $default-cursor;
+
       &:hover {
         background-color: $main-window-background;
         color: mix($main-window-color, $main-window-background, 55%);
@@ -465,7 +487,6 @@
     &:hover {
       opacity: 1;
       text-shadow: 0 0 1px $suggestions-window-color;
-      box-shadow: 0 0 1px $suggestions-window-color;
     }
   }
 }

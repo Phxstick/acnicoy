@@ -9,6 +9,7 @@ class HelpOverlay extends Overlay {
         this.$("close-button").addEventListener("click", () => {
             this.resolve();
         });
+        this.initializationFinished = false;
         this.$("tree").build(require(paths.helpStructure));
         this.loadedTreePath = [];
         this.$("tree").setOnSelect((node) => {
@@ -117,15 +118,15 @@ class HelpOverlay extends Overlay {
                         link.parentNode.removeChild(link);
                         link.remove();
                         // Make sure that tour is not accessible before main
-                        // window has loaded (can use any event here, as long
-                        // as it's not fired before initialization has finished)
-                        button.hide();
-                        events.once("settings-loaded", () => button.show());
+                        // window has loaded
+                        button.toggleDisplay(this.initializationFinished);
                     }
                 }
             }
         });
         this.$("tree").selectByPath(["Overview"]);
+        // Can use any event here, as long as it's not fired before init is done
+        events.once("settings-loaded", ()=>{ this.initializationFinished=true })
     }
 
     open(path) {

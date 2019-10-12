@@ -177,28 +177,25 @@ module.exports = function (paths, modules) {
 
     srs.getDueVocab = function (startTime=0) {
         return modules.database.query(
-            `SELECT word FROM vocabulary
+            `SELECT word, level FROM vocabulary
              WHERE review_date <= ? AND review_date > ? AND level > 0`,
-            utility.getTime(), startTime)
-        .then((rows) => rows.map((row) => row.word));
+            utility.getTime(), startTime);
     };
 
     srs.getDueKanji = function (mode, startTime=0) {
         const table = modules.test.modeToTable(mode);
         return modules.database.query(
-            `SELECT kanji FROM ${table}
+            `SELECT kanji, level FROM ${table}
              WHERE review_date <= ? AND review_date > ? AND level > 0`,
-             utility.getTime(), startTime)
-        .then((rows) => rows.map((row) => row.kanji));
+             utility.getTime(), startTime);
     };
 
     srs.getDueHanzi = function (mode, startTime=0) {
         const table = modules.test.modeToTable(mode);
         return modules.database.query(
-            `SELECT hanzi FROM ${table}
+            `SELECT hanzi, level FROM ${table}
              WHERE review_date <= ? AND review_date > ? AND level > 0`,
-             utility.getTime(), startTime)
-        .then((rows) => rows.map((row) => row.hanzi));
+             utility.getTime(), startTime);
     };
 
     srs.getAmountsFor = async function (language) {

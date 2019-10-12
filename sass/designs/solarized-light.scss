@@ -177,6 +177,11 @@ $button-shadow-color-active: darken($button-background-active, 10%);
 $notifications-button-highlight-background: lighten($orange, 15%);
 $notifications-button-highlight-color: white;
 
+// Test button
+$test-button-background-highlighted:
+  darken(mix($main-window-background, $select-background, 10%), 6%);
+$test-button-color-highlighted: mix($select-background, $select-color, 10%);
+
 // Loading window
 $loading-window-background: $main-window-background;
 $loading-window-color: $main-window-color;

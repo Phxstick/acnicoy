@@ -2,12 +2,8 @@
 General
 --------------------------------------------------------------------------------
 
-- Check if workaround for move-window bug on Linux also affects Windows build
 - Fix: edge cases in pinyin conversion
-- Fix: items get added to vocab list even if not dropping them on contents view
 - Rework functionality for detecting shortcut collisions
-- Implement selecting specific SRS levels for testing in the status overview
-- Make sure to reattach user database to content database whenever necessary
 - Error when clicking margin in notes container, stop prop. if container reached
 - Word notes are also being displayed for kanji/hanzi with the same name, fix!
 - Include exception handling code that removes faulty backups that do not

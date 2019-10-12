@@ -115,6 +115,7 @@ class StatsSection extends Section {
         const content = dataManager.content.get("Japanese", "English");
         this.$("kanji-stats-detailed").show();
         this.$("kanji-data-not-loaded").hide();
+        await content.updateUserData();  // Needed to count in newly added kanji
         const kanjiPerLevel = await
                 dataManager.kanji.getAmountsAddedPerJlptLevel();
         const kanjiPerGrade = await

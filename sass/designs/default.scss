@@ -131,7 +131,7 @@ $scrollbar-light-thumb-background-active: rgba(255, 255, 255, 0.9);
 // Main window
 $main-window-background: darkred;
 $main-window-background-light: firebrick;
-$main-window-background-hover: crimson;
+$main-window-background-hover: mix($main-window-background, crimson, 40%);
 $main-window-background-lightest: lighten($main-window-background-light, 6%);
 $main-window-color: #ddd;
 $main-window-color-light: whitesmoke;
@@ -155,6 +155,11 @@ $button-shadow-color-active: darken($button-background-active, 10%);
 // Notifications button
 $notifications-button-highlight-background: lighten(crimson, 10%);
 $notifications-button-highlight-color: white;
+
+// Test button
+$test-button-background-highlighted: darken($select-background, 8%);
+$test-button-background-highlighted-hover:
+  mix($test-button-background-highlighted, crimson, 20%);
 
 // Loading window
 $loading-window-background: maroon;

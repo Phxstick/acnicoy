@@ -322,17 +322,17 @@ module.exports = function (paths, modules) {
             "SELECT COUNT(*) AS amount FROM kanji").then(([{amount}]) => amount)
     };
 
-    /**
-     * Return total amount of added kanji in the vocabulary for given grade.
-     * @returns {Promise[Integer]}
-     */
-    kanjiModule.getAmountAddedForGrade = function (grade) {
-        return modules.content.get("Japanese", "English").query(
-            `SELECT COUNT(*) AS amount
-             FROM trainer.kanji t JOIN kanji k ON t.kanji = k.entry
-             WHERE k.grade = ?`, grade)
-        .then(([{amount}]) => amount);
-    };
+    // /**
+    //  * Return total amount of added kanji in the vocabulary for given grade.
+    //  * @returns {Promise[Integer]}
+    //  */
+    // kanjiModule.getAmountAddedForGrade = function (grade) {
+    //     return modules.content.get("Japanese", "English").query(
+    //         `SELECT COUNT(*) AS amount
+    //          FROM trainer.kanji t JOIN kanji k ON t.kanji = k.entry
+    //          WHERE k.grade = ?`, grade)
+    //     .then(([{amount}]) => amount);
+    // };
 
     /**
      * Return total amount of added kanji in the vocabulary for each grade.
@@ -382,9 +382,10 @@ module.exports = function (paths, modules) {
         if (sortingCriterion === "alphabetical") columnToSortBy = "kanji";
         else if (sortingCriterion === "dateAdded") columnToSortBy = "date_added";
         const sortingDirection = sortBackwards ? "DESC" : "ASC";
-        return modules.database.query(
-            `SELECT kanji FROM kanji
-             ORDER BY ${columnToSortBy} ${sortingDirection}, rowid DESC`)
+        const sortClause = sortingCriterion === undefined ? "" :
+            `ORDER BY ${columnToSortBy} ${sortingDirection}, rowid DESC`;
+        return modules.database.queryLanguage(
+            "Japanese", `SELECT kanji FROM kanji ${sortClause}`)
         .then((rows) => rows.map((row) => row.kanji));
     };
 
