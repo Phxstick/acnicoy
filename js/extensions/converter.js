@@ -492,6 +492,8 @@ const accentPositions = {
 
 const syllableToAccentedSyllable = new Map();
 const accentedSyllables = new Set();
+const accentedI = new Set(Object.values(accentedVowels["a"]));
+const accentedU = new Set(Object.values(accentedVowels["u"]));
 
 // TODO: Don't convert non-existing combinations of initials and finals here
 for (const initial of pinyinInitials) {
@@ -542,6 +544,11 @@ String.prototype.toPinyin = function () {
         for (let l = 6; l >= 1; --l) {
             const syllable = string.slice(i, i + l);
             if (accentedSyllables.has(syllable)) {
+                // If next syllable is invalid (starts with i/u), shorten this
+                const nextChar = string[i + l];
+                if (nextChar === "i" || nextChar === "u" ||
+                        accentedI.has(nextChar) || accentedU.has(nextChar))
+                    continue;
                 converted.push(syllable);
                 i += l;
                 processed = true;

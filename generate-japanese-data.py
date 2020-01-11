@@ -9,6 +9,7 @@ import argparse
 import re
 import sqlite3
 import json
+import itertools
 import xml.etree.ElementTree as ElementTree
 
 
@@ -26,9 +27,11 @@ def create_dictionary_tables(cursor):
         CREATE TABLE IF NOT EXISTS dictionary (
             id INTEGER PRIMARY KEY,
             words TEXT,
-            news_freq INTEGER,
-            net_freq INTEGER,
-            book_freq INTEGER
+            jlpt_level INTEGER,
+            news_rank INTEGER,
+            net_rank INTEGER,
+            book_rank INTEGER,
+            commonness INTEGER
         )
         """)
     cursor.execute(
@@ -146,11 +149,10 @@ def parse_dictionary_entry(entry, cursor, text_to_code):
         return letter1 + letter2
     # Create variables to store data parsed for this entry
     # number = entry.find("ent_seq").text
-    entry_news_freq = 0  # Calculated as maximum of word/reading frequencies
+    entry_news_rank = None  # Calculated as minimum of ranks of words/readings
     words = []
-    word_news_freq = dict()
+    commonness = None
     readings = []
-    reading_news_freq = dict()
     reading_restricted_to = dict()
     meanings = []  # List of lists containing translations
     meaning_restricted_to = []
@@ -158,27 +160,36 @@ def parse_dictionary_entry(entry, cursor, text_to_code):
     field_of_application = []
     dialect = []
     misc_info = []
-    # Parse kanji elements (i.e. words/sentences with kanji) for this entry
+    # Parse kanji elements (i.e. words/expressions with kanji) for this entry
     for kanji_element in entry.findall("k_ele"):
         word = kanji_element.find("keb").text
-        word_news_freq[word] = 0
-        # Parse news frequency for this kanji element
+        # Parse frequency tags for this kanji element
         for freq_element in kanji_element.findall("ke_pri"):
-            if freq_element.text.startswith("nf"):
-                word_news_freq[word] = 49 - int(freq_element.text[2:])
-                entry_news_freq = max(word_news_freq[word], entry_news_freq)
+            tag = freq_element.text
+            if tag.startswith("ichi") or tag.startswith("spec"):
+                tag_number = tag[4:]
+                if commonness is None or tag_number < commonness:
+                    commonness = tag_number
+            if tag.startswith("nf"):
+                rank = int(tag[2:])
+                if entry_news_rank is None or rank < entry_news_rank:
+                    entry_news_rank = rank
         words.append(word)
-    # Parse readings (the words/sentences in kana) for this entry
+    # Parse readings (the words/expressions in kana) for this entry
     for reading_element in entry.findall("r_ele"):
         reading = reading_element.find("reb").text
         readings.append(reading)
-        reading_news_freq[reading] = 0
-        # Parse news frequency for this reading element
+        # Parse frequency tags for this reading element
         for freq_element in reading_element.findall("re_pri"):
-            if freq_element.text.startswith("nf"):
-                reading_news_freq[reading] = 49 - int(freq_element.text[2:])
-                entry_news_freq = max(reading_news_freq[reading],
-                                      entry_news_freq)
+            tag = freq_element.text
+            if tag.startswith("ichi") or tag.startswith("spec"):
+                tag_number = tag[4:]
+                if commonness is None or tag_number < commonness:
+                    commonness = tag_number
+            if tag.startswith("nf"):
+                rank = int(tag[2:])
+                if entry_news_rank is None or rank < entry_news_rank:
+                    entry_news_rank = rank
         # Get kanji elements which this reading is restricted to
         reading_restricted_to[reading] = []
         for restr_element in reading_element.findall("re_restr"):
@@ -221,8 +232,8 @@ def parse_dictionary_entry(entry, cursor, text_to_code):
             translations.append(gloss_element.text)
         meanings.append(translations)
     # Insert entry into the database
-    cursor.execute("INSERT INTO dictionary VALUES (?, ?, ?, ?, ?)",
-        (ID, ";".join(words), entry_news_freq, 0, 0))
+    cursor.execute("INSERT INTO dictionary VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (ID, ";".join(words), None, entry_news_rank, None, None, commonness))
     for word in words:
         cursor.execute("INSERT INTO words (id, word) VALUES (?, ?)", (ID, word))
     for reading in readings:
@@ -406,6 +417,202 @@ def parse_improved_dictionary_texts(code_to_text_path, improved_texts_path):
     print("Done.")
 
 
+def parse_jlpt_vocabulary(filename, level, cursor, verbose=False,
+                          show_candidates_of_ambigous_entries=False):
+    num_unique_matches = 0
+    num_resolved_matches = 0
+    num_ambiguous_matches = 0
+    num_zero_matches = 0
+    num_duplicates = 0
+
+    # Define functions for preprocessing translations for better matching
+    def preprocess(translation):
+        tsl = re.sub(r"\(.*?\)", "", translation.lower())  # Remove parentheses
+        tsl = tsl.replace("!", "").replace(".", "").replace("?", "")
+        tsl = re.sub(r"\s\s", "", tsl).strip() # Collapse whitespace, trim sides
+        return tsl
+
+    with open(filename) as f:
+        for n, line in enumerate(f):
+            # Each line at least contains a word and comma-separated meanings,
+            # optionally also a word variant, a reading and a reading variant
+            match = re.match(
+                r".\{\{l\|ja\|(?P<word>[^}]+)\}\}(?:する)?"
+                r"(?: / \{\{l\|ja\|(?P<word_variant>[^}]+)\}\}(?:する)?)?"
+                r"(?:, \{\{l\|ja\|(?P<reading>[^}]+)\}\}(?:する)?"
+                r"(?: / \{\{l\|ja\|(?P<reading_variant>[^}]+)\}\}(?:する)?)?)?"
+                r" -(?P<meanings>.*)", line)
+            if match is None:
+                if verbose:
+                    print("ERROR: could not parse line %s:\n%s" % (n + 1, line))
+                continue
+
+            # Gather a set of dictionary entries where the word matches
+            candidate_ids = set()
+            word = match.group("word")
+            word2 = match.group("word_variant")
+            reading = match.group("reading")
+            reading2 = match.group("reading_variant")
+            # Sometimes, exact same kana word is provided as reading, make sure
+            # such a word is not counted as kanji-word by removing reading
+            if word == reading:
+                reading = ""
+            # If word contains kanji, search in words-table, else in readings
+            word_type = "word" if reading else "reading"
+            cursor.execute("SELECT id FROM %ss WHERE %s = ?"
+                           % (word_type, word_type), (word,))
+            for row in cursor.fetchall():
+                candidate_ids.add(row[0])
+            if word2:
+                cursor.execute("SELECT id FROM %ss WHERE %s = ?"
+                               % (word_type, word_type), (word2,))
+                for row in cursor.fetchall():
+                    candidate_ids.add(row[0])
+            matched_id = None
+            # If there's no match and word ends with と/に/な, remove and retry
+            if len(candidate_ids) == 0 and (word.endswith("と") or
+                    word.endswith("に") or word.endswith("な")):
+                cursor.execute("SELECT id FROM %ss WHERE %s = ?"
+                               % (word_type, word_type), (word[:-1],))
+                for row in cursor.fetchall():
+                    candidate_ids.add(row[0])
+            # Skip the word if there's no matching dictionary entry
+            if len(candidate_ids) == 0:
+                if verbose:
+                    print("WARNING: word '%s' could not be found in the "
+                          "dictionary." % word)
+                num_zero_matches += 1
+                continue
+            # If there's a unique matching word, just take it
+            elif len(candidate_ids) == 1:
+                matched_id = next(iter(candidate_ids))
+                num_unique_matches += 1
+            # If a word containing kanji matches multiple entries, try to
+            # disambiguate using readings first
+            if reading:
+                best_match_id = None
+                best_match_score = 0
+                second_best_match_score = 0
+                candidate_ids_copy = candidate_ids.copy()
+                for entry_id in candidate_ids_copy:
+                    cursor.execute("SELECT reading FROM readings WHERE id = ?",
+                                   (entry_id,))
+                    known_readings = \
+                        set(map(lambda row: row[0], cursor.fetchall()))
+                    if reading in known_readings and reading2 in known_readings:
+                        second_best_match_score = best_match_score
+                        best_match_score = 2
+                        best_match_id = entry_id
+                    elif reading in known_readings \
+                            or reading2 in known_readings:
+                        if best_match_score < 2:
+                            second_best_match_score = best_match_score
+                            best_match_score = 1
+                            best_match_id = entry_id
+                        else:
+                            second_best_match_score = 1
+                    else:
+                        # Remove matches where no readings match right away
+                        candidate_ids.remove(entry_id)
+                if best_match_score != second_best_match_score:
+                    matched_id = best_match_id
+                    num_resolved_matches += 1
+            # If there's multiple matches and disambiguation using readings
+            # didn't work, choose entry which matches the most translations
+            if matched_id is None:
+                best_match_id = None
+                best_match_score = 0
+                second_best_match_score = 0
+                given_meanings = set(map(lambda tsl: preprocess(tsl.strip()),
+                        match.group("meanings").split(",")))
+                for entry_id in candidate_ids:
+                    cursor.execute("SELECT translations FROM meanings "
+                                   "WHERE id = ?", (entry_id,))
+                    known_meanings = set(map(preprocess, itertools.chain(*map(
+                            lambda row: row[0].split(";"), cursor.fetchall()))))
+                    num_matched_meanings = len(known_meanings & given_meanings)
+                    if num_matched_meanings >= best_match_score:
+                        second_best_match_score = best_match_score
+                        best_match_score = num_matched_meanings
+                        best_match_id = entry_id
+                    elif num_matched_meanings >= second_best_match_score:
+                        second_best_match_score = num_matched_meanings
+                # Skip this word if there's still no clear best match
+                if best_match_score == second_best_match_score:
+                    if verbose:
+                        print("WARNING: word '%s' cannot be matched "
+                              "unambiguously." % word)
+                    num_ambiguous_matches += 1
+                else:
+                    matched_id = best_match_id
+                    num_resolved_matches += 1
+            # Show candidates for ambiguous entries (if flag is set to true)
+            if matched_id is None and show_candidates_of_ambigous_entries:
+                given_meanings = set(map(lambda tsl: preprocess(tsl.strip()),
+                                         match.group("meanings").split(",")))
+                print()
+                given_words = [word] if word2 is None else [word, word2]
+                given_readings = [] if reading is None else (
+                        [reading] if reading2 is None else [reading, reading2])
+                print("Candidates for %s | %s | %s" % (", ".join(given_words),
+                    ", ".join(given_readings), ", ".join(given_meanings)))
+                for index, entry_id in enumerate(candidate_ids):
+                    cursor.execute("SELECT word FROM words WHERE id = ?",
+                                   (entry_id,))
+                    words = map(lambda row: row[0], cursor.fetchall())
+                    cursor.execute("SELECT reading FROM readings WHERE id = ?",
+                                   (entry_id,))
+                    readings = map(lambda row: row[0], cursor.fetchall())
+                    print("  %s. %s: %s | %s" % (index + 1,
+                            entry_id, ", ".join(words), ", ".join(readings)))
+                    cursor.execute("SELECT translations FROM meanings "
+                                   "WHERE id = ?", (entry_id,))
+                    meanings = \
+                        map(lambda row: row[0].split(";"), cursor.fetchall())
+                    for translations in meanings:
+                        print("    - %s" % "; ".join(translations))
+                input()  # Pause script
+            if matched_id is None:
+                continue
+            # Check if matched dictionary entry already has assigned JLPT level
+            cursor.execute("SELECT jlpt_level FROM dictionary WHERE id = ?",
+                           (matched_id,))
+            assigned_level = cursor.fetchone()[0]
+            if assigned_level is not None:
+                if verbose:
+                    print("WARNING: dictionary entry with id '%s' already has "
+                          "an assigned level (N%s)."
+                          % (matched_id, assigned_level))
+                    print("  (%s, %s, %s, %s)"
+                          % (word, word2, reading, reading2))
+                num_duplicates += 1
+                continue
+            # Otherwise finally assign level to the matched dictionary entry
+            cursor.execute("UPDATE dictionary SET jlpt_level = ? WHERE id = ?",
+                           (level, matched_id))
+            print(n+1, "JLPT N%s vocabulary items parsed...\r" % level, end="")
+
+        print("Finished parsing", n + 1, "JLPT N%s vocabulary items." % level)
+        if verbose:
+            print("JLPT level assignment statistics:")
+            print("  Number of unique matches:", num_unique_matches)
+            print("  Number of resolved matches:", num_resolved_matches)
+            print("  Number of ambiguous matches:", num_ambiguous_matches)
+            print("  Number of duplicate matches:", num_duplicates)
+            print("  Number of unmatched entries:", num_zero_matches)
+
+
+def process_manual_jlpt_assignments(filename):
+    print("Processing manual JLPT level assignments...", end="\r")
+    with open(filename) as f:
+        assignments = json.load(f)
+    for level in assignments:
+        for entry_id in assignments[level]:
+            cursor.execute("UPDATE dictionary SET jlpt_level = ? WHERE id = ?",
+                           (int(level), entry_id))
+    print("Processing manual JLPT level assignments... Done.")
+
+
 def parse_proper_names(filename, cursor):
     """ Parse proper name dictionary file with given filename (should be
     'enamdict') into database referenced by given cursor.
@@ -513,6 +720,18 @@ def parse_word_news_frequencies(filename, cursor):
         print("Finished parsing", count + 1, "newspaper word frequencies.")
 
 
+def parse_word_book_frequencies(filename, cursor):
+    """Parse book word frequencies from the JSON file generated based on
+    frequency values from the BCCWJ dataset and insert them into the
+    database references by given cursor.
+    """
+    with open(filename) as f:
+        for index, line in enumerate(f):
+            entry_id, frequency = line.split("\t")
+            cursor.execute("UPDATE dictionary SET book_rank = ? WHERE id = ?",
+                           (index + 1, entry_id))
+
+
 def parse_word_bccwj_frequencies(filename, cursor):
     pass
 
@@ -561,7 +780,8 @@ def parse_improved_kanji_meanings(filename, cursor):
         for kanji in new_meanings:
             # Old meanings are kept as data in another column for searching
             # (Only those which are not also part of the new meanings)
-            cursor.execute("SELECT meanings FROM kanji WHERE entry = ?", kanji)
+            cursor.execute("SELECT meanings FROM kanji WHERE entry = ?",
+                           (kanji,))
             old_meanings = cursor.fetchone()[0].split(";")
             new_meanings_set = set(new_meanings[kanji])
             only_old_meanings = []
@@ -595,7 +815,7 @@ def parse_kanji_parts(filename, cursor):
         print("Inserting kanji compositions into database... 100%")
 
 
-def update_jlpt_levels(filenameN3Kanji, cursor):
+def update_kanji_jlpt_levels(filenameN3Kanji, cursor):
     """ Read new JLPT N3 kanji levels from given file (should be called
     something like "new_jlpt_n3_kanji.txt") and update old JLPT levels to new
     ones for kanji entries in the database referenced by given cursor.
@@ -659,7 +879,8 @@ def create_example_words_index(cursor, output_path):
         pattern = "%%%s%%" % kanji
         cursor.execute("""
             SELECT id FROM dictionary WHERE words LIKE ?
-            ORDER BY news_freq DESC """, (pattern,))
+            ORDER BY news_rank IS NULL, news_rank ASC,
+                     commonness IS NULL, commonness ASC """, (pattern,))
         kanji_to_word_ids[kanji] = [entry for (entry,) in cursor.fetchall()]
         print("Creating index for kanji example words... %d%%"
               % (((i + 1) / len(kanji_list)) * 100), end="\r")
@@ -691,15 +912,23 @@ if __name__ == "__main__":
     parser.add_argument("--web-frequencies", "--web", "-w", metavar="FILENAME",
             dest="word_web_freq_filename",
             help="Filename of the file containing internet word frequencies.")
-    parser.add_argument("--bccwj-frequencies", "--bccwj", "-b",
+    parser.add_argument("--book-frequencies", "--books",
+            metavar="FILENAME", dest="word_book_freq_filename",
+            help="Filename of the file containing book word frequencies.")
+    parser.add_argument("--bccwj-frequencies", "--bccwj",
             metavar="FILENAME", dest="word_bccwj_freq_filename",
             help="Filename of the file containing BCCWJ word frequencies.")
     parser.add_argument("--kanji-parts", "--part", "-p",
             metavar="FILENAME", dest="kanji_parts_filename",
             help="Filename of the file containing kanji part compositions.")
-    parser.add_argument("--kanji-jlpt", "--kjlpt", "-j",
+    parser.add_argument("--jlpt-kanji", "--kjlpt",
             metavar="FILENAME", dest="new_jlpt_n3_kanji",
             help="Filename of the file containing new JLPT N3 kanji.")
+    parser.add_argument("--jlpt-vocab", "--jlpt",
+            metavar="FILENAME", dest="jlpt_vocab", nargs=6,
+            help="Filenames of the five files containing all JLPT vocabulary, "
+                 "first file contains N5 vocab and last contains N1 vocab. "
+                 "The last file is a JSON file containing manual assignments.")
     parser.add_argument("--dictionary-texts", "--texts", "--tex", "-t",
             metavar="FILENAME", dest="improved_dictionary_texts_filename",
             help="Name of the json file mapping info entity texts in the "
@@ -714,7 +943,7 @@ if __name__ == "__main__":
     parser.add_argument("--output", "--out", "-o", metavar="FILENAME",
             dest="output_path", help="Directory path for output files.")
     args = parser.parse_args()
-    output_path = args.output_path if args.output_path is not None else "data"
+    output_path = args.output_path if args.output_path else "Japanese-English"
     # Define filenames and paths for output files
     database_path = os.path.join(output_path, "Japanese-English.sqlite3")
     kanji_strokes_path = os.path.join(output_path, "kanji-strokes.json")
@@ -735,6 +964,32 @@ if __name__ == "__main__":
             args.improved_dictionary_texts_filename)
         parse_improved_dictionary_texts(
                 code_to_text_path, args.improved_dictionary_texts_filename)
+    # Parse JLPT vocabulary
+    if args.jlpt_vocab is not None:
+
+        # Create temporary indices to speed up database queries
+        print("Creating temporary indices... ", end="\r")
+        cursor.execute("CREATE INDEX IF NOT EXISTS w_w ON words (word)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS r_r ON readings (reading)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS r_id ON readings (id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS m_id ON meanings (id)")
+        print("Creating temporary indices... Done.")
+
+        for level in range(5, 0, -1):
+            print()
+            print("Parsing JLPT N%s vocabulary from file '%s':"
+                  % (level, args.jlpt_vocab[5 - level]))
+            parse_jlpt_vocabulary(args.jlpt_vocab[5 - level], level, cursor)
+        print()
+        process_manual_jlpt_assignments(args.jlpt_vocab[5])
+
+        # Remove temporary indices (will be recreated within the app)
+        print("Removing temporary indices... ", end="\r")
+        cursor.execute("DROP INDEX IF EXISTS w_w")
+        cursor.execute("DROP INDEX IF EXISTS r_r")
+        cursor.execute("DROP INDEX IF EXISTS r_id")
+        cursor.execute("DROP INDEX IF EXISTS m_id")
+        print("Removing temporary indices... Done.")
     # Parse proper names
     if args.proper_names_filename is not None:
         print()
@@ -759,6 +1014,12 @@ if __name__ == "__main__":
         print("Parsing frequencies of words in BCCWF dataset from file '%s':"
                % args.word_bccwj_freq_filename)
         parse_word_bccwj_frequencies(args.word_bccwj_freq_filename, cursor)
+    # Parse book word frequencies (part of the BCCWJ dataset)
+    if args.word_book_freq_filename is not None:
+        print()
+        print("Parsing frequencies of words in books from file '%s':"
+               % args.word_book_freq_filename)
+        parse_word_book_frequencies(args.word_book_freq_filename, cursor)
     # Parse kanji
     if args.kanji_filename is not None:
         print()
@@ -785,7 +1046,7 @@ if __name__ == "__main__":
     if args.new_jlpt_n3_kanji is not None:
         print()
         print("Updating JLPT levels using file '%s':" % args.new_jlpt_n3_kanji)
-        update_jlpt_levels(args.new_jlpt_n3_kanji, cursor)
+        update_kanji_jlpt_levels(args.new_jlpt_n3_kanji, cursor)
     # Create reversed index for example words containing certain kanji
     if args.example_words_index:
         print()

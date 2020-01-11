@@ -1,11 +1,13 @@
 
+- Prevent JLPT level indicator showing up in proper name entries
+- Extend dictionary options with sorting criteria and option to toggle BG color
+- Fix: focus is not on entry after closing overlay when reviewing multiple langs
+
 General
 --------------------------------------------------------------------------------
 
-- Fix: edge cases in pinyin conversion
 - Rework functionality for detecting shortcut collisions
 - Error when clicking margin in notes container, stop prop. if container reached
-- Word notes are also being displayed for kanji/hanzi with the same name, fix!
 - Include exception handling code that removes faulty backups that do not
   contain an info.json for some reason!
 - Make sure overlays can't be interacted with while they're fading away
@@ -55,12 +57,15 @@ General
 - Limit size of search history to a sensible value
 - Limit size of notifications list (since deleting one takes linear time there)
 - Make edit distance calculation more efficient using threshold
+- Apparent using innerHTML to delete children is slow now, use different method?
 
 ### Design
 - Use font-family "Trajan" for roman numerals?
 - Add color schemes based on Ubuntu colors
 - Use translations-font and readings-font in some places instead of vocab-font
 - Rework popup stack design in panels? (using borders and uniform colors)
+- Extend color schemes with fitting tag border colors
+- How to avoid "flash of unstyled content" (FOUC)?
 
 ### Misc
 - Offer language data for EN if not available for the chosen source language?
@@ -78,6 +83,7 @@ General
 - Reverse completion list order if it's shown above entry instead of below?
   - Extend the utility view function for this purpose
 - Make wrap-up feature only show items that have actually been started?
+- Don't close panels when pressing the same sidebar button again?
 
 
 Components
@@ -176,6 +182,11 @@ Japanese
   Note that this might require to create words-index again, probably not worth.
 - Consider dropping name-dictionary to lower memory usage and file size
   - Maybe include it in the data but only load it when explicitly asked to
+- In JLPT level parse procedure: consider to remove candidates where not a
+  at least one reading or meaning match (unless there is no readings/meanings)
+- Include other parts of the BCCWJ corpus into the dictionary? Maybe whole?
+- Frequencies (esp. news) should contain all known entries to distinguish
+  whether untagged words just appear rarely or are completely missing in corpus
 
 ### Kanji Info Panel
 - Allow seeing stroke animation instead of pictures (and customize speed)
@@ -217,6 +228,7 @@ Japanese
   entry from the dictionary
 - Implement displaying various frequencies and uncomment corresponding option
 - How to display search results more efficiently? What's taking all the time?
+- Implement smart matching where inflection and ni/na/to particles can be given
 
 ### Kanji section
 - Search customization:

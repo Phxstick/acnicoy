@@ -915,7 +915,7 @@ class TestSection extends Section {
 
         // Fill container with notes associated with test item (if available)
         let notes = [];
-        if (this.testInfo.currentItem.numParts === 1 ||
+        if (this.testInfo.currentItem.mode === dataManager.test.mode.WORDS &&
                 this.testInfo.currentPart === "meanings") {
             notes = await
                 dataManager.vocab.getNotes(this.testInfo.currentItem.entry);

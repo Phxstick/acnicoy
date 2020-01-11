@@ -50,12 +50,14 @@ body {
   position: absolute;
   z-index: var(--tooltip-layer);
   pointer-events: none;
-  padding: 5px;
+  padding: 2px;
+  padding-left: 6px;
+  padding-right: 6px;
   border-radius: 3px;
   background-color: $tooltip-background;
   color: $tooltip-color;
   font-family: $tooltip-font;
-  opacity: 0.85;
+  opacity: 0.9;
   box-shadow: 0 0 5px $tooltip-shadow-color;
   visibility: hidden;
 }

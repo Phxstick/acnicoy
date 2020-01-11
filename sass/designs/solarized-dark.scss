@@ -39,7 +39,7 @@ $color: strengthen($fg-lightest, 5%);
 $color-light: strengthen($fg-darkest, 6%); // mix($fg-darkest, $fg-light, 25%);
 $color-lightest: $fg-darkest;
 $color-dark: strengthen($color, 15%);
-$border-color-light: desaturate(strengthen($background-color, 6%), 4%);
+$border-color-light: desaturate(strengthen($background-color, 10%), 6%);
 $border-color-medium: weaken($color-light, 10%);
 $border-color-dark: weaken($color-light, 2%);
 $border-color-darkest: $color-light;
@@ -48,7 +48,7 @@ $shadow-color: grey;
 // Maximum contrast
 $contrast-color: black;
 $contrast-shadow-color: white;
-$dark-contrast-color: #ddd;
+$dark-contrast-color: #b0b0b0;
 $dark-contrast-shadow-color: black;
 
 // Light button
@@ -206,14 +206,18 @@ $panel-dim-background-dark: rgba(mix($bg-dark-lighter, black, 40%), 0.9);
 $overlay-dim-background: rgba(black, 0.7);
 
 // Suggestion window
-$suggestions-window-color: rgba(white, 0.9);
-$suggestion-background: rgba(white, 0.7);
-$suggestion-background-hover: rgba(white, 0.8);
-$suggestion-background-selected: rgba(whitesmoke, 0.96);
-$suggestion-color: $bg-dark;
-$suggestion-color-hover: $bg-dark-lighter;
-$suggestion-color-selected: $bg-dark-lighter;
-$suggestion-group-selector-hover-background: rgba(white, 0.35);
+$suggestions-window-color: $color;
+$suggestion-background: $view-background;
+$suggestion-background-hover: mix($secondary-color, $view-background, 10%);
+$suggestion-background-selected: mix($secondary-color, $view-background, 22%);
+$suggestion-color: $color;
+$suggestion-color-hover: mix($color, $color-dark, 60%);
+$suggestion-color-selected: $color-dark;
+$suggestion-border-color: lighten($suggestion-background, 3%);
+$suggestion-border-color-hover: lighten($suggestion-background, 6%);
+$suggestion-border-color-selected: lighten($suggestion-background-selected, 8%);
+$suggestion-group-selector-hover-background:
+  rgba(lighten($secondary-color, 20%), 0.2); 
 
 // =============================================================================
 //   Specific colors

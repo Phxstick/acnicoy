@@ -48,10 +48,17 @@ class DictionarySearchResultEntry extends Widget {
         // Set entry class by frequency (determines background color)
         this.isProperName = !!info.properName;
         if (!info.properName) {
-            if (info.newsFreq > 0 && info.newsFreq < 25) {
-                info.entryClass = "semi-frequent";
-            } else if (info.newsFreq >= 25) {
-                info.entryClass = "frequent";
+            const weights = dataManager.settings.dictionary.frequencyWeights;
+            const rank = dataManager.content.calculateEntryRank(info, weights);
+            if (rank <= 24000) {
+                info.common = dataManager.settings.dictionary.tagCommonWords;
+                if (dataManager.settings.dictionary.dyeCommonWords) {
+                    if (rank <= 12000) {
+                        info.entryClass = "frequent";
+                    } else {
+                        info.entryClass = "semi-frequent";
+                    }
+                }
             }
         } else {
             if (info.tags.length === 1) {
@@ -59,10 +66,29 @@ class DictionarySearchResultEntry extends Widget {
             }
         }
 
+        // Prepare frequency indicators
+        const flags = dataManager.settings.dictionary.frequencyIndicators;
+        info.jlptLevel = flags.showJlptLevels && info.jlptLevel !== null ?
+            `JLPT N${info.jlptLevel}` : undefined;
+        info.newsRank = flags.showNewsFrequencies && info.newsRank !== null ?
+            Math.ceil(info.newsRank / 2) : undefined;
+        info.bookRank = flags.showBookFrequencies && info.bookRank !== null ?
+            Math.ceil(info.bookRank / 1000) : undefined;
+
         // Instantiate handlebars template
         info.added = info.associatedVocabEntry !== null;
         this.root.innerHTML +=
             templates.get("dictionary-search-result-entry")(info);
+
+        // Add tooltips to frequency tags
+        if (info.newsRank) {
+            this.$("entry-info").querySelector(".news-rank").tooltip(
+                `Top ${info.newsRank},000 most frequent in news articles.`);
+        }
+        if (info.bookRank) {
+            this.$("entry-info").querySelector(".book-rank").tooltip(
+                `Top ${info.bookRank},000 most frequent in books.`);
+        }
 
         // Open kanji info panel upon clicking a kanji in the main word
         if (info.wordsAndReadings[0].word.length > 0) {

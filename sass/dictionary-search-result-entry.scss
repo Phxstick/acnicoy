@@ -152,3 +152,57 @@
     }
   }
 }
+
+#entry-info > * {
+  display: inline-block;
+  width: 60px;
+  box-sizing: border-box;
+  border: 1px solid mix($border-color-light, $border-color-medium, 50%);
+  border-radius: 3px;
+  font-family: $small-font;
+  font-size: 80%;
+  padding: 1px;
+  margin-right: 1px;
+  margin-top: 4px;
+  text-align: center;
+  // opacity: 0.9;
+  // &:hover {
+  //   opacity: 1;
+  // }
+  color: strengthen($color, 2%);
+
+  &.commonness {
+    border-color: $dictionary-commonness-color;
+    background-color: rgba($dictionary-commonness-color, 0.1);
+  }
+
+  &.jlpt-level {
+    border-color: $dictionary-jlpt-level-color;
+    background-color: rgba($dictionary-jlpt-level-color, 0.1);
+  }
+
+  &.news-rank {
+    // line-height: 1.1rem;
+    border-color: $dictionary-news-rank-color;
+    background-color: rgba($dictionary-news-rank-color, 0.1);
+
+    &:before {
+      // content: "新";
+      content: "News";
+      padding-right: 4px;
+    }
+  }
+
+  &.book-rank {
+    // line-height: 1.1rem;
+    border-color: $dictionary-book-rank-color;
+    background-color: rgba($dictionary-book-rank-color, 0.1);
+    letter-spacing: -0.3px;
+
+    &:before {
+      // content: "本";
+      content: "Books";
+      padding-right: 4px;
+    }
+  }
+}

@@ -1,7 +1,7 @@
 "use strict";
 
 const fs = require("fs");
-const dot = require("dot-object");
+const dot = require("dot-prop");
 
 module.exports = function (paths, modules) {
     const settings = {};
@@ -45,7 +45,7 @@ module.exports = function (paths, modules) {
 
     settings.get = function (identifier) {
         if (!identifier) return data;
-        const value = dot.pick(identifier, data);
+        const value = dot.get(data, identifier);
         if (value === undefined) {
             throw new Error(`Setting '${identifier}' could not be found.`);
         }
@@ -53,16 +53,16 @@ module.exports = function (paths, modules) {
     };
 
     settings.set = function (identifier, value) {
-        if (dot.pick(identifier, data) === undefined) {
+        if (!dot.has(data, identifier)) {
             throw new Error(`Setting '${identifier}' could not be found.`);
         }
         isModified[modules.currentLanguage] = true;
-        return dot.set(identifier, value, data);
+        return dot.set(data, identifier, value);
     };
 
     settings.getFor = function (language, identifier) {
         if (!identifier) return dataMap[language];
-        const value = dot.pick(identifier, dataMap[language]);
+        const value = dot.get(dataMap[language], identifier);
         if (value === undefined) {
             throw new Error(`Setting '${identifier}' could not be found.`);
         }
@@ -70,11 +70,11 @@ module.exports = function (paths, modules) {
     };
 
     settings.setFor = function (language, identifier, value) {
-        if (dot.pick(identifier, dataMap[language]) === undefined) {
+        if (!dot.has(dataMap[language], identifier)) {
             throw new Error(`Setting '${identifier}' could not be found.`);
         }
         isModified[language] = true;
-        return dot.set(identifier, value, dataMap[language]);
+        return dot.set(dataMap[language], identifier, value);
     };
 
     return settings;

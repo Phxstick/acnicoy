@@ -387,7 +387,7 @@ HTMLElement.prototype.contextMenu = function (menuItems, itemNames, data) {
  * @param {Integer} [width] - Width of the tooltip in pixels. By default it is
  *     as wide as its content.
  */
-HTMLElement.prototype.tooltip = function (content, delay=500, width) {
+HTMLElement.prototype.tooltip = function (content, delay=300, width) {
     this.removeTooltip();
     const tooltip = document.getElementById("tooltip");
     const positionTooltip = (event) => {

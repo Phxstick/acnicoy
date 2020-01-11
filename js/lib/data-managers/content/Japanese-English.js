@@ -225,7 +225,8 @@ module.exports = async function (paths, contentPaths, modules) {
     function getDictionaryEntryInfo(id) {
         return Promise.all([
             data.query(
-                `SELECT words, news_freq FROM dictionary WHERE id = ?`, id),
+                `SELECT words, jlpt_level, news_rank, book_rank, commonness
+                 FROM dictionary WHERE id = ?`, id),
             data.query(
                 `SELECT translations, part_of_speech, field_of_application,
                         misc_info, words_restricted_to, readings_restricted_to,
@@ -233,7 +234,8 @@ module.exports = async function (paths, contentPaths, modules) {
                  FROM meanings WHERE id = ?`, id),
             data.query(
                 `SELECT reading, restricted_to FROM readings WHERE id = ?`, id)
-        ]).then(([[{ words, news_freq }], meanings, readings]) => {
+        ]).then(([[{ words, jlpt_level, news_rank, book_rank, commonness }],
+                     meanings, readings]) => {
             const info = { id };
             // Provide list of objects containing of a word and its reading
             words = words.split(";");
@@ -268,7 +270,10 @@ module.exports = async function (paths, contentPaths, modules) {
                                   .withoutEmptyStrings()
                 });
             }
-            info.newsFreq = news_freq;
+            info.jlptLevel = jlpt_level;
+            info.newsRank = news_rank;
+            info.bookRank = book_rank;
+            info.commonness = commonness;
             return info;
         });
     };
@@ -283,12 +288,12 @@ module.exports = async function (paths, contentPaths, modules) {
      */
     async function findDictionaryIdForWord(word) {
         const wordMatches = await data.query(
-            "SELECT d.id AS id, MAX(d.news_freq) AS freq " +
+            "SELECT d.id AS id, MIN(d.news_rank) AS rank " +
             "FROM words w JOIN dictionary d " +
             "ON w.id = d.id WHERE w.word = ?", word);
         if (wordMatches.length > 0) return wordMatches[0].id;
         const readingMatches = await data.query(
-            "SELECT d.id AS id, MAX(d.news_freq) AS freq " +
+            "SELECT d.id AS id, MIN(d.news_rank) AS rank " +
             "FROM readings r JOIN dictionary d " +
             "ON r.id = d.id WHERE r.reading = ?", word);
         if (readingMatches.length > 0) return readingMatches[0].id;
@@ -614,6 +619,38 @@ module.exports = async function (paths, contentPaths, modules) {
     }
 
     /**
+     * Calculates the overall rank of a dictionary entry according to a
+     * combination of criteria determined by the given weights.
+     * @param {Object} info - Contains values for all criteria with weight > 0.
+     * @param {Object} weights - Contains weights for all desired criteria.
+     * @returns {Number}
+     */
+    function calculateEntryRank(info, weights) {
+        let score = 0;
+        let weightSum = 0;
+        if (info.newsRank && weights.news) {
+            score += info.newsRank * 500 * weights.news;
+            weightSum += weights.news;
+        }
+        if (info.bookRank && weights.book) {
+            score += info.bookRank * weights.book;
+            weightSum += weights.book;
+        }
+        if (info.jlptLevel && weights.jlpt) {
+            score += data.jlptSizeAccumulative[info.jlptLevel] * 1.5
+                     * weights.jlpt;
+            weightSum += weights.jlpt;
+        }
+        if (weightSum > 0) score /= weightSum;
+        if (score === 0) {
+            if (info.commonness === 1) return 12500;
+            else if (info.commonness === 2) return 25000;
+            else return Infinity;
+        }
+        return score;
+    }
+
+    /**
      * Given an object with query information, return a list of ids of matching
      * dictionary entries. Exact matches are prioritized.
      * @param {Object} query - Object of form { translations, readings }.
@@ -763,14 +800,24 @@ module.exports = async function (paths, contentPaths, modules) {
             queryArguments.push(...query.translations);
         }
 
-        // Sort IDs by news frequency and extract corresponding translations
+        // Get matched IDs along with their translations and sorting criteria
+        const sortingCriteria = [];
+        const weights = modules.settings.dictionary.frequencyWeights;
+        if (weights.news) sortingCriteria.push("d.news_rank AS newsRank")
+        if (weights.book) sortingCriteria.push("d.book_rank AS bookRank")
+        if (weights.net) sortingCriteria.push("d.net_rank AS netRank");
+        if (weights.jlpt) sortingCriteria.push("d.jlpt_level AS jlptLevel");
         const rows = await data.query(
             `WITH matched_ids AS ${selectClauses.join(" INTERSECT ")}
-             SELECT d.id, GROUP_CONCAT(t.translations, ';') AS translations
+             SELECT d.id, GROUP_CONCAT(t.translations, ';') AS translations,
+                    d.commonness ${sortingCriteria.length > 0 ? "," : ""}
+                    ${sortingCriteria.join(", ")}
              FROM matched_ids m INNER JOIN dictionary d ON m.id = d.id
                                 INNER JOIN meanings t ON m.id = t.id
-             GROUP BY d.id
-             ORDER BY d.news_freq DESC`, ...queryArguments);
+             GROUP BY d.id`, ...queryArguments);
+
+        rows.sort((row1, row2) => calculateEntryRank(row1, weights) -
+                                  calculateEntryRank(row2, weights));
         return rows;
     }
 
@@ -808,9 +855,11 @@ module.exports = async function (paths, contentPaths, modules) {
             }
         }
         const rows = await data.query(`
-             SELECT id, translations FROM dictionary
-             WHERE ${whereClauses.join(" AND ")}
-             ORDER BY news_freq DESC`, ...queryArguments);
+            SELECT id, translations FROM dictionary
+            WHERE ${whereClauses.join(" AND ")}
+            ORDER BY news_rank IS NULL, news_rank ASC,
+                     commonness IS NULL, commonness ASC`,
+            ...queryArguments);
         return rows;
     }
 
@@ -915,6 +964,15 @@ module.exports = async function (paths, contentPaths, modules) {
                        FROM kanji WHERE jlpt IS NOT NULL
                        GROUP BY jlpt`)
     ]);
+    // Get the amount of words per JLPT level
+    const jlptQuery="SELECT COUNT(*) AS c FROM dictionary WHERE jlpt_level = ?";
+    const jlptSizePerLevel = {};
+    const jlptSizeAccumulative = {};
+    for (let level = 5; level >= 1; --level) {
+        jlptSizePerLevel[level] = (await queryFunction(jlptQuery, level))[0].c;
+        jlptSizeAccumulative[level] = level === 5 ? jlptSizePerLevel[level] :
+            jlptSizeAccumulative[level + 1] + jlptSizePerLevel[level];
+    }
     // Create mapping from jouyou grade to amount
     const kanjiPerGrade = {};
     for (const { grade, amount } of amountPerGrade) {
@@ -938,6 +996,7 @@ module.exports = async function (paths, contentPaths, modules) {
         // Data objects
         numKanjiPerGrade: Object.freeze(kanjiPerGrade),
         numKanjiPerJlptLevel: Object.freeze(kanjiPerJlpt),
+        jlptSizeAccumulative: Object.freeze(jlptSizeAccumulative),
         kanjiStrokes: Object.freeze(requireNew(contentPaths.kanjiStrokes)),
         numericKanji: Object.freeze(requireNew(contentPaths.numbers)),
         counterKanji: Object.freeze(requireNew(contentPaths.counters)),
@@ -961,6 +1020,7 @@ module.exports = async function (paths, contentPaths, modules) {
         guessDictionaryId,
         guessAssociatedVocabEntry,
         searchDictionary,
+        calculateEntryRank,
 
         // Proper names
         getProperNameEntryInfo

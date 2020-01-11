@@ -55,13 +55,21 @@
     },
     "dictionary": {
         "partOfSpeechInJapanese": false,
-        "showFrequencyValues": false,
         "includeProperNameSearch": false,
         "historySizeLimit": 200,
+        "tagCommonWords": false,
+        "dyeCommonWords": true,
         "frequencyWeights": {
+            "jlpt": 0,
             "news": 1,
-            "book": 0,
+            "book": 1,
             "net": 0
+        },
+        "frequencyIndicators": {
+            "showJlptLevels": false,
+            "showNewsFrequencies": false,
+            "showBookFrequencies": false,
+            "showNetFrequencies": false
         }
     },
     "kanjiOverview": {

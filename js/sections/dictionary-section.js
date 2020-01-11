@@ -132,10 +132,8 @@ class DictionarySection extends Section {
                 if (event.target.tagName !== "CHECK-BOX") checkbox.toggle();
             });
         }
-        this.$("part-of-speech-in-japanese").checked =
-            dataManager.settings.dictionary.partOfSpeechInJapanese;
-        this.$("part-of-speech-in-japanese").callback = (value) => {
-            dataManager.settings.dictionary.partOfSpeechInJapanese = value;
+        // Re-evaluate last query if user already searched and settings changed
+        const repeatLastQuery = () => {
             this.searchSettingsChanged = true;
             if (this.loadedQuery !== null &&
                     this.selectedSearchResultCategory !== null) {
@@ -143,21 +141,39 @@ class DictionarySection extends Section {
                             [this.selectedSearchResultCategory]);
             }
         };
-        // this.$("show-word-frequencies").checked =
-        //     dataManager.settings.dictionary.showFrequencyValues;
-        // this.$("show-word-frequencies").callback = (value) => {
-        //     dataManager.settings.dictionary.showFrequencyValues = value;
-        //     this.searchSettingsChanged = true;
-        //     if (this.loadedQuery !== null &&
-        //             this.selectedSearchResultCategory !== null) {
-        //         this.search(this.loadedQuery, this.loadedQueryType,
-        //                     [this.selectedSearchResultCategory]);
-        //     }
+        this.$("part-of-speech-in-japanese").checked =
+            dataManager.settings.dictionary.partOfSpeechInJapanese;
+        this.$("part-of-speech-in-japanese").callback = (value) => {
+            dataManager.settings.dictionary.partOfSpeechInJapanese = value;
+            repeatLastQuery();
+        };
+        // this.$("include-proper-name-search").checked =
+        //     dataManager.settings.dictionary.includeProperNameSearch;
+        // this.$("include-proper-name-search").callback = (value) => {
+        //     dataManager.settings.dictionary.includeProperNameSearch = value;
         // };
-        this.$("include-proper-name-search").checked =
-            dataManager.settings.dictionary.includeProperNameSearch;
-        this.$("include-proper-name-search").callback = (value) => {
-            dataManager.settings.dictionary.includeProperNameSearch = value;
+        const frequencyCheckboxes = this.$$("#frequency-indicators check-box");
+        for (const checkbox of frequencyCheckboxes) {
+            const key = checkbox.dataset.key;
+            checkbox.checked =
+                dataManager.settings.dictionary.frequencyIndicators[key];
+            checkbox.parentNode.addEventListener("click", () => {
+                const value = checkbox.checked;
+                dataManager.settings.dictionary.frequencyIndicators[key] = value
+                repeatLastQuery();
+            });
+        }
+        this.$("tag-common-words").checked =
+            dataManager.settings.dictionary.tagCommonWords;
+        this.$("tag-common-words").callback = (value) => {
+            dataManager.settings.dictionary.tagCommonWords = value;
+            repeatLastQuery();
+        };
+        this.$("dye-common-words").checked =
+            dataManager.settings.dictionary.dyeCommonWords;
+        this.$("dye-common-words").callback = (value) => {
+            dataManager.settings.dictionary.dyeCommonWords = value;
+            repeatLastQuery();
         };
         // =================================================================
         // Search history

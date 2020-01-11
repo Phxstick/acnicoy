@@ -28,6 +28,16 @@
         {{wordsAndReadings.[0].reading}}
       {{/if}}
     </div>
+
+    {{! Display information about the occurrance frequency of this entry }}
+
+    <div id="entry-info">
+      {{#if common}}<span class="commonness">Common</span>{{/if}}
+      {{#if jlptLevel}}<span class="jlpt-level">{{jlptLevel}}</span>{{/if}}
+      {{#if newsRank}}<span class="news-rank">{{newsRank}}</span>{{/if}}
+      {{#if bookRank}}<span class="book-rank">{{bookRank}}</span>{{/if}}
+    </div>
+
   </div>
   <div id="meanings-frame">
 
