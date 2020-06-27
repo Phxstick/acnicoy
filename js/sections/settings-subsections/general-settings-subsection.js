@@ -3,6 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 const compareVersions = require("compare-versions");
+const { ipcRenderer } = require("electron");
 
 class GeneralSettingsSubsection extends SettingsSubsection {
     constructor() {
@@ -10,7 +11,8 @@ class GeneralSettingsSubsection extends SettingsSubsection {
         this.globalSettingsList = [
             "auto-launch-on-startup", "show-srs-notifications",
             "srs-notifications-interval", "do-regular-backup",
-            "regular-backup-interval", "auto-load-language-content"
+            "regular-backup-interval", "auto-load-language-content",
+            "make-window-frameless"
         ];
         this.$("auto-launch-on-startup").addEventListener("click", (event) => {
             dataManager.settings.general.autoLaunchOnStartup =
@@ -22,6 +24,11 @@ class GeneralSettingsSubsection extends SettingsSubsection {
             dataManager.settings.general.autoLoadLanguageContent =
                 event.target.checked;
             this.broadcastGlobalSetting("auto-load-language-content");
+        });
+        this.$("make-window-frameless").addEventListener("click", (event) => {
+            dataManager.settings.general.makeWindowFrameless =
+                event.target.checked;
+            // No broadcast needed, takes effect after reloading
         });
         this.$("data-path").textContent = paths.getDataPath();
         this.$("data-path").addEventListener("click", () => {
@@ -59,6 +66,9 @@ class GeneralSettingsSubsection extends SettingsSubsection {
         this.$("update-program-version").addEventListener("click", () => {
             events.emit("start-program-update");
         });
+        this.$("restart").addEventListener("click", () => {
+            ipcRenderer.send("relaunch");
+        });
     }
 
     initialize() {
@@ -85,6 +95,10 @@ class GeneralSettingsSubsection extends SettingsSubsection {
         events.on("settings-general-auto-load-language-content", () => {
             this.$("auto-load-language-content").checked = 
                 dataManager.settings.general.autoLoadLanguageContent;
+        });
+        events.on("settings-general-make-window-frameless", () => {
+            this.$("make-window-frameless").checked = 
+                dataManager.settings.general.makeWindowFrameless;
         });
         events.on("update-program-status", async () => {
             try {

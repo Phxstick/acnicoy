@@ -79,10 +79,13 @@ $test-button-background-highlighted-hover:
 $test-button-color-highlighted-hover:
   lighten($test-button-color-highlighted, 15%) !default;
 
-$dictionary-commonness-color: rgba(strengthen(green, 3%), 0.85);
-$dictionary-commonness-color-weak: rgba(weaken(green, 5%), 0.85);
-$dictionary-jlpt-level-color: rgba(weaken(darkgoldenrod, 3%), 0.85);
-$dictionary-news-rank-color: rgba(#5f86cc, 0.85);
+$dictionary-commonness-color: rgba(strengthen(green, 3%), 0.85) !default;
+$dictionary-commonness-color-weak: rgba($dictionary-commonness-color, 0.1) !default;
+$dictionary-jlpt-level-color: rgba(weaken(darkgoldenrod, 3%), 0.85) !default;
+$dictionary-jlpt-level-color-weak: rgba($dictionary-jlpt-level-color, 0.1) !default;
+$dictionary-news-rank-color: rgba(#5f86cc, 0.85) !default;
 //#5074b5; //#5579bb; // weaken(cornflowerblue, 2%); dodgerblue
-$dictionary-book-rank-color: rgba(#bf4a34, 0.85);
+$dictionary-news-rank-color-weak: rgba($dictionary-news-rank-color, 0.1) !default;
+$dictionary-book-rank-color: rgba(#bf4a34, 0.85) !default;
 // weaken(indianred, 3%); // strengthen(darkcyan, 3%);
+$dictionary-book-rank-color-weak: rgba($dictionary-book-rank-color, 0.1) !default;

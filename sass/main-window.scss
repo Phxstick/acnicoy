@@ -90,6 +90,7 @@
   #status-bar {
     @include center-content;
     flex: 1;
+    -webkit-app-region: drag;  // Make draggable if window is frameless
 
     #status-text {
       text-shadow: 0px 0px 1px $main-window-color;

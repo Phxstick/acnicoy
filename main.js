@@ -34,7 +34,10 @@ app.on('window-all-closed', function() {
 
 
 app.on('ready', function() {
+
     // Get active color scheme (or take default if settings not yet initialized)
+    // Also get flag for whether the window should be frameless
+    let makeWindowFrameless = false;
     let colorScheme = "default";
     const colorSchemesInfo =
         require(path.resolve(__dirname, "data", "general-color-schemes.json"));
@@ -48,6 +51,10 @@ app.on('ready', function() {
                     settings.design.colorScheme in colorSchemesInfo) {
                 colorScheme = settings.design.colorScheme;
             }
+            if (settings.hasOwnProperty("general") &&
+                    settings.general.hasOwnProperty("makeWindowFrameless")) {
+                makeWindowFrameless = settings.general.makeWindowFrameless;
+            }
         }
     }
 
@@ -60,7 +67,8 @@ app.on('ready', function() {
             nodeIntegration: true,
         },
         icon: "./img/icon.png",
-        show: false
+        show: false,
+        frame: !makeWindowFrameless
     });
     mainWindow.setMenu(null);  // Must do it here to set dimensions correctly
 
@@ -169,4 +177,8 @@ app.on('ready', function() {
       mainWindow = null;
     });
     ipcMain.on("quit", () => app.quit());
+    ipcMain.on("relaunch", () => {
+        app.relaunch();
+        app.quit();
+    });
 });

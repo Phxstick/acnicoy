@@ -173,18 +173,18 @@
 
   &.commonness {
     border-color: $dictionary-commonness-color;
-    background-color: rgba($dictionary-commonness-color, 0.1);
+    background-color: $dictionary-commonness-color-weak;
   }
 
   &.jlpt-level {
     border-color: $dictionary-jlpt-level-color;
-    background-color: rgba($dictionary-jlpt-level-color, 0.1);
+    background-color: $dictionary-jlpt-level-color-weak;
   }
 
   &.news-rank {
     // line-height: 1.1rem;
     border-color: $dictionary-news-rank-color;
-    background-color: rgba($dictionary-news-rank-color, 0.1);
+    background-color: $dictionary-news-rank-color-weak;
 
     &:before {
       // content: "新";
@@ -196,7 +196,7 @@
   &.book-rank {
     // line-height: 1.1rem;
     border-color: $dictionary-book-rank-color;
-    background-color: rgba($dictionary-book-rank-color, 0.1);
+    background-color: $dictionary-book-rank-color-weak;
     letter-spacing: -0.3px;
 
     &:before {

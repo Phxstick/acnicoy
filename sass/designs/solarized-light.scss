@@ -235,6 +235,15 @@ $dictionary-female-name-background: #fff0f3;  // shade of 'lightpink'
 $dictionary-place-name-background: mix(#ede1d1, $bg-light, 65%);
 $dictionary-surname-background: lighten(#f0e0f7, 1%);  // shade of 'darkorchid'
 
+$dictionary-commonness-color: rgba(strengthen(green, 3%), 0.4);
+$dictionary-commonness-color-weak: rgba($dictionary-commonness-color, 0.06);
+$dictionary-jlpt-level-color: rgba(strengthen(darkgoldenrod, 8%), 0.45);
+$dictionary-jlpt-level-color-weak: rgba(weaken(darkgoldenrod, 3%), 0.08);
+$dictionary-news-rank-color: rgba(#5f86cc, 0.6);
+$dictionary-news-rank-color-weak: rgba($dictionary-news-rank-color, 0.1);
+$dictionary-book-rank-color: rgba(#bf4a34, 0.4);
+$dictionary-book-rank-color-weak: rgba($dictionary-book-rank-color, 0.06);
+
 // Kanji stroke SVGs
 $kanji-strokes-color: $color-lightest;
 $kanji-strokes-color-highlighted: $color-dark;

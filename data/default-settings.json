@@ -5,7 +5,8 @@
         "showSrsNotifications": false,
         "srsNotificationsInterval": 900,
         "doRegularBackup": true,
-        "regularBackupInterval": "604800"
+        "regularBackupInterval": "604800",
+        "makeWindowFrameless": false
     },
     "test": {
         "useFlashcardMode": false,
