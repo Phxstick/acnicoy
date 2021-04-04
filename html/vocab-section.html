@@ -6,18 +6,18 @@
   <button slot="tabs" data-tab-name="hanzi" id="hanzi-tab-button">Hanzi</button>
   <div slot="panels" data-tab-name="words"
        data-display-type="flex" id="words-tab">
+
+    <!-------------------------------------------------------------------------->
+    <!---|  Vocabulary column  |------------------------------------------------>
+    <!-------------------------------------------------------------------------->
+    
     <div id="vocab-column" class="column">
       <div id="empty-vocabulary-info" class="info-frame">
         Your vocabulary is empty!<br>
         Add words using the button on the side bar.
       </div>
       <div id="vocab-frame" class="list-frame">
-        <div class="search-entry-frame">
-          <input class="search-entry" id="search-vocab-entry"
-          placeholder="Search vocabulary"></input>
-          <button id="search-vocab-button" class="search-button" tabindex="-1">
-            <i class="fa fa-search"></i></button>
-        </div>
+        <search-field id="search-vocab" placeholder="Search vocabulary"></search-field>
         <div id="vocab" class="list-view"></div>
       </div>
       <div class="control-button-container" id="control-selected-vocab-buttons">
@@ -30,18 +30,17 @@
         <button id="export-vocab-button">Export</button>
       </div>
     </div>
+
+    <!-------------------------------------------------------------------------->
+    <!---|  Vocab lists column  |----------------------------------------------->
+    <!-------------------------------------------------------------------------->
+
     <div id="vocab-lists-column" class="column">
       <div id="no-lists-info" class="info-frame">
         Click the button below to create a new vocabulary list.
       </div>
       <div id="vocab-lists-frame" class="list-frame">
-        <div class="search-entry-frame">
-          <input class="search-entry" id="search-vocab-lists-entry"
-           placeholder="Search vocabulary lists"></input>
-          <button id="search-vocab-lists-button" class="search-button"
-                tabindex="-1">
-            <i class="fa fa-search"></i></button>
-        </div>
+        <search-field id="search-vocab-lists" placeholder="Search vocabulary lists"></search-field>
         <div id="vocab-lists" class="list-view"></div>
       </div>
       <div class="control-button-container" id="vocab-lists-button-frame">
@@ -53,6 +52,11 @@
         <button id="test-on-list-button">Test on selected lists</button>
       </div>
     </div>
+
+    <!-------------------------------------------------------------------------->
+    <!---|  List contents column  |--------------------------------------------->
+    <!-------------------------------------------------------------------------->
+
     <div id="list-contents-column" class="column">
       <div id="no-list-selected-info" class="info-frame">
         Select a vocabulary list in the middle column to see its contents.
@@ -62,13 +66,7 @@
         Drag words from the left column here to add them.
       </div>
       <div id="list-contents-frame" class="list-frame">
-        <div class="search-entry-frame">
-          <input class="search-entry" id="search-list-contents-entry"
-          placeholder="Search list contents"></input>
-          <button id="search-list-contents-button" class="search-button"
-              tabindex="-1">
-            <i class="fa fa-search"></i></button>
-        </div>
+        <search-field id="search-list-contents" placeholder="Search list contents"></search-field>
         <div id="list-contents" class="list-view"></div>
       </div>
       <div id="control-selected-list-contents-buttons">
@@ -81,8 +79,14 @@
          <button id="remove-selected-from-list-button">Remove from list</button>
         </div>
       </div>
+      
     </div>
   </div>
+
+  <!-------------------------------------------------------------------------->
+  <!---|  Kanji tab  |-------------------------------------------------------->
+  <!-------------------------------------------------------------------------->
+
   <div slot="panels" data-tab-name="kanji"
        data-display-type="flex" id="kanji-tab">
     <div id="no-kanji-info" class="info-frame">
@@ -90,35 +94,19 @@
       Add kanji using the button on the side bar.
     </div>
     <div id="kanji-frame" class="list-frame">
-      <div class="search-entry-frame">
-        <div class="search-entry-subframe">
-          <input class="search-entry" id="search-kanji-by-meanings-entry"
-           placeholder="Search by meanings"></input>
-          <button id="search-kanji-by-meanings-button" class="search-button"
-              tabindex="-1">
-            <i class="fa fa-search"></i>
-          </button>
-        </div>
-        <div class="search-entry-subframe">
-          <input class="search-entry" id="search-kanji-by-on-yomi-entry"
-           placeholder="Search by On-Yomi"></input>
-          <button id="search-kanji-by-on-yomi-button" class="search-button"
-              tabindex="-1">
-            <i class="fa fa-search"></i>
-          </button>
-        </div>
-        <div class="search-entry-subframe">
-          <input class="search-entry" id="search-kanji-by-kun-yomi-entry"
-           placeholder="Search by Kun-Yomi"></input>
-          <button id="search-kanji-by-kun-yomi-button" class="search-button"
-              tabindex="-1">
-            <i class="fa fa-search"></i>
-          </button>
-        </div>
+      <div class="search-field-frame">
+        <search-field id="search-kanji-by-meanings" placeholder="Search by meanings"></search-field>
+        <search-field id="search-kanji-by-on-yomi" placeholder="Search by on-yomi"></search-field>
+        <search-field id="search-kanji-by-kun-yomi" placeholder="Search by kun-yomi"></search-field>
       </div>
       <div id="kanji" class="list-view"></div>
     </div>
   </div>
+
+  <!-------------------------------------------------------------------------->
+  <!---|  Hanzi tab  |-------------------------------------------------------->
+  <!-------------------------------------------------------------------------->
+
   <div slot="panels" data-tab-name="hanzi"
        data-display-type="flex" id="hanzi-tab">
     <div id="no-hanzi-info" class="info-frame">
@@ -126,23 +114,9 @@
       Add hanzi using the button on the side bar.
     </div>
     <div id="hanzi-frame" class="list-frame">
-      <div class="search-entry-frame">
-        <div class="search-entry-subframe">
-          <input class="search-entry" id="search-hanzi-by-meanings-entry"
-           placeholder="Search by meanings"></input>
-          <button id="search-hanzi-by-meanings-button" class="search-button"
-              tabindex="-1">
-            <i class="fa fa-search"></i>
-          </button>
-        </div>
-        <div class="search-entry-subframe">
-          <input class="search-entry" id="search-hanzi-by-readings-entry"
-           placeholder="Search by readings"></input>
-          <button id="search-hanzi-by-readings-button" class="search-button"
-              tabindex="-1">
-            <i class="fa fa-search"></i>
-          </button>
-        </div>
+      <div class="search-field-frame">
+        <search-field id="search-hanzi-by-meanings" placeholder="Search by meanings"></search-field>
+        <search-field id="search-hanzi-by-readings" placeholder="Search by readings"></search-field>
       </div>
       <div id="hanzi" class="list-view"></div>
     </div>

@@ -143,6 +143,13 @@ module.exports = function (paths, modules) {
                 } else {
                     oldValues = [];
                 }
+                // Skip if values didn't change, else set status to "updated"
+                if (utility.setEqual(new Set(newValues), new Set(oldValues)) &&
+                        (oldLevel === newLevel || oldValues.length === 0)) {
+                    return;
+                } else {
+                    newStatus = "updated";
+                }
                 // Update database with new values
                 if (oldValues.length > 0 && newValues.length > 0) {
                     modules.stats.updateScore(mode, oldLevel, newLevel);
@@ -167,10 +174,6 @@ module.exports = function (paths, modules) {
                     await modules.database.run(
                         `DELETE FROM ${table} WHERE kanji = ?`, kanji);
                 }
-                // Set status to "updated" if any values changed
-                if (!utility.setEqual(new Set(newValues), new Set(oldValues)) ||
-                        (oldLevel !== undefined && oldLevel !== newLevel))
-                    newStatus = "updated";
             });
             promises.push(promise);
         }

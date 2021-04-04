@@ -24,47 +24,19 @@ body {
     @extend button.light;
     padding: 0;
     width: 40px;
-    font-size: 140%;
+    font-size: 1.2rem;
   }
-
-  > input {
-    @extend input.light;
-    font-size: 120%;
-    padding-left: 10px;
-    padding-right: 0;
-    min-width: 1px;
+  > search-field {
     flex: 1;
+    font-size: 1.2rem;
   }
 
-  #show-overview-button, #settings-button, #search-by-meanings-input,
-  #search-by-readings-input, #history-button {
+  > *:not(:first-child) {
     border-left: 1px solid $border-color-light;
   }
 
-  #search-by-readings-input, #search-by-kanji-input {
+  #search-by-readings, #search-by-kanji {
     font-family: $vocab-font;
-  }
-
-  .search-button {
-    @extend button.no-shadow;
-
-    .spinner { display: none; }
-    &.searching {
-      i { display: none; }
-      .spinner { display: block; }
-    }
-    .spinner {
-      color: $button-light-icon-color;
-      > div {
-        pointer-events: none;
-      }
-      &:hover {
-        color: $button-light-icon-color-hover;
-        > div {
-          text-shadow: 0 0 1px $button-light-color;
-        }
-      }
-    }
   }
 }
 

@@ -1,6 +1,7 @@
 "use strict";
 
-const Random = require("random-js");
+const { Random } = require("random-js");
+const random = new Random();
 
 class SrsStatusOverview extends PinwallWidget {
     constructor() {
@@ -91,7 +92,7 @@ class SrsStatusOverview extends PinwallWidget {
                 for (let i = 1; i < numLanguages + 1; ++i) {
                     rows.push(this.$("container").children[i].children[1]);
                 }
-                Random.shuffle(Random.engines.nativeMath, rows);
+                random.shuffle(rows);
 
                 // Find out whether all languages for these levels are selected
                 let allSelected = true;

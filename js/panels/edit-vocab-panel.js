@@ -176,7 +176,10 @@ class EditVocabPanel extends EditPanel {
             "click", () => main.closePanel("edit-vocab"));
         this.$("cancel-button").addEventListener(
             "click", () => main.closePanel("edit-vocab"));
-        this.$("save-button").addEventListener("click", () => this.save());
+        this.$("save-button").addEventListener("click", () => {
+            this.save();
+            main.closePanel("edit-vocab");
+        });
 
         // Configure context menus for static elements
         this.$("word").contextMenu(menuItems, () =>
@@ -259,7 +262,10 @@ class EditVocabPanel extends EditPanel {
         this.closed = true;
     }
 
-    async load(word, givenDictionaryId=null, isProperName=false) {
+    async load(word, { givenDictionaryId=null, isProperName=false,
+            entryList=undefined }={}) {
+        super.load(word, entryList)
+        
         // Check if the word is already in the vocabulary
         if (word !== undefined && await dataManager.vocab.contains(word)) {
             this.originalWord = word;
@@ -509,8 +515,6 @@ class EditVocabPanel extends EditPanel {
             main.updateStatus(`The word '${word}' and ${translations.length} ` +
                               `translation${pluralSuffix} have been added.`);
         }
-
-        main.closePanel("edit-vocab");
     }
 }
 

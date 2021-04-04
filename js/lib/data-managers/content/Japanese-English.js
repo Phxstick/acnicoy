@@ -287,16 +287,23 @@ module.exports = async function (paths, contentPaths, modules) {
      * @returns {Promise[Integer]}
      */
     async function findDictionaryIdForWord(word) {
+        // NOTE TO PREVENT BUG AGAIN: due to the MIN(d.newsrank) in the select-
+        // clause, the query will always return a row, even if the tables do
+        // not contain an entry with the given word/reading. That's why it's
+        // necessary to check if the ID in that row is null.
         const wordMatches = await data.query(
             "SELECT d.id AS id, MIN(d.news_rank) AS rank " +
             "FROM words w JOIN dictionary d " +
             "ON w.id = d.id WHERE w.word = ?", word);
-        if (wordMatches.length > 0) return wordMatches[0].id;
+        if (wordMatches.length > 0 && wordMatches[0].id !== null)
+            return wordMatches[0].id;
         const readingMatches = await data.query(
             "SELECT d.id AS id, MIN(d.news_rank) AS rank " +
             "FROM readings r JOIN dictionary d " +
             "ON r.id = d.id WHERE r.reading = ?", word);
-        if (readingMatches.length > 0) return readingMatches[0].id;
+        
+        if (readingMatches.length > 0 && readingMatches[0].id !== null)
+            return readingMatches[0].id;
         return null;
     }
 
@@ -729,7 +736,7 @@ module.exports = async function (paths, contentPaths, modules) {
                 if (!translation.endsWith("%")) {
                     regex = regex + "\\b";
                 }
-                regex.replace(/%+/g, "\\B*?");
+                regex = regex.replace(/%+/g, "\\B*?");
                 queryRegexes.push(new RegExp(regex, 'i'));
             }
             for (const match of allMatches) {

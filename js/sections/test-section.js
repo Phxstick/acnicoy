@@ -14,8 +14,8 @@
  *
  */
 
-const Random = require("random-js");
-const random = new Random(Random.engines.browserCrypto);
+const { Random, browserCrypto } = require("random-js");
+const random = new Random(browserCrypto);
 
 const menuItems = contextMenu.registerItems({
     "copy-test-item": {

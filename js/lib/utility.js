@@ -181,7 +181,17 @@ function removeDuplicates(array) {
  * @returns {String}
  */
 function collapseWhitespace(string) {
-    return string.replace(/\s/g, " ");
+    return string.replace(/\s+/g, " ");
+}
+
+/**
+ * Escape characters in the given string that have a special meaning
+ * in regular expressions. Taken from the MDN web docs.
+ * @param {String} pattern 
+ * @returns {String}
+ */
+function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
@@ -1077,6 +1087,7 @@ module.exports.parseCssFile = parseCssFile;
 module.exports.setEqual = setEqual;
 module.exports.removeDuplicates = removeDuplicates;
 module.exports.collapseWhitespace = collapseWhitespace;
+module.exports.escapeRegex = escapeRegex;
 module.exports.findMatches = findMatches;
 module.exports.zipArrays = zipArrays;
 module.exports.calculateED = calculateED;

@@ -1,5 +1,7 @@
 "use strict";
 
+const { data } = require("autoprefixer");
+
 class DictionarySection extends Section {
     constructor() {
         super("dictionary");
@@ -29,22 +31,12 @@ class DictionarySection extends Section {
         // =================================================================
         // Listeners for search entries and search buttons
         // =================================================================
-        utility.selectAllOnFocus(this.$("words-filter"));
-        utility.selectAllOnFocus(this.$("meanings-filter"));
-        this.$("words-filter").addEventListener("keypress", (event) => {
-            if (event.key !== "Enter") return;
-            this.search(this.$("words-filter").value.trim(), "reading");
+        this.$("words-filter").setCallback((value) => {
+            this.search(value, "reading");
         });
-        this.$("meanings-filter").addEventListener("keypress", (event) => {
-            if (event.key !== "Enter") return;
-            this.search(this.$("meanings-filter").value.trim(), "meaning");
-        });
-        this.$("words-filter-button").addEventListener("click", () => {
-            this.search(this.$("words-filter").value.trim(), "reading");
-        });
-        this.$("meanings-filter-button").addEventListener("click", () => {
-            this.search(this.$("meanings-filter").value.trim(), "meaning");
-        });
+        this.$("meanings-filter").setCallback((value) => {
+            this.search(value, "meaning");
+        })
         // =================================================================
         // Listener for search result control buttons
         // =================================================================
@@ -175,6 +167,19 @@ class DictionarySection extends Section {
             dataManager.settings.dictionary.dyeCommonWords = value;
             repeatLastQuery();
         };
+        const sortingCriteriaCheckboxes =
+            this.$$("#sorting-criteria check-box");
+        for (const checkbox of sortingCriteriaCheckboxes) {
+            const key = checkbox.dataset.key;
+            checkbox.checked =
+                dataManager.settings.dictionary.frequencyWeights[key] > 0;
+            checkbox.parentNode.addEventListener("click", () => {
+                const value = checkbox.checked;
+                dataManager.settings.dictionary.frequencyWeights[key] =
+                    value ? 1 : 0;
+                repeatLastQuery();
+            })
+        }
         // =================================================================
         // Search history
         // =================================================================
@@ -246,7 +251,7 @@ class DictionarySection extends Section {
         this.loadedQueryType = type;
         this.searchSettingsChanged = false;
 
-        // Make sure entries reflect currently searched query
+        // Make sure search fields reflect currently searched query
         if (type === "meaning") {
             this.$("meanings-filter").value = query;
             this.$("words-filter").value = "";
@@ -292,7 +297,7 @@ class DictionarySection extends Section {
                 this.createHistoryViewItem(query, type),
                 this.$("history").firstChild);
         }
-        // If no categories to load are given, take standard ones
+        // If no categories to load are given, take default ones
         if (categories === null) {
             categories = ["words"];
             if (dataManager.settings.dictionary.includeProperNameSearch) {
@@ -313,9 +318,9 @@ class DictionarySection extends Section {
         // Indicate that a search is running
         this.$("search-info").hide();
         if (type === "reading") {
-            this.$("words-filter-button").classList.add("searching");
+            this.$("words-filter").toggleSpinner(true);
         } else if (type === "meaning") {
-            this.$("meanings-filter-button").classList.add("searching");
+            this.$("meanings-filter").toggleSpinner(true);
         }
         for (const category of categories) {
             this.categoriesLoading.add(category);
@@ -355,8 +360,8 @@ class DictionarySection extends Section {
             this.showSearchResult(null);
         }
         // Indicate that search has finished
-        this.$("words-filter-button").classList.remove("searching");
-        this.$("meanings-filter-button").classList.remove("searching");
+        this.$("words-filter").toggleSpinner(false);
+        this.$("meanings-filter").toggleSpinner(false);
     }
 
     createHistoryViewItem(query, type) {

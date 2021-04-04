@@ -68,12 +68,12 @@ class DictionarySearchResultEntry extends Widget {
 
         // Prepare frequency indicators
         const flags = dataManager.settings.dictionary.frequencyIndicators;
-        info.jlptLevel = flags.showJlptLevels && info.jlptLevel !== null ?
-            `JLPT N${info.jlptLevel}` : undefined;
-        info.newsRank = flags.showNewsFrequencies && info.newsRank !== null ?
-            Math.ceil(info.newsRank / 2) : undefined;
-        info.bookRank = flags.showBookFrequencies && info.bookRank !== null ?
-            Math.ceil(info.bookRank / 1000) : undefined;
+        info.jlptLevel = flags.showJlptLevels && info.jlptLevel !== null
+            && !this.isProperName ? `JLPT N${info.jlptLevel}` : undefined;
+        info.newsRank = flags.showNewsFrequencies && info.newsRank !== null
+            && !this.isProperName ? Math.ceil(info.newsRank / 2) : undefined;
+        info.bookRank = flags.showBookFrequencies && info.bookRank !== null
+            && !this.isProperName ? Math.ceil(info.bookRank / 1000) : undefined;
 
         // Instantiate handlebars template
         info.added = info.associatedVocabEntry !== null;

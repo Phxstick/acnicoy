@@ -31,39 +31,18 @@ class KanjiSection extends Section {
         //   Control bar event listeners
         // =================================================================
 
-        this.$("search-by-readings-input").enableKanaInput();
-        utility.selectAllOnFocus(this.$("search-by-kanji-input"));
-        utility.selectAllOnFocus(this.$("search-by-meanings-input"));
-        utility.selectAllOnFocus(this.$("search-by-readings-input"));
+        this.$("search-by-kanji").setCallback((query) => {
+            this.search(query, "by-kanji");
+        });
+        this.$("search-by-meanings").setCallback((query) => {
+            this.search(query, "by-meanings");
+        });
+        this.$("search-by-readings").setCallback((query) => {
+            this.search(query, "by-readings");
+        })
+        this.$("search-by-readings").enableKanaInput();
         this.$("show-overview-button").addEventListener("click", () => {
             this.showOverview();
-        });
-        this.$("search-by-kanji-button").addEventListener("click", () => {
-            const query = this.$("search-by-kanji-input").value.trim();
-            this.search(query, "by-kanji");
-        });
-        this.$("search-by-kanji-input").addEventListener("keypress", (e) => {
-            if (e.key !== "Enter") return;
-            const query = this.$("search-by-kanji-input").value.trim();
-            this.search(query, "by-kanji");
-        });
-        this.$("search-by-meanings-button").addEventListener("click", () => {
-            const query = this.$("search-by-meanings-input").value.trim();
-            this.search(query, "by-meanings");
-        });
-        this.$("search-by-meanings-input").addEventListener("keypress", (e) => {
-            if (e.key !== "Enter") return;
-            const query = this.$("search-by-meanings-input").value.trim();
-            this.search(query, "by-meanings");
-        });
-        this.$("search-by-readings-button").addEventListener("click", () => {
-            const query = this.$("search-by-readings-input").value.trim();
-            this.search(query, "by-readings");
-        });
-        this.$("search-by-readings-input").addEventListener("keypress", (e) => {
-            if (e.key !== "Enter") return;
-            const query = this.$("search-by-readings-input").value.trim();
-            this.search(query, "by-readings");
         });
 
         // =================================================================
@@ -221,7 +200,7 @@ class KanjiSection extends Section {
     }
 
     open() {
-        this.$("search-by-kanji-input").focus();
+        this.$("search-by-kanji").focus();
     }
 
     adjustToLanguage(language, secondary) {
@@ -401,31 +380,31 @@ class KanjiSection extends Section {
                 this.$("history").firstChild);
 
             // Show given query in the corresponding input and clear all others
-            this.$("search-by-kanji-input").value = "";
-            this.$("search-by-meanings-input").value = "";
-            this.$("search-by-readings-input").value = "";
+            this.$("search-by-kanji").value = "";
+            this.$("search-by-meanings").value = "";
+            this.$("search-by-readings").value = "";
             if (method === "by-kanji") {
-                this.$("search-by-kanji-input").value = query;
+                this.$("search-by-kanji").value = query;
             } else if (method === "by-meanings") {
-                this.$("search-by-meanings-input").value = query;
+                this.$("search-by-meanings").value = query;
             } else if (method === "by-readings") {
-                this.$("search-by-readings-input").value = query;
+                this.$("search-by-readings").value = query;
             }
 
             // if (method === "by-kanji") {
-            //     this.$("search-by-kanji-button").classList.add("searching");
+            //     this.$("search-by-kanji").toggleSpinner(true);
             // } else if (method === "by-meanings") {
-            //     this.$("search-by-meanings-button").classList.add("searching");
+            //     this.$("search-by-meanings").toggleSpinner(true);
             // } else if (method === "by-readings") {
-            //     this.$("search-by-readings-button").classList.add("searching");
+            //     this.$("search-by-readings").toggleSpinner(true);
             // }
         }
         await this.kanjiSearchViewState.load(query, method);
         await utility.finishEventQueue();
         this.showSearchResults();
-        // this.$("search-by-kanji-button").classList.remove("searching");
-        // this.$("search-by-meanings-button").classList.remove("searching");
-        // this.$("search-by-readings-button").classList.remove("searching");
+        // this.$("search-by-kanji").toggleSpinner(false);
+        // this.$("search-by-meanings").toggleSpinner(false);
+        // this.$("search-by-readings").toggleSpinner(false);
     }
 
     async searchByKanji(query) {

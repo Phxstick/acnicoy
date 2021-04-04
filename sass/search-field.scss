@@ -1,0 +1,51 @@
+@import "base";
+@import "buttons";
+@import "inputs";
+
+:host {
+  display: block;
+  min-width: 1px;  // Extend only as far as needed
+}
+
+#wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+}
+
+#search-input {
+  @extend input.light;
+  padding-left: 10px;
+  padding-right: 0;
+  min-width: 1px;
+  flex: 1;
+}
+#search-button {
+  @extend button.light;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 0;
+  padding-bottom: 0;
+
+  .spinner {
+    display: none;
+  }
+
+  &.spinning {
+    i { display: none; }
+    .spinner { display: block; }
+  }
+
+  .spinner {
+    color: $button-light-icon-color;
+    > div {
+      pointer-events: none;
+    }
+    &:hover {
+      color: $button-light-icon-color-hover;
+      > div {
+        text-shadow: 0 0 1px $button-light-color;
+      }
+    }
+  }
+}

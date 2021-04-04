@@ -182,7 +182,10 @@ class EditKanjiPanel extends EditPanel {
             "click", () => main.closePanel("edit-kanji"));
         this.$("cancel-button").addEventListener(
             "click", () => main.closePanel("edit-kanji"));
-        this.$("save-button").addEventListener("click", () => this.save());
+        this.$("save-button").addEventListener("click", () => {
+            this.save();
+            main.closePanel("edit-kanji");
+        });
 
         // Configure context menu for static elements
         this.$("kanji").contextMenu(menuItems, () =>
@@ -233,7 +236,9 @@ class EditKanjiPanel extends EditPanel {
         this.closed = true;
     }
 
-    async load(kanji) {
+    async load(kanji, { entryList=undefined }) {
+        super.load(kanji, entryList)
+
         // Check if the kanji is already in the vocabulary
         if (kanji !== undefined && await dataManager.kanji.isAdded(kanji)) {
             this.originalKanji = kanji;
@@ -420,8 +425,6 @@ class EditKanjiPanel extends EditPanel {
         } else {
             main.updateStatus(`Kanji ${kanji} has been added.`);
         }
-
-        main.closePanel("edit-kanji");
     }
 }
 

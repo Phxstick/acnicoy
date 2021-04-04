@@ -148,7 +148,10 @@ class EditHanziPanel extends EditPanel {
             "click", () => main.closePanel("edit-hanzi"));
         this.$("cancel-button").addEventListener(
             "click", () => main.closePanel("edit-hanzi"));
-        this.$("save-button").addEventListener("click", () => this.save());
+        this.$("save-button").addEventListener("click", () => {
+            this.save();
+            main.closePanel("edit-hanzi");
+        });
 
         // Configure popup-menu for static elements
         this.$("hanzi").contextMenu(menuItems, () =>
@@ -196,7 +199,9 @@ class EditHanziPanel extends EditPanel {
         this.closed = true;
     }
 
-    async load(hanzi) {
+    async load(hanzi, { entryList=undefined }={}) {
+        super.load(hanzi, entryList)
+
         // Check if the hanzi is already in the vocabulary
         if (hanzi !== undefined && await dataManager.hanzi.isAdded(hanzi)) {
             this.originalHanzi = hanzi;
@@ -361,8 +366,6 @@ class EditHanziPanel extends EditPanel {
         } else {
             main.updateStatus(`Hanzi ${hanzi} has been added.`);
         }
-
-        main.closePanel("edit-hanzi");
     }
 }
 

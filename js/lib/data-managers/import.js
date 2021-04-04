@@ -2,7 +2,8 @@
 
 const fs = require("fs").promises;
 const parseCsv = require("neat-csv");
-const Random = require("random-js");
+const { Random } = require("random-js");
+const random = new Random();
 
 module.exports = function (paths, modules) {
     const importFuncs = { };
@@ -77,7 +78,7 @@ module.exports = function (paths, modules) {
         if (order === "first-is-newest") {
             items.reverse();
         } else if (order === "shuffle") {
-            Random.shuffle(Random.engines.nativeMath, items);
+            random.shuffle(items);
         }
 
         for (const item of items) {

@@ -30,7 +30,8 @@
         "kanji-search-result-entry", "dictionary-search-result-entry",
         "language-table", "language-popup", "check-box", "example-word-entry",
         "tabbed-frame", "srs-review-schedule", "tree-view", "time-bar-diagram",
-        "srs-status-overview", "general-stats", "completion-tooltip"
+        "srs-status-overview", "general-stats", "completion-tooltip",
+        "search-field"
     ],
     "extensions": [
         "converter", "array-extensions", "html-element-extensions",

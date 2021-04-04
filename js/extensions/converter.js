@@ -495,6 +495,7 @@ const accentedSyllables = new Set();
 const accentedI = new Set(Object.values(accentedVowels["a"]));
 const accentedU = new Set(Object.values(accentedVowels["u"]));
 
+// Create every combination of initial sound, final sound, and tone
 // TODO: Don't convert non-existing combinations of initials and finals here
 for (const initial of pinyinInitials) {
     for (const final of pinyinFinals) {
@@ -511,6 +512,8 @@ for (const initial of pinyinInitials) {
         }
     }
 }
+
+// Create every combination of vowel-only syllables and tones
 for (const syllable of onlyVowelSyllables) {
     syllableToAccentedSyllable.set(syllable, {});
     for (const accentCode of accentCodes) {
@@ -521,17 +524,26 @@ for (const syllable of onlyVowelSyllables) {
         accentedSyllables.add(accentedSyllable);
     }
 }
-// Allow some conversion from "ue" to "ü"
+
+// Allow conversion of "ue" and "v" to "ü"
 syllableToAccentedSyllable.set("nue", {});
 syllableToAccentedSyllable.set("lue", {});
 syllableToAccentedSyllable.set("nuee", {});
 syllableToAccentedSyllable.set("luee", {});
+syllableToAccentedSyllable.set("nv", {});
+syllableToAccentedSyllable.set("lv", {});
+syllableToAccentedSyllable.set("nve", {});
+syllableToAccentedSyllable.set("lve", {});
 for (const accentCode of accentCodes) {
     const accentedUe = accentedVowels["ü"][accentCode];
     syllableToAccentedSyllable.get("nue")[accentCode] = "n" + accentedUe;
     syllableToAccentedSyllable.get("lue")[accentCode] = "l" + accentedUe;
     syllableToAccentedSyllable.get("nuee")[accentCode] = "n" + accentedUe + "e";
     syllableToAccentedSyllable.get("luee")[accentCode] = "l" + accentedUe + "e";
+    syllableToAccentedSyllable.get("nv")[accentCode] = "n" + accentedUe;
+    syllableToAccentedSyllable.get("lv")[accentCode] = "l" + accentedUe;
+    syllableToAccentedSyllable.get("nve")[accentCode] = "n" + accentedUe + "e";
+    syllableToAccentedSyllable.get("lve")[accentCode] = "l" + accentedUe + "e";
 }
 
 String.prototype.toPinyin = function () {

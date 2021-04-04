@@ -65,6 +65,7 @@ app.on('ready', function() {
         backgroundColor: colorSchemesInfo[colorScheme].loadBg,
         webPreferences: {
             nodeIntegration: true,
+            enableRemoteModule: true
         },
         icon: "./img/icon.png",
         show: false,

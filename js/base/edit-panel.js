@@ -40,6 +40,46 @@ class EditPanel extends Panel {
                 viewWrapper.fadeContentAtBorders(this.fadeDistance);
             });
         }
+
+        // Add functionality to buttons for browsing through a list of items
+        this.$("prev-item-button").hide()
+        this.$("next-item-button").hide()
+        this.$("prev-item-button").addEventListener("click", () => {
+            if (this.entryList === undefined) return
+            if (this.entryIndex === 0) return
+            this.entryIndex -= 1
+            this.save()
+            this.load(this.entryList[this.entryIndex], {
+                entryList: this.entryList
+            })
+        })
+        this.$("next-item-button").addEventListener("click", () => {
+            if (this.entryList === undefined) return
+            if (this.entryIndex === this.entryList.length - 1) return
+            this.entryIndex += 1
+            this.save()
+            this.load(this.entryList[this.entryIndex], {
+                entryList: this.entryList
+            })
+        })
+    }
+
+    load(entry, entryList) {
+        // Display buttons for browsing to previous or next items in the list
+        this.entryList = entryList
+        if (!entryList) {
+            this.$("prev-item-button").hide()
+            this.$("next-item-button").hide()
+            return
+        }
+        this.entryIndex = entryList.indexOf(entry)
+        this.$("prev-item-button").show()
+        this.$("next-item-button").show()
+        this.$("prev-item-button").classList.toggle("disabled",
+            this.entryIndex === 0)
+        this.$("next-item-button").classList.toggle("disabled",
+            this.entryIndex === this.entryList.length - 1)
+        
     }
 
     createListItem(type, text="", createNewItemOnEnter=true) {
@@ -58,6 +98,7 @@ class EditPanel extends Panel {
 
         // Allow editing items on click
         node.contentEditable = "true";
+        node.setAttribute("spellcheck", "false");
         node.addEventListener("focusout", (event) => {
             this.$(`add-${type}-button`).show();
             this.root.getSelection().removeAllRanges();

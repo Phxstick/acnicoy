@@ -77,6 +77,168 @@ module.exports = function (paths, modules) {
         .then(([{amount}]) => amount);
     }
 
+    const languagesWithoutSpaces = new Set([
+        "Chinese", "Japanese", "Thai", "Khmer", "Lao", "Burmesese"
+    ])
+
+    function isMatchType(matchType, queryValue, entryValue) {
+        const cleanedQuery = queryValue.replace(/^%+/, "").replace(/%+$/, "");
+        let regexString
+        let regex
+        switch (matchType) {
+            case "exact":
+                return entryValue === cleanedQuery
+            case "start":
+                if (queryValue.startsWith("%")) return false
+                return entryValue.startsWith(cleanedQuery)
+            case "word":
+                if (queryValue.startsWith("%") && queryValue.endsWith("%"))
+                    return false
+                regexString = utility.escapeRegex(cleanedQuery)
+                if (!queryValue.startsWith("%")) {
+                    regexString = "\\b" + regexString 
+                }
+                if (!queryValue.endsWith("%")) {
+                    regexString = regexString + "\\b"
+                }
+                regexString = regexString.replace(/%+|[*]+/g, "\\S*?")
+                regex = new RegExp(regexString)
+                if (regex.test(entryValue)) return true
+                return false
+            case "wordStart":
+                if (queryValue.startsWith("%") || queryValue.endsWith("%"))
+                    return false
+                regexString = "\\b" + utility.escapeRegex(cleanedQuery)
+                regexString = regexString.replace(/%+|[*]+/g, "\\S*?")
+                regex = new RegExp(regexString)
+                if (regex.test(entryValue)) return true
+                return false
+            default:
+                throw new Error("Unknown match type: " + matchType)
+        }
+    }
+
+    const bracketContentsPattern = /(?:\[[^\]]*?\])|(?:\([^)]*?\))/g;
+    const bracketPattern = /\(|\)|\[|\]/g;
+
+    /**
+     * Given an array of search results, order them according to how well each
+     * matches the query.
+     * @param {array} matches - Each entry is an object of the form
+     *    { word: string, translations: string[], readings: string[]
+     *      notes: string[] }
+     * @param {string | object} query - If an object, it may contain following
+     *    string fields: word, translations, readings, notes. All fields
+     *    except for "word" may be undefined or null.
+     */
+    function sortMatches(matches, query, primaryLanguage, secondaryLanguage) {
+        const fields = ["word", "translations", "readings", "notes"]
+        const matchTypes = ["exact", "word", "start", "wordStart"]
+        const matchesByType = {
+            "exact": [],
+            "start": [],
+            "word": [],
+            "wordStart": [],
+            "other": []
+        }
+        const isStringQuery = typeof query === "string"
+        // console.time("Classifying matches")
+        for (const entry of matches) {
+            let matchFound = false
+            for (const matchType of matchTypes) {
+                for (const fieldName of fields) {
+                    if (!entry[fieldName] || (!isStringQuery && !query[fieldName]))
+                        continue
+                    const fieldValues = fieldName === "word" ?
+                        [entry[fieldName].toLowerCase()] :
+                        entry[fieldName].map(s => s.toLowerCase())
+                    const queryValues = isStringQuery ?
+                        [query.toLowerCase()] : [query[fieldName].toLowerCase()]
+
+                    // Skip word-based matching critera for languages w/o spaces
+                    const fieldUsesNoSpaces =
+                        ((fieldName === "word" || fieldName === "readings") &&
+                        languagesWithoutSpaces.has(primaryLanguage)) ||
+                        ((fieldName === "translations" ||
+                          fieldName === "notes") &&
+                        languagesWithoutSpaces.has(secondaryLanguage))
+                    if (fieldUsesNoSpaces &&
+                            (matchType == "word" || matchType == "wordStart")) {
+                        continue
+                    }
+
+                    // Add/remove leading "to " of english verbs
+                    const isEnglishField =
+                        (primaryLanguage === "English" && fieldName === "word") ||
+                        (secondaryLanguage === "English" &&
+                        (fieldName === "translations" || fieldName === "notes"))
+                    if (isEnglishField) {
+                        if (queryValues[0].startsWith("to ")) {
+                            queryValues.push(queryValues[0].substr(3))
+                        } else {
+                            queryValues.push("to " + queryValues[0])
+                        }
+                    }
+
+                    // Include kana-versions for Japanese words
+                    const isJapaneseField =
+                        (primaryLanguage === "Japanese" &&
+                        (fieldName === "word" || fieldName === "readings")) ||
+                        (secondaryLanguage === "Japanese" &&
+                        (fieldName === "translations" || fieldName === "notes"))
+                    if (isJapaneseField) {
+                        queryValues.push(queryValues[0].toKana("hiragana"))
+                        queryValues.push(queryValues[0].toKana("katakana"))
+                    }
+
+                    // Include field variants with all bracket content removed
+                    const additionalFieldValues = []
+                    for (const fieldValue of fieldValues) {
+                        const bracketContentMatches = utility.findMatches(
+                            bracketContentsPattern, fieldValue)
+                        if (bracketContentMatches.length === 0) continue
+                        const parts = []
+                        let start = 0;
+                        for (const match of bracketContentMatches) {
+                            parts.push(fieldValue.slice(start, match.index))
+                            start = match.index + match[0].length;
+                        }
+                        parts.push(fieldValue.slice(start))
+                        additionalFieldValues.push(
+                            utility.collapseWhitespace(parts.join(" ").trim()))
+                    }
+                    if (additionalFieldValues.length > 0) {
+                        fieldValues.push(...additionalFieldValues)
+                    }
+
+                    // Check if query matches any of the values in this field
+                    for (const fieldValue of fieldValues) {
+                        for (const queryValue of queryValues) {
+                            const isMatching = isMatchType(
+                                matchType, queryValue, fieldValue)
+                            if (isMatching) {
+                                matchesByType[matchType].push(entry)
+                                matchFound = true
+                                break
+                            }
+                        }
+                        if (matchFound) break
+                    }
+                    if (matchFound) break
+                }
+                if (matchFound) break
+            }
+            if (!matchFound) matchesByType["other"].push(entry)
+        }
+        // console.timeEnd("Classifying matches")
+        const sortedMatches = []
+        for (const matchType of matchTypes) {
+            sortedMatches.push(...matchesByType[matchType])
+        }
+        sortedMatches.push(...matchesByType["other"])
+        return sortedMatches
+    }
+
     /**
      * Search the vocabulary for entries containing the given query string
      * in the word, readings or translations. Also try to match a version
@@ -85,8 +247,9 @@ module.exports = function (paths, modules) {
      * @returns {Array[String]}
      */
     vocab.search = async function (query) {
-        let matchString = query.replace(/[*]/g, "%").replace(/[?]/g, "_");
-        if (!matchString.includes("%")) matchString += "%";
+        query = query.replace(/[*]/g, "%").replace(/[?]/g, "_");
+        let matchString = query
+        if (!matchString.includes("%")) matchString = "%" + matchString + "%";
         let multiFieldMatchString = matchString;
         if (!matchString.startsWith("%"))
             multiFieldMatchString = "%;" + multiFieldMatchString;
@@ -105,7 +268,7 @@ module.exports = function (paths, modules) {
                       multiFieldMatchString.toKana("katakana"));
         }
         // For english verbs, search both with and without the leading "to "
-        if (!matchString.startsWith("%")) {
+        if (!matchString.startsWith("%") && matchString.endsWith("%")) {
             if (modules.currentLanguage === "English") {
                 conditions.push("word LIKE ?");
                 if (matchString.startsWith("to ")) {
@@ -127,9 +290,22 @@ module.exports = function (paths, modules) {
             }
         }
         const rows = await modules.database.query(
-            `SELECT word FROM vocabulary
-             WHERE ${conditions.join(" OR ")}`, ...args);
-        return rows.map((row) => row.word);
+            `SELECT word, translations, readings, notes FROM vocabulary
+             WHERE ${conditions.join(" OR ")}
+             ORDER BY date_added DESC`, ...args);
+        const matches = rows.map(({ word, translations, readings, notes }) => ({
+            word,
+            translations: translations !== null && translations.length ?
+                translations.split(";") : null,
+            readings: readings !== null && readings.length ?
+                readings.split(";") : null,
+            notes: notes !== null && notes.length ?
+                notes.split(";") : null
+        }))
+        const sortedMatches = sortMatches(
+            matches, query, modules.currentLanguage,
+            modules.currentSecondaryLanguage)
+        return sortedMatches.map((match) => match.word);
     }
 
     /**
@@ -228,12 +404,23 @@ module.exports = function (paths, modules) {
             [] : new Set(rows[0].notes.split(";"));
         const oldLevel = rows[0].level;
         const oldReviewDate = rows[0].review_date;
-        // Apply changes to database
+
+        // Don't write to database if nothing has changed
+        const hasChanged =
+            !utility.setEqual(new Set(oldTranslations),new Set(translations))
+            || !utility.setEqual(new Set(oldReadings), new Set(readings))
+            || !utility.setEqual(new Set(oldNotes), new Set(notes))
+            || oldLevel !== level;
+        if (!hasChanged) return false
+
+        // Compute new SRS info and update stats (only if the level changed)
         const spacing = modules.srs.currentScheme.intervals[level];
         const newReviewDate = oldLevel === level ? oldReviewDate :
             utility.getTime() + spacing;
         if (oldLevel !== level)
             modules.stats.updateScore(modules.test.mode.WORDS, oldLevel, level);
+
+        // Apply changes to database
         await modules.database.run(`
             UPDATE vocabulary
             SET translations = ?, readings = ?, notes = ?, level = ?,
@@ -243,11 +430,7 @@ module.exports = function (paths, modules) {
             readings.length > 0 ? readings.join(";") : null,
             notes.length > 0 ? notes.join(";") : null,
             level, newReviewDate, word);
-        // Return true if anything has changed
-        return !utility.setEqual(new Set(oldTranslations),new Set(translations))
-            || !utility.setEqual(new Set(oldReadings), new Set(readings))
-            || !utility.setEqual(new Set(oldNotes), new Set(notes))
-            || oldLevel !== level;
+        return true
     }
 
     /**

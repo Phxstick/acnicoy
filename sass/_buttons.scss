@@ -25,14 +25,17 @@ button.styled {
   font-family: $button-font;
   font-size: 120%;
 
-  &:hover {
+  &:hover:not(.disabled) {
     color: $button-color-hover;
     background-color: $button-background-hover;
   }
-  &:active {
+  &:active:not(.disabled) {
     box-shadow: inset 0 0 8px 4px $button-shadow-color-active;
     background-color: $button-background-active;
     color: $button-color-active;
+  }
+  &.disabled {
+    color: $color-lightest;
   }
 }
 

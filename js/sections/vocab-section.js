@@ -125,9 +125,9 @@ class VocabSection extends Section {
         this.$("import-export-vocab-buttons").hide();
         this.$("control-selected-vocab-buttons").hide();
         this.$("control-selected-list-contents-buttons").hide();
-        this.$("search-kanji-by-on-yomi-entry").enableKanaInput("katakana");
-        this.$("search-kanji-by-kun-yomi-entry").enableKanaInput("hiragana");
-        this.$("search-hanzi-by-readings-entry").enablePinyinInput();
+        this.$("search-kanji-by-on-yomi").enableKanaInput("katakana");
+        this.$("search-kanji-by-kun-yomi").enableKanaInput("hiragana");
+        this.$("search-hanzi-by-readings").togglePinyinInput(true);
         this.$("vocab-lists").contextMenu(
             menuItems, ["create-list"], { section: this });
 
@@ -381,38 +381,28 @@ class VocabSection extends Section {
                                         ids: null };
 
             // Add search functionality
-            let searchEntryNames;
+            let searchFieldNames;
             if (viewName === "kanji") {
-                searchEntryNames = {
+                searchFieldNames = {
                     [`search-${viewName}-by-meanings`]: "meanings",
                     [`search-${viewName}-by-on-yomi`]: "on-yomi",
                     [`search-${viewName}-by-kun-yomi`]: "kun-yomi"
                 };
             } else if (viewName === "hanzi") {
-                searchEntryNames = {
+                searchFieldNames = {
                     [`search-${viewName}-by-meanings`]: "meanings",
                     [`search-${viewName}-by-readings`]: "readings"
                 };
             } else {
-                searchEntryNames = { [`search-${viewName}`]: undefined };
+                searchFieldNames = { [`search-${viewName}`]: undefined };
             }
-            for (const searchEntryName in searchEntryNames) {
-                const searchMethod = searchEntryNames[searchEntryName];
 
-                // Attach event listener to search entry
-                const searchEntry = this.$(searchEntryName + "-entry");
-                searchEntry.addEventListener("keypress", (event) => {
-                    if (event.key !== "Enter") return;
-                    const query = searchEntry.value.trim();
+            // Attach event listener to search field
+            for (const searchFieldName in searchFieldNames) {
+                const searchMethod = searchFieldNames[searchFieldName];
+                this.$(searchFieldName).setCallback((query) => {
                     this.viewStates[viewName].load(query, searchMethod);
-                });
-
-                // Attach event listener to search button
-                const searchButton = this.$(searchEntryName + "-button");
-                searchButton.addEventListener("click", () => {
-                    const query = searchEntry.value.trim();
-                    this.viewStates[viewName].load(query, searchMethod);
-                });
+                })
             }
         }
 
@@ -795,9 +785,8 @@ class VocabSection extends Section {
         }
 
         // Enable pinyin input in search entries if language is Chinese
-        this.$("search-vocab-entry").togglePinyinInput(language === "Chinese");
-        this.$("search-list-contents-entry").togglePinyinInput(
-            language === "Chinese");
+        this.$("search-vocab").togglePinyinInput(language === "Chinese");
+        this.$("search-list-contents").togglePinyinInput(language==="Chinese");
     }
 
     open() {
@@ -823,7 +812,7 @@ class VocabSection extends Section {
                 this.viewStates["hanzi"].load("");
             } else this.viewStates["hanzi"].fillSufficiently();
         }
-        this.$("search-vocab-entry").focus();
+        this.$("search-vocab").focus();
     }
 
     // =====================================================================
@@ -903,6 +892,7 @@ class VocabSection extends Section {
         const nameLabel = document.createElement("div");
         nameLabel.textContent = name;
         nameLabel.classList.add("list-name");
+        nameLabel.setAttribute("spellcheck", "false");
         node.appendChild(nameLabel);
         node.dataset.listName = name;
 
@@ -1020,13 +1010,14 @@ class VocabSection extends Section {
     }
 
     editItem(item, itemType) {
-        if (itemType === "vocab" || itemType === "list-contents") {
-            main.openPanel("edit-vocab", { entryName: item });
-        } else if (itemType === "kanji") {
-            main.openPanel("edit-kanji", { entryName: item });
-        } else if (itemType === "hanzi") {
-            main.openPanel("edit-hanzi", { entryName: item });
+        const entryList = this.viewStates[itemType].data
+        const panelNames = {
+            "vocab": "edit-vocab",
+            "list-contents": "edit-vocab",
+            "kanji": "edit-kanji",
+            "hanzi": "edit-hanzi"
         }
+        main.openPanel(panelNames[itemType], { entryName: item, entryList });
     }
 
     copySelected(type) {
@@ -1418,17 +1409,18 @@ class VocabSection extends Section {
                     await dataManager.hanzi.search(query, searchMethod);
             }
         }
+        // NOTE: Entries are now already sorted in the datamanager-function
         // Sort search result if necessary
-        if (!alreadySorted) {
-            const key = await this.getStringKeyForSorting(fieldName);
-            searchResults.sort((entry1, entry2) => {
-                const value1 = key(entry1);
-                const value2 = key(entry2);
-                if (value1 < value2) return -1 + 2 * sortBackwards;
-                if (value1 > value2) return 1 - 2 * sortBackwards;
-                return 0;
-            });
-        }
+        // if (!alreadySorted) {
+        //     const key = await this.getStringKeyForSorting(fieldName);
+        //     searchResults.sort((entry1, entry2) => {
+        //         const value1 = key(entry1);
+        //         const value2 = key(entry2);
+        //         if (value1 < value2) return -1 + 2 * sortBackwards;
+        //         if (value1 > value2) return 1 - 2 * sortBackwards;
+        //         return 0;
+        //     });
+        // }
         if (fieldName === "vocab-lists") {
             this.deselectVocabList();
         }

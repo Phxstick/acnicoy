@@ -338,37 +338,31 @@ async function finishContentDownload(downloadName) {
         utility.existsFile(contentPaths.minProgramVersions) ?
         require(contentPaths.minProgramVersions) : {};
 
-    // Unzip downloaded files into the content subdirectory
+    // Unzip downloaded files into the download subdirectory
     process.noAsar = true;  // NOTE: Not sure if this is necessary
-    const extractionPromises = [];
+    const downloadDirectory = paths.downloadSubdirectory(downloadName);
     for (const filename in fileVersions) {
         const downloadPath = paths.downloadArchive(downloadName, filename);
-        extractionPromises.push(new Promise((resolve, reject) => {
-            // TODO: might violate dependencies if some fail and some don't
-            extract(downloadPath, { dir: contentPaths.directory }, (error) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    minProgramVersionsReg[filename]=minProgramVersions[filename]
-                    versionsReg[filename] = fileVersions[filename];
-                    resolve();
-                }
-            });
-        }));
+        try {
+            await extract(downloadPath, { dir: downloadDirectory });
+        } catch (error) {
+            return false;
+        }
+        minProgramVersionsReg[filename] = minProgramVersions[filename];
+        versionsReg[filename] = fileVersions[filename];
     }
 
-    // Save version registers to disk and return true if no error occurred
-    try {
-        await Promise.all(extractionPromises);
-    } catch (error) {
-        return false;
-    } finally {
-        fs.writeFileSync(contentPaths.versions,
-            JSON.stringify(versionsReg, null, 4));
-        fs.writeFileSync(contentPaths.minProgramVersions,
-            JSON.stringify(minProgramVersionsReg, null, 4));
-        process.noAsar = false;
+    // If everything has been extracted, copy files to content directory
+    for (const filename in fileVersions) {
+        const filePath = paths.downloadFile(downloadName, filename);
+        await fs.move(filePath, contentPaths[filename], { overwrite: true });
     }
+
+    fs.writeFileSync(contentPaths.versions,
+        JSON.stringify(versionsReg, null, 4));
+    fs.writeFileSync(contentPaths.minProgramVersions,
+        JSON.stringify(minProgramVersionsReg, null, 4));
+    process.noAsar = false;
     return true;
 }
 

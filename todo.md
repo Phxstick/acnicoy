@@ -1,7 +1,7 @@
 
-- Prevent JLPT level indicator showing up in proper name entries
-- Extend dictionary options with sorting criteria and option to toggle BG color
-- Fix: focus is not on entry after closing overlay when reviewing multiple langs
+- Test content download
+- Check if import/export is still working after updating CSV package
+- Implement properly importing from Anki
 
 General
 --------------------------------------------------------------------------------
@@ -13,6 +13,7 @@ General
 - Make sure overlays can't be interacted with while they're fading away
 - Dynamically adjust size of popup stack and tooltip to fit it into the window
 - Now that light button has no shadow by default, remove .no-shadow class
+- Fix: focus is not on entry after closing overlay when reviewing multiple langs
 
 ### Extensions
 - Add most important missing features to dictionary search (see further below)

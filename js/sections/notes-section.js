@@ -625,6 +625,7 @@ class NotesSection extends Section {
     createNote(markdownText) {
         const note = document.createElement("div");
         note.classList.add("note-content");
+        note.setAttribute("spellcheck", "false");
         note.innerHTML = marked(markdownText);
         note.onlyAllowPastingRawText(this.root);
         this.noteToMarkdown.set(note, markdownText);

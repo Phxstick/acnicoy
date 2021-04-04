@@ -132,15 +132,6 @@ module.exports = function (paths, modules) {
             extendedSolutions.add(solution.toLowerCase());
         }
 
-        // If the language is English, make solutions without "to" count
-        if (modules.currentSecondaryLanguage === "English") {
-            const copy = new Set(extendedSolutions);
-            for (const solution of copy) {
-                if (solution.startsWith("to "))
-                    extendedSolutions.add(solution.slice(3));
-            }
-        }
-
         // Add versions without round/square brackets and without their content
         const copy = new Set(extendedSolutions);
         for (const solution of copy) {
@@ -157,6 +148,16 @@ module.exports = function (paths, modules) {
         const extendedAndCollapsed = new Set();
         for (const solution of extendedSolutions) {
             extendedAndCollapsed.add(utility.collapseWhitespace(solution));
+        }
+
+        // If the language is English, make solutions without "to" count
+        if (modules.currentSecondaryLanguage === "English") {
+            const solutionsCopy = new Set(extendedAndCollapsed);
+            for (const solution of solutionsCopy) {
+                if (solution.startsWith("to ")) {
+                    extendedAndCollapsed.add(solution.slice(3));
+                }
+            }
         }
 
         return extendedAndCollapsed;

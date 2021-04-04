@@ -108,7 +108,8 @@ class TreeView extends Widget {
 
         // Create the name label and attach a callback
         const nameNode = document.createElement("span");
-        nameNode.classList.add("node-name")
+        nameNode.classList.add("node-name");
+        nameNode.setAttribute("spellcheck", "false");
         nameNode.textContent = name;
         nameNode.addEventListener("click", (event) => {
             if (nameNode.hasAttribute("contenteditable")) return;

@@ -272,6 +272,7 @@ class MainWindow extends Window {
             "save-input": () => {
                 if (this.currentPanel !== null) {
                     this.panels[this.currentPanel].save();
+                    this.closePanel(this.currentPanel);
                 }
             },
             "save-data": () => this.saveData(),
@@ -689,7 +690,8 @@ class MainWindow extends Window {
         this.sections[this.nextSection].open(...args);
     }
 
-    async openPanel(name, { dictionaryId, entryName, isProperName=false }={}) {
+    async openPanel(name, { entryName, dictionaryId=undefined,
+            isProperName=false, entryList=undefined }={}) {
 
         // If a different panel is already open, close it first
         let deferDimming = false;
@@ -713,7 +715,8 @@ class MainWindow extends Window {
 
         // Load the given entry
         if (name.startsWith("edit")) {
-            await this.panels[name].load(entryName, dictionaryId, isProperName);
+            await this.panels[name].load(entryName,
+                { givenDictionaryId: dictionaryId, isProperName, entryList });
         }
 
         // Open the panel

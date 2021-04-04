@@ -1,44 +1,6 @@
 <div id="control-bar">
-  <div id="words-filter-frame">
-    <input id="words-filter" placeholder="Filter by words"></input>
-    <button id="words-filter-button" class="light" tabindex="-1">
-      <i class="fa fa-search"></i>
-      <div class="spinner fading-dotted-circle-spinner">
-        <div class="sk-circle1 sk-circle"></div>
-        <div class="sk-circle2 sk-circle"></div>
-        <div class="sk-circle3 sk-circle"></div>
-        <div class="sk-circle4 sk-circle"></div>
-        <div class="sk-circle5 sk-circle"></div>
-        <div class="sk-circle6 sk-circle"></div>
-        <div class="sk-circle7 sk-circle"></div>
-        <div class="sk-circle8 sk-circle"></div>
-        <div class="sk-circle9 sk-circle"></div>
-        <div class="sk-circle10 sk-circle"></div>
-        <div class="sk-circle11 sk-circle"></div>
-        <div class="sk-circle12 sk-circle"></div>
-      </div>
-    </button>
-  </div>
-  <div id="meanings-filter-frame">
-    <input id="meanings-filter" placeholder="Filter by translations"></input>
-    <button id="meanings-filter-button" class="light" tabindex="-1">
-      <i class="fa fa-search"></i>
-      <div class="spinner fading-dotted-circle-spinner">
-        <div class="sk-circle1 sk-circle"></div>
-        <div class="sk-circle2 sk-circle"></div>
-        <div class="sk-circle3 sk-circle"></div>
-        <div class="sk-circle4 sk-circle"></div>
-        <div class="sk-circle5 sk-circle"></div>
-        <div class="sk-circle6 sk-circle"></div>
-        <div class="sk-circle7 sk-circle"></div>
-        <div class="sk-circle8 sk-circle"></div>
-        <div class="sk-circle9 sk-circle"></div>
-        <div class="sk-circle10 sk-circle"></div>
-        <div class="sk-circle11 sk-circle"></div>
-        <div class="sk-circle12 sk-circle"></div>
-      </div>
-    </button>
-  </div>
+  <search-field id="words-filter" placeholder="Filter by words"></search-field>
+  <search-field id="meanings-filter" placeholder="Filter by translations"></search-field>
 
   <button id="history-button" class="light">
     <i class="fa fa-history"></i>
@@ -82,17 +44,17 @@
     </div>
     <hr>
     <div id="sorting-criteria" class="group">
-      <div class="group-header">Commonness criteria</div>
+      <div class="group-header">Sorting criteria</div>
       <div class="labeled-checkbox menu-item">
-        <check-box data-key="showJlptLevels" class="light"></check-box>
+        <check-box data-key="jlpt" class="light"></check-box>
         <span>JLPT level</span>
       </div>
       <div class="labeled-checkbox menu-item">
-        <check-box data-key="showNewsFrequencies" class="light"></check-box>
+        <check-box data-key="news" class="light"></check-box>
         <span>Frequency in news</span>
       </div>
       <div class="labeled-checkbox menu-item">
-        <check-box data-key="showBookFrequencies" class="light"></check-box>
+        <check-box data-key="book" class="light"></check-box>
         <span>Frequency in books</span>
       </div>
       <!--div class="labeled-checkbox menu-item">
