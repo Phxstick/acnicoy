@@ -70,6 +70,9 @@ svg-bar-diagram {
   --separator-font: #{$header-font};
   --bar-opacity: #{$diagram-bar-opacity};
   --legend-font-family: #{$text-font};
+  --color-selected-hover: #{$color-dark};
+  --color-inactive: #{$color-lightest};
+  --color-inactive-hover: #{$color-light};
 }
 
 tabbed-frame {

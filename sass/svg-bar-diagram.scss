@@ -80,6 +80,22 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-selected-hover, whitesmoke);
+    }
+
+    &.inactive {
+      color: var(--color-inactive, dimgray);
+
+      &:hover {
+        color: var(--color-inactive-hover, grey);
+      }
+      .color-indicator {
+        visibility: hidden;
+      }
+    }
   }
 
   .color-indicator {

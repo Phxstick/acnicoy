@@ -1,4 +1,7 @@
 
+- Data columns in svg-bar-diagram can now be selected individually
+
+
 - Test content download
 - Check if import/export is still working after updating CSV package
 - Implement properly importing from Anki

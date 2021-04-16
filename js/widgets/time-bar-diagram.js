@@ -48,10 +48,10 @@ class TimeBarDiagram extends Widget {
         const dataList = timeline.map(({data}) => data);
         const colors = dataList.length > 0 ?
                 utility.getDistantColors(dataList[0].length) : null;
-        this.$("diagram").draw(dataList, { descriptions: labels, separators,
-            colors, showValueLabels: true, showSmallSeparators: true,
-            stackBars: true, stackSpacing: 1, reverse: this.reverse,
-            minMaxValue: this.minMaxValue });
+        this.$("diagram").setValues(dataList, {
+            descriptions: labels, separators, colors, showValueLabels: true,
+            showSmallSeparators: true, stackBars: true, stackSpacing: 1,
+            reverse: this.reverse, minMaxValue: this.minMaxValue });
         if (this.reverse && !this.$("diagram").isHidden()) {
             this.moveViewToRightEnd();
         }
