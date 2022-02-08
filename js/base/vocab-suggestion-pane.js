@@ -54,7 +54,8 @@ class VocabSuggestionPane extends Widget {
         // Create translation suggestions for each meaning
         this.$("translations").empty();
         this.restrictedMeaningsToWords.clear();
-        for (const { translations, restrictedTo, miscInfo } of info.meanings) {
+        for (const { translations, restrictedTo, meaningsRestrictedTo,
+                miscInfo } of info.meanings) {
             // Create a container element for this meaning
             const meaningFrame = document.createElement("div");
             meaningFrame.classList.add("suggestion-group-frame");
@@ -86,17 +87,18 @@ class VocabSuggestionPane extends Widget {
                 translationGroup.appendChild(translationNode);
             }
             // Register restrictions for this meaning
-            if (restrictedTo.length > 0) {
+            if (meaningsRestrictedTo && meaningsRestrictedTo.length > 0) {
                 this.restrictedMeaningsToWords.set(
                     translationGroup, new Set());
-                for (const word of restrictedTo) {
+                for (const word of meaningsRestrictedTo) {
                     this.restrictedMeaningsToWords.get(translationGroup)
                                                   .add(word);
                 }
             }
             this.$("translations").appendChild(meaningFrame);
             // Register kana word variants for words usually written as kana
-            if (miscInfo.includes("Usually written using kana alone")) {
+            const kanaFlag = "Usually written using kana alone"
+            if (miscInfo !== undefined && miscInfo.includes(kanaFlag)) {
                 const setOfWordsRestrictedTo = new Set(restrictedTo);
                 for (const { word, reading } of info.wordsAndReadings) {
                     if (setOfWordsRestrictedTo.size === 0 ||

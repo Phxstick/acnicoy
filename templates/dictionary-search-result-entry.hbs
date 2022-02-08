@@ -1,21 +1,25 @@
-<div id="frame" class="{{entryClass}}">
-    <!--button id="added-label"
-     {{#unless added}}style="display:none"{{/unless}}>ADDED</button>
-    <button id="add-button"
-     {{#if added}}style="display:none"{{/if}}>ADD</button-->
+<div id="frame" class="{{entryClass}}{{#if fontFamily}} {{fontFamily}}{{/if}}">
     <button id="added-label" {{#unless added}}style="display:none"{{/unless}}>
         <i class="fa fa-check"></i>
     </button>
     <button id="add-button" {{#if added}}style="display:none"{{/if}}>
         <i class="fa fa-plus"></i>
     </button>
-  <div id="word-frame">
+  <div id="word-frame" {{#if pinyin}}class="with-pinyin"{{/if}}>
 
     {{! Display reading corresponding to main word }}
 
     <span id="main-reading">
-      {{#if wordsAndReadings.[0].word.length}}
-        {{wordsAndReadings.[0].reading}}
+      {{#if pinyin}}
+        {{#each pinyin}}
+          <span {{#if ../colorByTones}}class="tone{{this.tone}}"{{/if}}>
+            {{~this.pinyin~}}
+          </span>
+        {{/each}}
+      {{else}}
+        {{#if wordsAndReadings.[0].word.length}}
+          {{wordsAndReadings.[0].reading}}
+        {{/if}}
       {{/if}}
     </span>
 
@@ -23,7 +27,11 @@
 
     <div id="main-word">
       {{#if wordsAndReadings.[0].word.length}}
-        {{eachLetter wordsAndReadings.[0].word}}
+        {{#if pinyin}}
+          {{eachHanziWithPinyin wordsAndReadings.[0].word pinyin colorByTones}}
+        {{else}}
+          {{eachLetter wordsAndReadings.[0].word}}
+        {{/if}}
       {{else}}
         {{wordsAndReadings.[0].reading}}
       {{/if}}
@@ -34,8 +42,10 @@
     <div id="entry-info">
       {{#if common}}<span class="commonness">Common</span>{{/if}}
       {{#if jlptLevel}}<span class="jlpt-level">{{jlptLevel}}</span>{{/if}}
+      {{#if hskLevel}}<span class="hsk-level">{{hskLevel}}</span>{{/if}}
       {{#if newsRank}}<span class="news-rank">{{newsRank}}</span>{{/if}}
       {{#if bookRank}}<span class="book-rank">{{bookRank}}</span>{{/if}}
+      {{#if netRank}}<span class="net-rank">{{netRank}}</span>{{/if}}
     </div>
 
   </div>
@@ -46,6 +56,8 @@
     {{#each meanings}}
       {{#if partsOfSpeech.length}}
         <div class="part-of-speech">{{join partsOfSpeech ", "}}</div>
+      {{else if @first}}
+        <div class="part-of-speech placeholder">Placeholder</div>
       {{/if}}
       <div class="meaning">
         {{#ifLargerThanOne ../meanings.length}}

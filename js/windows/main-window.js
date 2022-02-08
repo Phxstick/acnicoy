@@ -224,8 +224,7 @@ class MainWindow extends Window {
             },
             "open-test-section": () => this.openTestSection(),
             "open-dictionary": () => {
-                if (dataManager.currentLanguage === "Japanese" &&
-                        dataManager.content.isLoaded()) {
+                if (dataManager.content.isDictionaryAvailable()) {
                     this.openSection("dictionary");
                     this.sections["dictionary"].$("words-filter").focus();
                 }
@@ -751,7 +750,8 @@ class MainWindow extends Window {
                         dataManager.vocab.getAssociatedDictionaryId(entryName);
                     if (dictionaryId === null) {
                         dictionaryId = await
-                            dataManager.content.guessDictionaryId(entryName);
+                            dataManager.content.guessDictionaryIdForVocabItem(
+                                entryName);
                     }
                     if (dictionaryId !== null) {
                         showSuggestions = true;
@@ -1083,42 +1083,33 @@ class MainWindow extends Window {
         return true;
     }
 
-    // async catchKanjiInfoLinks(element) {
-    //     element.addEventListener("click", (event) => {
-    //         if (event.target.classList.contains("kanji-info-link")) {
-    //             this.$("kanji-info-panel").load(event.target.textContent);
-    //             this.$("kanji-info-panel").open();
-    //         }
-    //     });
-    // }
-
-    async makeKanjiInfoLink(element, character) {
+    async makeKanjiInfoLink(element, character, language, secondaryLanguage) {
+        if (!language) language = dataManager.currentLanguage
+        if (!secondaryLanguage)
+            secondaryLanguage = dataManager.currentSecondaryLanguage
         // TODO: Don't check if kanji is in database here (do it elsewhere)
-        return dataManager.content.get("Japanese", "English")
-        .isKnownKanji(character).then((isKanji) => {
-            if (isKanji) {
-                element.classList.add("kanji-info-link");
-                // Open kanji info panel upon clicking kanji
-                element.addEventListener("click", async () => {
-                    await this.$("kanji-info-panel").load(character);
-                    this.$("kanji-info-panel").open();
-                });
-                // Display tooltip with kanji meanings after a short delay
-                element.tooltip(async () => {
-                    const meanings =
-                        await dataManager.content.get("Japanese", "English")
-                        .getKanjiMeanings(character);
-                    return meanings.join(", ");
-                });
-                // Attach context menu
-                element.contextMenu(menuItems, () => {
-                    return dataManager.kanji.isAdded(character)
-                    .then((isAdded) => {
-                        return ["copy-kanji", "view-kanji-info",
-                                isAdded ? "edit-kanji" : "add-kanji"];
-                    });
-                });
-            }
+        // TODO: expand this function for Chinese hanzi
+        const content = dataManager.content.get(language, secondaryLanguage)
+        const isKnownKanji = await content.isKnownKanji(character)
+        if (!isKnownKanji) return
+        element.classList.add("kanji-info-link");
+        // Open kanji info panel upon clicking kanji
+        element.addEventListener("click", async () => {
+            await this.$("kanji-info-panel").load(character);
+            this.$("kanji-info-panel").open();
+        });
+        // Display tooltip with kanji meanings after a short delay
+        element.tooltip(async () => {
+            const meanings = await content.getKanjiMeanings(character);
+            return meanings.join(", ");
+        });
+        // Attach context menu
+        element.contextMenu(menuItems, () => {
+            return dataManager.kanji.isAdded(character)
+            .then((isAdded) => {
+                return ["copy-kanji", "view-kanji-info",
+                        isAdded ? "edit-kanji" : "add-kanji"];
+            });
         });
     }
 

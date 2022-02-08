@@ -1,27 +1,290 @@
 "use strict";
 
-const { data } = require("autoprefixer");
+const generalOptions = [
+    {
+        type: "separator"
+    },
+    {
+        type: "checkbox",
+        key: "tag-common-words",
+        label: "Tag common words",
+        initialValue: () =>
+            dataManager.settings.dictionary.tagCommonWords,
+        onChange: (value) => {
+            dataManager.settings.dictionary.tagCommonWords = value
+        }
+    },
+    {
+        type: "checkbox",
+        key: "dye-common-words",
+        label: "Dye common words green",
+        initialValue: () =>
+            dataManager.settings.dictionary.dyeCommonWords,
+        onChange: (value) => {
+            dataManager.settings.dictionary.dyeCommonWords = value
+        }
+    }
+    // {
+    //     type: "checkbox",
+    //     name: "include-proper-name-search",
+    //     label: "Also search proper names",
+    //     initialValue: () =>
+    //         dataManager.settings.dictionary.includeProperNameSearch,
+    //     onChange: (v) => {
+    //         dataManager.settings.dictionary.includeProperNameSearch = v
+    //     }
+    // },
+]
+
+const languageToConfig = {
+    "Japanese": {
+        categories: ["words", "names"],
+        viewItemFunction: async (entryId, category) => {
+            const isRegularWord = category === "words"
+            const infoFunction = isRegularWord ?
+                "getDictionaryEntryInfo" : "getProperNameEntryInfo"
+            const info = await dataManager.content[infoFunction](entryId);
+            const resultEntry = 
+                document.createElement("dictionary-search-result-entry");
+            info.associatedVocabEntry = await
+                dataManager.content.guessAssociatedVocabEntry(
+                    isRegularWord ? entryId : null, info)
+            info.properName = !isRegularWord
+            resultEntry.setInfo(info);
+            return resultEntry;
+        },
+        menuOptions: (settings) => ([
+            {
+                type: "checkbox",
+                key: "part-of-speech-in-japanese",
+                label: "Use Japanese terminology for info on part of speech",
+                initialValue: () => settings.partOfSpeechInJapanese,
+                onChange: (value) => {
+                    settings.partOfSpeechInJapanese = value
+                }
+            },
+            {
+                type: "separator"
+            },
+            {
+                type: "checkbox-group",
+                // header: "Frequency indicators:",
+                name: "frequency-indicators",
+                initialValues: (key) => settings.frequencyIndicators[key],
+                onChange: (key, value) => {
+                    settings.frequencyIndicators[key] = value
+                },
+                items: [
+                    {
+                        key: "jlpt",
+                        label: "Show JLPT level"
+                    },
+                    {
+                        key: "news",
+                        label: "Show frequency in news"
+                    },
+                    {
+                        key: "book",
+                        label: "Show frequency in books"
+                    }
+                    // {
+                    //     key: "net",
+                    //     label: "Show frequency on the internet"
+                    // }
+                ]
+            },
+            { 
+                type: "separator"
+            },
+            {
+                type: "checkbox-group",
+                header: "Sorting criteria",
+                name: "sorting-criteria",
+                initialValues: (key) => settings.frequencyWeights[key] > 0,
+                onChange: (key, value) => {
+                    settings.frequencyWeights[key] = value ? 1 : 0;
+                },
+                items: [
+                    {
+                        key: "jlpt",
+                        label: "JLPT level"
+                    },
+                    {
+                        key: "news",
+                        label: "Frequency in news"
+                    },
+                    {
+                        key: "book",
+                        label: "Frequency in books"
+                    }
+                    // {
+                    //     key: "net",
+                    //     label: "Frequency on the web"
+                    // }
+                ]
+            }
+        ])
+    },
+    "Chinese": {
+        categories: ["words"],
+        viewItemFunction: async (entryId, category) => {
+            const info =
+                await dataManager.content.getDictionaryEntryInfo(entryId);
+            const resultEntry = 
+                document.createElement("dictionary-search-result-entry");
+            const settings = dataManager.settings.dictionary["Chinese"]
+            info.fontFamily = settings.fontFamily + "-font"
+            info.associatedVocabEntry = await
+                dataManager.content.guessAssociatedVocabEntry(entryId, info);
+            info.wordsAndReadings = 
+                settings.useTraditionalHanzi && info.wordsAndReadings[1] ?
+                [info.wordsAndReadings[1]] : [info.wordsAndReadings[0]]
+            const [pinyin, tones] =
+                info.pinyin.toPinyin({ separate: true, includeTones: true })
+            info.pinyin = [];
+            for (let i = 0; i < pinyin.length; ++i) {
+                info.pinyin.push({ pinyin: pinyin[i], tone: tones[i] })
+            }
+            resultEntry.setInfo(info);
+            return resultEntry;
+        },
+        menuOptions: (settings) => ([
+            {
+                type: "checkbox",
+                label: "Color hanzi and pinyin according to their tones",
+                initialValue: () => settings.colorByTones,
+                onChange: (value) => { settings.colorByTones = value }
+            },
+            {
+                type: "checkbox",
+                label: "Use traditional hanzi",
+                initialValue: () => settings.useTraditionalHanzi,
+                onChange: (value) => { settings.useTraditionalHanzi = value }
+            },
+            {
+                type: "radiobutton-group",
+                header: "Font family",
+                name: "font-family",
+                initialValue: () => settings.fontFamily,
+                onChange: (value) => settings.fontFamily = value,
+                items: [
+                    {
+                        value: "sans-serif",
+                        label: "Song Ti (Sans-serif)"
+                    },
+                    {
+                        value: "serif",
+                        label: "Hei Ti (Serif)"
+                    },
+                    {
+                        value: "kaiti",
+                        label: "Kai Ti (brush)"
+                    }
+                ]
+            }
+        ])
+    }
+}
+
+// Take apart the given search query into subqueries of maximum length that
+// have non-empty search results and return return all the matches
+async function processWordQuery(query) {
+    const searchResult = []
+    let start = 0;
+    while (start < query.length) {
+        // Most common words probably have a length of 2+, so try to find words
+        // starting with the first two characters to limit search results
+        // (unless only one character is left in the string)
+        let twoOrMoreCharsResult = []
+        if (start + 1 < query.length) {
+            twoOrMoreCharsResult = await dataManager.content.searchDictionary(
+                { words: [query.substr(start, 2) + "%"] })
+        }
+        // If nothing could be found, search for the first character only
+        if (twoOrMoreCharsResult.length === 0) {
+            const oneCharResult = await dataManager.content.searchDictionary(
+                { words: [query[start]] }, { exactMatchesOnly: true })
+            searchResult.push(...oneCharResult)
+            start += 1
+            continue
+        }
+        // Find the maximally matching subquery at this position by checking
+        // progressively longer subqueries until the search result is empty
+        // or the end of the query has been reached
+        let stepSize = 3
+        while (true) {
+            if (start + stepSize > query.length) break
+            const subQuery = query.substr(start, stepSize)
+            const multiCharResult = await dataManager.content.searchDictionary(
+                { words: [subQuery + "%"] })
+            if (multiCharResult.size === 0) break
+            stepSize++
+        }
+        // Now try to search for EXACT matches of progressively shorter
+        // subqueries until results are found
+        while (stepSize > 1) {
+            stepSize--
+            const subQuery = query.substr(start, stepSize)
+            const exactMatches = await dataManager.content.searchDictionary(
+                { words: [subQuery] }, { exactMatchesOnly: true })
+            if (exactMatches.length > 0) {
+                searchResult.push(...exactMatches)
+                break
+            }
+        }
+        start += stepSize
+    }
+    return searchResult
+}
+
+const searchFunction = (query, type, category) => {
+    const searchProperNames = category === "names"
+    if (type === "word") {
+        if (dataManager.currentLanguage === "Chinese" &&
+                !(query.includes("%") || query.includes("*"))) {
+            return processWordQuery(query) 
+        } else {
+            return dataManager.content.searchDictionary(
+                { words: [query] }, { searchProperNames });
+        }
+    } else if (type === "meaning") {
+        return dataManager.content.searchDictionary(
+            { translations: [query] }, { searchProperNames });
+    }
+
+}
 
 class DictionarySection extends Section {
     constructor() {
         super("dictionary");
+        this.languageConfig = null;
+        this.viewStates = {};
+        // State variables
         this.selectedSearchResultCategory = null;
         this.loadedQuery = null;
         this.loadedQueryType = null;
         this.searchSettingsChanged = false;
-        this.allCategories = ["words", "names"]
         this.loadedCategories = new Set();
         this.categoriesLoading = new Set();
         this.categoriesAlreadyShownOnce = new Set();
-        this.viewStates = {};
         // Initially hide some elements
         this.$("search-in-progress").hide();
         this.$("search-results-words").hide();
         this.$("search-results-names").hide();
         this.$("no-search-results-info").hide();
         this.$("search-results-info-bar").hide();
+        // Discard any active selection when right clicking search results
+        // so that the confusing "copy" option doesn't appear
+        const discardSelection = () => {
+            const selection = window.getSelection()
+            selection.removeAllRanges()
+        }
+        this.$("search-results-words").addEventListener(
+            "contextmenu", discardSelection, { capture: true })
+        this.$("search-results-names").addEventListener(
+            "contextmenu", discardSelection, { capture: true })
         // =================================================================
-        // Start search when clicking a search example
+        //   Start search when clicking a search example
         // =================================================================
         this.$("search-info").addEventListener("click", (event) => {
             if (event.target.classList.contains("search-example")) {
@@ -29,16 +292,16 @@ class DictionarySection extends Section {
             }
         });
         // =================================================================
-        // Listeners for search entries and search buttons
+        //   Listeners for search entries and search buttons
         // =================================================================
         this.$("words-filter").setCallback((value) => {
-            this.search(value, "reading");
+            this.search(value, "word");
         });
         this.$("meanings-filter").setCallback((value) => {
             this.search(value, "meaning");
         })
         // =================================================================
-        // Listener for search result control buttons
+        //   Listener for search result control buttons
         // =================================================================
         this.$("search-results-info-bar").addEventListener("click", (event) => {
             if (!this.$("search-results-info-bar").contains(event.target))
@@ -51,28 +314,15 @@ class DictionarySection extends Section {
             this.search(this.loadedQuery, this.loadedQueryType, [category]);
         });
         // =================================================================
-        // Words search
+        //   Words search
         // =================================================================
         this.viewStates["words"] = new View({
             viewElement: this.$("search-results-words"),
             getData: (query, searchCriterion) => {
-                if (searchCriterion === "reading") {
-                    return dataManager.content.searchDictionary(
-                        { readings: [query] });
-                } else if (searchCriterion === "meaning") {
-                    return dataManager.content.searchDictionary(
-                        { translations: [query] });
-                }
+                return searchFunction(query, searchCriterion, "words")
             },
             createViewItem: async (entryId) => {
-                const info = await
-                    dataManager.content.getDictionaryEntryInfo(entryId);
-                const resultEntry = 
-                    document.createElement("dictionary-search-result-entry");
-                info.associatedVocabEntry = await
-                    dataManager.content.guessAssociatedVocabEntry(entryId, info)
-                resultEntry.setInfo(info);
-                return resultEntry;
+                return this.languageConfig.viewItemFunction(entryId, "words")
             },
             initialDisplayAmount: 15,
             displayAmount: 15,
@@ -80,29 +330,15 @@ class DictionarySection extends Section {
             loadOnResize: true
         });
         // =================================================================
-        // Proper names search
+        //   Proper names search
         // =================================================================
         this.viewStates["names"] = new View({
             viewElement: this.$("search-results-names"),
             getData: (query, searchCriterion) => {
-                if (searchCriterion === "reading") {
-                    return dataManager.content.searchDictionary(
-                        { readings: [query] }, { searchProperNames: true });
-                } else if (searchCriterion === "meaning") {
-                    return dataManager.content.searchDictionary(
-                        { translations: [query] }, { searchProperNames: true });
-                }
+                return searchFunction(query, searchCriterion, "names")
             },
             createViewItem: async (entryId) => {
-                const info = await
-                    dataManager.content.getProperNameEntryInfo(entryId);
-                const resultEntry = 
-                    document.createElement("dictionary-search-result-entry");
-                info.associatedVocabEntry = await
-                    dataManager.content.guessAssociatedVocabEntry(null, info);
-                info.properName = true;
-                resultEntry.setInfo(info);
-                return resultEntry;
+                return this.languageConfig.viewItemFunction(entryId, "names")
             },
             initialDisplayAmount: 15,
             displayAmount: 15,
@@ -110,80 +346,17 @@ class DictionarySection extends Section {
             loadOnResize: true
         });
         // =================================================================
-        // Settings
+        //   Settings
         // =================================================================
-        this.$("settings-button").addEventListener("click", (event) => {
+        this.$("settings-button").addEventListener("click", () => {
             this.$("settings-popup").toggleDisplay();
             this.$("settings-popup").closeInThisIteration = false;
         });
         utility.makePopupWindow(this.$("settings-popup"));
-        const labeledCheckboxes = this.$$(".labeled-checkbox");
-        for (const labeledCheckbox of labeledCheckboxes) {
-            const checkbox = labeledCheckbox.querySelector("check-box");
-            labeledCheckbox.addEventListener("click", (event) => {
-                if (event.target.tagName !== "CHECK-BOX") checkbox.toggle();
-            });
-        }
-        // Re-evaluate last query if user already searched and settings changed
-        const repeatLastQuery = () => {
-            this.searchSettingsChanged = true;
-            if (this.loadedQuery !== null &&
-                    this.selectedSearchResultCategory !== null) {
-                this.search(this.loadedQuery, this.loadedQueryType,
-                            [this.selectedSearchResultCategory]);
-            }
-        };
-        this.$("part-of-speech-in-japanese").checked =
-            dataManager.settings.dictionary.partOfSpeechInJapanese;
-        this.$("part-of-speech-in-japanese").callback = (value) => {
-            dataManager.settings.dictionary.partOfSpeechInJapanese = value;
-            repeatLastQuery();
-        };
-        // this.$("include-proper-name-search").checked =
-        //     dataManager.settings.dictionary.includeProperNameSearch;
-        // this.$("include-proper-name-search").callback = (value) => {
-        //     dataManager.settings.dictionary.includeProperNameSearch = value;
-        // };
-        const frequencyCheckboxes = this.$$("#frequency-indicators check-box");
-        for (const checkbox of frequencyCheckboxes) {
-            const key = checkbox.dataset.key;
-            checkbox.checked =
-                dataManager.settings.dictionary.frequencyIndicators[key];
-            checkbox.parentNode.addEventListener("click", () => {
-                const value = checkbox.checked;
-                dataManager.settings.dictionary.frequencyIndicators[key] = value
-                repeatLastQuery();
-            });
-        }
-        this.$("tag-common-words").checked =
-            dataManager.settings.dictionary.tagCommonWords;
-        this.$("tag-common-words").callback = (value) => {
-            dataManager.settings.dictionary.tagCommonWords = value;
-            repeatLastQuery();
-        };
-        this.$("dye-common-words").checked =
-            dataManager.settings.dictionary.dyeCommonWords;
-        this.$("dye-common-words").callback = (value) => {
-            dataManager.settings.dictionary.dyeCommonWords = value;
-            repeatLastQuery();
-        };
-        const sortingCriteriaCheckboxes =
-            this.$$("#sorting-criteria check-box");
-        for (const checkbox of sortingCriteriaCheckboxes) {
-            const key = checkbox.dataset.key;
-            checkbox.checked =
-                dataManager.settings.dictionary.frequencyWeights[key] > 0;
-            checkbox.parentNode.addEventListener("click", () => {
-                const value = checkbox.checked;
-                dataManager.settings.dictionary.frequencyWeights[key] =
-                    value ? 1 : 0;
-                repeatLastQuery();
-            })
-        }
         // =================================================================
-        // Search history
+        //   Search history
         // =================================================================
-        this.$("history-button").addEventListener("click", (event) => {
+        this.$("history-button").addEventListener("click", () => {
             this.$("history-popup").toggleDisplay();
             this.$("history-popup").closeInThisIteration = false;
         });
@@ -204,18 +377,27 @@ class DictionarySection extends Section {
 
     registerCentralEventListeners() {
         const updateWordStatus = (word, dictionaryId, isAdded) => {
+            if (!dataManager.content.isDictionaryAvailable()) return
             const searchResultEntries = dictionaryId !== null ||
                 !this.loadedCategories.has("names") ?
                 [...this.$("search-results-words").children] : 
                 [...this.$("search-results-names").children,
                  ...this.$("search-results-words").children];
+            if (dictionaryId === null) {
+                dictionaryId = isAdded ?
+                    dataManager.content.guessDictionaryIdForVocabItem(word) :
+                    dataManager.content.guessDictionaryIdForNewWord(word)
+                if (dictionaryId === null) return
+            }
             for (const searchResultEntry of searchResultEntries) {
-                // TODO: if ID not provided, first check if entry really matches
-                if (parseInt(searchResultEntry.dataset.id) === dictionaryId ||
-                        searchResultEntry.dataset.mainWord === word) {
-                    searchResultEntry.toggleAdded(isAdded, word);
-                    break;
+                let resultEntryId = searchResultEntry.dataset.id
+                if (dataManager.content.usesDictionaryIds) {
+                    resultEntryId = parseInt(resultEntryId)
                 }
+                if (resultEntryId === dictionaryId) {
+                    searchResultEntry.toggleAdded(isAdded, word);
+                    break
+                } 
             }
         };
         events.on("word-added", (word, dictionaryId) => {
@@ -235,8 +417,36 @@ class DictionarySection extends Section {
     }
 
     adjustToLanguage(language, secondary) {
-        // Load search history
+        this.languageConfig = languageToConfig[language]
+        if (this.languageConfig === undefined) return
+        // Construct settings menu for this language
+        this.$("settings-popup").innerHTML = ""
+        const languageSettings = dataManager.settings.dictionary[language]
+        const optList = [
+            ...this.languageConfig.menuOptions(languageSettings),
+            ...generalOptions
+        ]
+        for (const options of optList) {
+            const element = utility.createSettingsItem(options, () => {
+                // Redo last query if user already searched and settings changed
+                this.searchSettingsChanged = true;
+                if (this.loadedQuery !== null &&
+                        this.selectedSearchResultCategory !== null) {
+                    this.search(this.loadedQuery, this.loadedQueryType,
+                                [this.selectedSearchResultCategory]);
+                }
+            })
+            this.$("settings-popup").appendChild(element)
+        }
+        // Toggle available categories in the search-results-info-bar
+        const allCategories = ["words", "names"]
+        for (const category of allCategories) {
+            this.$(`search-results-info-${category}`).toggleDisplay(
+                this.languageConfig.categories.includes(category))
+        }
+        // Load history and search examples
         this.historyView.load();
+        this.search("", null)
     }
 
     open() {
@@ -255,7 +465,7 @@ class DictionarySection extends Section {
         if (type === "meaning") {
             this.$("meanings-filter").value = query;
             this.$("words-filter").value = "";
-        } else if (type === "reading") {
+        } else if (type === "word") {
             this.$("words-filter").value = query;
             this.$("meanings-filter").value = "";
         }
@@ -266,7 +476,7 @@ class DictionarySection extends Section {
             this.$("control-bar").classList.remove("no-shadow");
             this.loadedCategories.clear();
             this.categoriesAlreadyShownOnce.clear();
-            for (const category of this.allCategories) {
+            for (const category of this.languageConfig.categories) {
                 this.$(`search-results-info-${category}-details`).textContent =
                     "Not loaded. Click to search.";
             }
@@ -300,7 +510,8 @@ class DictionarySection extends Section {
         // If no categories to load are given, take default ones
         if (categories === null) {
             categories = ["words"];
-            if (dataManager.settings.dictionary.includeProperNameSearch) {
+            if (dataManager.settings.dictionary.includeProperNameSearch
+                    && this.languageConfig.categories.includes("names")) {
                 categories.push("names");
             }
         }
@@ -317,7 +528,7 @@ class DictionarySection extends Section {
 
         // Indicate that a search is running
         this.$("search-info").hide();
-        if (type === "reading") {
+        if (type === "word") {
             this.$("words-filter").toggleSpinner(true);
         } else if (type === "meaning") {
             this.$("meanings-filter").toggleSpinner(true);
@@ -347,6 +558,7 @@ class DictionarySection extends Section {
             this.loadedCategories.add(category);
             this.$(`search-results-info-${category}-details`).textContent =
                 `${result.length} found after ${time.toFixed(2)} seconds.`;
+            // TODO: if search is interrupted, no longer display old results
             // If no other category is selected and the search result is not
             // empty, or if this category is selected, show search results.
             if ((this.selectedSearchResultCategory === null && result.length)
@@ -372,8 +584,11 @@ class DictionarySection extends Section {
     }
 
     showSearchResult(category) {
-        this.$("search-results-info-bar").show();
-        this.$("control-bar").classList.add("no-shadow");
+        // Display info bar if there is more than one category available
+        if (this.languageConfig.categories.length > 1) {
+            this.$("search-results-info-bar").show();
+            this.$("control-bar").classList.add("no-shadow");
+        }
         // Deselect previous category
         if (this.selectedSearchResultCategory !== null) {
             this.$(`search-results-${this.selectedSearchResultCategory}`).hide()

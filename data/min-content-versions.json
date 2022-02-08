@@ -10,5 +10,10 @@
             "name-tag-to-text.json": "1.0.0",
             "numeric-kanji.json": "1.0.0"
         }
+    },
+    "Chinese": {
+        "English": {
+            "Chinese-English.sqlite3": "1.0.0"
+        }
     }
 }

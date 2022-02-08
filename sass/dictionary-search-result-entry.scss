@@ -19,6 +19,20 @@
   padding: 5px;
   border-bottom: 1px solid $border-color-light;
 
+  &.serif-font {
+    #word-frame #main-word {
+      font-family: $serif-font;
+      font-size: 140%;
+    }
+  }
+  &.kaiti-font {
+    #word-frame #main-word {
+      font-family: KaiTi;
+      font-size: 160%;  // Kaiti font is naturally smaller
+      line-height: 1.8rem;
+    }
+  }
+
   &.frequent {
     background-color: $dictionary-frequent-words-background;
     border-bottom: 1px solid $dictionary-frequent-words-border-color;
@@ -92,7 +106,23 @@
   #word-frame {
     width: 130px;
     margin-right: 4px;
-    font-family: $vocab-font;
+
+    &.with-pinyin {
+      margin-top: -3px;
+
+      #main-reading {
+        text-shadow: $dictionary-pinyin-shadow;
+        font-family: var(--pinyin-font);
+      }
+      #main-word {
+        text-shadow: $dictionary-tonal-word-shadow;
+      }
+    }
+    &:not(.with-pinyin) {
+      #main-reading {
+        font-family: $vocab-font;
+      }
+    }
 
     #main-reading {
       font-size: 80%;
@@ -100,6 +130,7 @@
     #main-word {
       font-size: 124%;  // Under 125% to prevent thicker underline and its bugs
       line-height: 1.6rem;
+      font-family: $vocab-font;
     }
   }
 
@@ -107,13 +138,19 @@
     flex: 1;
 
     > div {
-      margin-bottom: 4px;
+      &:not(:last-child) {
+        margin-bottom: 4px;
+      }
 
       &.part-of-speech {
         @extend .small;
         &:not(:first-child) {
           margin-top: 4px;
           display: inline-block;
+        }
+        &.placeholder {
+          visibility: hidden;
+          margin-bottom: -2px;
         }
       }
       &.meaning {
@@ -176,7 +213,7 @@
     background-color: $dictionary-commonness-color-weak;
   }
 
-  &.jlpt-level {
+  &.jlpt-level, &.hsk-level {
     border-color: $dictionary-jlpt-level-color;
     background-color: $dictionary-jlpt-level-color-weak;
   }
@@ -205,4 +242,29 @@
       padding-right: 4px;
     }
   }
+
+  &.net-rank {
+    // line-height: 1.1rem;
+    border-color: $dictionary-net-rank-color;
+    background-color: $dictionary-net-rank-color-weak;
+
+    &:before {
+      // content: "";
+      content: "Web";
+      padding-right: 4px;
+    }
+  }
+}
+
+.tone1 {
+  color: $mandarin-tone-1-color;
+}
+.tone2 {
+  color: $mandarin-tone-2-color;
+}
+.tone3 {
+  color: $mandarin-tone-3-color;
+}
+.tone4 {
+  color: $mandarin-tone-4-color;
 }

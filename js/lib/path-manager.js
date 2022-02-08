@@ -205,6 +205,11 @@ module.exports = function (basePath) {
                 kokujiList: "kokuji.txt",
                 exampleWordIds: "example-words-index.json"
             }
+        },
+        "Chinese": {
+            "English": {
+                database: "Chinese-English.sqlite3"
+            }
         }
     };
 

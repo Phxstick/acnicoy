@@ -1,32 +1,45 @@
 PYTHON = python3
-DATA_SCRIPT_PATH = ./generate-japanese-data.py
-RESOURCE_PATH = /mnt/c/Users/Danie/Dropbox/Acnicoy/Resources/Japanese
-OUTPUT_PATH = ./Japanese-English
+JP_EN_DATA_SCRIPT_PATH = ./generate-japanese-data.py
+ZH_EN_DATA_SCRIPT_PATH = ./generate-chinese-data.py
+BASE_RESOURCE_PATH = /mnt/c/Users/Danie/Dropbox/Acnicoy/Resources
+JP_RESOURCE_PATH = $(BASE_RESOURCE_PATH)/Japanese
+ZH_RESOURCE_PATH = $(BASE_RESOURCE_PATH)/Chinese
+JP_EN_OUTPUT_PATH = ./Japanese-English
+ZH_EN_OUTPUT_PATH = ./Chinese-English
 ELECTRON_PATH = ./node_modules/.bin/electron
 
-DICTIONARY_PATH = $(RESOURCE_PATH)/JMdict
-DICT_TEXTS_PATH = $(RESOURCE_PATH)/improved-dictionary-texts.json
-PROPER_NAMES_PATH = $(RESOURCE_PATH)/enamdict
-NAME_TAG_TEXTS_PATH = $(RESOURCE_PATH)/name-tag-to-text.json
-JLPT_VOCAB_N5_PATH = $(RESOURCE_PATH)/jlpt-vocab-n5.txt
-JLPT_VOCAB_N4_PATH = $(RESOURCE_PATH)/jlpt-vocab-n4.txt
-JLPT_VOCAB_N3_PATH = $(RESOURCE_PATH)/jlpt-vocab-n3.txt
-JLPT_VOCAB_N2_PATH = $(RESOURCE_PATH)/jlpt-vocab-n2.txt
-JLPT_VOCAB_N1_PATH = $(RESOURCE_PATH)/jlpt-vocab-n1.txt
-JLPT_VOCAB_MANUAL_PATH = $(RESOURCE_PATH)/jlpt-vocab-manual-assignments.json
-BOOK_FREQ_PATH = $(RESOURCE_PATH)/book-frequencies.tsv
+DICTIONARY_PATH = $(JP_RESOURCE_PATH)/JMdict
+DICT_TEXTS_PATH = $(JP_RESOURCE_PATH)/improved-dictionary-texts.json
+PROPER_NAMES_PATH = $(JP_RESOURCE_PATH)/enamdict
+NAME_TAG_TEXTS_PATH = $(JP_RESOURCE_PATH)/name-tag-to-text.json
+JLPT_VOCAB_N5_PATH = $(JP_RESOURCE_PATH)/jlpt-vocab-n5.txt
+JLPT_VOCAB_N4_PATH = $(JP_RESOURCE_PATH)/jlpt-vocab-n4.txt
+JLPT_VOCAB_N3_PATH = $(JP_RESOURCE_PATH)/jlpt-vocab-n3.txt
+JLPT_VOCAB_N2_PATH = $(JP_RESOURCE_PATH)/jlpt-vocab-n2.txt
+JLPT_VOCAB_N1_PATH = $(JP_RESOURCE_PATH)/jlpt-vocab-n1.txt
+JLPT_VOCAB_MANUAL_PATH = $(JP_RESOURCE_PATH)/jlpt-vocab-manual-assignments.json
+BOOK_FREQ_PATH = $(JP_RESOURCE_PATH)/book-frequencies.tsv
 
-KANJI_PATH = $(RESOURCE_PATH)/kanjidic
-KANJI_MEANINGS_PATH = $(RESOURCE_PATH)/improved-kanji-meanings.json
-KANJI_RADICALS_PATH = $(RESOURCE_PATH)/radical.utf8.txt
-KANJI_PARTS_PATH = $(RESOURCE_PATH)/kradfile
-KANJI_STROKES_PATH = $(RESOURCE_PATH)/kanjivg.xml
-KANJI_NUMERALS_PATH = $(RESOURCE_PATH)/numeric-kanji.json
-KANJI_COUNTERS_PATH = $(RESOURCE_PATH)/counter-kanji.json
-KANJI_KOKUJI_PATH = $(RESOURCE_PATH)/kokuji.txt
-NEW_JLPT_N3_KANJI_PATH = $(RESOURCE_PATH)/new-jlpt-n3-kanji.txt
+KANJI_PATH = $(JP_RESOURCE_PATH)/kanjidic
+KANJI_MEANINGS_PATH = $(JP_RESOURCE_PATH)/improved-kanji-meanings.json
+KANJI_RADICALS_PATH = $(JP_RESOURCE_PATH)/radical.utf8.txt
+KANJI_PARTS_PATH = $(JP_RESOURCE_PATH)/kradfile
+KANJI_STROKES_PATH = $(JP_RESOURCE_PATH)/kanjivg.xml
+KANJI_NUMERALS_PATH = $(JP_RESOURCE_PATH)/numeric-kanji.json
+KANJI_COUNTERS_PATH = $(JP_RESOURCE_PATH)/counter-kanji.json
+KANJI_KOKUJI_PATH = $(JP_RESOURCE_PATH)/kokuji.txt
+NEW_JLPT_N3_KANJI_PATH = $(JP_RESOURCE_PATH)/new-jlpt-n3-kanji.txt
 
-.PHONY: data dictionary_data kanji_data build start install
+ZH_DICTIONARY_PATH = $(ZH_RESOURCE_PATH)/cedict_ts.u8
+ZH_HSK_VOCAB_PATH = $(ZH_RESOURCE_PATH)/hsk-vocab-2021.txt
+ZH_WEB_WORD_FREQ_PATH = $(ZH_RESOURCE_PATH)/internet-zh.num
+ZH_LCMC_WORD_FREQ_PATH = $(ZH_RESOURCE_PATH)/lcmc.num
+
+HANZI_PATH = $(ZH_RESOURCE_PATH)/Unihan
+HANZI_HSK_PATH = $(ZH_RESOURCE_PATH)/charlist.txt
+HANZI_RADICALS_PATH = $(ZH_RESOURCE_PATH)/kangxi-radicals-wikipedia.tsv
+
+.PHONY: data jp_dictionary_data kanji_data build start install
 
 all: build
 
@@ -39,11 +52,11 @@ start:
 install:
 	npm install
 
-data: dictionary_data kanji_data
+data: jp_dictionary_data kanji_data
 
-dictionary_data:
-	mkdir -p $(OUTPUT_PATH)
-	$(PYTHON) $(DATA_SCRIPT_PATH) \
+jp_dictionary_data:
+	mkdir -p $(JP_EN_OUTPUT_PATH)
+	$(PYTHON) $(JP_EN_DATA_SCRIPT_PATH) \
         --dict $(DICTIONARY_PATH) \
         --texts $(DICT_TEXTS_PATH) \
         --names $(PROPER_NAMES_PATH) \
@@ -54,12 +67,12 @@ dictionary_data:
                $(JLPT_VOCAB_N1_PATH) \
                $(JLPT_VOCAB_MANUAL_PATH) \
         --books $(BOOK_FREQ_PATH) \
-        -o $(OUTPUT_PATH)
-	cp $(NAME_TAG_TEXTS_PATH) $(OUTPUT_PATH)
+        -o $(JP_EN_OUTPUT_PATH)
+	cp $(NAME_TAG_TEXTS_PATH) $(JP_EN_OUTPUT_PATH)
 
-kanji_data:
-	mkdir -p $(OUTPUT_PATH)
-	$(PYTHON) $(DATA_SCRIPT_PATH) \
+jp_kanji_data:
+	mkdir -p $(JP_EN_OUTPUT_PATH)
+	$(PYTHON) $(JP_EN_DATA_SCRIPT_PATH) \
         --kanji $(KANJI_PATH) \
         --kanji-meanings $(KANJI_MEANINGS_PATH) \
         --kanji-radicals $(KANJI_RADICALS_PATH) \
@@ -67,7 +80,23 @@ kanji_data:
         --kanji-strokes $(KANJI_STROKES_PATH) \
         --jlpt-kanji $(NEW_JLPT_N3_KANJI_PATH) \
         --example-words-index \
-        -o $(OUTPUT_PATH)
-	cp $(KANJI_NUMERALS_PATH) $(OUTPUT_PATH)
-	cp $(KANJI_COUNTERS_PATH) $(OUTPUT_PATH)
-	cp $(KANJI_KOKUJI_PATH) $(OUTPUT_PATH) 
+        -o $(JP_EN_OUTPUT_PATH)
+	cp $(KANJI_NUMERALS_PATH) $(JP_EN_OUTPUT_PATH)
+	cp $(KANJI_COUNTERS_PATH) $(JP_EN_OUTPUT_PATH)
+	cp $(KANJI_KOKUJI_PATH) $(JP_EN_OUTPUT_PATH) 
+
+zh_dictionary_data:
+	mkdir -p $(ZH_EN_OUTPUT_PATH)
+	$(PYTHON) $(ZH_EN_DATA_SCRIPT_PATH) \
+        --dictionary $(ZH_DICTIONARY_PATH) \
+        --hsk-vocab $(ZH_HSK_VOCAB_PATH) \
+        --web-freq $(ZH_WEB_WORD_FREQ_PATH) \
+        --lcmc-freq $(ZH_LCMC_WORD_FREQ_PATH) \
+        -o $(ZH_EN_OUTPUT_PATH)
+
+zh_hanzi_data:
+	mkdir -p $(ZH_EN_OUTPUT_PATH)
+	$(PYTHON) $(ZH_EN_DATA_SCRIPT_PATH) \
+        --hanzi $(HANZI_PATH) \
+        --hsk-hanzi $(HANZI_HSK_PATH) \
+        --radicals $(HANZI_RADICALS_PATH)

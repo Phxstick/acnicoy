@@ -28,6 +28,23 @@ Handlebars.registerHelper("eachLetter", function(word) {
     return new Handlebars.SafeString(html);
 });
 
+Handlebars.registerHelper("eachHanziWithPinyin",
+        function(word, pinyin, colorByTones) {
+    let html = "";
+    if (word.length !== pinyin.length) {
+        console.log("FAIL", word, pinyin)
+        for (const letter of word) {
+            html += `<span>${letter}</span>`;
+        }
+    } else {
+        for (let i = 0; i < word.length; ++i) {
+            const classes = colorByTones ? ` class="tone${pinyin[i].tone}"` : ""
+            html += `<span${classes}>${word[i]}</span>`;
+        }
+    }
+    return new Handlebars.SafeString(html);
+});
+
 Handlebars.registerHelper("join", function(words, separator) {
     return words.join(separator);
 });

@@ -251,6 +251,125 @@ function parseHtmlFile(path, wrapBody=false) {
 }
 
 /**
+ * Convenience function for creating DOM elements using Javascript.
+ * @param {String} type
+ * @param {Object} [props]
+ * @param {HTMLElement[] | String} [children]
+ * @returns {HTMLElement}
+ */
+function createElement(type, props, children) {
+    const element = document.createElement(type);
+    if (props !== undefined) {
+        for (const prop in props) {
+            if (prop === "dataset") {
+                for (const key in props.dataset) {
+                    element.setAttribute(`data-${key}`, props.dataset[key].toString())
+                }
+            } else if (prop === "style") {
+                for (const key in props.style) {
+                    element.style.setProperty(key, props.style[key])
+                }
+            } else if (prop === "listeners") {
+                for (const eventType in props.listeners) {
+                    element.addEventListener(
+                        eventType, props.listeners[eventType])
+                }
+            } else {
+                if (!props[prop]) continue
+                element.setAttribute(prop, props[prop])
+            }
+        }
+    }
+    if (children !== undefined) {
+        if (typeof children === "string") {
+            element.textContent = children;
+        } else {
+            for (const child of children) {
+                element.appendChild(child);
+            }
+        }
+    }
+    return element
+}
+
+/**
+ * Function for creating a settings dropdown according to given specification.
+ * @param {Object} options
+ * @param {Function} onChange - Called whenever a setting has been changed.
+ */
+function createSettingsItem(options, onChange) {
+    const E = createElement;
+    if (options.type === "checkbox") {
+        const isChecked = typeof options.initialValue === "function" ?
+            options.initialValue() : options.initialValue
+        const dataset = options.key ? { key: options.key } : undefined
+        const checkbox = E("check-box", {
+            class: "light", dataset, checked: isChecked, controlled: "true" })
+        return E("div", {
+            class: "labeled-checkbox menu-item",
+            listeners: {
+                click: () => {
+                    checkbox.toggle()
+                    options.onChange(checkbox.checked)
+                    onChange();
+                }
+            }
+        }, [
+            checkbox,
+            E("span", undefined, options.label)
+        ])
+    } else if (options.type === "radiobutton") {
+        // const isSelected = typeof options.isSelected === "function" ?
+        //     options.isSelected() : options.isSelected
+        const dataset = options.value ? { value: options.value } : undefined
+        return E("div", {
+            class: "labeled-radiobutton menu-item"
+        }, [
+            E("check-box", {
+                class: "light radiobutton", dataset, controlled: "true" }),
+            E("span", undefined, options.label)
+        ])
+    } else if (options.type === "separator") {
+        return E("hr")
+    } else if (options.type === "checkbox-group") {
+        const children = []
+        if (options.header) {
+            children.push(
+                E("div", { class: "group-header" }, options.header))
+        }
+        for (const itemOptions of options.items) {
+            children.push(createSettingsItem({
+                type: "checkbox",
+                initialValue: () => options.initialValues(itemOptions.key),
+                onChange: (val) => options.onChange(itemOptions.key, val),
+                ...itemOptions
+            }, onChange))
+        }
+        return E("div", { id: options.name, class: "group" }, children)
+    } else if (options.type === "radiobutton-group") {
+        const children = []
+        if (options.header) {
+            children.push(
+                E("div", { class: "group-header" }, options.header))
+        }
+        for (const itemOptions of options.items) {
+            children.push(createSettingsItem({
+                type: "radiobutton",
+                ...itemOptions
+            }, onChange))
+        }
+        const container = E("div", { class: "group" }, children)
+        bindRadiobuttonGroup(container, options.initialValue(), (value) => {
+            options.onChange(value)
+            onChange()
+        })
+        return container
+    } else {
+        throw new Error(`Unknown menu item type '${options.type}.'`)
+    }
+}
+
+/**
  * Given a string with html, return a document fragment with the parsed html.
  * @param {String} htmlString
  * @returns {DocumentFragment}
@@ -1107,6 +1226,8 @@ module.exports.promisifyDatabase = promisifyDatabase;
 // DOM related functions
 module.exports.parseHtmlFile = parseHtmlFile;
 module.exports.fragmentFromString = fragmentFromString;
+module.exports.createElement = createElement;
+module.exports.createSettingsItem = createSettingsItem;
 module.exports.finishEventQueue = finishEventQueue;
 module.exports.wait = wait;
 module.exports.addMinDelay = addMinDelay;

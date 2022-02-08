@@ -134,12 +134,13 @@ class EditVocabPanel extends EditPanel {
                     dataManager.vocab.getAssociatedDictionaryId(newWord);
                 if (dictionaryId === null) {
                     dictionaryId = await
-                        dataManager.content.guessDictionaryId(newWord);
+                        dataManager.content.guessDictionaryIdForVocabItem(
+                            newWord);
                 }
             }
             if (dictionaryId === null) {
                 dictionaryId = await
-                    dataManager.content.findDictionaryIdForWord(newWord);
+                    dataManager.content.guessDictionaryIdForNewWord(newWord);
             }
             if (dictionaryId !== null) {
                 main.suggestionPanes["edit-vocab"].load(dictionaryId, newWord);
@@ -242,7 +243,7 @@ class EditVocabPanel extends EditPanel {
     }
 
     adjustToLanguage(language, secondary) {
-        // If language is Japanese, allow editing the word with kana
+        // Change input method for readings if language is Japanese or Chinese
         this.$("word").toggleKanaInput(language === "Japanese");
         this.$("readings").classList.toggle("pinyin", language === "Chinese");
         // Close panel if language changes while a vocabulary item is loaded
@@ -405,20 +406,20 @@ class EditVocabPanel extends EditPanel {
 
         // Assemble all the necessary data
         const originalWord = this.originalWord;
-        const word = this.$("word").textContent;
+        const word = this.$("word").textContent.trim();
         const level = parseInt(this.$("srs-level").value);
         const translations = [];
         const readings = [];
         const lists = [];
         const notes = [];
         for (const item of this.$("translations").children)
-            translations.push(item.textContent);
+            translations.push(item.textContent.trim());
         for (const item of this.$("readings").children)
-            readings.push(item.textContent);
+            readings.push(item.textContent.trim());
         for (const item of this.$("vocab-lists").children)
-            lists.push(item.textContent);
+            lists.push(item.textContent.trim());
         for (const item of this.$("notes").children)
-            notes.push(item.textContent);
+            notes.push(item.textContent.trim());
 
         // If no word has been entered or no values have been entered at all,
         // display an error message (if adding) or ask whether to remove word
@@ -461,9 +462,11 @@ class EditVocabPanel extends EditPanel {
                 word, translations, readings, notes, level);
             if (dataChanged) events.emit("vocab-changed", word);
         } else {
-            await dataManager.vocab.add(
-                { word, translations, readings, notes, level,
-                  dictionaryId: this.dictionaryId });
+            await dataManager.vocab.add({
+                word, translations, readings, notes, level,
+                dictionaryId: dataManager.content.usesDictionaryIds ?
+                    this.dictionaryId : null
+            });
             events.emit("word-added", word, this.dictionaryId);
         }
 

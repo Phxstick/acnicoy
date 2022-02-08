@@ -45,35 +45,46 @@ class DictionarySearchResultEntry extends Widget {
     }
 
     setInfo(info) {
+        const languageSettings =
+            dataManager.settings.dictionary[dataManager.currentLanguage]
         // Set entry class by frequency (determines background color)
         this.isProperName = !!info.properName;
-        if (!info.properName) {
-            const weights = dataManager.settings.dictionary.frequencyWeights;
+        if (info.properName) {
+            if (info.tags.length === 1) {
+                info.entryClass = `tag-${info.tags[0]}`;
+            }
+        } else if (languageSettings.commonnessThresholds !== undefined) {
+            const weights = languageSettings.frequencyWeights;
             const rank = dataManager.content.calculateEntryRank(info, weights);
-            if (rank <= 24000) {
+            const thresholds = languageSettings.commonnessThresholds;
+            if (rank <= thresholds[0]) {
                 info.common = dataManager.settings.dictionary.tagCommonWords;
                 if (dataManager.settings.dictionary.dyeCommonWords) {
-                    if (rank <= 12000) {
+                    if (rank <= thresholds[1]) {
                         info.entryClass = "frequent";
                     } else {
                         info.entryClass = "semi-frequent";
                     }
                 }
             }
-        } else {
-            if (info.tags.length === 1) {
-                info.entryClass = `tag-${info.tags[0]}`;
-            }
         }
 
         // Prepare frequency indicators
-        const flags = dataManager.settings.dictionary.frequencyIndicators;
-        info.jlptLevel = flags.showJlptLevels && info.jlptLevel !== null
-            && !this.isProperName ? `JLPT N${info.jlptLevel}` : undefined;
-        info.newsRank = flags.showNewsFrequencies && info.newsRank !== null
-            && !this.isProperName ? Math.ceil(info.newsRank / 2) : undefined;
-        info.bookRank = flags.showBookFrequencies && info.bookRank !== null
-            && !this.isProperName ? Math.ceil(info.bookRank / 1000) : undefined;
+        const frequencyIndicators = languageSettings.frequencyIndicators;
+        info.jlptLevel = frequencyIndicators.jlpt && info.jlptLevel &&
+            !this.isProperName ? `JLPT N${info.jlptLevel}` : undefined;
+        info.newsRank = frequencyIndicators.news && info.newsRank &&
+            !this.isProperName ? Math.ceil(info.newsRank / 2) : undefined;
+        info.bookRank = frequencyIndicators.book && info.bookRank &&
+            !this.isProperName ? Math.ceil(info.bookRank / 1000) : undefined;
+        info.hskLevel = frequencyIndicators.hsk && info.hskLevel ?
+            `HSK ${info.hskLevel + (info.hskLevel === 7 ? "+":"")}` : undefined
+        info.netRank = frequencyIndicators.net && info.netRank ?
+            Math.ceil(info.netRank / 1000) : undefined;
+
+        // If language is Chinese and the corresponding flag is set,
+        // color pinyin and hanzi according to their tones
+        info.colorByTones = !!languageSettings.colorByTones
 
         // Instantiate handlebars template
         info.added = info.associatedVocabEntry !== null;
@@ -88,6 +99,10 @@ class DictionarySearchResultEntry extends Widget {
         if (info.bookRank) {
             this.$("entry-info").querySelector(".book-rank").tooltip(
                 `Top ${info.bookRank},000 most frequent in books.`);
+        }
+        if (info.netRank) {
+            this.$("entry-info").querySelector(".net-rank").tooltip(
+                `Top ${info.netRank},000 most frequent on the internet.`);
         }
 
         // Open kanji info panel upon clicking a kanji in the main word
@@ -194,7 +209,8 @@ class DictionarySearchResultEntry extends Widget {
     addWord() {
         main.openPanel("edit-vocab", {
             entryName: this.dataset.mainWord,
-            dictionaryId: parseInt(this.dataset.id),
+            dictionaryId: dataManager.content.usesDictionaryIds ?
+                parseInt(this.dataset.id) : this.dataset.id,
             isProperName: this.isProperName
         });
     }

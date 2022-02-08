@@ -18,7 +18,6 @@ class EditVocabSuggestionPane extends VocabSuggestionPane {
         // Mark suggestions for all selected translations as selected
         const info = await dataManager.vocab.getInfo(chosenWordVariant);
         const existingTranslations = new Set(info.translations);
-        const existingReadings = new Set(info.readings);
         for (const meaningNode of this.$("translations").children) {
             const translationNodes = meaningNode.querySelectorAll(".suggestion")
             for (const translationNode of translationNodes) {

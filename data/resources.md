@@ -34,3 +34,11 @@ from Jonathan Waller
 
 [List of kokuji](http://www.sljfaq.org/afaq/kokuji-list.html)
 from sljfaq.org
+
+### Chinese language data
+
+[Unihan database](https://www.unicode.org/charts/unihan.html) from Unicode.org
+
+[HSK 3.0 (2021) vocabulary list](https://www.everydaychinese.com/youtube-lessons/new-hsk-standard.html) from EverdayChinese.com
+
+[HSK 3.0 (2021) character list](https://github.com/elkmovie/hsk30/blob/main/charlist.txt) OCR'd from the official list by elkmovie

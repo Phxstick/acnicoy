@@ -55,22 +55,40 @@
         }
     },
     "dictionary": {
-        "partOfSpeechInJapanese": false,
-        "includeProperNameSearch": false,
         "historySizeLimit": 200,
+        "includeProperNameSearch": false,
         "tagCommonWords": false,
         "dyeCommonWords": true,
-        "frequencyWeights": {
-            "jlpt": 0,
-            "news": 1,
-            "book": 1,
-            "net": 0
+        "Japanese": {
+            "partOfSpeechInJapanese": false,
+            "commonnessThresholds": [24000, 12000],
+            "frequencyWeights": {
+                "jlpt": 0,
+                "news": 1,
+                "book": 1,
+                "net": 0
+            },
+            "frequencyIndicators": {
+                "jlpt": true,
+                "news": false,
+                "book": false,
+                "net": false
+            },
+            "fontFamily": "sans-serif"
         },
-        "frequencyIndicators": {
-            "showJlptLevels": false,
-            "showNewsFrequencies": false,
-            "showBookFrequencies": false,
-            "showNetFrequencies": false
+        "Chinese": {
+            "colorByTones": true,
+            "commonnessThresholds": [24000, 12000],
+            "useTraditionalHanzi": false,
+            "frequencyWeights": {
+                "hsk": 100,
+                "net": 1
+            },
+            "frequencyIndicators": {
+                "hsk": true,
+                "net": false
+            },
+            "fontFamily": "kaiti"
         }
     },
     "kanjiOverview": {

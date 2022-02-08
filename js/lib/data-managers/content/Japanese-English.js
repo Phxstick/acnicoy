@@ -216,8 +216,8 @@ module.exports = async function (paths, contentPaths, modules) {
     // Convert a string of ";"-separated codes to an array of infos
     function parseCodes(codes) {
         codes = codes.split(";").withoutEmptyStrings();
-        const language = modules.settings.dictionary.partOfSpeechInJapanese ?
-            "Japanese" : "English";
+        const settings = modules.settings.dictionary["Japanese"]
+        const language = settings.partOfSpeechInJapanese ? "Japanese":"English"
         const codeMap = data.codeToText[language];
         return codes.map((code) => codeMap[code]);
     };
@@ -259,15 +259,19 @@ module.exports = async function (paths, contentPaths, modules) {
             for (const { translations, part_of_speech, field_of_application,
                        misc_info, words_restricted_to, readings_restricted_to,
                        dialect } of meanings) {
+                const wordsRestrictedTo =
+                    words_restricted_to.split(";").withoutEmptyStrings()
+                const readingsRestrictedTo =
+                    readings_restricted_to.split(";").withoutEmptyStrings()
                 info.meanings.push({
                     translations: translations.split(";"),
                     partsOfSpeech: parseCodes(part_of_speech),
                     fieldsOfApplication: parseCodes(field_of_application),
                     miscInfo: parseCodes(misc_info),
                     dialect: parseCodes(dialect),
-                    restrictedTo: words_restricted_to.split(";").concat(
-                                  readings_restricted_to.split(";"))
-                                  .withoutEmptyStrings()
+                    wordsRestrictedTo,
+                    readingsRestrictedTo,
+                    restrictedTo: [...wordsRestrictedTo,...readingsRestrictedTo]
                 });
             }
             info.jlptLevel = jlpt_level;
@@ -281,12 +285,13 @@ module.exports = async function (paths, contentPaths, modules) {
     /**
      * Given a word which is *not* present in the vocabulary, find the ID of
      * the dictionary entry which matches most likely (with the highest news
-     * frequency). If the word has already been added to the dictionary, use
-     * the function `guessDictionaryId` to make use of translations/readings.
+     * frequency). If the word is already present in the vocabulary, use the
+     * function `guessDictionaryIdForVocabItem` to make use of translations
+     * and readings for better precision.
      * @param {String} word
      * @returns {Promise[Integer]}
      */
-    async function findDictionaryIdForWord(word) {
+    async function guessDictionaryIdForNewWord(word) {
         // NOTE TO PREVENT BUG AGAIN: due to the MIN(d.newsrank) in the select-
         // clause, the query will always return a row, even if the tables do
         // not contain an entry with the given word/reading. That's why it's
@@ -314,7 +319,7 @@ module.exports = async function (paths, contentPaths, modules) {
      * @param {String} word
      * @returns {Promise[Integer]}
      */
-    async function guessDictionaryId(word) {
+    async function guessDictionaryIdForVocabItem(word) {
         let candidateIds =
             await data.query(`SELECT id FROM words WHERE word LIKE ?`, word)
             .then((rows) => rows.map((row) => row.id));
@@ -342,26 +347,41 @@ module.exports = async function (paths, contentPaths, modules) {
                 data.query(`SELECT translations FROM meanings WHERE id=?`, cId),
             ]).then(([dictionaryReadings, dictionaryMeanings]) => {
                 // TODO: Consider reading/translation restrictions here?
-                let score = 0;
-                for (const row of dictionaryMeanings) {
-                    const dictionaryTranslations = row.translations.split(";");
-                    for (const translation of dictionaryTranslations) {
-                        if (existingTranslations.has(translation)) score++;
+                let translationMatches = 0;
+                if (existingTranslations.size) {
+                    for (const row of dictionaryMeanings) {
+                        const dictTranslations = row.translations.split(";");
+                        for (const translation of dictTranslations) {
+                            if (existingTranslations.has(translation))
+                                translationMatches++;
+                        }
                     }
+                } else {
+                    translationMatches = null;
                 }
-                // TODO: Only compare readings if word is associated
-                for (const row of dictionaryReadings) {
-                    if (existingReadings.has(row.reading)) score++;
+                // Count identical readings
+                let readingMatches = 0;
+                if (existingReadings.size && dictionaryReadings.length) {
+                    for (const row of dictionaryReadings) {
+                        if (existingReadings.has(row.reading))
+                            readingMatches++;
+                    }
+                } else {
+                    readingMatches = null;
                 }
-                return score;
+                return [translationMatches, readingMatches];
             }));
         }
-        const scores = await Promise.all(promises);
+        const matches = await Promise.all(promises);
         let bestScore = -1;
-        let bestCandidateId;
-        for (let i = 0; i < scores.length; ++i) {
-            if (scores[i] > bestScore) {
-                bestScore = scores[i];
+        let bestCandidateId = null;
+        for (let i = 0; i < matches.length; ++i) {
+            // Only consider entries where at least one translation or
+            // at least one reading matched
+            if (matches[i][0] === 0 && matches[i][1] === 0) continue;
+            const score = (matches[i][0] || 0) + (matches[i][1] || 0);
+            if (score > bestScore) {
+                bestScore = score;
                 bestCandidateId = candidateIds[i];
             }
         }
@@ -635,16 +655,19 @@ module.exports = async function (paths, contentPaths, modules) {
     function calculateEntryRank(info, weights) {
         let score = 0;
         let weightSum = 0;
-        if (info.newsRank && weights.news) {
-            score += info.newsRank * 500 * weights.news;
+        if (weights.news) {
+            const newsRank = info.newsRank || (data.maxFreqValues.newsRank+1000)
+            score += newsRank * 500 * weights.news;
             weightSum += weights.news;
         }
-        if (info.bookRank && weights.book) {
-            score += info.bookRank * weights.book;
+        if (weights.book) {
+            const bookRank = info.bookRank || (data.maxFreqValues.bookRank+1000)
+            score += bookRank * weights.book;
             weightSum += weights.book;
         }
-        if (info.jlptLevel && weights.jlpt) {
-            score += data.jlptSizeAccumulative[info.jlptLevel] * 1.5
+        if (weights.jlpt) {
+            const jlptLevel = info.jlptLevel || 0
+            score += data.jlptSizeAccumulative[jlptLevel] * 1.5
                      * weights.jlpt;
             weightSum += weights.jlpt;
         }
@@ -658,128 +681,29 @@ module.exports = async function (paths, contentPaths, modules) {
     }
 
     /**
-     * Given an object with query information, return a list of ids of matching
-     * dictionary entries. Exact matches are prioritized.
-     * @param {Object} query - Object of form { translations, readings }.
-     *     If readings are written using romaji, matches for both hiragana and
-     *     katakana are considered.
+     * Note: if words are written using romaji, matches for both hiragana and
+     * katakana are considered.
+     * @param {Object} query - Object of the form { word, translations }.
      * @param {Object} options - Object of the form { searchProperNames }.
-     * @returns {Array}
      */
-    async function searchDictionary(query, options={}) {
-        // Choose an implementation of the core search function
-        let searchFunction;
+    function searchFunction(query, options) {
         if (options.searchProperNames) {
-            searchFunction = searchProperNames;
+            return searchProperNames(query);
         } else {
-            searchFunction = searchDictionaryVariant1;
+            return searchDictionaryVariant1(query);
         }
-        // If query is empty, return an empty list
-        if (Object.keys(query).length === 0)
-            return [];
-        // Add missing query fields (to make following code simpler)
-        if (query.translations === undefined)
-            query.translations = [];
-        if (query.readings === undefined)
-            query.readings = [];
-        // Convert wildcards * and ? to % and _ for SQL pattern matching
-        const replace = (t) => t.replace(/[*]/g, "%").replace(/[?]/g, "_");
-        query.translations = query.translations.map(replace);
-        query.readings = query.readings.map(replace);
-        // If any query field contains a wildcard at the start or end
-        // (or both sides), do not prioritize exact matches for that field.
-        const exactMatchesQuery = { readings: [], translations: [] };
-        for (const reading of query.readings) {
-            if (!reading.startsWith("%") && !reading.endsWith("%")) {
-                exactMatchesQuery.readings.push(reading.replace(/[%_]/g, ""));
-            }
-        }
-        for (const translation of query.translations) {
-            if (!translation.startsWith("%") && !translation.endsWith("%")) {
-                exactMatchesQuery.translations.push(
-                    translation.replace(/[%_]/g, ""));
-            }
-        }
-        // Search for exact matches (using query without any wildcards).
-        let exactMatches = await searchFunction(exactMatchesQuery, options);
-        const originalQuery = {
-            translations: query.translations,
-            readings: query.readings
-        };
-        // Add wildcard to both sides of each translation
-        query.translations = query.translations.map(
-            (t) => (t.startsWith("%")?"":"%") + t + (t.endsWith("%")?"":"%"));
-        // Add wildcard to end of words/readings if there's none at beginning
-        query.readings = query.readings.map(
-            (r) => r.startsWith("%") ? r : r + (r.endsWith("%")?"":"%"));
-        // Search for all matches
-        let allMatches = await searchFunction(query, options);
-        const matchIds = Array(allMatches.length);
-        // Exact matches are at the beginning of the search results
-        for (let i = 0; i < exactMatches.length; ++i) {
-            matchIds[i] = exactMatches[i].id;
-        }
-        // Prioritize matches where any translation query matches whole words.
-        // Only match word boundaries if there is no wild card at that side
-        // of the string in the original query.
-        if (query.translations.length) {
-            const wholeWordMatches = [];
-            const nonWholeWordMatches = [];
-            const queryRegexes = []
-            for (const translation of originalQuery.translations) {
-                if (translation.startsWith("%") && translation.endsWith("%"))
-                    continue;
-                let regex = translation.replace(/^%+/, "").replace(/%+$/, "");
-                if (!translation.startsWith("%")) {
-                    regex = "\\b" + regex; 
-                }
-                if (!translation.endsWith("%")) {
-                    regex = regex + "\\b";
-                }
-                regex = regex.replace(/%+/g, "\\B*?");
-                queryRegexes.push(new RegExp(regex, 'i'));
-            }
-            for (const match of allMatches) {
-                let matched = false;
-                for (const regex of queryRegexes) {
-                    if (regex.test(match.translations)) {
-                        matched = true;
-                        break;
-                    }
-                }
-                if (matched) {
-                    wholeWordMatches.push(match);
-                } else {
-                    nonWholeWordMatches.push(match);
-                }
-            }
-            allMatches = [...wholeWordMatches, ...nonWholeWordMatches];
-        }
-        // Add all non-exact matches to the result array
-        let i = 0;
-        let j = 0;
-        while (j < allMatches.length) {
-            if (i < exactMatches.length &&
-                    exactMatches[i].id === allMatches[j].id) {
-                ++i;
-            } else {
-                matchIds[exactMatches.length + j - i] = allMatches[j].id;
-            }
-            ++j;
-        }
-        return matchIds;
     }
 
-    async function searchDictionaryVariant1(query, options) {
-        if (query.readings.length === 0 && query.translations.length === 0)
+    async function searchDictionaryVariant1(query) {
+        if (query.words.length === 0 && query.translations.length === 0)
             return [];
         const selectClauses = [];
         const queryArguments = [];
         // Matching words and readings (if reading contains romaji,
         // search for both hiragana and katakana versions)
-        if (query.readings.length > 0) {
+        if (query.words.length > 0) {
             const whereClausesYomi = [];
-            for (const reading of query.readings) {
+            for (const reading of query.words) {
                 const hiraVariant = reading.toKana("hiragana");
                 const kataVariant = reading.toKana("katakana");
                 if (hiraVariant !== reading && kataVariant !== reading) {
@@ -790,12 +714,12 @@ module.exports = async function (paths, contentPaths, modules) {
                     queryArguments.push(reading);
                 }
             }
-            queryArguments.push(...query.readings);
+            queryArguments.push(...query.words);
             selectClauses.push(
                 "(SELECT DISTINCT id FROM readings WHERE "
                 + whereClausesYomi.join(" AND ") + " UNION "
                 + "SELECT DISTINCT id FROM words WHERE "
-                + Array(query.readings.length).fill("word LIKE ?")
+                + Array(query.words.length).fill("word LIKE ?")
                   .join(" AND ") + ")");
         }
         // Matching translations
@@ -809,7 +733,7 @@ module.exports = async function (paths, contentPaths, modules) {
 
         // Get matched IDs along with their translations and sorting criteria
         const sortingCriteria = [];
-        const weights = modules.settings.dictionary.frequencyWeights;
+        const weights = modules.settings.dictionary["Japanese"].frequencyWeights
         if (weights.news) sortingCriteria.push("d.news_rank AS newsRank")
         if (weights.book) sortingCriteria.push("d.book_rank AS bookRank")
         if (weights.net) sortingCriteria.push("d.net_rank AS netRank");
@@ -822,7 +746,6 @@ module.exports = async function (paths, contentPaths, modules) {
              FROM matched_ids m INNER JOIN dictionary d ON m.id = d.id
                                 INNER JOIN meanings t ON m.id = t.id
              GROUP BY d.id`, ...queryArguments);
-
         rows.sort((row1, row2) => calculateEntryRank(row1, weights) -
                                   calculateEntryRank(row2, weights));
         return rows;
@@ -830,15 +753,15 @@ module.exports = async function (paths, contentPaths, modules) {
 
     // NOTE: this only works if the "dictionary" table contains translations
     //       (which is not the case for the current version of the dictionary)
-    async function searchDictionaryVariant2(query, options) {
-        if (query.readings.length === 0 && query.translations.length === 0)
+    async function searchDictionaryVariant2(query) {
+        if (query.words.length === 0 && query.translations.length === 0)
             return [];
         const whereClauses = [];
         const queryArguments = [];
         // Matching words and readings (if reading contains romaji,
         // search for both hiragana and katakana versions)
-        if (query.readings.length) {
-            for (const reading of query.readings) {
+        if (query.words.length) {
+            for (const reading of query.words) {
                 const hiraVariant = reading.toKana("hiragana");
                 const kataVariant = reading.toKana("katakana");
                 if (hiraVariant !== reading && kataVariant !== reading) {
@@ -871,17 +794,17 @@ module.exports = async function (paths, contentPaths, modules) {
     }
 
     async function searchProperNames(query, options) {
-        if (query.readings.length === 0 && query.translations.length === 0)
+        if (query.words.length === 0 && query.translations.length === 0)
             return [];
         const whereClauses = [];
         const queryArguments = [];
         // Matching words and readings (if reading contains romaji,
         // search for both hiragana and katakana versions)
-        if (query.readings.length) {
-            for (const reading of query.readings) {
-                const hiraVariant = reading.toKana("hiragana");
-                const kataVariant = reading.toKana("katakana");
-                if (hiraVariant !== reading && kataVariant !== reading) {
+        if (query.words.length) {
+            for (const word of query.words) {
+                const hiraVariant = word.toKana("hiragana");
+                const kataVariant = word.toKana("katakana");
+                if (hiraVariant !== word && kataVariant !== word) {
                     whereClauses.push(
                         "(reading LIKE ? OR reading LIKE ? OR" +
                         " name LIKE ? OR name LIKE ?)")
@@ -889,7 +812,7 @@ module.exports = async function (paths, contentPaths, modules) {
                         hiraVariant, hiraVariant, kataVariant, kataVariant);
                 } else {
                     whereClauses.push("reading LIKE ? OR name LIKE ?");
-                    queryArguments.push(reading, reading);
+                    queryArguments.push(word, word);
                 }
             }
         }
@@ -911,7 +834,7 @@ module.exports = async function (paths, contentPaths, modules) {
             SELECT name, tags, reading, translations FROM proper_names
             WHERE id = ?`, id);
         const tagToText = data.nameTagToText[
-            modules.settings.dictionary.partOfSpeechInJapanese ?
+            modules.settings.dictionary["Japanese"].partOfSpeechInJapanese ?
             "Japanese" : "English"];
         const tagList = tags.split(";").filter((tag) => tag !== "abbr");
         return {
@@ -980,6 +903,8 @@ module.exports = async function (paths, contentPaths, modules) {
         jlptSizeAccumulative[level] = level === 5 ? jlptSizePerLevel[level] :
             jlptSizeAccumulative[level + 1] + jlptSizePerLevel[level];
     }
+    // Register a non-existing JLPT level for entries that don't have one
+    jlptSizeAccumulative[0] = jlptSizeAccumulative[1] + 1000
     // Create mapping from jouyou grade to amount
     const kanjiPerGrade = {};
     for (const { grade, amount } of amountPerGrade) {
@@ -995,12 +920,20 @@ module.exports = async function (paths, contentPaths, modules) {
         delete require.cache[require.resolve(path)];
         return require(path);
     }
+    // Calculate the maximum value for all frequency indicators
+    const maxValueRows = await queryFunction(
+        "SELECT MAX(news_rank) as mn, MAX(book_rank) as mb FROM dictionary")
+    const maxFreqValues = {
+        newsRank: maxValueRows[0].mn,
+        bookRank: maxValueRows[0].mb
+    }
     // Gather all the content into a frozen object
     data = Object.freeze({
         query: queryFunction,
         updateUserData,
 
         // Data objects
+        maxFreqValues: Object.freeze(maxFreqValues),
         numKanjiPerGrade: Object.freeze(kanjiPerGrade),
         numKanjiPerJlptLevel: Object.freeze(kanjiPerJlpt),
         jlptSizeAccumulative: Object.freeze(jlptSizeAccumulative),
@@ -1022,11 +955,12 @@ module.exports = async function (paths, contentPaths, modules) {
 
         // Dictionary related
         dictionaryAvailable: true,
+        usesDictionaryIds: true,
         getDictionaryEntryInfo,
-        findDictionaryIdForWord,
-        guessDictionaryId,
+        guessDictionaryIdForNewWord,
+        guessDictionaryIdForVocabItem,
         guessAssociatedVocabEntry,
-        searchDictionary,
+        searchFunction,
         calculateEntryRank,
 
         // Proper names

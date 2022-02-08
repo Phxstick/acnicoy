@@ -3,7 +3,7 @@
 class CheckBox extends Widget {
 
     static get observedAttributes() {
-        return ["checked", "disabled"];
+        return ["checked", "controlled", "disabled"];
     }
 
     constructor() {
@@ -11,10 +11,12 @@ class CheckBox extends Widget {
         this.callback = (value) => { };
         this._attributes = {
             "checked": false,
-            "disabled": false
+            "disabled": false,
+            "controlled": false
         };
         this.addEventListener("click", () => {
-            this.toggle();
+            if (!this._attributes["controlled"])
+                this.toggle();
         });
     }
 
@@ -49,6 +51,8 @@ class CheckBox extends Widget {
             this._attributes["checked"] = checked;
             this.invoke(checked);
             this.$("wrapper").classList.toggle("checked", checked);
+        } else if (name === "controlled") {
+            this._attributes["controlled"] = newValue === null ? false : true;
         }
     }
 }

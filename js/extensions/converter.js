@@ -398,16 +398,17 @@ const charsForPinyin =
 
 const onlyVowelSyllables = new Set([
     "a", "ai", "ao", "an", "ang", "e", "ei", "en", "eng", "er", "o", "ou", "yi",
-    "ya", "yao", "ye", "you", "yan", "yang", "yin", "ying", "yong", "wu", "wa",
-    "wai", "wei", "wo", "wan", "wang", "wen", "weng", "yu", "yue", "yuan", "yun"
+    "ya", "yao", "ye", "yo", "you", "yan", "yang", "yin", "ying", "yong", "wu",
+    "wa", "wai", "wei", "wo", "wan", "wang", "wen", "weng", "yu", "yue", "yuan",
+    "yun"
 ]);
 const pinyinInitials =
-    new Set(["sh", "ch", "za", ..."bpmfdtnlzcsrjqxgkh".split("")]);
+    new Set(["sh", "ch", "za", "zh", ..."bpmfdtnlzcsrjqxgkh".split("")]);
 const pinyinFinals = new Set([
     "iang", "iong", "uang",
     "ang", "eng", "ong", "iao", "ian", "ing", "uai", "uan", "üan",
     "ai", "ao", "an", "ou", "ei", "en", "ia", "ie", "iu", "in", "ua", "uo",
-    "ui", "un", "üe", "ün",
+    "ui", "ue", "un", "üe", "ün",
     "a", "o", "e", "i", "u", "ü"
 ]);
 const accentCodes = new Set(["1", "2", "3", "4"]);
@@ -432,6 +433,7 @@ const accentPositions = {
     "er": 0,
     "yi": 1,
     "ya": 1,
+    "yo": 1,
     "yao": 1,
     "ye": 1,
     "you": 1,
@@ -473,6 +475,7 @@ const accentPositions = {
     "ua": 1,
     "uo": 1,
     "ui": 1,
+    "ue": 1,
     "un": 0,
     "üe": 1,
     "ün": 0,
@@ -546,10 +549,18 @@ for (const accentCode of accentCodes) {
     syllableToAccentedSyllable.get("lve")[accentCode] = "l" + accentedUe + "e";
 }
 
-String.prototype.toPinyin = function () {
+String.prototype.toPinyin = function ({separate=false, includeTones=false}={}) {
     const string = this.toLowerCase().trim();
     const converted = [];
+    const unmatchedChars = [];
+    const tones = []
     let i = 0;
+    const appendUnmatchedChars = () => {
+        if (unmatchedChars.length === 0) return
+        converted.push(unmatchedChars.join(""))
+        unmatchedChars.length = 0
+        tones.push(5)
+    }
     while (i < string.length) {
         let processed = false;
         // Skip already converted syllables
@@ -561,6 +572,7 @@ String.prototype.toPinyin = function () {
                 if (nextChar === "i" || nextChar === "u" ||
                         accentedI.has(nextChar) || accentedU.has(nextChar))
                     continue;
+                appendUnmatchedChars()
                 converted.push(syllable);
                 i += l;
                 processed = true;
@@ -572,10 +584,12 @@ String.prototype.toPinyin = function () {
         for (let l = 6; l >= 1; --l) {
             const syllable = string.slice(i, i + l);
             if (syllableToAccentedSyllable.has(syllable)) {
+                appendUnmatchedChars()
                 const accentCode = string.slice(i + l, i + l + 1);
                 if (accentCodes.has(accentCode)) {
                     converted.push(
                         syllableToAccentedSyllable.get(syllable)[accentCode]);
+                    tones.push(parseInt(accentCode))
                     ++i;
                 } else {
                     // Convert "ue" to "ü" in valid syllables
@@ -585,6 +599,7 @@ String.prototype.toPinyin = function () {
                     } else {
                         converted.push(syllable);
                     }
+                    tones.push(5)
                 }
                 i += l;
                 processed = true;
@@ -593,10 +608,12 @@ String.prototype.toPinyin = function () {
         }
         if (processed) continue;
         // If no syllables have been matched, just append the next character
-        converted.push(string[i]);
+        unmatchedChars.push(string[i]);
         ++i;
     }
-    return converted.join("");
+    appendUnmatchedChars()
+    const returnValue = separate ? converted : converted.join("")
+    return includeTones ? [returnValue, tones] : returnValue
 }
 
 function pinyinInput(event) {

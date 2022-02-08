@@ -229,6 +229,9 @@ $dictionary-female-name-background: rgba(plum, 0.15);
 $dictionary-place-name-background: rgba(sienna, 0.25);
 $dictionary-surname-background: desaturate(darken(rebeccapurple, 5%), 30%);
 
+$dictionary-pinyin-shadow: 0 0 2px black;
+$dictionary-tonal-word-shadow: 0 0 2px black;
+
 // Kanji stroke SVGs
 $kanji-strokes-color: $color-lightest;
 $kanji-strokes-color-highlighted: $color-dark;
