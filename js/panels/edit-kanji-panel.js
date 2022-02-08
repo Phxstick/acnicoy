@@ -125,7 +125,7 @@ class EditKanjiPanel extends EditPanel {
             }
 
             // If language data is available, load suggestions as well
-            if (dataManager.content.isDictionaryAvailable()) {
+            if (dataManager.content.isLoaded()) {
                 const known = await dataManager.content.isKnownKanji(newKanji);
                 if (known) {
                     main.suggestionPanes["edit-kanji"].load(newKanji);

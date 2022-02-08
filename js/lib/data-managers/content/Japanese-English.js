@@ -954,7 +954,7 @@ module.exports = async function (paths, contentPaths, modules) {
         searchKanji,
 
         // Dictionary related
-        dictionaryAvailable: true,
+        containsDictionary: true,
         usesDictionaryIds: true,
         getDictionaryEntryInfo,
         guessDictionaryIdForNewWord,

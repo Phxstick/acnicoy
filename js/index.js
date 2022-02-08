@@ -40,6 +40,7 @@ const SettingsSubsection = require(paths.js.base("settings-subsection"));
 const OverlayWindow = require(paths.js.widget("overlay-window"));
 const VocabSuggestionPane = require(paths.js.base("vocab-suggestion-pane"));
 const KanjiSuggestionPane = require(paths.js.base("kanji-suggestion-pane"));
+const HanziSuggestionPane = require(paths.js.base("hanzi-suggestion-pane"));
 
 // Load all registered components
 for (const name of components.windows) require(paths.js.window(name));

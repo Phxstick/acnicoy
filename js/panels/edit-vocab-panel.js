@@ -127,7 +127,7 @@ class EditVocabPanel extends EditPanel {
             }
 
             // If language content is available, load suggestions as well
-            if (!dataManager.content.isDictionaryAvailable()) return;
+            if (!dataManager.content.isDictionaryLoaded()) return;
             let dictionaryId = null;
             if (isAlreadyAdded) {
                 dictionaryId = await
@@ -289,7 +289,7 @@ class EditVocabPanel extends EditPanel {
                 this.dictionaryId = givenDictionaryId;
             }
             // If it's a proper name + language data is available, show details
-            else if (dataManager.content.isDictionaryAvailable()) {
+            else if (dataManager.content.isDictionaryLoaded()) {
                 this.dictionaryId = null;
                 const info = await dataManager.content.getProperNameEntryInfo(
                     givenDictionaryId);

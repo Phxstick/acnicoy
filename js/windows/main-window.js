@@ -37,6 +37,35 @@ const menuItems = contextMenu.registerItems({
             main.openPanel("edit-kanji", { entryName: kanji });
         }
     },
+    "copy-hanzi": {
+        label: "Copy hanzi",
+        click: ({ currentNode }) => {
+            const hanzi = currentNode.textContent;
+            clipboard.writeText(hanzi);
+        }
+    },
+    "view-hanzi-info": {
+        label: "View hanzi info",
+        click: async ({ currentNode }) => {
+            await main.$("kanji-info-panel").load(currentNode.textContent);
+            await utility.finishEventQueue();
+            main.$("kanji-info-panel").open();
+        }
+    },
+    "add-hanzi": {
+        label: "Add hanzi",
+        click: ({ currentNode }) => {
+            const hanzi = currentNode.textContent;
+            main.openPanel("edit-hanzi", { entryName: hanzi });
+        }
+    },
+    "edit-hanzi": {
+        label: "Edit hanzi",
+        click: ({ currentNode }) => {
+            const hanzi = currentNode.textContent;
+            main.openPanel("edit-hanzi", { entryName: hanzi });
+        }
+    },
     "delete-notification": {
         label: "Delete notification",
         click: ({ currentNode }) => {
@@ -166,10 +195,21 @@ class MainWindow extends Window {
                 () => this.openPanel("edit-hanzi"));
         this.$("test-button").addEventListener("click",
                 () => this.openTestSection());
-        this.$("dictionary-button").addEventListener("click",
-                () => this.openSection("dictionary"));
-        this.$("find-kanji-button").addEventListener("click",
-                () => this.openSection("kanji"));
+        this.$("dictionary-button").addEventListener("click", async () => {
+            if (!dataManager.content.isDictionaryAvailable()) return
+            if (!dataManager.content.isLoaded()) {
+                await this.loadLanguageContent()
+            }
+            this.openSection("dictionary")
+            this.sections["dictionary"].$("words-filter").focus();
+        })
+        this.$("find-kanji-button").addEventListener("click", async () => {
+            if (dataManager.currentLanguage !== "Japanese") return
+            if (!dataManager.content.isLoaded()) {
+                await this.loadLanguageContent()
+            }
+            this.openSection("kanji")
+        })
         this.$("vocab-button").addEventListener("click",
                 () => this.openSection("vocab"));
         this.$("notes-button").addEventListener("click",
@@ -223,26 +263,30 @@ class MainWindow extends Window {
                 }
             },
             "open-test-section": () => this.openTestSection(),
-            "open-dictionary": () => {
-                if (dataManager.content.isDictionaryAvailable()) {
-                    this.openSection("dictionary");
-                    this.sections["dictionary"].$("words-filter").focus();
+            "open-dictionary": async () => {
+                if (!dataManager.content.isDictionaryAvailable()) return
+                if (!dataManager.content.isLoaded()) {
+                    await this.loadLanguageContent()
                 }
+                this.openSection("dictionary")
+                this.sections["dictionary"].$("words-filter").focus();
             },
-            "open-kanji-search": () => {
-                if (dataManager.currentLanguage === "Japanese" &&
-                        dataManager.content.isLoaded()) {
-                    this.sections["kanji"].showSearchResults();
-                    this.openSection("kanji");
-                    this.sections["kanji"].$("search-by-kanji-input").focus();
+            "open-kanji-search": async () => {
+                if (dataManager.currentLanguage !== "Japanese") return
+                if (!dataManager.content.isLoaded()) {
+                    await this.loadLanguageContent()
                 }
+                this.sections["kanji"].showSearchResults();
+                this.openSection("kanji");
+                this.sections["kanji"].$("search-by-kanji-input").focus();
             },
-            "open-kanji-overview": () => {
-                if (dataManager.currentLanguage === "Japanese" &&
-                        dataManager.content.isLoaded()) {
-                    this.sections["kanji"].showOverview();
-                    this.openSection("kanji");
+            "open-kanji-overview": async () => {
+                if (dataManager.currentLanguage !== "Japanese") return
+                if (!dataManager.content.isLoaded()) {
+                    await this.loadLanguageContent()
                 }
+                this.sections["kanji"].showOverview();
+                this.openSection("kanji");
             },
             "open-home-section": () => this.openSection("home"),
             "open-stats-section": () => this.openSection("stats"),
@@ -427,6 +471,11 @@ class MainWindow extends Window {
         // });
         events.on("content-download-finished", (info) => {
             this.addNotification("content-download-finished", info);
+            this.adjustToLanguageContent()
+        });
+        events.on("settings-general-make-window-frameless", () => {
+            this.$("status-bar").classList.toggle("app-region",
+                dataManager.settings.general.makeWindowFrameless)
         });
     }
 
@@ -464,11 +513,6 @@ class MainWindow extends Window {
             this.sections["home"].open();
         });
         this.currentSection = "home";
-
-        // Load search history in kanji info panel
-        if (dataManager.content.isLoadedFor("Japanese", "English")) {
-            this.$("kanji-info-panel").loadHistory();
-        }
 
         // Regularly update SRS info
         events.emit("update-srs-status-cache");
@@ -618,6 +662,9 @@ class MainWindow extends Window {
     }
 
     async loadLanguageContent(language, secondary, onStart=false) {
+        if (language === undefined) language = dataManager.currentLanguage
+        if (secondary === undefined)
+            secondary = dataManager.currentSecondaryLanguage
         if (!dataManager.content.isAvailableFor(language, secondary) ||
             !dataManager.content.isCompatibleFor(language, secondary)) return;
         if (!onStart) overlays.open("loading", "Loading language data");
@@ -630,7 +677,7 @@ class MainWindow extends Window {
         await Promise.all(processed);
         if (dataManager.currentLanguage === language) {
             dataManager.content.setLanguage(language);
-            this.adjustToLanguageContent(language, secondary);
+            this.adjustToLanguageContent();
         }
         events.emit("language-content-loaded", { language, secondary });
         await utility.wait();
@@ -732,9 +779,9 @@ class MainWindow extends Window {
 
         // Load suggestions (if available)
         let showSuggestions = false;
-        const dictionaryAvailable = dataManager.content.isDictionaryAvailable();
-        if (entryName !== undefined && dictionaryAvailable && !isProperName) {
-            if (name.endsWith("kanji")) {
+        const dictionaryLoaded = dataManager.content.isDictionaryLoaded();
+        if (entryName !== undefined && dictionaryLoaded && !isProperName) {
+            if (name.endsWith("kanji") || name.endsWith("hanzi")) {
                 showSuggestions = true;
                 await this.suggestionPanes[name].load(entryName);
             } else if (name.endsWith("vocab")) {
@@ -985,6 +1032,8 @@ class MainWindow extends Window {
     }
 
     adjustToLanguage(language, secondary) {
+        this.updateTestButton();
+        // Handle special cases for Japanese/Chinese
         if (language === "Japanese") {
             this.$("add-kanji-button").show();
         } else {
@@ -993,8 +1042,7 @@ class MainWindow extends Window {
             if (this.currentPanel === "edit-kanji") {
                 this.closePanel(this.currentPanel);
             }
-            if (this.currentSection === "kanji" ||
-                    this.currentSection === "dictionary") {
+            if (this.currentSection === "kanji") {
                 this.openSection("home");
             }
         }
@@ -1002,11 +1050,23 @@ class MainWindow extends Window {
             this.$("add-hanzi-button").show();
         } else {
             this.$("add-hanzi-button").hide();
+            this.$("kanji-info-panel").close();
             if (this.currentPanel === "edit-hanzi") {
                 this.closePanel(this.currentPanel);
             }
+            if (this.currentSection === "kanji") {
+                this.openSection("home");
+            }
         }
-        this.updateTestButton();
+        this.$("kanji-info-panel").adjustToLanguage(language, secondary)
+        // Close dictionary section if data is not available, else load it
+        if (this.currentSection === "dictionary") {
+            if (!dataManager.content.isDictionaryAvailable()) {
+                this.openSection("home")
+            } else if (!dataManager.content.isLoaded()) {
+                this.loadLanguageContent()
+            }
+        }
         // Choose fitting font
         const cyrillicBased = new Set(["Belarusian", "Bulgarian", "Macedonian",
             "Russian", "Rusyn", "Serbo-Croatian", "Ukrainian", "Bosnian",
@@ -1026,17 +1086,19 @@ class MainWindow extends Window {
         }
     }
 
-    adjustToLanguageContent(language, secondaryLanguage) {
-        this.$("find-kanji-button").hide();
-        this.$("dictionary-button").toggleDisplay(
-            dataManager.content.isDictionaryAvailable());
-        this.$("side-bar").classList.remove("content-loaded");
-        if (!dataManager.content.isLoadedFor(language, secondaryLanguage))
-            return;
-        if (language === "Japanese") {
-            this.$("side-bar").classList.add("content-loaded");
-            this.$("find-kanji-button").show();
-        }
+    adjustToLanguageContent() {
+        const language = dataManager.currentLanguage
+        const secondaryLanguage = dataManager.currentSecondaryLanguage
+        const contentAvailable =
+            dataManager.content.isAvailableFor(language, secondaryLanguage)
+        const dictionaryAvailable =
+            dataManager.content.isDictionaryAvailable()
+        this.$("find-kanji-button").toggleDisplay(
+            contentAvailable && language === "Japanese");
+        this.$("dictionary-button").toggleDisplay(dictionaryAvailable)
+        // Shrink side bar items if language is Japanese and content is loaded
+        this.$("side-bar").classList.toggle(
+            "content-loaded", contentAvailable && language === "Japanese");
         for (const name in this.sections) {
             this.sections[name].adjustToLanguageContent(
                 language, secondaryLanguage);
@@ -1057,8 +1119,7 @@ class MainWindow extends Window {
         await dataManager.setLanguage(language);
         this.adjustToLanguage(dataManager.currentLanguage,
                               dataManager.currentSecondaryLanguage);
-        this.adjustToLanguageContent(dataManager.currentLanguage,
-                                     dataManager.currentSecondaryLanguage);
+        this.adjustToLanguageContent();
         const promises = [];
         for (const key in this.sections) {
             promises.push(Promise.resolve(
@@ -1083,34 +1144,34 @@ class MainWindow extends Window {
         return true;
     }
 
-    async makeKanjiInfoLink(element, character, language, secondaryLanguage) {
-        if (!language) language = dataManager.currentLanguage
-        if (!secondaryLanguage)
-            secondaryLanguage = dataManager.currentSecondaryLanguage
-        // TODO: Don't check if kanji is in database here (do it elsewhere)
-        // TODO: expand this function for Chinese hanzi
-        const content = dataManager.content.get(language, secondaryLanguage)
-        const isKnownKanji = await content.isKnownKanji(character)
-        if (!isKnownKanji) return
+    async makeKanjiInfoLink(element, character) {
         element.classList.add("kanji-info-link");
         // Open kanji info panel upon clicking kanji
         element.addEventListener("click", async () => {
             await this.$("kanji-info-panel").load(character);
             this.$("kanji-info-panel").open();
         });
-        // Display tooltip with kanji meanings after a short delay
-        element.tooltip(async () => {
-            const meanings = await content.getKanjiMeanings(character);
-            return meanings.join(", ");
-        });
         // Attach context menu
-        element.contextMenu(menuItems, () => {
-            return dataManager.kanji.isAdded(character)
-            .then((isAdded) => {
+        element.contextMenu(menuItems, async () => {
+            if (dataManager.currentLanguage === "Japanese") {
+                const isAdded = await dataManager.kanji.isAdded(character)
                 return ["copy-kanji", "view-kanji-info",
                         isAdded ? "edit-kanji" : "add-kanji"];
-            });
+            } else if (dataManager.currentLanguage === "Chinese") {
+                const isAdded = await dataManager.hanzi.isAdded(character)
+                return ["copy-hanzi", "view-hanzi-info",
+                        isAdded ? "edit-hanzi" : "add-hanzi"]
+            }
         });
+        // Display tooltip with kanji meanings after a short delay
+        // if (!language) language = dataManager.currentLanguage
+        // if (!secondaryLanguage)
+        //     secondaryLanguage = dataManager.currentSecondaryLanguage
+        // const content = dataManager.content.get(language, secondaryLanguage)
+        // element.tooltip(async () => {
+        //     const meanings = await content.getKanjiMeanings(character);
+        //     return meanings.join(", ");
+        // });
     }
 
     /**
@@ -1119,22 +1180,25 @@ class MainWindow extends Window {
      * @param {HTMLElement} element - A node with textContent.
      * @returns {Promise}
      */
-    convertTextToKanjiInfoLinks(element) {
+    async convertTextToKanjiInfoLinks(element) {
         const promises = [];
         const spans = [];
         for (const character of element.textContent) {
             const span = document.createElement("span");
             span.textContent = character;
-            const promise = this.makeKanjiInfoLink(span, character);
+            const isKnownKanji = dataManager.currentLanguage === "Japanese" ?
+                await dataManager.content.isKnownKanji(character) :
+                await dataManager.content.isKnownHanzi(character)
+            const promise = !isKnownKanji ? Promise.resolve() :
+                this.makeKanjiInfoLink(span, character);
             spans.push(span);
             promises.push(promise);
         }
-        return Promise.all(promises).then(() => {
-            element.textContent = "";
-            for (const span of spans) {
-                element.appendChild(span);
-            }
-        });
+        await Promise.all(promises)
+        element.textContent = "";
+        for (const span of spans) {
+            element.appendChild(span);
+        }
     }
 
     async saveData() {

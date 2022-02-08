@@ -1,48 +1,28 @@
-
-- Test content download
-- Check if import/export is still working after updating CSV package
-- Implement properly importing from Anki
-
 Chinese
 --------------------------------------------------------------------------------
-Next up:
-- Add stroke counts for simplified chars too!
-- Finish manual HSK mapping!
-- POS Placeholder messes up spacing in Japanese dictionary, find a way around
-  this (probably only apply for *first* meaning)
-- Added a centering, but this looks strange if word column is too large
-- Dictionary contains entries where simplified characters AND pinyin are
-  identical, e.g. 玩, 邪 find out which there are and handle them
-  - Consider lumping together words with same reading as multiple meanings
-- Query with wildcards no longer prioritizes exact matches, is this OK?
-- consider automatically adding * to the last query in a text-based search
-
-Soon:
-- Probably include some seperators for multi-word queries
-- Get rid of as many conversion failures as possibles (how to handle separate
-  letters?), get rid of log statements, re-generate data
-- Reverse pinyin conversion required in "guessDictionaryIdForVocabItem"
-- Resolve references in Chinese data as variants somehow, make sure to include
-  readings (e.g. 怪蜀黍)
-- When traditional kanji are selected in dictionary, also use that variant as
-  main word when adding them
+- 1.638 entries use the variant pattern "see ...", (e.g. 怪蜀黍)
+- Add "also pr." fields to readings in suggestion pane
+- Probably include some separators for multi-word queries
+- Check if all useful search cases are now properly handled
 
 Before next release:
-- Implement special handling for classifiers
-- Adjust search examples page according to language
 - Check readability of dictionary colors for other color schemes
-- Move help section for dictionary and suggestions away from japanese-only part
-- Extend credits
+- Implement properly importing from Anki
+
+Checking:
+- Test content download
+- Check if everything is still working for Japanese
+- Check if import/export is still working after updating CSV package
 
 Further refinement:
 - Use additional info in brackets in HSK list to match to the right entries
 - Offer option to move pinyin to the right instead of above entry to save space
+- Other grades [here](http://www.tanos.co.uk/hsk/skills/hanzi/hanzilist/)
 
 
 General
 --------------------------------------------------------------------------------
 
-- Show content-dependent sections as grayed out if data available, load on click
 - Rework functionality for detecting shortcut collisions
 - Error when clicking margin in notes container, stop prop. if container reached
 - Include exception handling code that removes faulty backups that do not

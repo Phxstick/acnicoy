@@ -208,7 +208,8 @@ module.exports = function (basePath) {
         },
         "Chinese": {
             "English": {
-                database: "Chinese-English.sqlite3"
+                database: "Chinese-English.sqlite3",
+                hanziStrokes: "hanzi-strokes.json"
             }
         }
     };

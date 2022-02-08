@@ -34,8 +34,52 @@ class VocabSuggestionPane extends Widget {
         });
     }
 
+    // For entries in the Chinese dictionary
+    resolveRefs(translation) {
+        const refRegex = /\[([^\]]*?)\]/g
+        const settings = dataManager.settings.dictionary["Chinese"]
+        const useTrad = settings.useTraditionalHanzi
+        const matches = translation.matchAll(refRegex)
+        if (matches.length === 0) return text
+        let newText = ""
+        let i = 0
+        for (const match of matches) {
+            const startIndex = match.index
+            const endIndex = match.index + match[0].length
+            if (startIndex - i > 0) {
+                newText += translation.slice(i, startIndex)
+            }
+            const [trad, simp, pinyin] = match[1].split("|")
+            if (trad.length > 0) {
+                newText += useTrad ? trad : simp
+            } else {
+                // References of the form "also pr. ..." contain only pinyin
+                newText += pinyin.toPinyin()
+            }
+            i = endIndex
+        }
+        if (i < translation.length) {
+            newText += translation.slice(i, translation.length)
+        }
+        return newText
+    }
+
     async load(id, chosenWordVariant) {
         const info = await dataManager.content.getDictionaryEntryInfo(id);
+        // Filter out traditional/simplified variants if language is Chinese
+        if (dataManager.currentLanguage === "Chinese") {
+            const settings = dataManager.settings.dictionary["Chinese"]
+            // Simplified variants are at even indices, traditional at uneven
+            info.wordsAndReadings = info.wordsAndReadings.filter(
+                (_, i) => i % 2 === (settings.useTraditionalHanzi ? 1 : 0))
+            // Filter out simplified variants that are identical to main word
+            if (!settings.useTraditionalHanzi) {
+                info.wordsAndReadings = info.wordsAndReadings.filter(
+                    (item, i) => i === 0 ||
+                        item.word !== info.wordsAndReadings[0].word ||
+                        item.reading !== info.wordsAndReadings[0].reading)
+            }
+        }
         this.wordVariantToReadings.clear();
         // Map word variants to array of readings
         for (const { word, reading } of info.wordsAndReadings) {
@@ -81,7 +125,10 @@ class VocabSuggestionPane extends Widget {
                 }
             });
             // Fill frame with translation suggestions
-            for (const translation of translations) {
+            for (let translation of translations) {
+                if (dataManager.currentLanguage === "Chinese") {
+                    translation = this.resolveRefs(translation)
+                }
                 const translationNode = 
                     this.createSuggestionNode(translation, "translation");
                 translationGroup.appendChild(translationNode);

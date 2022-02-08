@@ -42,3 +42,7 @@ from sljfaq.org
 [HSK 3.0 (2021) vocabulary list](https://www.everydaychinese.com/youtube-lessons/new-hsk-standard.html) from EverdayChinese.com
 
 [HSK 3.0 (2021) character list](https://github.com/elkmovie/hsk30/blob/main/charlist.txt) OCR'd from the official list by elkmovie
+
+[Kangxi radical data](https://en.wikipedia.org/wiki/Kangxi_radical) from Wikipedia
+
+[Hanzi stroke data (graphics.txt and dictionary.txt)](https://github.com/skishore/makemeahanzi) from Skishore's Make Me a Hanzi

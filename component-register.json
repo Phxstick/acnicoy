@@ -23,7 +23,7 @@
         "edit-vocab", "edit-kanji", "edit-hanzi"
     ],
     "suggestionPanes": [
-        "edit-vocab", "edit-kanji"
+        "edit-vocab", "edit-kanji", "edit-hanzi"
     ],
     "widgets": [
         "popup-stack", "popup-list", "svg-bar-diagram", "kanji-info-panel",

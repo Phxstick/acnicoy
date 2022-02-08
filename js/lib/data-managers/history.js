@@ -42,6 +42,25 @@ module.exports = function (paths, modules) {
         const db = new sqlite3.Database(path);
         dataMap[language] = utility.promisifyDatabase(db);
         const dbc = utility.promisifyDatabase(db);
+        // Create hanzi related tables for Chinese if necessary
+        // (done here instead of in 'create' for downward compatibility)
+        if (language === "Chinese") {
+            await dbc.run(`CREATE TABLE IF NOT EXISTS hanzi_info (
+                id INTEGER PRIMARY KEY,
+                time INTEGER,
+                name TEXT
+            )`);
+            await dbc.run(`CREATE INDEX IF NOT EXISTS ` +
+                          `hanzi_info_name ON hanzi_info(name)`);
+            await dbc.run(`CREATE TABLE IF NOT EXISTS hanzi_search (
+                id INTEGER PRIMARY KEY,
+                time INTEGER,
+                name TEXT,
+                type TEXT
+            )`);
+            await dbc.run(`CREATE INDEX IF NOT EXISTS ` +
+                          `hanzi_search_name ON hanzi_search(name)`);
+        }
         // Cache sizes of the tables
         dataMap[language].sizes = { };
         dataMap[language].sizes["dictionary"] =
@@ -51,6 +70,12 @@ module.exports = function (paths, modules) {
                 (await dbc.all("SELECT COUNT(*) AS c FROM kanji_info"))[0].c;
             dataMap[language].sizes["kanji_search"] =
                 (await dbc.all("SELECT COUNT(*) AS c FROM kanji_search"))[0].c;
+        }
+        if (language === "Chinese") {
+            dataMap[language].sizes["hanzi_info"] =
+                (await dbc.all("SELECT COUNT(*) AS c FROM hanzi_info"))[0].c;
+            dataMap[language].sizes["hanzi_search"] =
+                (await dbc.all("SELECT COUNT(*) AS c FROM hanzi_search"))[0].c;
         }
         await dataMap[language].run("PRAGMA wal_autocheckpoint=50");
         await dataMap[language].run("BEGIN TRANSACTION");

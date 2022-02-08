@@ -206,6 +206,19 @@ $dictionary-female-name-background: #FFF0F3;  // shade of 'lightpink'
 $dictionary-place-name-background: #EDE1D1;  // shade of 'tan'
 $dictionary-surname-background: #F0E0F7;  // shade of 'darkorchid'
 
+$mandarin-tone-1-color: rgba(darken(red, 5%), 0.9);
+$mandarin-tone-2-color: darkgoldenrod;
+$mandarin-tone-3-color: #00a000;
+$mandarin-tone-4-color: royalblue;
+
+$mandarin-tone-1-color-hover: $mandarin-tone-1-color;
+$mandarin-tone-2-color-hover: $mandarin-tone-2-color;
+$mandarin-tone-3-color-hover: $mandarin-tone-3-color;
+$mandarin-tone-4-color-hover: $mandarin-tone-4-color;
+
+$dictionary-net-rank-color: mediumpurple;
+$dictionary-net-rank-color-weak: lavender;
+
 // Kanji stroke SVGs
 $kanji-strokes-color: #888;
 $kanji-strokes-color-highlighted: black;

@@ -6,7 +6,7 @@
   font-family: $small-font;
 }
 
-#main-reading, .translation, .reading, .word:not([data-word]) {
+#main-reading, .translation, .reading-inner, .word:not([data-word]) {
   cursor: $pointer-cursor;
   &:hover {
     text-decoration: underline;
@@ -168,26 +168,32 @@
             content: ", ";
           }
         }
-        .translations > .translation {
-          &:not(:last-child)::after {
-            content: "; ";
-          }
-        }
-      }
-      &#variants {
-        margin-top: 10px;
-        font-family: $vocab-font;
-
-        #variant-header {
-          @extend .small;
-        }
-
-        .variant {
-          display: inline-block;
-        }
+        // .translations > .translation {
+        //   &:not(:last-child)::after {
+        //     content: "; ";
+        //   }
+        // }
       }
     }
   }
+}
+
+#variants {
+  margin-top: 10px;
+  font-family: $vocab-font;
+
+  #variant-header {
+    @extend .small;
+  }
+
+  .variant {
+    display: inline-block;
+  }
+}
+
+#meanings-frame.with-pinyin .reading {
+  text-shadow: $dictionary-pinyin-shadow;
+  font-family: var(--pinyin-font);
 }
 
 #entry-info > * {
@@ -267,4 +273,57 @@
 }
 .tone4 {
   color: $mandarin-tone-4-color;
+}
+
+.kanji-info-link {
+  &.tone1:hover {
+    color: $mandarin-tone-1-color-hover;
+  }
+  &.tone2:hover {
+    color: $mandarin-tone-2-color-hover;
+  }
+  &.tone3:hover {
+    color: $mandarin-tone-3-color-hover;
+  }
+  &.tone4:hover {
+    color: $mandarin-tone-4-color-hover;
+  }
+}
+
+#classifiers-frame {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#classifiers-header {
+  color: $color-light;
+  font-family: $small-font;
+  font-size: 0.9rem;
+  margin-right: 8px;
+}
+
+#classifiers {
+  font-size: 1.1rem;
+}
+
+#classifiers .pinyin {
+  font-size: 0.8rem;
+}
+
+.dict-ref {
+  font-size: 1.2rem !important;
+}
+
+.reading {
+  font-size: 0.9rem;
+}
+
+.variant-type {
+  font-size: 0.9rem;
+  color: $color-light;
+}
+
+.word {
+  font-size: 1.1rem;
 }

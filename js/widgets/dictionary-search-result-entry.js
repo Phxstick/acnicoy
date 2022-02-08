@@ -44,9 +44,10 @@ class DictionarySearchResultEntry extends Widget {
         super("dictionary-search-result-entry");
     }
 
-    setInfo(info) {
-        const languageSettings =
-            dataManager.settings.dictionary[dataManager.currentLanguage]
+    async setInfo(info) {
+        const language = dataManager.currentLanguage
+        const languageSettings = dataManager.settings.dictionary[language]
+
         // Set entry class by frequency (determines background color)
         this.isProperName = !!info.properName;
         if (info.properName) {
@@ -105,21 +106,40 @@ class DictionarySearchResultEntry extends Widget {
                 `Top ${info.netRank},000 most frequent on the internet.`);
         }
 
-        // Open kanji info panel upon clicking a kanji in the main word
-        if (info.wordsAndReadings[0].word.length > 0) {
-            const mainWordFrame = this.root.getElementById("main-word");
-            for (const span of mainWordFrame.children) {
-                main.makeKanjiInfoLink(span, span.textContent);
+        if (language === "Japanese" || language === "Chinese") {
+            const content = dataManager.content
+            // Open kanji info panel upon clicking a kanji in the main word
+            if (info.wordsAndReadings[0].word.length > 0) {
+                const mainWordFrame = this.$("main-word")
+                for (const span of mainWordFrame.children) {
+                    const isKanji = language === "Japanese" ?
+                        await content.isKnownKanji(span.textContent) :
+                        await content.isKnownHanzi(span.textContent)
+                    if (isKanji) main.makeKanjiInfoLink(span, span.textContent)
+                }
             }
-        }
 
-        // Open kanji info panel upon clicking a kanji in the word variants
-        const variantsFrame = this.root.getElementById("variants");
-        if (variantsFrame !== null) {
-            for (let i = 1; i < variantsFrame.children.length; ++i) {
-                const wordFrame = variantsFrame.children[i].children[0];
-                for (const span of wordFrame.children) {
-                    main.makeKanjiInfoLink(span, span.textContent);
+            // Open kanji info panel upon clicking a kanji in the word variants
+            const variantsFrame = this.$("variants");
+            if (variantsFrame !== null) {
+                for (let i = 1; i < variantsFrame.children.length; ++i) {
+                    const wordFrame = variantsFrame.children[i].children[0];
+                    for (const span of wordFrame.children) {
+                        const isKanji = language === "Japanese" ?
+                            await content.isKnownKanji(span.textContent):
+                            await content.isKnownHanzi(span.textContent)
+                        if (isKanji)
+                            main.makeKanjiInfoLink(span, span.textContent);
+                    }
+                }
+            }
+            // Open kanji info panel upon clicking a classifier
+            if ("classifiers" in info && info.classifiers.length) {
+                for (const span of this.$("classifiers").children) {
+                    const isKanji = language === "Japanese" ?
+                        await content.isKnownKanji(span.textContent) :
+                        await content.isKnownHanzi(span.textContent)
+                    if (isKanji) main.makeKanjiInfoLink(span, span.textContent)
                 }
             }
         }
@@ -165,21 +185,37 @@ class DictionarySearchResultEntry extends Widget {
             return [commandName, this.dataset.isAdded ? "edit-word":"add-word"];
         }, commandArgs);
 
+        const checkForClass = (target, className) => {
+            return target.classList.contains(className) ||
+                (target.id !== "frame"
+                && target.parentNode.classList.contains(className))
+        }
+
         // Click a translation or reading to search the dictionary for it
         this.addEventListener("click", (event) => {
             const categories = info.properName ? ["names"] : ["words"];
             const target = event.path[0];
-            if (target.classList.contains("translation")) {
+            if (target.classList.contains("dict-ref")) {
+                const { simp, trad, pinyin } = target.dataset
+                let query = trad
+                if (simp !== trad) query += " " + simp
+                if (pinyin) query += " " + pinyin
+                main.sections["dictionary"].search(query, "word", categories)
+            } else if (checkForClass(target, "translation")) {
                 // Remove parentheses and their content to match more stuff
                 const query = target.textContent.replace(/\([^)]*\)/g,"").trim()
                 main.sections["dictionary"].search(query, "meaning", categories)
-            } else if (target.classList.contains("reading")) {
-                const query = target.dataset.reading;
-                main.sections["dictionary"].search(query, "reading", categories)
-            } else if (target.id === "main-reading" ||
-                       target.classList.contains("word")) {
+            } else if (this.$("main-reading").contains(target)) {
+                const reading = info.wordsAndReadings[0].rawReading ||
+                    info.wordsAndReadings[0].reading
+                main.sections["dictionary"].search(reading, "word", categories)
+            } else if (checkForClass(target, "reading")) {
+                const query =
+                    target.dataset.reading || target.parentNode.dataset.reading;
+                main.sections["dictionary"].search(query, "word", categories)
+            } else if (target.classList.contains("word")) {
                 const query = target.textContent.trim();
-                main.sections["dictionary"].search(query, "reading", categories)
+                main.sections["dictionary"].search(query, "word", categories)
             } else {
                 return;
             }

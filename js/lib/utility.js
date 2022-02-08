@@ -1154,6 +1154,182 @@ function promisifyDatabase(db) {
     return dbInterface;
 }
 
+// Used in the function `sortMatches` below
+function isMatchType(matchType, queryValue, entryValue) {
+    const cleanedQuery = queryValue.replace(/^%+/, "").replace(/%+$/, "");
+    let regexString
+    let regex
+    switch (matchType) {
+        case "exact":
+            return entryValue === cleanedQuery
+        case "start":
+            if (queryValue.startsWith("%")) return false
+            return entryValue.startsWith(cleanedQuery)
+        case "word":
+            if (queryValue.startsWith("%") && queryValue.endsWith("%"))
+                return false
+            regexString = utility.escapeRegex(cleanedQuery)
+            if (!queryValue.startsWith("%")) {
+                regexString = "\\b" + regexString 
+            }
+            if (!queryValue.endsWith("%")) {
+                regexString = regexString + "\\b"
+            }
+            regexString = regexString.replace(/%+|[*]+/g, "\\S*?")
+            regex = new RegExp(regexString)
+            if (regex.test(entryValue)) return true
+            return false
+        case "wordStart":
+            if (queryValue.startsWith("%") || queryValue.endsWith("%"))
+                return false
+            regexString = "\\b" + utility.escapeRegex(cleanedQuery)
+            regexString = regexString.replace(/%+|[*]+/g, "\\S*?")
+            regex = new RegExp(regexString)
+            if (regex.test(entryValue)) return true
+            return false
+        default:
+            throw new Error("Unknown match type: " + matchType)
+    }
+}
+
+/**
+ * Given an array of search results, order them according to how well each
+ * matches the query.
+ * NOTE: As can be seen below, this function assumes that the query values
+ * are strings instead of arrays of strings. Multi-queries are not supported.
+ * 
+ * Performance (measured in entries per millisecond):
+ * - For translations: a few rough measurements show a sorting speed of about
+ *   30-50, mostly close to 50. Lowest measurement was 18, maybe due to cache
+ *   misses or processor being used by other processes.
+ * - For Chinese words: initial measurements showed about 67-88, further
+ *   measurements including the same queries as before then yielded about
+ *   100 to 250, probably due to caching.
+ *
+ * @param {array} matches - Each entry is an object of the form
+ *    { word: string, translations: string[], readings: string[]
+ *      notes: string[] }
+ * @param {string | object} query - If an object, it may contain following
+ *    string fields: word, translations, readings, notes. All fields
+ *    except for "word" may be undefined or null.
+ */
+function sortMatches(matches, query, primaryLanguage, secondaryLanguage) {
+    const bracketContentsPattern = /(?:\[[^\]]*?\])|(?:\([^)]*?\))/g;
+    const languagesWithoutSpaces = new Set([
+        "Chinese", "Japanese", "Thai", "Khmer", "Lao", "Burmese"
+    ])
+    let fields = ["word", "translations", "readings", "notes"]
+    const matchTypes = ["exact", "word", "start", "wordStart"]
+    const matchesByType = {
+        "exact": [],
+        "start": [],
+        "word": [],
+        "wordStart": [],
+        "other": []
+    }
+    const isStringQuery = typeof query === "string"
+    if (!isStringQuery) {
+        fields = fields.filter(field => query[field])
+    }
+    for (const entry of matches) {
+        let matchFound = false
+        for (const matchType of matchTypes) {
+            for (const fieldName of fields) {
+                if (!entry[fieldName] || (!isStringQuery && !query[fieldName]))
+                    continue
+
+                // Skip word-based matching critera for languages w/o spaces
+                const fieldUsesNoSpaces =
+                    ((fieldName === "word" || fieldName === "readings") &&
+                    languagesWithoutSpaces.has(primaryLanguage)) ||
+                    ((fieldName === "translations" ||
+                        fieldName === "notes") &&
+                    languagesWithoutSpaces.has(secondaryLanguage))
+                if (fieldUsesNoSpaces &&
+                        (matchType == "word" || matchType == "wordStart")) {
+                    continue
+                }
+                
+                // Prepare values for comparison
+                const fieldValues = fieldName === "word" ?
+                    [entry[fieldName].toLowerCase()] :
+                    entry[fieldName].map(s => s.toLowerCase())
+                const queryValues = isStringQuery ?
+                    [query.toLowerCase()] : [query[fieldName].toLowerCase()]
+
+                // Add/remove leading "to " of english verbs
+                const isEnglishField =
+                    (primaryLanguage === "English" && fieldName === "word") ||
+                    (secondaryLanguage === "English" &&
+                    (fieldName === "translations" || fieldName === "notes"))
+                if (isEnglishField) {
+                    if (queryValues[0].startsWith("to ")) {
+                        queryValues.push(queryValues[0].substr(3))
+                    } else {
+                        queryValues.push("to " + queryValues[0])
+                    }
+                }
+
+                // Include kana-versions for Japanese words
+                const isJapaneseField =
+                    (primaryLanguage === "Japanese" &&
+                    (fieldName === "word" || fieldName === "readings")) ||
+                    (secondaryLanguage === "Japanese" &&
+                    (fieldName === "translations" || fieldName === "notes"))
+                if (isJapaneseField) {
+                    queryValues.push(queryValues[0].toKana("hiragana"))
+                    queryValues.push(queryValues[0].toKana("katakana"))
+                }
+
+                // Include field variants with all bracket content removed
+                const additionalFieldValues = []
+                for (const fieldValue of fieldValues) {
+                    const bracketContentMatches =
+                        [...fieldValue.matchAll(bracketContentsPattern)]
+                    if (bracketContentMatches.length === 0) continue
+                    const parts = []
+                    let start = 0;
+                    for (const match of bracketContentMatches) {
+                        parts.push(fieldValue.slice(start, match.index))
+                        start = match.index + match[0].length;
+                    }
+                    if (start < fieldValue.length) {
+                        parts.push(fieldValue.slice(start))
+                    }
+                    additionalFieldValues.push(
+                        utility.collapseWhitespace(parts.join(" ").trim()))
+                }
+                if (additionalFieldValues.length > 0) {
+                    fieldValues.push(...additionalFieldValues)
+                }
+
+                // Check if query matches any of the values in this field
+                for (const fieldValue of fieldValues) {
+                    for (const queryValue of queryValues) {
+                        const isMatching = isMatchType(
+                            matchType, queryValue, fieldValue)
+                        if (isMatching) {
+                            matchesByType[matchType].push(entry)
+                            matchFound = true
+                            break
+                        }
+                    }
+                    if (matchFound) break
+                }
+                if (matchFound) break
+            }
+            if (matchFound) break
+        }
+        if (!matchFound) matchesByType["other"].push(entry)
+    }
+    const sortedMatches = []
+    for (const matchType of matchTypes) {
+        sortedMatches.push(...matchesByType[matchType])
+    }
+    sortedMatches.push(...matchesByType["other"])
+    return sortedMatches
+}
+
 // Efficiently remove all DOM nodes in the given set from the given container.
 function removeMultipleNodes(nodesToDelete, container) {
     const fragment = document.createDocumentFragment();
@@ -1222,6 +1398,7 @@ module.exports.getTimeline = getTimeline;
 module.exports.getTimelineMarkers = getTimelineMarkers;
 module.exports.getDistantColors = getDistantColors;
 module.exports.promisifyDatabase = promisifyDatabase;
+module.exports.sortMatches = sortMatches;
 
 // DOM related functions
 module.exports.parseHtmlFile = parseHtmlFile;

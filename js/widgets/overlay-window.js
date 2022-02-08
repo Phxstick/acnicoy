@@ -19,6 +19,8 @@ class OverlayWindow extends Widget {
     async open(overlay, args) {
         if (this.overlays.length === 0)
             this.show();
+        // NOTE: Workaround, better not put this in here
+        window.main.$("status-bar").classList.remove("app-region")
         // Prevent previously opened overlay from capturing focus
         if (this.overlays.length > 0) {
             this.overlays.last().lastFocussedElement =
@@ -132,6 +134,8 @@ class OverlayWindow extends Widget {
             this.wrapper.removeChild(overlay);
             this.wrapper.removeChild(filter);
             if (this.overlays.length === 0) {
+                // NOTE: Workaround, better not put this in here
+                window.main.$("status-bar").classList.add("app-region")
                 this.hide();
             }
         });

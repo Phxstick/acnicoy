@@ -99,3 +99,8 @@ $mandarin-tone-1-color: rgba(#bf4a34, 0.85) !default;
 $mandarin-tone-2-color: rgba(weaken(darkgoldenrod, 3%), 0.85) !default;
 $mandarin-tone-3-color: rgba(strengthen(green, 3%), 0.85) !default;
 $mandarin-tone-4-color: rgba(#5f86cc, 0.85) !default;
+
+$mandarin-tone-1-color-hover: darken(red, 5%) !default;
+$mandarin-tone-2-color-hover: lighten($mandarin-tone-2-color, 36%) !default;
+$mandarin-tone-3-color-hover: lighten($mandarin-tone-3-color, 22%) !default;
+$mandarin-tone-4-color-hover: lighten(#2aa198, 15%) !default;

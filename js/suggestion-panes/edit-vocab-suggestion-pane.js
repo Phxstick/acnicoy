@@ -5,7 +5,8 @@ class EditVocabSuggestionPane extends VocabSuggestionPane {
         super();
         this.autoSelect = null;
         this.$("help-link").addEventListener("click", () => {
-            overlays.open("help", ["Languages", "Japanese", "Suggestions"]);
+            overlays.open(
+                "help", ["Languages", "Dictionary", "Search suggestions"]);
         });
     }
 

@@ -105,6 +105,16 @@
         stroke: $highlighted-text-color;
       }
     }
+    &.hanzi {
+      path {
+        fill: $color;
+        stroke-width: 1;
+
+        &.highlighted {
+          fill: $highlighted-text-color;
+        }
+      }
+    }
   }
   #kanji {
     font-size: 450%;
@@ -201,10 +211,10 @@
 
         &:not(:first-child) {
           padding-left: 10px;
+          border-left: 1px solid transparent;
+          border-image: $vertical-fading-border;
         }
         &:not(:last-child) {
-          border-right: 1px solid transparent;
-          border-image: $vertical-fading-border;
           padding-right: 10px;
         }
       }
@@ -288,9 +298,9 @@
       font-size: 0;  // Don't count whitespace between inline-block elements
 
       #strokes-not-available-info {
-        font-size: 150%;
+        font-size: 1.5rem;
         font-family: $light-font;
-        margin-top: 30px;
+        margin-top: 10px;
       }
       #stroke-graphics {
         align-self: stretch;
@@ -313,12 +323,25 @@
             fill: transparent;
             &.last-stroke {
               stroke: $kanji-strokes-color-highlighted;
+              &.hanzi {
+                fill: $kanji-strokes-color-highlighted;
+              }
             }
             &.middle-marker {
               stroke: $kanji-strokes-middle-marker-color;
               stroke-width: 2;
               stroke-linecap: square;
               stroke-dasharray: 5;
+
+              // For hanzi, where coordinates are scaled up by about 10x
+              &.scaled {
+                stroke-width: 20;
+                stroke-dasharray: 50;
+              }
+            }
+            &.hanzi {
+              fill: $kanji-strokes-color;
+              stroke-width: 1;
             }
           }
           .brush-start {
@@ -351,6 +374,15 @@
       &::-webkit-scrollbar-track {
         background-color: $background-color;
       }
+    }
+    #example-words-placeholder {
+      flex: 1;
+    }
+    #loading-example-words {
+      flex: 1;
+      overflow: auto;
+      align-self: center;
+      margin: auto;
     }
   }
 }

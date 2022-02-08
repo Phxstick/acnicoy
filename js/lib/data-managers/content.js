@@ -8,6 +8,8 @@ module.exports = function (paths, modules) {
     const dataMap = {};
     let data;
 
+    const languagesWithDictionary = new Set(["Japanese", "Chinese"])
+
     content.isAvailableFor = (language, secondary) => {
         const contentPaths = paths.content(language, secondary);
         return utility.existsDirectory(contentPaths.directory);
@@ -53,15 +55,20 @@ module.exports = function (paths, modules) {
     content.isDictionaryAvailable = () => {
         const language = modules.currentLanguage;
         const secondaryLanguage = modules.currentSecondaryLanguage;
-        return content.isLoadedFor(language, secondaryLanguage) &&
-               !!content.get(language, secondaryLanguage).dictionaryAvailable;
-    };
+        return content.isAvailableFor(language, secondaryLanguage) &&
+            languagesWithDictionary.has(language)
+    }
+
+    content.isDictionaryLoaded = () => {
+        return content.isLoaded() && !!data.containsDictionary;
+    }
 
     content.get = (language, secondary) => {
         return dataMap[`${language}-${secondary}`];
     };
 
     content.load = async function (language) {
+        if (language === undefined) language = modules.currentLanguage
         const secondaryLanguage =
             modules.languageSettings.getFor(language, "secondaryLanguage");
         if (!content.isAvailableFor(language, secondaryLanguage) ||
@@ -117,23 +124,25 @@ module.exports = function (paths, modules) {
         const replace = (t) => t.replace(/[*]/g, "%").replace(/[?]/g, "_");
         query.translations = query.translations.map(replace);
         query.words = query.words.map(replace);
-        // If any query field contains a wildcard at the start or end
-        // (or both sides), do not prioritize exact matches for that field.
-        const exactMatchesQuery = { words: [], translations: [] };
-        for (const reading of query.words) {
-            if (!reading.startsWith("%") && !reading.endsWith("%")) {
-                exactMatchesQuery.words.push(reading.replace(/[%_]/g, ""));
+        if (options.exactMatchesOnly) {
+            // If any query field contains a wildcard at the start or end
+            // (or both sides), do not prioritize exact matches for that field.
+            const exactMatchesQuery = { words: [], translations: [] };
+            for (const reading of query.words) {
+                if (!reading.startsWith("%") && !reading.endsWith("%")) {
+                    exactMatchesQuery.words.push(reading.replace(/[%_]/g, ""));
+                }
             }
-        }
-        for (const translation of query.translations) {
-            if (!translation.startsWith("%") && !translation.endsWith("%")) {
-                exactMatchesQuery.translations.push(
-                    translation.replace(/[%_]/g, ""));
+            for (const translation of query.translations) {
+                if (!translation.startsWith("%") && !translation.endsWith("%")){
+                    exactMatchesQuery.translations.push(
+                        translation.replace(/[%_]/g, ""));
+                }
             }
+            let matches = await data.searchFunction(exactMatchesQuery, options)
+            return matches.map(row => row.id)
+
         }
-        // Search for exact matches (using query without any wildcards).
-        let exactMatches = await data.searchFunction(exactMatchesQuery, options)
-        if (options.exactMatchesOnly) return exactMatches.map(row => row.id)
         const originalQuery = {
             translations: query.translations,
             words: query.words
@@ -144,63 +153,23 @@ module.exports = function (paths, modules) {
         // Add wildcard to end of words/readings if there's none at beginning
         query.words = query.words.map(
             (r) => r.startsWith("%") ? r : r + (r.endsWith("%")?"":"%"));
-        // Search for all matches
+        // Execute search function
         let allMatches = await data.searchFunction(query, options);
-        const matchIds = Array(allMatches.length);
-        // Exact matches are at the beginning of the search results
-        for (let i = 0; i < exactMatches.length; ++i) {
-            matchIds[i] = exactMatches[i].id;
-        }
-        // Prioritize matches where any translation query matches whole words.
-        // Only match word boundaries if there is no wild card at that side
-        // of the string in the original query.
-        if (query.translations.length) {
-            const wholeWordMatches = [];
-            const nonWholeWordMatches = [];
-            const queryRegexes = []
-            for (const translation of originalQuery.translations) {
-                if (translation.startsWith("%") && translation.endsWith("%"))
-                    continue;
-                let regex = translation.replace(/^%+/, "").replace(/%+$/, "");
-                if (!translation.startsWith("%")) {
-                    regex = "\\b" + regex; 
-                }
-                if (!translation.endsWith("%")) {
-                    regex = regex + "\\b";
-                }
-                regex = regex.replace(/%+/g, "\\B*?");
-                queryRegexes.push(new RegExp(regex, 'i'));
-            }
-            for (const match of allMatches) {
-                let matched = false;
-                for (const regex of queryRegexes) {
-                    if (regex.test(match.translations)) {
-                        matched = true;
-                        break;
-                    }
-                }
-                if (matched) {
-                    wholeWordMatches.push(match);
-                } else {
-                    nonWholeWordMatches.push(match);
-                }
-            }
-            allMatches = [...wholeWordMatches, ...nonWholeWordMatches];
-        }
-        // Add all non-exact matches to the result array
-        const exactMatchesSet = new Set(exactMatches.map(row => row.id))
-        let i = 0;
-        let j = 0;
-        while (j < allMatches.length) {
-            if (i < exactMatches.length &&
-                    exactMatchesSet.has(allMatches[j].id)) {
-                ++i;
-            } else {
-                matchIds[exactMatches.length + j - i] = allMatches[j].id;
-            }
-            ++j;
-        }
-        return matchIds;
+        allMatches = allMatches.map(m => ({
+            ...m, id: m.id, translations: m.translations.split(";"),
+            readings: m.readings ? m.readings.split(";") : []
+        }))
+        // Sort matches depending on how well they match the query
+        //// console.log(allMatches.length)
+        //// console.time("sorting-matches")
+        allMatches = utility.sortMatches(allMatches, {
+            translations: originalQuery.translations[0],
+            word: originalQuery.words.length ? originalQuery.words[0] : "",
+            readings: originalQuery.words.length ? originalQuery.words[0] : ""
+        }, modules.currentLanguage, modules.currentSecondaryLanguage)
+        //// console.timeEnd("sorting-matches")
+        // Return IDs only
+        return allMatches.map(row => row.id)
     }
 
     return new Proxy(content, {

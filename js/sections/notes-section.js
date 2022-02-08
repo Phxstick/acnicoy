@@ -558,6 +558,12 @@ class NotesSection extends Section {
         this.$("structure-tree").deselect();
         this.$("structure-tree").build(dataTree,
             (notes) => notes === undefined ? [] : notes);
+        if (this.currentNotesContainer === this.searchResultsContainer) {
+            this.searchResultsContainer.empty()
+            this.searchResultsContainer.hide()
+            this.$("no-search-results-info").hide();
+            this.$("info-panel").show();
+        }
     }
 
     open() {

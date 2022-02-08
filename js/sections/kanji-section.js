@@ -216,8 +216,7 @@ class KanjiSection extends Section {
                 this.contentLoaded = true;
             const content = dataManager.content.get(language, secondaryLanguage)
             const kanjiList = await content.getKanjiLists() 
-            await this.createKanjiOverviewNodes(
-                kanjiList, language, secondaryLanguage)
+            await this.createKanjiOverviewNodes(kanjiList)
             this.displayKanji();
         }
     }
@@ -236,7 +235,7 @@ class KanjiSection extends Section {
         this.$("settings-button").hide();
     }
 
-    createKanjiOverviewNodes(kanjiList, language, secondaryLanguage) {
+    createKanjiOverviewNodes(kanjiList) {
         this.$("kanji-overview").empty();
         this.$("kanji-container").empty();
         const promises = [];
@@ -246,8 +245,7 @@ class KanjiSection extends Section {
             kanjiNode.textContent = kanji;
             kanjiNode.id = kanji;
             kanjiNode.classList.toggle("added", added);
-            promises.push(main.makeKanjiInfoLink(
-                kanjiNode, kanji, language, secondaryLanguage));
+            promises.push(main.makeKanjiInfoLink(kanjiNode, kanji));
             kanjiNode.addEventListener("click", () => {
                 if (this.selectedKanji !== null)
                     this.selectedKanji.classList.remove("selected");

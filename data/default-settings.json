@@ -1,7 +1,7 @@
 {
     "general": {
         "autoLaunchOnStartup": false,
-        "autoLoadLanguageContent": true,
+        "autoLoadLanguageContent": false,
         "showSrsNotifications": false,
         "srsNotificationsInterval": 900,
         "doRegularBackup": true,

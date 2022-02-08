@@ -86,7 +86,7 @@ class EditHanziPanel extends EditPanel {
         // Upon finishing entering hanzi, try to load associated information
         this.$("hanzi").addEventListener("focusout", async () => {
             if (this.closed) return;
-            const newHanzi = this.$("hanzi").textContent;
+            const newHanzi = this.$("hanzi").textContent.trim();
             if (this.originalHanzi !== null || newHanzi.length === 0) return;
             if (this.lastEnteredHanzi === newHanzi) return;
             this.lastEnteredHanzi = newHanzi;
@@ -98,11 +98,21 @@ class EditHanziPanel extends EditPanel {
                 this.originalHanzi = null;  // To stay in "add-mode"
             } else {
                 this.$("header").textContent = "Add hanzi";
+                this.$("save-button").textContent = "Add";
+                // Remove focus (move somewhere else first if activeElem = null)
+                this.$("hanzi").focus();
+                this.$("hanzi").blur();
             }
 
             // If language data is available, load suggestions as well
-            if (dataManager.content.isDictionaryAvailable()) {
-                // TODO: fill this in after making language data for Chinese
+            if (dataManager.content.isLoaded()) {
+                const known = await dataManager.content.isKnownHanzi(newHanzi);
+                if (known) {
+                    main.suggestionPanes["edit-hanzi"].load(newHanzi);
+                    main.showSuggestionsPane("edit-hanzi", true);
+                } else {
+                    main.hideSuggestionPane(true);
+                }
             }
         });
 
@@ -201,18 +211,18 @@ class EditHanziPanel extends EditPanel {
 
     async load(hanzi, { entryList=undefined }={}) {
         super.load(hanzi, entryList)
+        this.lastEnteredHanzi = hanzi;
 
         // Check if the hanzi is already in the vocabulary
         if (hanzi !== undefined && await dataManager.hanzi.isAdded(hanzi)) {
             this.originalHanzi = hanzi;
         } else {
             this.originalHanzi = null;
-            this.lastEnteredHanzi = null;
         }
 
         // If a new hanzi is getting added, just clear all fields
         if (this.originalHanzi === null) {
-            this.$("hanzi").textContent = "";
+            this.$("hanzi").textContent = hanzi !== undefined ? hanzi : "";
             this.$("meanings").empty();
             this.$("readings").empty();
             this.$("header").textContent = "Add hanzi";
@@ -222,6 +232,7 @@ class EditHanziPanel extends EditPanel {
             return;
         }
         this.$("header").textContent = "Edit hanzi";
+        this.$("save-button").textContent = "Save";
 
         // Otherwise, fill in the data associated with this hanzi 
         const info = await dataManager.hanzi.getInfo(hanzi);

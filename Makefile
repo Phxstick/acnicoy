@@ -38,8 +38,10 @@ ZH_LCMC_WORD_FREQ_PATH = $(ZH_RESOURCE_PATH)/lcmc.num
 HANZI_PATH = $(ZH_RESOURCE_PATH)/Unihan
 HANZI_HSK_PATH = $(ZH_RESOURCE_PATH)/charlist.txt
 HANZI_RADICALS_PATH = $(ZH_RESOURCE_PATH)/kangxi-radicals-wikipedia.tsv
+HANZI_STROKES_PATH = $(ZH_RESOURCE_PATH)/graphics.txt
+HANZI_DECOMP_PATH = $(ZH_RESOURCE_PATH)/dictionary.txt
 
-.PHONY: data jp_dictionary_data kanji_data build start install
+.PHONY: jp_data zh_data jp_dictionary_data kanji_data zh_dictionary_data zh_hanzi_data build start install
 
 all: build
 
@@ -52,7 +54,9 @@ start:
 install:
 	npm install
 
-data: jp_dictionary_data kanji_data
+jp_data: jp_dictionary_data kanji_data
+
+zh_data: zh_dictionary_data zh_hanzi_data
 
 jp_dictionary_data:
 	mkdir -p $(JP_EN_OUTPUT_PATH)
@@ -99,4 +103,6 @@ zh_hanzi_data:
 	$(PYTHON) $(ZH_EN_DATA_SCRIPT_PATH) \
         --hanzi $(HANZI_PATH) \
         --hsk-hanzi $(HANZI_HSK_PATH) \
-        --radicals $(HANZI_RADICALS_PATH)
+        --radicals $(HANZI_RADICALS_PATH) \
+        --strokes $(HANZI_STROKES_PATH) \
+        --decomp $(HANZI_DECOMP_PATH)

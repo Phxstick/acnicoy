@@ -1063,7 +1063,7 @@ class VocabSection extends Section {
         }
         if (type === "vocab" || type === "list-contents") {
             const oldLists = dataManager.vocabLists.getListsForWord(item);
-            const dictionaryId = dataManager.content.isDictionaryAvailable() ?
+            const dictionaryId = dataManager.content.isDictionaryLoaded() ?
                 await dataManager.vocab.getAssociatedDictionaryId(item) : null;
             await dataManager.vocab.remove(item);
             for (const listName of oldLists) {

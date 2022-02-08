@@ -49,7 +49,7 @@
     </div>
 
   </div>
-  <div id="meanings-frame">
+  <div id="meanings-frame" {{#if pinyin}}class="with-pinyin"{{/if}}>
 
     {{! Process meanings of this word }}
 
@@ -63,12 +63,19 @@
         {{#ifLargerThanOne ../meanings.length}}
           <span class="number">{{inc @index 1}}.</span>
         {{/ifLargerThanOne}}
-        <!--span class="translations">{{join translations "; "}}</span-->
         <span class="translations">
-          {{#each translations}}
-            <span class="translation">{{this}}</span>
-            <!--{{#unless @last}}<span>;&nbsp;</span>{{/unless}}-->
-          {{/each}}
+          {{~#each translations~}}
+            {{~#if ../../isChinese~}}
+              <span class="translation">
+                {{~convertRefs this ../../useTraditionalHanzi~}}
+              </span>
+            {{~else~}}
+              <span class="translation">{{this}}</span>
+            {{~/if~}}
+            {{~#unless @last~}}
+              <span class="sep">;</span>
+            {{/unless}}
+          {{~/each~}}
         </span>
         {{#each fieldsOfApplication}}<span>{{this}}</span>{{/each}}
         {{#each dialect}}<span>{{this}}</span>{{/each}}
@@ -79,6 +86,23 @@
       </div>
     {{/each}}
 
+    {{! Process classifiers (for Chinese) }}
+
+    {{#if classifiers.length}}
+      <div id="classifiers-frame">
+        <div id="classifiers-header">Classifiers:</div>
+        <div id="classifiers">
+        {{#each classifiers}}
+          {{eachHanziWithPinyin this.hanzi this.pinyin ../colorByTones}}
+          <span data-reading="{{this.pinyin.[0].raw}}"
+                class="pinyin reading tone{{this.pinyin.[0].tone}}">
+            ({{~this.pinyin.[0].pinyin~}})
+          </span>{{#unless @last}},{{/unless}}
+        {{/each}}
+        </div>
+      </div>
+    {{/if}}
+
     {{! Process variants of this word (Words and readings after first one)}}
 
     {{#ifLargerThanOne wordsAndReadings.length}}
@@ -87,13 +111,21 @@
         {{#each wordsAndReadings}}
           {{#if @index}}
             <span class="variant">
+              {{#if this.type}}
+                <span class="variant-type">({{this.type}})</span>
+              {{/if}}
               {{#if this.word.length}}
                 <span class="word" data-word="{{this.word}}">
                   {{eachLetter word}}
                 </span>
-                <span class="reading" data-reading="{{this.reading}}">
-                  【{{this.reading}}】{{#unless @last}}、{{/unless}}
-                </span>
+                {{#if this.reading}}
+                  <span class="reading"
+                      data-reading="{{~#if this.rawReading~}}{{this.rawReading}}
+                        {{~else~}}{{this.reading}}{{~/if~}}">
+                    【<span class="reading-inner">{{this.reading}}</span>】
+                    {{~#unless @last~}}、{{/unless}}
+                  </span>
+                {{/if}}
               {{else}}
                 <span class="word">
                   {{this.reading}} {{#unless @last}}、{{/unless}}

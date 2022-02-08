@@ -36,7 +36,9 @@ const generalOptions = [
     // },
 ]
 
-const languageToConfig = {
+const refRegex = /\[([^\]]*?)\]/g
+
+window.languageToDictionaryConfig = {
     "Japanese": {
         categories: ["words", "names"],
         viewItemFunction: async (entryId, category) => {
@@ -50,7 +52,7 @@ const languageToConfig = {
                 dataManager.content.guessAssociatedVocabEntry(
                     isRegularWord ? entryId : null, info)
             info.properName = !isRegularWord
-            resultEntry.setInfo(info);
+            await resultEntry.setInfo(info);
             return resultEntry;
         },
         menuOptions: (settings) => ([
@@ -136,16 +138,46 @@ const languageToConfig = {
             info.fontFamily = settings.fontFamily + "-font"
             info.associatedVocabEntry = await
                 dataManager.content.guessAssociatedVocabEntry(entryId, info);
-            info.wordsAndReadings = 
-                settings.useTraditionalHanzi && info.wordsAndReadings[1] ?
-                [info.wordsAndReadings[1]] : [info.wordsAndReadings[0]]
-            const [pinyin, tones] =
-                info.pinyin.toPinyin({ separate: true, includeTones: true })
+            info.isChinese = true
+            info.useTraditionalHanzi = settings.useTraditionalHanzi
+            // Simplified variants are at even indices, traditional at uneven
+            info.wordsAndReadings = info.wordsAndReadings.filter(
+                (_, i) => i % 2 === (settings.useTraditionalHanzi ? 1 : 0))
+            // Filter out simplified variants that are identical to main word
+            if (!settings.useTraditionalHanzi) {
+                info.wordsAndReadings = info.wordsAndReadings.filter((item,i) =>
+                    i === 0 || item.word !== info.wordsAndReadings[0].word ||
+                        item.reading !== info.wordsAndReadings[0].reading)
+            }
+            // Handle classifiers
+            const convertedClassifiers = []
+            for (const [trad, simp, pinyin] of info.classifiers) {
+                convertedClassifiers.push({
+                    pinyin: [{
+                        raw: pinyin,
+                        pinyin: pinyin.toPinyin(),
+                        tone: pinyin[pinyin.length - 1]
+                    }],
+                    hanzi: settings.useTraditionalHanzi ? trad : simp
+                })
+            }
+            info.classifiers = convertedClassifiers
+            // Handle pinyin and their tones (ignore latin letters in the word)
+            let ignoreSet = new Set()
+            const word = info.wordsAndReadings[0].word.toLowerCase()
+            for (let i = 0; i < word.length; ++i) {
+                if ("a" <= word[i] && word[i] <= "z") {
+                    ignoreSet.add(i)
+                }
+            }
+            if (ignoreSet.size == 0) ignoreSet = undefined
+            const [pinyin, tones] = info.pinyin.toPinyin(
+                { separate: true, includeTones: true, ignoreSet })
             info.pinyin = [];
             for (let i = 0; i < pinyin.length; ++i) {
                 info.pinyin.push({ pinyin: pinyin[i], tone: tones[i] })
             }
-            resultEntry.setInfo(info);
+            await resultEntry.setInfo(info);
             return resultEntry;
         },
         menuOptions: (settings) => ([
@@ -186,10 +218,15 @@ const languageToConfig = {
     }
 }
 
-// Take apart the given search query into subqueries of maximum length that
-// have non-empty search results and return return all the matches
 async function processWordQuery(query) {
-    const searchResult = []
+    // Try to match the entire query first and return matches if available
+    const matches =
+        await dataManager.content.searchDictionary( { words: [query + "%"] })
+    if (matches.length > 0) return matches
+    // Take apart the given search query into subqueries of maximum length that
+    // have non-empty search results and return all the matches
+    const searchResults = []
+    const matchedParts = []
     let start = 0;
     while (start < query.length) {
         // Most common words probably have a length of 2+, so try to find words
@@ -204,7 +241,8 @@ async function processWordQuery(query) {
         if (twoOrMoreCharsResult.length === 0) {
             const oneCharResult = await dataManager.content.searchDictionary(
                 { words: [query[start]] }, { exactMatchesOnly: true })
-            searchResult.push(...oneCharResult)
+            searchResults.push(oneCharResult)
+            matchedParts.push(query[start])
             start += 1
             continue
         }
@@ -228,21 +266,34 @@ async function processWordQuery(query) {
             const exactMatches = await dataManager.content.searchDictionary(
                 { words: [subQuery] }, { exactMatchesOnly: true })
             if (exactMatches.length > 0) {
-                searchResult.push(...exactMatches)
+                searchResults.push(exactMatches)
+                matchedParts.push(subQuery)
                 break
             }
         }
         start += stepSize
     }
-    return searchResult
+    return Array.prototype.concat(...searchResults)
 }
 
 const searchFunction = (query, type, category) => {
     const searchProperNames = category === "names"
     if (type === "word") {
+        const containsNoHanzi =
+            query.split("").every(c => c.codePointAt(0) < 256)
+        if (dataManager.currentLanguage === "Chinese" && containsNoHanzi) {
+            // Interpret "v" as "ü" in pinyin searches
+            query = query.replace("v", "ü")
+        }
         if (dataManager.currentLanguage === "Chinese" &&
+                !query.includes(" ") && !containsNoHanzi &&
                 !(query.includes("%") || query.includes("*"))) {
             return processWordQuery(query) 
+        } else if (dataManager.currentLanguage === "Chinese" ||
+            dataManager.currentLanguage === "Japanese") {
+            return dataManager.content.searchDictionary(
+                { words: query.split(/\s+/).filter(s => s.length > 0) },
+                { searchProperNames });
         } else {
             return dataManager.content.searchDictionary(
                 { words: [query] }, { searchProperNames });
@@ -319,7 +370,7 @@ class DictionarySection extends Section {
         this.viewStates["words"] = new View({
             viewElement: this.$("search-results-words"),
             getData: (query, searchCriterion) => {
-                return searchFunction(query, searchCriterion, "words")
+                return searchFunction(query.trim(), searchCriterion, "words")
             },
             createViewItem: async (entryId) => {
                 return this.languageConfig.viewItemFunction(entryId, "words")
@@ -335,7 +386,7 @@ class DictionarySection extends Section {
         this.viewStates["names"] = new View({
             viewElement: this.$("search-results-names"),
             getData: (query, searchCriterion) => {
-                return searchFunction(query, searchCriterion, "names")
+                return searchFunction(query.trim(), searchCriterion, "names")
             },
             createViewItem: async (entryId) => {
                 return this.languageConfig.viewItemFunction(entryId, "names")
@@ -377,7 +428,7 @@ class DictionarySection extends Section {
 
     registerCentralEventListeners() {
         const updateWordStatus = (word, dictionaryId, isAdded) => {
-            if (!dataManager.content.isDictionaryAvailable()) return
+            if (!dataManager.content.isDictionaryLoaded()) return
             const searchResultEntries = dictionaryId !== null ||
                 !this.loadedCategories.has("names") ?
                 [...this.$("search-results-words").children] : 
@@ -417,8 +468,13 @@ class DictionarySection extends Section {
     }
 
     adjustToLanguage(language, secondary) {
-        this.languageConfig = languageToConfig[language]
+        this.languageConfig = window.languageToDictionaryConfig[language]
         if (this.languageConfig === undefined) return
+        // Adjust search examples
+        this.$$("#search-info .japanese").forEach(
+            element => element.toggleDisplay(language === "Japanese"))
+        this.$$("#search-info .chinese").forEach(
+            element => element.toggleDisplay(language === "Chinese"))
         // Construct settings menu for this language
         this.$("settings-popup").innerHTML = ""
         const languageSettings = dataManager.settings.dictionary[language]

@@ -16,10 +16,10 @@ instead press the "wrap up" button to finish those.
 
 ### Test modes
 
-There are two modes for reviewing vocabulary items, **typing mode** and **flashcard
-mode**. The former is used by default, but you can also switch to the latter by
-marking the corresponding checkbox in the test settings. See the following
-subsections for details on each mode:
+There are two modes for reviewing vocabulary items, **typing mode** and
+**flashcard mode**. The former is used by default, but you can also switch to
+the latter by marking the corresponding checkbox in the test settings. See the
+following subsections for details on each mode:
 
 - [Typing mode](help#Components#Reviewing#Typing_mode)
 - [Flashcard mode](help#Components#Reviewing#Flashcard_mode)

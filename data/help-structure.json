@@ -31,11 +31,16 @@
   { "name": "Languages",
     "open": true,
     "children": [
+      { "name": "Language data" },
+      { "name": "Dictionary",
+        "children": [
+            { "name": "Search queries" },
+            { "name": "Search suggestions" }
+        ]
+      },
       { "name": "Japanese",
         "children": [
-          { "name": "Dictionary" },
           { "name": "Kanji section" },
-          { "name": "Suggestions" },
           { "name": "Importing data",
             "children": [
                 { "name": "Kanji" },

@@ -4,7 +4,8 @@ class EditKanjiSuggestionPane extends KanjiSuggestionPane {
     constructor() {
         super();
         this.$("help-link").addEventListener("click", () => {
-            overlays.open("help", ["Languages", "Japanese", "Suggestions"]);
+            overlays.open(
+                "help", ["Languages", "Dictionary", "Search Suggestions"]);
         });
     }
 

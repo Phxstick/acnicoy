@@ -8,6 +8,7 @@ import argparse
 import re
 import sqlite3
 import random
+import json
 
 
 def create_dictionary_tables(cursor):
@@ -68,7 +69,25 @@ def create_radicals_table(cursor):
 
 dict_entry_pattern = re.compile(r"^(\S+) (\S+) \[([^]]*)\] /(.*)/$")
 
-ref_regex = re.compile(r"([^|[ ]+?)(?:\|([^[]*))?\[([^]]*)\]")
+"""
+All of the following regular expressions are used to match references
+to other dictionary entries in the translations, which are of the form
+"trad|simp[pinyin]". There are different combinations of optional parts,
+which is why multiple regexes are used.
+"""
+
+# Traditional form and readings mandatory, simplified optional (most entries)
+ref_regex = re.compile(r"([^|[(: ]+?)(?:\|([^[]*))?\[([^]]*)\]")
+
+# Both traditional and simplified mandatory, no readings (at least 1.6k entries)
+ref_regex_2 = re.compile(r"([^|[(: ]+?)\|([^[),: ]*)")
+
+# Traditional form is mandatory, readings and simplified form optional
+ref_regex_3 = re.compile(r"([^|[(: ]+?)(?:\|([^[]*))?(?:\[([^]]*)\])?")
+
+# Only readings mandatory, both words are optional (or only simp if present)
+ref_regex_4 = re.compile(r"(?:([^|[(: ]+?)(?:\|([^[]*))?)?\[([^]]*)\]")
+
 
 pinyin_replacements = {
     " ": "",
@@ -78,7 +97,6 @@ pinyin_replacements = {
     "Nu:": "Nü",
     "5": ""
 }
-
 
 def transform_pinyin(pinyin):
     for orig, new in pinyin_replacements.items():
@@ -101,7 +119,7 @@ def parse_dictionary_entry(entry, line_number, cursor):
     return True
 
 
-def parse_dictionary(filename, cursor):
+def parse_dictionary(filename, cursor, verbose=False):
     """Parse given dictionary file (should be called 'cedict_ts.u8') and insert
     dictionary entries into the database referenced by the given cursor."""
     with open(filename, "r", encoding="utf8") as f:
@@ -167,14 +185,16 @@ def parse_dictionary(filename, cursor):
     print("Searching for classifiers... 100%%. Found classifiers for %s entries."
         % num_cls_found)
 
-    # Handle variants
+    # Handle variants of the form "variant of ..."
     cursor.execute("SELECT simp, trad, pinyin, translations FROM dictionary")
     entries = cursor.fetchall()
-    variant_regex = \
-        re.compile(r"^(?:(\S*)\s)?variant of ([^|[]+)(?:\|([^[]*))?\[([^]]*)\]")
+    variant_regex = re.compile(
+        r"^(?:(\S*)\s)?variant of ([^|[, ]+)(?:\|([^[):, ]*))?(?:\[([^]]*)\])?")
     variants = []
     var_to_translations = dict()
     var_to_ref_map = dict()
+    num_missing = 0
+    num_ambiguous = 0
     print("Searching for variants... 0%", end="\r")
     for i, (simp, trad, pinyin, tsl_string) in enumerate(entries):
         translations = tsl_string.split(";")
@@ -187,6 +207,23 @@ def parse_dictionary(filename, cursor):
                 ref_simp = ref_trad 
             if variant_type is None:
                 variant_type = ""
+            if ref_pinyin is None:
+                cursor.execute("SELECT COUNT(*) FROM dictionary WHERE "
+                    "trad = ? AND simp = ?", (ref_trad, ref_simp))
+                match_count = cursor.fetchone()[0]
+                if match_count == 0:
+                    if verbose:
+                        print("WARNING: Couldn't find dictionary entry "
+                            "for reference %s|%s" % (ref_trad, ref_simp))
+                    num_missing += 1
+                    continue
+                if match_count > 1:
+                    if verbose:
+                        print("WARNING: Reference %s|%s is ambiguous "
+                            "without readings" % (ref_trad, ref_simp))
+                    num_ambiguous += 1
+                    continue
+                ref_pinyin = ""
             variant_key = (trad, simp, pinyin)
             ref_key = (ref_trad, ref_simp, transform_pinyin(ref_pinyin))
             var_to_translations[variant_key] = \
@@ -196,6 +233,8 @@ def parse_dictionary(filename, cursor):
         perc = ((i + 1) / num_entries) * 100
         print("Searching for variants... %d%%" % perc, end="\r")
     print("Searching for variants... 100%%. Found %s variants." % len(variants))
+    print("  Couldn't find dictionary entry for %s references." % num_missing)
+    print("  Multiple dictionary entries for %s references." % num_ambiguous)
 
     # Map dictionary entries to a list of their variants.
     # NOTE: variants of variants exist, so I have to use a nested loop
@@ -250,30 +289,124 @@ def parse_dictionary(filename, cursor):
         print("Updating translations... %d%%" % perc, end="\r")
     print("Updating translations... 100%")
 
-    # Handle references
-    # (242 references of the form "same as...", e.g. for word 馥馥)
-    # (191 references of the form "see also...", e.g. for word 亞克力)
+    # Handle other variants, i.e.:
+    # - 176 entries use the pattern "also pr. ..." with different reading only
+    # - 432 entries use the pattern "also written ...", e.g. 上鞋,
+    #   the translations of the referenced entry are usually identical
+    # cursor.execute(
+    #     "SELECT simp, trad, pinyin, translations, variants FROM dictionary")
+    # entries = cursor.fetchall()
+    # num_also_written = 0
+    # num_also_pr = 0
+    # print("Searching for more variants... 0%", end="\r")
+    # for i, (simp, trad, pinyin, tsl_string, variants) in enumerate(entries):
+    #     translations = tsl_string.split(";")
+    #     variant_strings = variants.split(";")
+    #     new_translations = []
+    #     match_found = False
+    #     for translation in translations:
+    #         if translation.startswith("also written "):
+    #             match = ref_regex_3.match(translation[len("also written "):])
+    #             if match is None:
+    #                 print("WARNING: Couldn't match reference in entry %s|%s|%s"
+    #                     % (trad, simp, pinyin))
+    #                 continue
+    #             num_also_written += 1
+    #             var_trad, var_simp, var_pinyin = match.groups()
+    #             if var_simp is None:
+    #                 var_simp = var_trad 
+    #             if var_pinyin is None:
+    #                 var_pinyin = ""
+    #         elif translation.startswith("also pr. "):
+    #             regex = re.compile(r"also pr. \[([^]]*)\]")
+    #             match = regex.match(translation)
+    #             if match is None:
+    #                 print("WARNING: Failed to match pr. in entry %s|%s|%s"
+    #                     % (trad, simp, pinyin))
+    #                 continue
+    #             num_also_pr += 1
+    #             var_trad = trad
+    #             var_simp = simp
+    #             var_pinyin = transform_pinyin(match.group(1))
+    #         else:
+    #             new_translations.append(translation)
+    #             continue
+    #         variant_strings.append("%s|%s|%s" %
+    #             (var_trad, var_simp, var_pinyin))
+    #         match_found = True
+    #     if match_found:
+    #         cursor.execute(
+    #             "UPDATE dictionary SET translations = ?, variants = ? "
+    #             "WHERE trad = ? AND simp = ? AND pinyin = ?",
+    #             (";".join(new_translations), ";".join(variant_strings),
+    #             trad, simp, pinyin))
+    #     perc = ((i + 1) / num_entries) * 100
+    #     print("Searching for more variants... %d%%" % perc, end="\r")
+    # print("Searching for more variants... 100%.")
+    # print("  Found %s variants of the form 'also written ...'."
+    #     % num_also_written)
+    # print("  Found %s variants of the form 'also pr. ...'." % num-num_also_pr)
+
+    # Handle references, including:
+    # - 242 references of the form "same as...", e.g. for word 馥馥
+    # - 191 references of the form "see also...", e.g. for word 亞克力
+    # - ...
     cursor.execute("SELECT simp, trad, pinyin, translations FROM dictionary")
     entries = cursor.fetchall()
     num_refs = 0
+    num_missing = 0
+    num_ambiguous = 0
     print("Processing references... 0%", end="\r")
     for i, (simp, trad, pinyin, tsl_string) in enumerate(entries):
         translations = tsl_string.split(";")
         new_translations = []
         match_found = False
         for translation in translations:
-            matches = list(ref_regex.finditer(translation))
+            no_pinyin = False
+            matches = list(ref_regex_4.finditer(translation))
             if len(matches) == 0:
-                new_translations.append(translation)
-                continue
+                matches = list(ref_regex_2.finditer(translation))
+                if len(matches) == 0:
+                    new_translations.append(translation)
+                    continue
+                no_pinyin = True
             match_found = True
             num_refs += len(matches)
             j = 0
             new_translation_parts = []
             for match in matches:
-                ref_trad, ref_simp, ref_pinyin = match.groups()
-                if ref_simp is None:
-                    ref_simp = ref_trad 
+                if no_pinyin:
+                    ref_trad, ref_simp = match.groups()
+                    ref_pinyin = ""
+                else:
+                    ref_trad, ref_simp, ref_pinyin = match.groups()
+                if ref_trad is None:
+                    ref_trad = ""
+                    ref_simp = ""
+                else:
+                    if ref_simp is None:
+                        ref_simp = ref_trad
+                    # Check if reference exists and is unambiguous
+                    if no_pinyin:
+                        cursor.execute("SELECT COUNT(*) FROM dictionary WHERE "
+                            "trad = ? AND simp = ?", (ref_trad, ref_simp))
+                    else:
+                        cursor.execute("SELECT COUNT(*) FROM dictionary WHERE "
+                            "trad = ? AND simp = ? AND pinyin = ?",
+                            (ref_trad, ref_simp, transform_pinyin(ref_pinyin)))
+                    match_count = cursor.fetchone()[0]
+                    if match_count == 0:
+                        if verbose:
+                            print("WARNING: Couldn't find dictionary entry "
+                                "for reference %s|%s|%s" %
+                                (ref_trad, ref_simp,
+                                transform_pinyin(ref_pinyin)))
+                        num_missing += 1
+                    if match_count > 1:
+                        if verbose:
+                            print("WARNING: Reference %s|%s is ambiguous "
+                                "without readings" % (ref_trad, ref_simp))
+                        num_ambiguous += 1
                 if match.start() - j > 0:
                     new_translation_parts.append(translation[j:match.start()])
                 new_translation_parts.append("[%s|%s|%s]" %
@@ -289,6 +422,8 @@ def parse_dictionary(filename, cursor):
         perc = ((i + 1) / num_entries) * 100
         print("Processing references... %d%%" % perc, end="\r")
     print("Processing references... 100%%. Found %s references." % num_refs)
+    print("  Couldn't find dictionary entry for %s references." % num_missing)
+    print("  Multiple dictionary entries for %s references." % num_ambiguous)
 
 
 def parse_hsk_vocabulary(filename, cursor, verbose=False):
@@ -812,6 +947,94 @@ def parse_radicals(filename, cursor):
             frequency, simplified))
 
 
+def parse_hanzi_strokes(filename, output_filepath, cursor):
+    """The file should be 'graphics.txt' from the Make Me a Hanzi project."""
+    data = dict()
+    discarded = []
+    with open(filename, "r", encoding="utf8") as f:
+        for i, line in enumerate(f):
+            print("Parsed stroke info for %d hanzi..." % i, end="\r")
+            line_data = json.loads(line)
+            hanzi = line_data["character"]
+            cursor.execute("SELECT hk_grade, hsk, usenet_freq FROM hanzi "
+                "WHERE hanzi = ?", hanzi)
+            row = cursor.fetchone()
+            if row is None:
+                # print("Couldn't find hanzi '%s' in the database." % hanzi)
+                continue
+            grade, hsk, freq = row
+            if grade is None and hsk is None and freq is None:
+                discarded.append(hanzi)
+                continue
+            strokes = line_data["strokes"]
+            medians = line_data["medians"]
+            data[hanzi] = []
+            for stroke, median_list in zip(strokes, medians):
+                data[hanzi].append({
+                    "stroke": stroke, "parts": [], "start": median_list[0] })
+        print("Parsed stroke info for %d hanzi... Done." % i)
+    print("Discarded stroke info for %s infrequent hanzi." % len(discarded))
+    print("Saving stroke data for %s hanzi." % len(data))
+    # print("Discarded hanzi:", "".join(discarded))
+    with open(output_filepath, "w", encoding="utf8") as f:
+        json.dump(data, f, sort_keys=True, ensure_ascii=False)
+
+
+def parse_hanzi_decompositions(filename, output_filepath, cursor):
+    """The file should be 'dictionary.txt' from the Make Me a Hanzi project."""
+    if not os.path.exists(output_filepath):
+        print("ERROR: File with previously parsed hanzi strokes is missing.")
+        return
+    with open(output_filepath, "r", encoding="utf8") as f:
+        data = json.load(f)
+
+    ids_chars = "⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿻"
+    qmark = "？"
+
+    # Define a recursive helper function
+    def parse_decomp_tree(string, parts_list):
+        if string[0] not in ids_chars:
+            if string[0] != qmark:
+                parts_list.append(string[0])
+            return string[0] if string[0] != qmark else None, 1
+        subtree1, size1 = parse_decomp_tree(string[1:], parts_list)
+        subtree2, size2 = parse_decomp_tree(string[size1 + 1:], parts_list)
+        size3 = 0
+        subtree = [subtree1, subtree2]
+        if string[0] == "⿲" or string[0]== "⿳":
+            subtree3, size3 = \
+                parse_decomp_tree(string[size1 + size2 + 1:], parts_list)
+            subtree.append(subtree3)
+
+        return subtree, size1 + size2 + size3 + 1
+ 
+    with open(filename, "r", encoding="utf8") as f:
+        for i, line in enumerate(f):
+            print("Parsed decomposition info for %d hanzi..." % i, end="\r")
+            line_data = json.loads(line)
+            hanzi = line_data["character"]
+            if hanzi not in data:
+                continue
+            decomp = line_data["decomposition"]
+            parts = []
+            tree, _ = parse_decomp_tree(decomp, parts)
+            cursor.execute("UPDATE hanzi SET parts = ? WHERE hanzi = ?",
+                ("".join(parts), hanzi))
+            matches = line_data["matches"]
+            for stroke_info, match in zip(data[hanzi], matches):
+                if match is None:
+                    continue
+                subtree = tree
+                for edge in match:
+                    subtree = subtree[edge]
+                if subtree is None:
+                    continue
+                stroke_info["parts"] = [subtree]
+        print("Parsed decomposition info for %d hanzi... Done." % i)
+    with open(output_filepath, "w", encoding="utf8") as f:
+        json.dump(data, f, sort_keys=True, ensure_ascii=False)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
             description="Parse data for language-pair Chinese->English.")
@@ -835,17 +1058,24 @@ if __name__ == "__main__":
     parser.add_argument("--hanzi-radicals", "--radicals", "--rad",
             metavar="FILENAME", dest="radicals_filename",
             help="Name of the tsv file describing the 214 kangxi radicals.")
+    parser.add_argument("--hanzi-strokes", "--strokes", "--str",
+            metavar="FILENAME", dest="hanzi_strokes_filename",
+            help="Name of the file containing SVG stroke sequences.")
+    parser.add_argument("--hanzi-decomposition", "--decomp",
+            metavar="FILENAME", dest="hanzi_decomp_filename",
+            help="Name of the file containing hanzi decomposition info.")
     parser.add_argument("--verbose", "-v", dest="verbose", action="store_true")
     parser.add_argument("--output", "--out", "-o", metavar="FILENAME",
             dest="output_path", help="Directory path for output files")
     args = parser.parse_args()
     output_path = args.output_path if args.output_path else "Chinese-English"
     database_path = os.path.join(output_path, "Chinese-English.sqlite3")
+    hanzi_strokes_path = os.path.join(output_path, "hanzi-strokes.json")
     connection = sqlite3.connect(database_path)
     cursor = connection.cursor()
     if args.dict_filename is not None:
         print("Parsing dictionary from file '%s':" % args.dict_filename)
-        parse_dictionary(args.dict_filename, cursor)
+        parse_dictionary(args.dict_filename, cursor, verbose=args.verbose)
     if args.hsk_vocab_filename is not None:
         print()
         print("Parsing HSK word vocabulary lists from file '%s':"
@@ -879,5 +1109,17 @@ if __name__ == "__main__":
         print()
         print("Parsing radicals from file '%s'." % args.radicals_filename)
         parse_radicals(args.radicals_filename, cursor)
+    if args.hanzi_strokes_filename is not None:
+        print()
+        print("Parsing SVG stroke sequences from file '%s':" %
+            args.hanzi_strokes_filename)
+        parse_hanzi_strokes(args.hanzi_strokes_filename,
+            hanzi_strokes_path, cursor)
+    if args.hanzi_decomp_filename is not None:
+        print()
+        print("Parsing hanzi decompositions from file '%s':" %
+            args.hanzi_decomp_filename)
+        parse_hanzi_decompositions(
+            args.hanzi_decomp_filename, hanzi_strokes_path, cursor)
     connection.commit()
     connection.close()

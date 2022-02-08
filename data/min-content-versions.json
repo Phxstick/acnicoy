@@ -13,7 +13,8 @@
     },
     "Chinese": {
         "English": {
-            "Chinese-English.sqlite3": "1.0.0"
+            "Chinese-English.sqlite3": "1.0.0",
+            "hanzi-strokes.json": "1.0.0"
         }
     }
 }

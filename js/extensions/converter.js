@@ -549,7 +549,9 @@ for (const accentCode of accentCodes) {
     syllableToAccentedSyllable.get("lve")[accentCode] = "l" + accentedUe + "e";
 }
 
-String.prototype.toPinyin = function ({separate=false, includeTones=false}={}) {
+String.prototype.toPinyin = function ({
+        separate=false, includeTones=false, ignoreSet }={}) {
+    const origString = this.trim();
     const string = this.toLowerCase().trim();
     const converted = [];
     const unmatchedChars = [];
@@ -558,11 +560,21 @@ String.prototype.toPinyin = function ({separate=false, includeTones=false}={}) {
     const appendUnmatchedChars = () => {
         if (unmatchedChars.length === 0) return
         converted.push(unmatchedChars.join(""))
-        unmatchedChars.length = 0
         tones.push(5)
+        unmatchedChars.length = 0
     }
     while (i < string.length) {
         let processed = false;
+        // Check if character needs to be ignored (latin letter in word)
+        const currentWordIndex = converted.length + unmatchedChars.length
+        if (ignoreSet && ignoreSet.has(currentWordIndex)) {
+            unmatchedChars.push(origString[i])
+            if ("A" <= origString[i] && origString[i] <= "Z") {
+                appendUnmatchedChars()
+            }
+            ++i;
+            continue
+        }
         // Skip already converted syllables
         for (let l = 6; l >= 1; --l) {
             const syllable = string.slice(i, i + l);
@@ -608,7 +620,7 @@ String.prototype.toPinyin = function ({separate=false, includeTones=false}={}) {
         }
         if (processed) continue;
         // If no syllables have been matched, just append the next character
-        unmatchedChars.push(string[i]);
+        unmatchedChars.push(origString[i]);
         ++i;
     }
     appendUnmatchedChars()

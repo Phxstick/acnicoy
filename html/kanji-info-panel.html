@@ -22,6 +22,14 @@
         <span class="details-header">Kun:</span>
         <span id="kun-yomi-label" class="details-value"></span>
       </div>
+      <div id="pinyin-frame">
+        <span class="details-header">Pinyin:</span>
+        <span id="pinyin-label" class="details-value"></span>
+      </div>
+      <div id="jyutping-frame">
+        <span class="details-header">Jyutping:</span>
+        <span id="jyutping-label" class="details-value"></span>
+      </div>
       <div id="number-frame">
         <span id="number-header" class="details-header">Numeral for:</span>
         <span id="number-label" class="details-value"></span>
@@ -48,18 +56,24 @@
           <span id="radical"></span>
           <span id="radical-name"></span>
         </span>
-        <span class="strokes-info-block">
+        <span class="strokes-info-block" id="kanji-parts-frame">
           <span class="strokes-info-header">Parts:</span>
           <span id="kanji-parts"></span>
         </span>
       </div>
       <div id="stroke-graphics-frame">
-        <div id="strokes-not-available-info">No stroke info available!</div>
+        <div id="strokes-not-available-info">Stroke data not available!</div>
         <div id="stroke-graphics"></div>
       </div>
     </div>
     <div id="examples-frame">
       <div id="example-words" class="view"></div>
+      <div id="example-words-placeholder" class="view"></div>
+      <!--div class="pulsating-triple-dots" id="loading-example-words">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div-->
     </div>
   </div>
   <div id="history" class="popup-window list-view"></div>
