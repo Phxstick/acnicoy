@@ -3,10 +3,12 @@
 const startTime = performance.now();
 
 // Load node modules
-const { clipboard, remote } = require("electron");
+const { clipboard } = require("electron");
+const remote = require("@electron/remote");
 const EventEmitter = require("events");
 const Velocity = require("velocity-animate");
-const storage = require("electron-settings");
+const Store = require("electron-store")
+const storage = new Store({ name: "Settings", fileExtension: "" })
 const path = require("path");
 
 // Load modules

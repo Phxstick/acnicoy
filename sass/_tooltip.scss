@@ -120,25 +120,26 @@ $offset-arrow: calc(100% + #{$spacing});
   }
 
   // Fade, slide and shape tooltip arrow
+  $half-arrow-width: calc($arrow-width / 2);
   &[data-tooltip-pos="top"]:hover:before,
       &:not([data-tooltip-pos]):hover:before {
     animation-name: fade, slide-arrow-down;
-    border-width: $arrow-height ($arrow-width / 2) 0 ($arrow-width / 2);
+    border-width: $arrow-height $half-arrow-width 0 $half-arrow-width;
     border-color: $tooltip-background transparent transparent transparent;
   }
   &[data-tooltip-pos="right"]:hover:before {
     animation-name: fade, slide-arrow-to-left;
-    border-width: ($arrow-width / 2) $arrow-height ($arrow-width / 2) 0 ;
+    border-width: $half-arrow-width $arrow-height $half-arrow-width 0 ;
     border-color: transparent $tooltip-background transparent transparent;
   }
   &[data-tooltip-pos="bottom"]:hover:before {
     animation-name: fade, slide-arrow-up;
-    border-width: 0 ($arrow-width / 2) $arrow-height ($arrow-width / 2);
+    border-width: 0 $half-arrow-width $arrow-height $half-arrow-width;
     border-color: transparent transparent $tooltip-background transparent;
   }
   &[data-tooltip-pos="left"]:hover:before {
     animation-name: fade, slide-arrow-to-right;
-    border-width: ($arrow-width / 2) 0 ($arrow-width / 2) $arrow-height;
+    border-width: $half-arrow-width 0 $half-arrow-width $arrow-height;
     border-color: transparent transparent transparent $tooltip-background;
     transform: translateY(80%);
   }

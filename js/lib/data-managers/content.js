@@ -1,6 +1,6 @@
 "use strict";
 
-const compareVersions = require("compare-versions");
+const { compareVersions } = require("compare-versions");
 
 module.exports = function (paths, modules) {
     const minContentVersions = require(paths.minContentVersions);

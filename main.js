@@ -4,7 +4,10 @@ const { ipcMain, app, BrowserWindow, session } = require('electron');
 const path = require("path");
 const url = require("url");
 const fs = require("fs");
-const storage = require("electron-settings");
+const Store = require("electron-store")
+const storage = new Store({ name: "Settings", fileExtension: "" })
+
+require("@electron/remote/main").initialize()
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -65,13 +68,15 @@ app.on('ready', function() {
         backgroundColor: colorSchemesInfo[colorScheme].loadBg,
         webPreferences: {
             nodeIntegration: true,
-            enableRemoteModule: true
+            enableRemoteModule: true,
+            contextIsolation: false
         },
         icon: "./img/icon.png",
         show: false,
         frame: !makeWindowFrameless
     });
     mainWindow.setMenu(null);  // Must do it here to set dimensions correctly
+    require("@electron/remote/main").enable(mainWindow.webContents)
 
     // Set minimum dimensions (taking size of frame around window into account)
     const windowSize = mainWindow.getSize();

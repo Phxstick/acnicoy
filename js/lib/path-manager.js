@@ -3,7 +3,7 @@
 const path = require("path");
 const fs = require("fs-extra");
 const os = require("os");
-const { remote } = require("electron");
+const remote = require("@electron/remote");
 
 module.exports = function (basePath) {
     const paths = {};

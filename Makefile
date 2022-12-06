@@ -1,14 +1,15 @@
+# Variable "BASE_RESOURCE_PATH" must be set manually
+JP_RESOURCE_PATH = $(BASE_RESOURCE_PATH)/Japanese
+ZH_RESOURCE_PATH = $(BASE_RESOURCE_PATH)/Chinese
+
 PYTHON = python3
 JP_EN_DATA_SCRIPT_PATH = ./generate-japanese-data.py
 ZH_EN_DATA_SCRIPT_PATH = ./generate-chinese-data.py
-BASE_RESOURCE_PATH = /mnt/c/Users/Danie/Dropbox/Acnicoy/Resources
-JP_RESOURCE_PATH = $(BASE_RESOURCE_PATH)/Japanese
-ZH_RESOURCE_PATH = $(BASE_RESOURCE_PATH)/Chinese
 JP_EN_OUTPUT_PATH = ./Japanese-English
 ZH_EN_OUTPUT_PATH = ./Chinese-English
 ELECTRON_PATH = ./node_modules/.bin/electron
 
-DICTIONARY_PATH = $(JP_RESOURCE_PATH)/JMdict
+DICTIONARY_PATH = $(JP_RESOURCE_PATH)/JMdict_e
 DICT_TEXTS_PATH = $(JP_RESOURCE_PATH)/improved-dictionary-texts.json
 PROPER_NAMES_PATH = $(JP_RESOURCE_PATH)/enamdict
 NAME_TAG_TEXTS_PATH = $(JP_RESOURCE_PATH)/name-tag-to-text.json
@@ -41,12 +42,12 @@ HANZI_RADICALS_PATH = $(ZH_RESOURCE_PATH)/kangxi-radicals-wikipedia.tsv
 HANZI_STROKES_PATH = $(ZH_RESOURCE_PATH)/graphics.txt
 HANZI_DECOMP_PATH = $(ZH_RESOURCE_PATH)/dictionary.txt
 
-.PHONY: jp_data zh_data jp_dictionary_data kanji_data zh_dictionary_data zh_hanzi_data build start install
+.PHONY: jp_data zh_data jp_dictionary_data jp_kanji_data zh_dictionary_data zh_hanzi_data build start install
 
 all: build
 
 build:
-	gulp
+	npx gulp
 
 start:
 	$(ELECTRON_PATH) .
@@ -54,7 +55,7 @@ start:
 install:
 	npm install
 
-jp_data: jp_dictionary_data kanji_data
+jp_data: jp_dictionary_data jp_kanji_data
 
 zh_data: zh_dictionary_data zh_hanzi_data
 

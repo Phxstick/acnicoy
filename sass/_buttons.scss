@@ -82,7 +82,7 @@ button.red-icon {
 }
 
 button.lightest {
-  @extend button.light;
+  @extend button, .light;
   color: $button-light-icon-color;
   i {
     color: $button-light-icon-color-lightest;
@@ -127,7 +127,7 @@ button.link {
   @extend .button-bar;
   border-color: $button-border-color;
   > button {
-    @extend button.styled;
+    @extend button, .styled;
     border-color: $button-border-color;
   }
 }
@@ -136,7 +136,7 @@ button.link {
   @extend .button-bar;
   border-color: $border-color-dark;
   > button {
-    @extend button.light;
+    @extend button, .light;
     border-color: $border-color-dark;
   }
 }

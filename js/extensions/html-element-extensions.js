@@ -166,6 +166,29 @@ HTMLElement.prototype.getRoot = function() {
     return node;
 }
 
+// Helper function for fadeIn/fadeOut/slideToCurrentPosition
+function createFadeClone(node) {
+    const clone = node.safeDeepClone();
+    clone.style.position = "fixed";
+    clone.style.overflow = "hidden";
+    node.parentElement.appendChild(clone);
+
+    // Copy classes and in-place styles
+    clone.className = node.className;
+    const styleKeys = Array.from(node.style);
+    for (const styleKey of styleKeys) {
+        clone.style[styleKey] = node.style[styleKey];
+    }
+
+    // Set width and height
+    const oldWidth = node.offsetWidth;
+    const oldHeight = node.offsetHeight;
+    clone.style.width = `${oldWidth + 1}px`;
+    clone.style.height = `${oldHeight}px`;
+
+    return clone;
+}
+
 /**
  *  Fade out this element while moving it given distance into given direction,
  *  starting from the current position.
@@ -173,15 +196,12 @@ HTMLElement.prototype.getRoot = function() {
 HTMLElement.prototype.fadeOut = function(
         { distance=300, duration=500, easing="easeOutSine",
           direction="right", delay=0, zIndex="auto" }={}) {
-    const fadeOutNode = this.safeDeepClone();
-    const root = this.getRoot();
-    fadeOutNode.style.position = "fixed";
-    fadeOutNode.style.overflow = "hidden";
+    const fadeOutNode = createFadeClone(this);
     fadeOutNode.style.zIndex = zIndex;
+    fadeOutNode.style.display = "block";
+    fadeOutNode.style.visibility = "visible";
     this.style.visibility = "hidden";
-    this.parentNode.appendChild(fadeOutNode);
-    const oldWidth = this.offsetWidth;
-    const oldHeight = this.offsetHeight;
+    const root = this.getRoot();
     const nodeRect = this.getBoundingClientRect();
     const rootRect = root.host.getBoundingClientRect();
     const oldOffsets = {
@@ -190,9 +210,6 @@ HTMLElement.prototype.fadeOut = function(
         right: rootRect.width - nodeRect.right + rootRect.left,
         bottom: rootRect.height - nodeRect.bottom + rootRect.top
     };
-    fadeOutNode.style.width = `${oldWidth + 1}px`;
-    fadeOutNode.style.height = `${oldHeight}px`;
-    fadeOutNode.style.display = "block";
     const directionToAttribute = {
         right: "left", down: "top", left: "right", up: "bottom"
     };
@@ -219,15 +236,11 @@ HTMLElement.prototype.fadeOut = function(
 HTMLElement.prototype.fadeIn = function(
         { distance=300, duration=500, easing="easeOutSine",
           direction="right", delay=0, zIndex="auto", onCompletion }={}) {
-    const fadeInNode = this.safeDeepClone();
-    const root = this.getRoot();
-    fadeInNode.style.position = "fixed";
-    fadeInNode.style.overflow = "hidden";
-    fadeInNode.style.visibility = "visible";
+    const fadeInNode = createFadeClone(this);
     fadeInNode.style.zIndex = zIndex;
-    this.parentNode.appendChild(fadeInNode);
-    const oldWidth = this.offsetWidth;
-    const oldHeight = this.offsetHeight;
+    fadeInNode.style.visibility = "visible";
+    fadeInNode.style.display = "none";
+    const root = this.getRoot();
     const nodeRect = this.getBoundingClientRect();
     const rootRect = root.host.getBoundingClientRect();
     const newOffsets = {
@@ -236,9 +249,6 @@ HTMLElement.prototype.fadeIn = function(
         right: rootRect.width - nodeRect.right + rootRect.left,
         bottom: rootRect.height - nodeRect.bottom + rootRect.top
     };
-    fadeInNode.style.width = `${oldWidth + 1}px`;
-    fadeInNode.style.height = `${oldHeight}px`;
-    fadeInNode.style.display = "none";
     const directionToAttribute = {
         right: "left", down: "top", left: "right", up: "bottom"
     };
@@ -276,16 +286,11 @@ HTMLElement.prototype.fadeIn = function(
 HTMLElement.prototype.slideToCurrentPosition = function(
         { distance=300, duration=500, easing="easeOutSine",
           direction="right", delay=0, zIndex="auto" }={}) {
-    const fadeInNode = this.safeDeepClone();
-    const root = this.getRoot();
-    fadeInNode.style.position = "fixed";
-    fadeInNode.style.overflow = "hidden";
-    fadeInNode.style.visibility = "visible";
+    const fadeInNode = createFadeClone(this)
     fadeInNode.style.zIndex = zIndex;
     fadeInNode.style.margin = "0";
-    this.parentNode.appendChild(fadeInNode);
-    const oldWidth = this.offsetWidth;
-    const oldHeight = this.offsetHeight;
+    fadeInNode.style.visibility = "visible";
+    const root = this.getRoot();
     const nodeRect = this.getBoundingClientRect();
     const rootRect = root.host.getBoundingClientRect();
     const offsets = {
@@ -294,8 +299,6 @@ HTMLElement.prototype.slideToCurrentPosition = function(
         right: rootRect.width - nodeRect.right + rootRect.left,
         bottom: rootRect.height - nodeRect.bottom + rootRect.top
     };
-    fadeInNode.style.width = `${oldWidth + 1}px`;
-    fadeInNode.style.height = `${oldHeight}px`;
     const directionToAttribute = {
         right: "left", down: "top", left: "right", up: "bottom"
     };

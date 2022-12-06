@@ -57,8 +57,8 @@
     flex: 1;
   }
   > button {
-    @extend button.lightest;
-    @extend button.no-shadow;
+    @extend button, .lightest;
+    @extend button, .no-shadow;
     margin: -10px;
   }
   > *:not(:last-child) {

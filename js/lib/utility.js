@@ -2,7 +2,8 @@
 
 const fs = require("fs");
 const path = require("path");
-const { desktopCapturer, remote } = require("electron");
+const { desktopCapturer } = require("electron");
+const remote = require("@electron/remote");
 
 /**
  * Return the current time in SECONDS since 1970/01/01.

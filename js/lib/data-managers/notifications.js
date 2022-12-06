@@ -1,7 +1,7 @@
 "use strict";
 
 const fs = require("fs-extra");
-const compareVersions = require("compare-versions");
+const { compareVersions } = require("compare-versions");
 
 module.exports = function (paths, modules) {
     const notificationsManager = {};

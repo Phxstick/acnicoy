@@ -21,7 +21,7 @@ body {
   position: relative;
 
   > button {
-    @extend button.light;
+    @extend button, .light;
     padding: 0;
     width: 40px;
     font-size: 1.2rem;

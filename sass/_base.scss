@@ -103,7 +103,7 @@ body {
       margin-left: 10px;
     }
     #close-button {
-      @extend button.red-icon;
+      @extend button, .red-icon;
       font-size: 160%;
       margin-right: 5px;
       
@@ -155,8 +155,7 @@ a[href] {
 }
 
 a:not([href]) {
-  @extend button;
-  @extend button.link;
+  @extend button, .link;
 }
 
 .info {

@@ -5,7 +5,7 @@ const fs = require("fs-extra");
 const request = require("request").defaults({ pool: { maxSockets: Infinity } });
 const EventEmitter = require("events");
 const extract = require("extract-zip");
-const compareVersions = require("compare-versions");
+const { compareVersions } = require("compare-versions");
 
 // =============================================================================
 // Functions and variables for communicating with the server.

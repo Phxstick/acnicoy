@@ -29,12 +29,13 @@ body {
   margin-right: 8px;
   height: $button-bar-height;
 
-  > * {
-    @extend button.light;
-    @extend button.no-shadow;
+  > button {
+    @extend .light;
+    @extend .no-shadow;
+    flex: 1;
     display: flex;
     flex-direction: row;
-    width: ($tree-frame-default-width - 16px) / 3;
+    width: calc(($tree-frame-default-width - 16px) / 3);
     text-align: center;
     box-sizing: border-box;
     padding-top: 0;
@@ -44,7 +45,8 @@ body {
 
   #search-groups-button {
     .fa-stack {
-      margin-left: -5px;
+      margin-left: -7px;
+      margin-top: 7px;
     }
     .fa-search {
       font-size: 1.1rem;

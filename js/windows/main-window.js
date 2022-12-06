@@ -1,6 +1,7 @@
 "use strict";
 
-const { ipcRenderer, remote } = require("electron");
+const { ipcRenderer } = require("electron");
+const remote = require("@electron/remote");
 const mainBrowserWindow = remote.getCurrentWindow();
 // const AutoLaunch = require("auto-launch");
 const marked = require("marked");

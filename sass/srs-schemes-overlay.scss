@@ -30,8 +30,8 @@
         background-color: transparent;
       }
       #add-scheme-button {
-        @extend button.light;
-        @extend button.no-shadow;
+        @extend button, .light;
+        @extend button, .no-shadow;
         font-size: 150%;
         padding: 4px;
       }
@@ -85,7 +85,7 @@
           text-overflow: ellipsis;
         }
         #scheme-name-input {
-          @extend input.trench;
+          @extend input, .trench;
           padding: 0px;
           min-width: 1px;  // Stretch with flex
           margin-right: 4px;
@@ -99,8 +99,8 @@
         #scheme-buttons {
           > button {
             padding: 1px;
-            @extend button.light;
-            @extend button.no-shadow;
+            @extend button, .light;
+            @extend button, .no-shadow;
             font-size: 150%;
           }
           flex-shrink: 0;
@@ -122,7 +122,7 @@
         border: 1px solid transparent;
       }
       #scheme-description-input {
-        @extend input.trench;
+        @extend input, .trench;
       }
 
       #scheme-levels-wrapper {

@@ -1,13 +1,7 @@
 @import "overlay";
 
-$window-width: 600px;
-$migrate-area-width: $window-width - 20px;
-$migrate-area-gap-width: 130px;
-$migrate-area-scheme-width: ($migrate-area-width - $migrate-area-gap-width) / 2;
-$migrate-area-level-height: 28px;
-
 :host {
-  width: $window-width;
+  width: 600px;
 }
 
 #partitioned-window {
@@ -41,7 +35,7 @@ $migrate-area-level-height: 28px;
   }
   #migrate-srs-area {
     flex: 1;
-    width: $migrate-area-gap-width;
+    width: 130px;
     #new-scheme-connectors > *, #previous-scheme-connectors > * {
       fill: $migrate-srs-connector-color;
     }
@@ -80,7 +74,7 @@ $migrate-area-level-height: 28px;
     }
   }
   .scheme-frame {
-    width: $migrate-area-scheme-width;
+    flex: 1;
     .scheme-frame-header {
       font-family: $header-font;
       font-variant: small-caps;
@@ -91,7 +85,7 @@ $migrate-area-level-height: 28px;
   #previous-scheme, #new-scheme {
     > div {
       @include center-content("vertical");
-      height: $migrate-area-level-height;
+      height: 28px;
     }
   }
   #previous-scheme {

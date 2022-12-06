@@ -2,7 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { remote } = require("electron");
+const remote = require("@electron/remote");
 const mainBrowserWindow = remote.getCurrentWindow();
 
 const testColorSchemes = require(paths.testSectionColorSchemes);

@@ -187,7 +187,7 @@
         }
       }
       .action {
-        @extend button.light, button.no-shadow;
+        @extend button, .light, button, .no-shadow;
         border-left: 1px solid $border-color-light;
         padding: 0;
         padding-left: 8px;
@@ -228,7 +228,7 @@
     font-size: 150%;
     font-family: $button-font;
     padding-top: 8px;
-    padding-bottom: 8px;
+    padding-bottom: 2px;
     border-bottom: 1px solid $main-window-border-color;
     background-color: $main-window-background;  // Hide bottom border of next
 

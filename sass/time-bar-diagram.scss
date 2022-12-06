@@ -21,7 +21,7 @@
     margin-left: 8px;
   }
   button {
-    @extend button.light, button.no-shadow;
+    @extend button, .light, button, .no-shadow;
     padding: 5px;
     font-family: $header-font;
     margin-right: 15px;

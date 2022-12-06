@@ -2,7 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const compareVersions = require("compare-versions");
+const { compareVersions } = require("compare-versions");
 const { ipcRenderer } = require("electron");
 
 class GeneralSettingsSubsection extends SettingsSubsection {

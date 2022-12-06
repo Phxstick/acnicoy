@@ -14,14 +14,14 @@
 }
 
 #search-input {
-  @extend input.light;
+  @extend input, .light;
   padding-left: 10px;
   padding-right: 0;
   min-width: 1px;
   flex: 1;
 }
 #search-button {
-  @extend button.light;
+  @extend button, .light;
   padding-left: 10px;
   padding-right: 10px;
   padding-top: 0;

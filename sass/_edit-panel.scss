@@ -47,7 +47,7 @@
 }
 
 .add-button {
-  @extend button.light;
-  @extend button.no-shadow;
+  @extend button, .light;
+  @extend button, .no-shadow;
   padding: 3px;
 }
