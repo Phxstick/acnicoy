@@ -3,6 +3,7 @@ commit.txt
 Session.vim
 Thumbs.db
 package-lock.json
+/__pycache__/
 /css/
 /node_modules/
 /language-content/

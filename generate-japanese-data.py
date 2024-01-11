@@ -11,6 +11,7 @@ import sqlite3
 import json
 import itertools
 import xml.etree.ElementTree as ElementTree
+from dataclasses import dataclass
 
 
 def create_dictionary_tables(cursor):
@@ -385,14 +386,15 @@ def parse_dictionary(filename, cursor, code_to_text_output_path):
     code_to_text = dict()
     for text in text_to_code:
         code_to_text[text_to_code[text]] = text
-    with open(code_to_text_output_path, "w") as f2:
+    with open(code_to_text_output_path, "w", encoding="utf-8") as f2:
         f2.write(json.dumps(code_to_text, sort_keys=True, indent=4,
                             ensure_ascii=False))
     print("Creating json file containing code-to-text mapping... Done.")
 
 
-def parse_improved_dictionary_texts(code_to_text_path, improved_texts_path):
-    with open(code_to_text_path, "r+") as f, open(improved_texts_path) as f2:
+def parse_improved_dictionary_texts(code_to_text_path, improved_texts_path, verbose=False):
+    with open(code_to_text_path, "r+", encoding="utf-8") as f, \
+            open(improved_texts_path, encoding="utf-8") as f2:
         code_to_old_text = json.load(f)
         improved_texts = json.load(f2)
         code_to_new_text = { "English": dict(), "Japanese": dict() }
@@ -402,13 +404,15 @@ def parse_improved_dictionary_texts(code_to_text_path, improved_texts_path):
                 code_to_new_text["English"][code] = \
                     improved_texts["English"][old_text]
             else:
-                print("Couldn't find improved EN text for '%s'."%old_text)
+                if verbose:
+                    print("Couldn't find improved EN text for '%s'."%old_text)
                 code_to_new_text["English"][code] = old_text
             if old_text in improved_texts["Japanese"]:
                 code_to_new_text["Japanese"][code] = \
                     improved_texts["Japanese"][old_text]
             else:
-                print("Couldn't find improved JP text for '%s'." % old_text)
+                if verbose:
+                    print("Couldn't find improved JP text for '%s'." % old_text)
                 code_to_new_text["Japanese"][code] = old_text
         f.seek(0)
         f.write(json.dumps(code_to_new_text, sort_keys=True, indent=4,
@@ -432,7 +436,7 @@ def parse_jlpt_vocabulary(filename, level, cursor, verbose=False,
         tsl = re.sub(r"\s\s", "", tsl).strip() # Collapse whitespace, trim sides
         return tsl
 
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         for n, line in enumerate(f):
             # Each line at least contains a word and comma-separated meanings,
             # optionally also a word variant, a reading and a reading variant
@@ -602,9 +606,9 @@ def parse_jlpt_vocabulary(filename, level, cursor, verbose=False,
             print("  Number of unmatched entries:", num_zero_matches)
 
 
-def process_manual_jlpt_assignments(filename):
+def process_manual_jlpt_assignments(filename, cursor):
     print("Processing manual JLPT level assignments...", end="\r")
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         assignments = json.load(f)
     for level in assignments:
         for entry_id in assignments[level]:
@@ -725,7 +729,7 @@ def parse_word_book_frequencies(filename, cursor):
     frequency values from the BCCWJ dataset and insert them into the
     database references by given cursor.
     """
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         for index, line in enumerate(f):
             entry_id, frequency = line.split("\t")
             cursor.execute("UPDATE dictionary SET book_rank = ? WHERE id = ?",
@@ -762,7 +766,7 @@ def parse_radicals(filename, cursor):
     print("Creating table for radicals... Done.")
 
     print("Beginning to parse radicals.")
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         next(f)
         for count, line in enumerate(f):
             parse_radical_entry(line, cursor)
@@ -775,7 +779,7 @@ def parse_improved_kanji_meanings(filename, cursor):
     Apply changes from that file to database referenced by given cursor.
     """
     print("Applying improved kanji meanings...", end="\r")
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         new_meanings = json.load(f)
         for kanji in new_meanings:
             # Old meanings are kept as data in another column for searching
@@ -858,7 +862,7 @@ def parse_kanji_strokes(filename, output_filepath):
     print("Transforming kanji stroke entries into json object... 100%")
 
     print("Storing json object to file '%s'..." % output_filepath, end="\r")
-    with open(output_filepath, "w") as f:
+    with open(output_filepath, "w", encoding="utf-8") as f:
         f.write(json.dumps(data_object, sort_keys=True, indent=4,
                            ensure_ascii=False))
     print("Storing json object to file '%s'... Done." % output_filepath)
@@ -884,66 +888,33 @@ def create_example_words_index(cursor, output_path):
         kanji_to_word_ids[kanji] = [entry for (entry,) in cursor.fetchall()]
         print("Creating index for kanji example words... %d%%"
               % (((i + 1) / len(kanji_list)) * 100), end="\r")
-    with open(output_path, "w") as output_file:
+    with open(output_path, "w", encoding="utf-8") as output_file:
         output_file.write(json.dumps(kanji_to_word_ids, ensure_ascii=False))
     print("Creating index for kanji example words... 100%")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Parse dictionary for language-pair 'Japanese'->'English'.")
-    parser.add_argument("--dictionary", "--dict", "--dic", "-d",
-            metavar="FILENAME",
-            dest="dict_filename", help="Filename of the dictionary xml file.")
-    parser.add_argument("--kanji", "--kan", "-k", metavar="FILENAME",
-            dest="kanji_filename", help="Filename of the kanji file.")
-    parser.add_argument("--kanji-radicals", "--radicals", "--rad", "-r",
-            metavar="FILENAME", dest="radicals_filename",
-            help="Name of the file containing radicals for each kanji.")
-    parser.add_argument("--kanji-meanings", "--meanings", "--mean", "-m",
-            metavar="FILENAME", dest="kanji_meanings_filename",
-            help="Filename of the json file containing revised kanji meanings.")
-    parser.add_argument("--kanji-strokes", "--strokes", "--str", "-s",
-            metavar="FILENAME", dest="kanji_strokes_filename",
-            help="Filename of the xml file containing kanji stroke info.")
-    parser.add_argument("--news-frequencies", "--news", "-n",
-            metavar="FILENAME", dest="word_news_freq_filename",
-            help="Filename of the file containing newspaper word frequencies.")
-    parser.add_argument("--web-frequencies", "--web", "-w", metavar="FILENAME",
-            dest="word_web_freq_filename",
-            help="Filename of the file containing internet word frequencies.")
-    parser.add_argument("--book-frequencies", "--books",
-            metavar="FILENAME", dest="word_book_freq_filename",
-            help="Filename of the file containing book word frequencies.")
-    parser.add_argument("--bccwj-frequencies", "--bccwj",
-            metavar="FILENAME", dest="word_bccwj_freq_filename",
-            help="Filename of the file containing BCCWJ word frequencies.")
-    parser.add_argument("--kanji-parts", "--part", "-p",
-            metavar="FILENAME", dest="kanji_parts_filename",
-            help="Filename of the file containing kanji part compositions.")
-    parser.add_argument("--jlpt-kanji", "--kjlpt",
-            metavar="FILENAME", dest="new_jlpt_n3_kanji",
-            help="Filename of the file containing new JLPT N3 kanji.")
-    parser.add_argument("--jlpt-vocab", "--jlpt",
-            metavar="FILENAME", dest="jlpt_vocab", nargs=6,
-            help="Filenames of the five files containing all JLPT vocabulary, "
-                 "first file contains N5 vocab and last contains N1 vocab. "
-                 "The last file is a JSON file containing manual assignments.")
-    parser.add_argument("--dictionary-texts", "--texts", "--tex", "-t",
-            metavar="FILENAME", dest="improved_dictionary_texts_filename",
-            help="Name of the json file mapping info entity texts in the "
-                 "dictionary to improved versions.")
-    parser.add_argument("--example-words-index", "--example-words", "-e",
-            dest="example_words_index", action="store_true",
-            help="Create a reversed index for getting example words for kanji."
-                 " Dictionary and kanji must be in the database already.")
-    parser.add_argument("--proper-names", "--names", metavar="FILENAME",
-            dest="proper_names_filename",
-            help="Filename with proper names dictionary data.")
-    parser.add_argument("--output", "--out", "-o", metavar="FILENAME",
-            dest="output_path", help="Directory path for output files.")
-    args = parser.parse_args()
-    output_path = args.output_path if args.output_path else "Japanese-English"
+@dataclass
+class InputPaths:
+    dictionary: str = None
+    kanji: str = None
+
+    dictionary_texts: str = None
+    proper_names: str = None
+    jlpt_vocab: list[str] = None
+    word_news_frequencies: str = None
+    word_web_frequencies: str = None
+    word_book_frequencies: str = None
+    word_bccwj_frequencies: str = None
+
+    kanji_meanings: str = None
+    kanji_radicals: str = None
+    kanji_strokes: str = None
+    kanji_parts: str = None
+    new_jlpt_n3_kanji: str = None
+    example_words_index: str = None
+
+
+def generate_data(input_paths: InputPaths, output_path: str):
     # Define filenames and paths for output files
     database_path = os.path.join(output_path, "Japanese-English.sqlite3")
     kanji_strokes_path = os.path.join(output_path, "kanji-strokes.json")
@@ -954,18 +925,18 @@ if __name__ == "__main__":
     connection = sqlite3.connect(database_path)
     cursor = connection.cursor()
     # Parse dictionary
-    if args.dict_filename is not None:
-        print("Parsing dictionary from file '%s':" % args.dict_filename)
-        parse_dictionary(args.dict_filename, cursor, code_to_text_path)
+    if input_paths.dictionary is not None:
+        print("Parsing dictionary from file '%s':" % input_paths.dictionary)
+        parse_dictionary(input_paths.dictionary, cursor, code_to_text_path)
     # Parse improved dictionary texts
-    if args.improved_dictionary_texts_filename is not None:
+    if input_paths.dictionary_texts is not None:
         print()
         print("Applying improved dictionary info texts from file '%s':" %
-            args.improved_dictionary_texts_filename)
+            input_paths.dictionary_texts)
         parse_improved_dictionary_texts(
-                code_to_text_path, args.improved_dictionary_texts_filename)
+                code_to_text_path, input_paths.dictionary_texts)
     # Parse JLPT vocabulary
-    if args.jlpt_vocab is not None:
+    if input_paths.jlpt_vocab is not None:
 
         # Create temporary indices to speed up database queries
         print("Creating temporary indices... ", end="\r")
@@ -978,10 +949,10 @@ if __name__ == "__main__":
         for level in range(5, 0, -1):
             print()
             print("Parsing JLPT N%s vocabulary from file '%s':"
-                  % (level, args.jlpt_vocab[5 - level]))
-            parse_jlpt_vocabulary(args.jlpt_vocab[5 - level], level, cursor)
+                  % (level, input_paths.jlpt_vocab[5 - level]))
+            parse_jlpt_vocabulary(input_paths.jlpt_vocab[5 - level], level, cursor)
         print()
-        process_manual_jlpt_assignments(args.jlpt_vocab[5])
+        process_manual_jlpt_assignments(input_paths.jlpt_vocab[5], cursor)
 
         # Remove temporary indices (will be recreated within the app)
         print("Removing temporary indices... ", end="\r")
@@ -991,73 +962,135 @@ if __name__ == "__main__":
         cursor.execute("DROP INDEX IF EXISTS m_id")
         print("Removing temporary indices... Done.")
     # Parse proper names
-    if args.proper_names_filename is not None:
+    if input_paths.proper_names is not None:
         print()
         print("Parsing proper names from file '%s':" %
-            args.proper_names_filename)
-        parse_proper_names(args.proper_names_filename, cursor)
+            input_paths.proper_names)
+        parse_proper_names(input_paths.proper_names, cursor)
     # Parse internet word frequencies
-    if args.word_web_freq_filename is not None:
+    if input_paths.word_web_frequencies is not None:
         print()
         print("Parsing frequencies of words in the internet from file '%s':"
-              % args.word_web_freq_filename)
-        parse_word_web_frequencies(args.word_web_freq_filename, cursor)
+              % input_paths.word_web_frequencies)
+        parse_word_web_frequencies(input_paths.word_web_frequencies, cursor)
     # Parse news word frequencies
-    if args.word_news_freq_filename is not None:
+    if input_paths.word_news_frequencies is not None:
         print()
         print("Parsing frequencies of words in newspapers from file '%s':"
-              % args.word_news_freq_filename)
-        parse_word_news_frequencies(args.word_news_freq_filename, cursor)
+              % input_paths.word_news_frequencies)
+        parse_word_news_frequencies(input_paths.word_news_frequencies, cursor)
     # Parse word frequencies in the BCCWJ dataset (including printed media)
-    if args.word_bccwj_freq_filename is not None:
+    if input_paths.word_bccwj_frequencies is not None:
         print()
         print("Parsing frequencies of words in BCCWF dataset from file '%s':"
-               % args.word_bccwj_freq_filename)
-        parse_word_bccwj_frequencies(args.word_bccwj_freq_filename, cursor)
+               % input_paths.word_bccwj_frequencies)
+        parse_word_bccwj_frequencies(input_paths.word_bccwj_frequencies, cursor)
     # Parse book word frequencies (part of the BCCWJ dataset)
-    if args.word_book_freq_filename is not None:
+    if input_paths.word_book_frequencies is not None:
         print()
         print("Parsing frequencies of words in books from file '%s':"
-               % args.word_book_freq_filename)
-        parse_word_book_frequencies(args.word_book_freq_filename, cursor)
+               % input_paths.word_book_frequencies)
+        parse_word_book_frequencies(input_paths.word_book_frequencies, cursor)
     # Parse kanji
-    if args.kanji_filename is not None:
+    if input_paths.kanji is not None:
         print()
-        print("Parsing kanji from file '%s':" % args.kanji_filename)
-        parse_kanji(args.kanji_filename, cursor)
+        print("Parsing kanji from file '%s':" % input_paths.kanji)
+        parse_kanji(input_paths.kanji, cursor)
     # Parse radicals
-    if args.radicals_filename is not None:
+    if input_paths.kanji_radicals is not None:
         print()
-        print("Parsing radicals from file '%s':" % args.radicals_filename)
-        parse_radicals(args.radicals_filename, cursor)
+        print("Parsing radicals from file '%s':" % input_paths.kanji_radicals)
+        parse_radicals(input_paths.kanji_radicals, cursor)
     # Parse improved kanji meanings
-    if args.kanji_meanings_filename is not None:
+    if input_paths.kanji_meanings is not None:
         print()
         print("Applying improved kanji meanings from file '%s':" %
-            args.kanji_meanings_filename)
-        parse_improved_kanji_meanings(args.kanji_meanings_filename, cursor)
+            input_paths.kanji_meanings)
+        parse_improved_kanji_meanings(input_paths.kanji_meanings, cursor)
     # Parse kanji part compositions
-    if args.kanji_parts_filename is not None:
+    if input_paths.kanji_parts is not None:
         print()
         print("Parsing kanji parts from file '%s':" %
-                args.kanji_parts_filename)
-        parse_kanji_parts(args.kanji_parts_filename, cursor)
+                input_paths.kanji_parts)
+        parse_kanji_parts(input_paths.kanji_parts, cursor)
     # Update JLPT levels (now 5 instead of previously 4 levels)
-    if args.new_jlpt_n3_kanji is not None:
+    if input_paths.new_jlpt_n3_kanji is not None:
         print()
-        print("Updating JLPT levels using file '%s':" % args.new_jlpt_n3_kanji)
-        update_kanji_jlpt_levels(args.new_jlpt_n3_kanji, cursor)
+        print("Updating JLPT levels using file '%s':" % input_paths.new_jlpt_n3_kanji)
+        update_kanji_jlpt_levels(input_paths.new_jlpt_n3_kanji, cursor)
     # Create reversed index for example words containing certain kanji
-    if args.example_words_index:
+    if input_paths.example_words_index:
         print()
         create_example_words_index(cursor, example_words_index_path)
     connection.commit()
     connection.close()
     # Parse kanji stroke info
-    if args.kanji_strokes_filename is not None:
+    if input_paths.kanji_strokes is not None:
         print()
         print("Parsing kanji strokes from file '%s':" %
-                args.kanji_strokes_filename)
-        parse_kanji_strokes(args.kanji_strokes_filename, kanji_strokes_path)
+                input_paths.kanji_strokes)
+        parse_kanji_strokes(input_paths.kanji_strokes, kanji_strokes_path)
     print()
 
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Parse dictionary for language-pair 'Japanese'->'English'.")
+    parser.add_argument("--output", "--out", "-o", metavar="FILENAME",
+            dest="output_path", help="Directory path for output files.")
+
+    parser.add_argument("--dictionary", "--dict", "--dic", "-d",
+            metavar="FILENAME",
+            dest="dictionary", help="Filename of the dictionary xml file.")
+    parser.add_argument("--kanji", "--kan", "-k", metavar="FILENAME",
+            dest="kanji", help="Filename of the kanji file.")
+
+    parser.add_argument("--dictionary-texts", "--texts", "--tex", "-t",
+            metavar="FILENAME", dest="dictionary_texts",
+            help="Name of the json file mapping info entity texts in the "
+                 "dictionary to improved versions.")
+    parser.add_argument("--proper-names", "--names", metavar="FILENAME",
+            dest="proper_names",
+            help="Filename with proper names dictionary data.")
+    parser.add_argument("--jlpt-vocab", "--jlpt",
+            metavar="FILENAME", dest="jlpt_vocab", nargs=6,
+            help="Filenames of the five files containing all JLPT vocabulary, "
+                 "first file contains N5 vocab and last contains N1 vocab. "
+                 "The last file is a JSON file containing manual assignments.")
+    parser.add_argument("--news-frequencies", "--news", "-n",
+            metavar="FILENAME", dest="word_news_frequencies",
+            help="Filename of the file containing newspaper word frequencies.")
+    parser.add_argument("--web-frequencies", "--web", "-w", metavar="FILENAME",
+            dest="word_web_frequencies",
+            help="Filename of the file containing internet word frequencies.")
+    parser.add_argument("--book-frequencies", "--books",
+            metavar="FILENAME", dest="word_book_frequencies",
+            help="Filename of the file containing book word frequencies.")
+    parser.add_argument("--bccwj-frequencies", "--bccwj",
+            metavar="FILENAME", dest="word_bccwj_frequencies",
+            help="Filename of the file containing BCCWJ word frequencies.")
+
+    parser.add_argument("--kanji-meanings", "--meanings", "--mean", "-m",
+            metavar="FILENAME", dest="kanji_meanings",
+            help="Filename of the json file containing revised kanji meanings.")
+    parser.add_argument("--kanji-radicals", "--radicals", "--rad", "-r",
+            metavar="FILENAME", dest="kanji_radicals",
+            help="Name of the file containing radicals for each kanji.")
+    parser.add_argument("--kanji-strokes", "--strokes", "--str", "-s",
+            metavar="FILENAME", dest="kanji_strokes",
+            help="Filename of the xml file containing kanji stroke info.")
+    parser.add_argument("--kanji-parts", "--part", "-p",
+            metavar="FILENAME", dest="kanji_parts",
+            help="Filename of the file containing kanji part compositions.")
+    parser.add_argument("--new-jlpt-n3-kanji", "--jlpt-kanji", "--kjlpt",
+            metavar="FILENAME", dest="new_jlpt_n3_kanji",
+            help="Filename of the file containing new JLPT N3 kanji.")
+    parser.add_argument("--example-words-index", "--example-words", "-e",
+            dest="example_words_index", action="store_true",
+            help="Create a reversed index for getting example words for kanji."
+                 " Dictionary and kanji must be in the database already.")
+
+    input_paths = InputPaths()
+    args = parser.parse_args(namespace=input_paths)
+    output_path = args.output_path if args.output_path else "Japanese-English"
+    generate_data(input_paths, output_path)

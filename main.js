@@ -173,7 +173,7 @@ app.on('ready', function() {
     });
 
     mainWindow.on("ready-to-show", () => {
-        if (mainWindowState.isDevToolsOpened)
+        // if (mainWindowState.isDevToolsOpened)
             mainWindow.webContents.openDevTools();
         mainWindow.show();
         mainWindow.focus();

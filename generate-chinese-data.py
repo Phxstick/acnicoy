@@ -9,6 +9,7 @@ import re
 import sqlite3
 import random
 import json
+from dataclasses import dataclass
 
 
 def create_dictionary_tables(cursor):
@@ -1034,92 +1035,112 @@ def parse_hanzi_decompositions(filename, output_filepath, cursor):
     with open(output_filepath, "w", encoding="utf8") as f:
         json.dump(data, f, sort_keys=True, ensure_ascii=False)
 
+@dataclass
+class InputPaths:
+    dictionary: str = None
+    hanzi: str = None
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-            description="Parse data for language-pair Chinese->English.")
-    parser.add_argument("--dictionary", "--dict", "--dic", "-d",
-            metavar="FILENAME", dest="dict_filename",
-            help="Name of the CEDICT dictionary text file")
-    parser.add_argument("--hsk-vocab", metavar="FILENAME",
-            dest="hsk_vocab_filename",
-            help="Name of the plain text file containing 2021 HSK vocabulary")
-    parser.add_argument("--hsk-hanzi", metavar="FILENAME",
-            dest="hsk_hanzi_filename",
-            help="Name of the plain text file containing HSK 3.0 characters")
-    parser.add_argument("--web-freq", "--web", metavar="FILENAME",
-            dest="web_word_freq_filename",
-            help="Name of the file containing internet word frequencies")
-    parser.add_argument("--lcmc-freq", "--lcmc", metavar="FILENAME",
-            dest="lcmc_word_freq_filename",
-            help="Name of the file containing LCMC word frequencies")
-    parser.add_argument("--hanzi", "--han", metavar="FILENAME",
-            dest="unihan_path", help="Directory path with UNIHAN files.")
-    parser.add_argument("--hanzi-radicals", "--radicals", "--rad",
-            metavar="FILENAME", dest="radicals_filename",
-            help="Name of the tsv file describing the 214 kangxi radicals.")
-    parser.add_argument("--hanzi-strokes", "--strokes", "--str",
-            metavar="FILENAME", dest="hanzi_strokes_filename",
-            help="Name of the file containing SVG stroke sequences.")
-    parser.add_argument("--hanzi-decomposition", "--decomp",
-            metavar="FILENAME", dest="hanzi_decomp_filename",
-            help="Name of the file containing hanzi decomposition info.")
-    parser.add_argument("--verbose", "-v", dest="verbose", action="store_true")
-    parser.add_argument("--output", "--out", "-o", metavar="FILENAME",
-            dest="output_path", help="Directory path for output files")
-    args = parser.parse_args()
-    output_path = args.output_path if args.output_path else "Chinese-English"
+    hsk_vocab: str = None
+    web_word_frequencies: str = None
+    lcmc_word_frequencies: str = None
+
+    hanzi_radicals: str = None
+    hanzi_strokes: str = None
+    hanzi_decomposition: str = None
+    hsk_hanzi: str = None
+
+
+def generate_data(input_paths: InputPaths, output_path: str, verbose=False):
     database_path = os.path.join(output_path, "Chinese-English.sqlite3")
     hanzi_strokes_path = os.path.join(output_path, "hanzi-strokes.json")
     connection = sqlite3.connect(database_path)
     cursor = connection.cursor()
-    if args.dict_filename is not None:
-        print("Parsing dictionary from file '%s':" % args.dict_filename)
-        parse_dictionary(args.dict_filename, cursor, verbose=args.verbose)
-    if args.hsk_vocab_filename is not None:
+    if input_paths.dictionary is not None:
+        print("Parsing dictionary from file '%s':" % input_paths.dictionary)
+        parse_dictionary(input_paths.dictionary, cursor, verbose=verbose)
+    if input_paths.hsk_vocab is not None:
         print()
         print("Parsing HSK word vocabulary lists from file '%s':"
-              % args.hsk_vocab_filename)
-        parse_hsk_vocabulary(
-            args.hsk_vocab_filename, cursor, verbose=args.verbose)
-    if args.web_word_freq_filename is not None:
+              % input_paths.hsk_vocab)
+        parse_hsk_vocabulary(input_paths.hsk_vocab, cursor, verbose=verbose)
+    if input_paths.web_word_frequencies is not None:
         print()
         print("Parsing internet word frequencies from file '%s':"
-              % args.web_word_freq_filename)
+              % input_paths.web_word_frequencies)
         parse_word_frequencies(
-            args.web_word_freq_filename, "web", cursor, verbose=args.verbose)
-    if args.lcmc_word_freq_filename is not None:
+            input_paths.web_word_frequencies, "web", cursor, verbose=verbose)
+    if input_paths.lcmc_word_frequencies is not None:
         print()
         print("Parsing LCMC word frequencies from file '%s':"
-              % args.lcmc_word_freq_filename)
+              % input_paths.lcmc_word_frequencies)
         parse_word_frequencies(
-            args.lcmc_word_freq_filename, "lcmc", cursor, verbose=args.verbose)
-    if args.unihan_path is not None:
+            input_paths.lcmc_word_frequencies, "lcmc", cursor, verbose=verbose)
+    if input_paths.hanzi is not None:
         print()
         print("Parsing hanzi from Unihan data in directory '%s':"
-              % args.unihan_path)
-        parse_hanzi(args.unihan_path, cursor, verbose=args.verbose)
-    if args.hsk_hanzi_filename is not None:
+              % input_paths.hanzi)
+        parse_hanzi(input_paths.hanzi, cursor, verbose=verbose)
+    if input_paths.hsk_hanzi is not None:
         print()
         print("Parsing HSK character lists from file '%s':"
-              % args.hsk_hanzi_filename)
-        parse_hsk_characters(
-            args.hsk_hanzi_filename, cursor, verbose=args.verbose)
-    if args.radicals_filename is not None:
+              % input_paths.hsk_hanzi)
+        parse_hsk_characters(input_paths.hsk_hanzi, cursor, verbose=verbose)
+    if input_paths.hanzi_radicals is not None:
         print()
-        print("Parsing radicals from file '%s'." % args.radicals_filename)
-        parse_radicals(args.radicals_filename, cursor)
-    if args.hanzi_strokes_filename is not None:
+        print("Parsing radicals from file '%s'." % input_paths.hanzi_radicals)
+        parse_radicals(input_paths.hanzi_radicals, cursor)
+    if input_paths.hanzi_strokes is not None:
         print()
         print("Parsing SVG stroke sequences from file '%s':" %
-            args.hanzi_strokes_filename)
-        parse_hanzi_strokes(args.hanzi_strokes_filename,
+            input_paths.hanzi_strokes)
+        parse_hanzi_strokes(input_paths.hanzi_strokes,
             hanzi_strokes_path, cursor)
-    if args.hanzi_decomp_filename is not None:
+    if input_paths.hanzi_decomposition is not None:
         print()
         print("Parsing hanzi decompositions from file '%s':" %
-            args.hanzi_decomp_filename)
+            input_paths.hanzi_decomposition)
         parse_hanzi_decompositions(
-            args.hanzi_decomp_filename, hanzi_strokes_path, cursor)
+            input_paths.hanzi_decomposition, hanzi_strokes_path, cursor)
     connection.commit()
     connection.close()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+            description="Parse data for language-pair Chinese->English.")
+    parser.add_argument("--verbose", "-v", dest="verbose", action="store_true")
+    parser.add_argument("--output", "--out", "-o", metavar="FILENAME",
+            dest="output_path", help="Directory path for output files")
+
+    parser.add_argument("--dictionary", "--dict", "--dic", "-d",
+            metavar="FILENAME", dest="dictionary",
+            help="Name of the CEDICT dictionary text file")
+    parser.add_argument("--hsk-vocab", metavar="FILENAME",
+            dest="hsk_vocab",
+            help="Name of the plain text file containing 2021 HSK vocabulary")
+    parser.add_argument("--web-freq", "--web", metavar="FILENAME",
+            dest="web_word_frequencies",
+            help="Name of the file containing internet word frequencies")
+    parser.add_argument("--lcmc-freq", "--lcmc", metavar="FILENAME",
+            dest="lcmc_word_frequencies",
+            help="Name of the file containing LCMC word frequencies")
+
+    parser.add_argument("--hanzi", "--han", metavar="FILENAME",
+            dest="hanzi", help="Directory path with UNIHAN files.")
+    parser.add_argument("--hanzi-radicals", "--radicals", "--rad",
+            metavar="FILENAME", dest="hanzi_radicals",
+            help="Name of the tsv file describing the 214 kangxi radicals.")
+    parser.add_argument("--hanzi-strokes", "--strokes", "--str",
+            metavar="FILENAME", dest="hanzi_strokes",
+            help="Name of the file containing SVG stroke sequences.")
+    parser.add_argument("--hanzi-decomposition", "--decomp",
+            metavar="FILENAME", dest="hanzi_decomposition",
+            help="Name of the file containing hanzi decomposition info.")
+    parser.add_argument("--hsk-hanzi", metavar="FILENAME",
+            dest="hsk_hanzi",
+            help="Name of the plain text file containing HSK 3.0 characters")
+
+    input_paths = InputPaths()
+    args = parser.parse_args(namespace=input_paths)
+    output_path = args.output_path if args.output_path else "Chinese-English"
+    verbose = args.verbose
+    generate_data(input_paths, output_path, verbose=verbose)
