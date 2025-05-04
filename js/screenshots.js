@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
         transition: false,
         navbar: false,
         loop: false,
+        initialCoverage: 0.6,
         viewed: (event) => {
             // Get the image and its wrapper
             const viewerCanvas = document.querySelector(".viewer-canvas");

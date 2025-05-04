@@ -7,16 +7,15 @@
         the numbers ready for review, as well as the review schedule for the near future. 
       filename: "acnicoy-screenshot-home-section.png"
 
-    - label: "Managing<br>SRS schemes"
+    - label: "Managing<br>SR schemes"
       description: >
-        Each language can use a different set of time intervals for spaced repetition.<br>
-        You can create your own schemes and define custom time intervals.
+        Each language can use a different set of customizable time intervals for spaced repetition.
       filename: "acnicoy-screenshot-srs-schemes.png"
 
-    - label: "Switching<br>SRS schemes"
+    - label: "Switching<br>SR schemes"
       description: >
-        You can switch between SRS schemes at any time and specify<br>
-        how to migrate your existing SRS items to the new scheme.
+        You can switch between spaced repetition schemes at any time and specify<br>
+        how to migrate your existing vocabulary items to the new scheme.
       filename: "acnicoy-screenshot-change-srs-scheme.png"
 
 - name: "Vocabulary"
@@ -42,7 +41,7 @@
 
     - label: "Kanji overview<br>(for Japanese)"
       description: >
-        Divide kanji into groups by criteria such as stroke number or JLPT level.<br>
+        Divide kanji into groups by criteria such as stroke counts or JLPT level.<br>
         Click a kanji to view its details, including stroke order and words containing it.
       filename: "acnicoy-screenshot-kanji-overview.png"
 
@@ -82,7 +81,7 @@
 
     - label: "Statistics<br>(diagrams)"
       description: >
-        Diagrams illustrate your statistics over the last days or months.
+        Diagrams illustrate your learning progress over the past days or months.
       filename: "acnicoy-screenshot-stats-section-diagrams.png"
 
     - label: "Writing notes"
