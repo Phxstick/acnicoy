@@ -202,6 +202,14 @@ search-field {
   }
 }
 
+// To vertically center content, text needs less padding-top, icons less bottom
+#import-vocab-button, #export-vocab-button, #test-on-list-button {
+  padding-top: 2px;
+}
+#vocab-lists-button-frame button, #control-selected-vocab-buttons button {
+  padding-bottom: 2px;
+}
+
 // Remove rounded borders from items in the middle of multiple selections
 // (requires a bunch of code controlling the .last-selected class)
 #vocab, #vocab-lists, #list-contents {

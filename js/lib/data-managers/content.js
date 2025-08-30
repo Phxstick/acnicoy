@@ -9,16 +9,23 @@ module.exports = function (paths, modules) {
     let data;
 
     const languagesWithDictionary = new Set(["Japanese", "Chinese"])
+    const languagesWithChineseCharacters = new Set(["Japanese", "Chinese"])
 
     content.isAvailableFor = (language, secondary) => {
         const contentPaths = paths.content(language, secondary);
-        return utility.existsDirectory(contentPaths.directory);
+        return utility.existsDirectory(contentPaths.directory) &&
+            utility.existsFile(contentPaths.versions)
     };
 
     content.isCompatibleFor = (language, secondary) => {
         return !content.updateRequired(language, secondary) &&
                !content.programUpdateRequired(language, secondary);
     };
+
+    content.isReadyFor = (language, secondary) => {
+        return content.isAvailableFor(language, secondary)
+            && content.isCompatibleFor(language, secondary)
+    }
     
     content.updateRequired = (language, secondary) => {
         const minVersions = minContentVersions[language][secondary];
@@ -55,8 +62,15 @@ module.exports = function (paths, modules) {
     content.isDictionaryAvailable = () => {
         const language = modules.currentLanguage;
         const secondaryLanguage = modules.currentSecondaryLanguage;
-        return content.isAvailableFor(language, secondaryLanguage) &&
+        return content.isReadyFor(language, secondaryLanguage) &&
             languagesWithDictionary.has(language)
+    }
+
+    content.isCharacterSectionAvailable = () => {
+        const language = modules.currentLanguage;
+        const secondaryLanguage = modules.currentSecondaryLanguage;
+        return content.isReadyFor(language, secondaryLanguage) &&
+            languagesWithChineseCharacters.has(language)
     }
 
     content.isDictionaryLoaded = () => {
@@ -71,8 +85,7 @@ module.exports = function (paths, modules) {
         if (language === undefined) language = modules.currentLanguage
         const secondaryLanguage =
             modules.languageSettings.getFor(language, "secondaryLanguage");
-        if (!content.isAvailableFor(language, secondaryLanguage) ||
-            !content.isCompatibleFor(language, secondaryLanguage)) return;
+        if (!content.isReadyFor(language, secondaryLanguage)) return;
         const contentPaths = paths.content(language, secondaryLanguage);
         const languagePair = `${language}-${secondaryLanguage}`;
         const contentModulePath = paths.js.contentModule(languagePair);

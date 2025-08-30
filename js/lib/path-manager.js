@@ -213,6 +213,7 @@ module.exports = function (basePath) {
             }
         }
     };
+    paths.contentRegister = contentRegister
 
     // Return an object mapping content resource names to absolute paths
     paths.content = (language, secondaryLanguage) => {

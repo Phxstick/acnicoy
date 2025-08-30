@@ -38,8 +38,7 @@ class ImportVocabOverlay extends Overlay {
             this.$("import-order").toggleDisplay(value !== "Houhou");
             this.$("houhou-note").toggleDisplay(value === "Houhou");
             this.$("language-data-warning").toggleDisplay(value === "Houhou" &&
-                (!dataManager.content.isAvailableFor("Japanese", "English") ||
-                 !dataManager.content.isCompatibleFor("Japanese", "English")));
+                !dataManager.content.isReadyFor("Japanese", "English"))
             this.$("add-to-list-option").toggleDisplay(
                 value !== "kanji" && value !== "hanzi");
         });
@@ -92,8 +91,7 @@ class ImportVocabOverlay extends Overlay {
         // Load language data if necessary
         if ((parseSettings.dataType === "Houhou"
                 || parseSettings.dataType === "kanji")
-                && dataManager.content.isAvailableFor("Japanese", "English")
-                && dataManager.content.isCompatibleFor("Japanese", "English")
+                && dataManager.content.isReadyFor("Japanese", "English")
                 && !dataManager.content.isLoadedFor("Japanese", "English")) {
             await main.loadLanguageContent("Japanese", "English");
         }

@@ -273,6 +273,7 @@ class MainWindow extends Window {
                 this.sections["dictionary"].$("words-filter").focus();
             },
             "open-kanji-search": async () => {
+                if (!dataManager.content.isCharacterSectionAvailable()) return
                 if (dataManager.currentLanguage !== "Japanese") return
                 if (!dataManager.content.isLoaded()) {
                     await this.loadLanguageContent()
@@ -282,6 +283,7 @@ class MainWindow extends Window {
                 this.sections["kanji"].$("search-by-kanji-input").focus();
             },
             "open-kanji-overview": async () => {
+                if (!dataManager.content.isCharacterSectionAvailable()) return
                 if (dataManager.currentLanguage !== "Japanese") return
                 if (!dataManager.content.isLoaded()) {
                     await this.loadLanguageContent()
@@ -666,8 +668,7 @@ class MainWindow extends Window {
         if (language === undefined) language = dataManager.currentLanguage
         if (secondary === undefined)
             secondary = dataManager.currentSecondaryLanguage
-        if (!dataManager.content.isAvailableFor(language, secondary) ||
-            !dataManager.content.isCompatibleFor(language, secondary)) return;
+        if (!dataManager.content.isReadyFor(language, secondary)) return;
         if (!onStart) overlays.open("loading", "Loading language data");
         await dataManager.content.load(language);
         const processed = [];
@@ -1091,7 +1092,7 @@ class MainWindow extends Window {
         const language = dataManager.currentLanguage
         const secondaryLanguage = dataManager.currentSecondaryLanguage
         const contentAvailable =
-            dataManager.content.isAvailableFor(language, secondaryLanguage)
+            dataManager.content.isReadyFor(language, secondaryLanguage)
         const dictionaryAvailable =
             dataManager.content.isDictionaryAvailable()
         this.$("find-kanji-button").toggleDisplay(

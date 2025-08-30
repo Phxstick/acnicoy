@@ -353,9 +353,12 @@ async function finishContentDownload(downloadName) {
     }
 
     // If everything has been extracted, copy files to content directory
-    for (const filename in fileVersions) {
+    const contentRegister = paths.contentRegister[language][secondary]
+    for (const resourceName in contentRegister) {
+        const filename = contentRegister[resourceName]
+        if (!(filename in fileVersions)) continue
         const filePath = paths.downloadFile(downloadName, filename);
-        await fs.move(filePath, contentPaths[filename], { overwrite: true });
+        await fs.move(filePath, contentPaths[resourceName], { overwrite: true });
     }
 
     fs.writeFileSync(contentPaths.versions,
@@ -412,8 +415,14 @@ async function conductContentDownload(downloadName) {
 
     // Process the downloaded data and unregister the download
     progressEmitter.emit("starting-data-processing");
-    const successful = await finishContentDownload(downloadName);
-    removeDownload(downloadName);
+    let successful
+    try {
+        successful = await finishContentDownload(downloadName);
+        removeDownload(downloadName);
+    } catch (error) {
+        console.error(error.stack)
+        successful = false
+    }
 
     // Signal that the download has ended and specify whether it was successful
     progressEmitter.emit("ended", successful);

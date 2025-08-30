@@ -41,13 +41,13 @@ class Component extends HTMLElement {
         // Open all http links associated with <a> tags in the default browser
         this.root.addEventListener("click", (event) => {
             if (event.target.tagName === "A") {
+                event.preventDefault();
                 if (event.target.href.startsWith("http")) {
                     shell.openExternal(event.target.href);
                 }
                 else if (event.target.href.startsWith("mailto")) {
                     shell.openExternal(event.target.href);
                 }
-                event.preventDefault();
             }
         }, true);
         const linkDisplay = document.getElementById("link-location-display");

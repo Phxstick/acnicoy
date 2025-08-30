@@ -21,11 +21,11 @@ class SrsStatusOverview extends PinwallWidget {
 
         // Make fields light up on hovering while pressing Ctrl or Shift
         window.addEventListener("keydown", (event) => {
-            if (event.ctrlKey || event.shiftKey)
+            if (event.ctrlKey || event.metaKey || event.shiftKey)
                 this.$("container").classList.add("modifier-pressed");
         });
         window.addEventListener("keyup", (event) => {
-            if (!event.ctrlKey && !event.shiftKey)
+            if (!event.ctrlKey && !event.metaKey && !event.shiftKey)
                 this.$("container").classList.remove("modifier-pressed");
         });
 
@@ -35,9 +35,9 @@ class SrsStatusOverview extends PinwallWidget {
             const field = event.target;
 
             // Either Ctrl or Shift must be pressed, Ctrl preserves selection
-            const modifierUsed = event.ctrlKey || event.shiftKey;
+            const modifierUsed = event.ctrlKey || event.metaKey || event.shiftKey;
             if (!modifierUsed) return;
-            if (!event.ctrlKey) this.clearSelection();
+            if (!event.ctrlKey && !event.metaKey) this.clearSelection();
             overviewClicked = true;
 
             // Click a language (or its total-count) to select all levels for it

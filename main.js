@@ -145,6 +145,13 @@ app.on('ready', function() {
     // session.defaultSession.webRequest.onHeadersReceived((details, callback)=>{
     //     callback({ responseHeaders: "default-src 'self'" });
     // });
+
+    // Open <a> element links in the default browser instead of electron
+    // (NOTE: only works for links with the target="_blank" attribute)
+    mainWindow.webContents.setWindowOpenHandler(details => {
+        shell.openExternal(details.url)
+        return { action: "deny" }
+    })
   
     // Load the index.html of the app which also executes the main script
     mainWindow.loadURL(url.format({
