@@ -153,7 +153,7 @@ class EditKanjiPanel extends EditPanel {
         this.$("srs-level-on-yomi").setAttribute("tabindex", "-1");
         this.$("srs-level-kun-yomi").setAttribute("tabindex", "-1");
         this.root.addEventListener("keydown", (event) => {
-            if (event.ctrlKey && "1" <= event.key && event.key <= "9") {
+            if ((event.ctrlKey || event.metaKey) && "1" <= event.key && event.key <= "9") {
                 const focussedElement = this.root.activeElement;
                 const newLevel = parseInt(event.key);
                 if (this.$("meanings").contains(focussedElement)) {

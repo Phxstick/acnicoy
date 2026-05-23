@@ -27,6 +27,7 @@ class SvgBarDiagram extends Widget {
         this.dragStartX = null;
         this.viewOffsetX = 0;
         this.dragOffset = 0;
+        this.reverse = false;
         this.diagram.addEventListener("mouseenter", (event) => {
             const { width: viewWidth } = this.diagram.getBoundingClientRect();
             this.diagram.classList.toggle("draggable",this.totalWidth>viewWidth)
@@ -40,20 +41,17 @@ class SvgBarDiagram extends Widget {
         });
         window.addEventListener("mousemove", (event) => {
             if (!this.dragging) return;
-            const { width: viewWidth, height: viewHeight } =
-                this.diagram.getBoundingClientRect();
+            const viewBounds = this.diagram.getBoundingClientRect();
             const x = event.clientX;
             this.dragOffset = this.dragStartX - x;
             if (this.viewOffsetX + this.dragOffset < 0) {
                 this.dragOffset = -this.viewOffsetX;
             }
-            const maxViewOffsetX = this.totalWidth - viewWidth;
+            const maxViewOffsetX = this.totalWidth - viewBounds.width;
             if (this.viewOffsetX + this.dragOffset > maxViewOffsetX) {
                 this.dragOffset = maxViewOffsetX - this.viewOffsetX;
             }
-            const viewOffsetX = this.viewOffsetX + this.dragOffset;
-            this.diagram.setAttribute("viewBox",
-                `${viewOffsetX} 0 ${viewWidth + viewOffsetX} ${viewHeight}`);
+            this.updateViewBox(this.dragOffset, viewBounds)
         });
         window.addEventListener("mouseup", () => {
             if (!this.dragging) return;
@@ -90,6 +88,7 @@ class SvgBarDiagram extends Widget {
           showValueLabels=false, showSmallSeparators=false,
           stackBars=false, splitValueLabels=false, reverse=false,
           stackSpacing=0 } = this.args
+        this.reverse = reverse
 
         // =====================================================================
         //    Check values and descriptions
@@ -496,7 +495,7 @@ class SvgBarDiagram extends Widget {
             container.addEventListener("click", (event) => {
                 const indexValue = this.indices[i]
                 // If ctrl key is pressed, only toggle the corresponding index
-                if (event.ctrlKey) {
+                if (event.ctrlKey || event.metaKey) {
                     this.indices[i] = !this.indices[i]
                 // If control key is not pressed, select the corresponding index.
                 // If only this index is selected, select all others too,
@@ -528,13 +527,25 @@ class SvgBarDiagram extends Widget {
     showLegend() {
         this.legend.show("flex");
     }
-    
-    moveViewToRightEnd() {
+
+    updateViewBox(extraOffsetX=0, bounds=undefined) {
+        if (this.diagram.offestParent === null) return
         const { width: viewWidth, height: viewHeight } =
-            this.diagram.getBoundingClientRect();
-        this.viewOffsetX = this.totalWidth - viewWidth;
+            bounds || this.diagram.getBoundingClientRect();
+        const offsetX = this.viewOffsetX + extraOffsetX
+        const maxViewOffsetX = this.totalWidth - viewWidth;
+        if (offsetX > maxViewOffsetX) {
+            this.viewOffsetX = maxViewOffsetX - extraOffsetX
+        }
         this.diagram.setAttribute("viewBox",
-            `${this.viewOffsetX} 0 ${this.totalWidth} ${viewHeight}`);
+            `${offsetX} 0 ${viewWidth + offsetX} ${viewHeight}`);
+    }
+    
+    resetViewBox() {
+        if (this.diagram.offestParent === null) return
+        const viewBounds = this.diagram.getBoundingClientRect();
+        this.viewOffsetX = this.reverse ? this.totalWidth - viewBounds.width : 0;
+        this.updateViewBox(0, viewBounds)
     }
 
     /**

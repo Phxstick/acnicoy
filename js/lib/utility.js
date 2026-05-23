@@ -36,6 +36,13 @@ function daysInMonth(month, year) {
 }
 
 /**
+ * Taken from https://stackoverflow.com/a/41069058
+ */
+function daysInYear(year) {
+    return ((year % 4 === 0 && year % 100 > 0) || year % 400 === 0) ? 366 : 365
+}
+
+/**
  * Return a promise which is fulfilled when the current event queue is empty.
  * @returns {Promise}
  */
@@ -951,6 +958,11 @@ async function getTimeline(unit, numUnits, getInfoForInterval, toFuture=true) {
         intervalEndDate.setHours(0, 0, 0, 0);
         intervalEndDate.setDate(1);
         intervalEndDate.setMonth(currentDate.getMonth() + toFuture);
+    } else if (unit === "years") {
+        intervalEndDate.setHours(0, 0, 0, 0);
+        intervalEndDate.setDate(1);
+        intervalEndDate.setMonth(0);
+        intervalEndDate.setFullYear(currentDate.getFullYear() + toFuture);
     }
     for (let i = 0; i < numUnits; ++i) {
         // Adjust order of dates depending on whether it goes to future/past
@@ -972,6 +984,8 @@ async function getTimeline(unit, numUnits, getInfoForInterval, toFuture=true) {
             intervalEndDate.setDate(intervalStartDate.getDate() + 7 * delta);
         } else if (unit === "months") {
             intervalEndDate.setMonth(intervalStartDate.getMonth() + delta);
+        } else if (unit === "years") {
+            intervalEndDate.setFullYear(intervalStartDate.getFullYear() + delta);
         }
     }
     return Promise.all(promises);
@@ -1035,6 +1049,12 @@ function getTimelineMarkers(intervals, unit) {
                 separators[i] = startDate.toLocaleString("en-us",
                     { year: "numeric" });
             }
+        } else if (unit === "years") {
+            const year = startDate.getFullYear()
+            if (year % 10 === 0) {
+                separators[i] = year.toString()
+            }
+            labels.push("’" + (year % 100).toString().padStart(2, "0"))
         }
     }
     return { labels, separators };
@@ -1379,6 +1399,7 @@ async function takeScreenshot(name, outputDirectory, includeBorder=true) {
 module.exports.getTime = getTime;
 module.exports.getShortDateString = getShortDateString;
 module.exports.daysInMonth = daysInMonth;
+module.exports.daysInYear = daysInYear;
 module.exports.parseCssFile = parseCssFile;
 module.exports.setEqual = setEqual;
 module.exports.removeDuplicates = removeDuplicates;

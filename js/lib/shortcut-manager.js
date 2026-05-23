@@ -146,7 +146,7 @@ function isKeyCombinationUsed(keyCombination) {
  */
 function extractKeyCombination(event) {
     // Key combination must contain either ctrl, alt, esc or a function key
-    if (!event.ctrlKey &&
+    if (!(event.ctrlKey || event.metaKey) &&
             !event.altKey &&
             event.key !== "Escape" &&
             !(event.key[0] === "F" && parseInt(event.key.slice(1)) !== NaN))
@@ -156,7 +156,7 @@ function extractKeyCombination(event) {
             event.key === "Alt" ||
             event.key === "Shift")
         return null;
-    let keyCombination = `${event.ctrlKey ? "CmdOrCtrl+" : ""}` +
+    let keyCombination = `${event.ctrlKey || event.metaKey ? "CmdOrCtrl+" : ""}` +
                          `${event.altKey ? "Alt+" : ""}` +
                          `${event.shiftKey ? "Shift+" : ""}`;
     if ("a" <= event.key && event.key <= "z") {
@@ -182,8 +182,9 @@ function extractKeyCombination(event) {
  */
 function keyCombinationToReadableForm(keyCombination) {
     const keys = keyCombination.split("+");
+    const cmdOrCtrlLabel = navigator.platform.startsWith("Mac") ? "⌘" : "Ctrl"
     keys.forEach((key, index) => {
-        if (key === "CmdOrCtrl") keys[index] = "Ctrl";
+        if (key === "CmdOrCtrl") keys[index] = cmdOrCtrlLabel;
     });
     return keys.join(" + ");
 }

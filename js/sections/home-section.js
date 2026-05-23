@@ -23,6 +23,13 @@ class HomeSection extends Section {
         await Promise.all(promises);
     }
 
+    open() {
+        const widgets = this.$("pinwall").children;
+        for (const widget of widgets) {
+            widget.open()
+        }
+    }
+
     close() {
         this.$("srs-status-overview").clearSelection();
         this.$("srs-status-overview").onSelectionChange();

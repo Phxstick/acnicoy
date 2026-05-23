@@ -165,7 +165,7 @@ class EditVocabPanel extends EditPanel {
         // SRS level selector shouldn't be accessible using tab, only shortcuts
         this.$("srs-level").setAttribute("tabindex", "-1");
         this.root.addEventListener("keydown", (event) => {
-            if ("1" <= event.key && event.key <= "9" && event.ctrlKey) {
+            if ("1" <= event.key && event.key <= "9" && (event.ctrlKey || event.metaKey)) {
                 this.$("srs-level").setByIndex(parseInt(event.key) - 1);
                 event.preventDefault();
                 event.stopPropagation();

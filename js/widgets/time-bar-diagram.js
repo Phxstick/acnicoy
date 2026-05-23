@@ -3,31 +3,41 @@
 class TimeBarDiagram extends Widget {
     constructor() {
         super("time-bar-diagram");
+        this.selectedUnit = null;
         this.unitButtons = {};
-        this.reverse = false;
-        this.minMaxValue = null;
-        this.$("diagram").margin = { top: 15, left: 25, right: 25, bottom: 40 };
-        this.$("diagram").barWidth = 20;
-        this.$("diagram").barSpacing = 10;
-        this.$("diagram").textMarginTop = 6;
+        this.onResizeTimeout = null;
     }
 
-    setUnits(units, defaultUnit) {
+    connectedCallback() {
+        super.connectedCallback()
+        this.resizeListener = () => {
+            this.clearResizeTimeout()
+            this.onResizeTimeout = window.setTimeout(() => this.resetViewBox(), 100)
+        }
+        window.addEventListener("resize", this.resizeListener)
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback()
+        this.clearResizeTimeout()
+        window.removeEventListener("resize", this.resizeListener)
+    }
+
+    clearResizeTimeout() {
+        if (this.onResizeTimeout !== null) {
+            window.clearTimeout(this.onResizeTimeout)
+            this.onResizeTimeout = null
+        }
+    }
+
+    setUnits(units) {
         for (const unit of units) {
             const button = document.createElement("button");
             button.textContent = unit[0].toUpperCase() + unit.slice(1);
-            button.addEventListener("click", () => {
-                const selectedUnitButton = this.unitButtons[this.selectedUnit];
-                selectedUnitButton.classList.remove("selected");
-                button.classList.add("selected");
-                this.selectedUnit = unit;
-                this.drawTimeline();
-            });
+            button.addEventListener("click", () => this.selectUnit(unit));
             this.unitButtons[unit] = button;
             this.$("unit-buttons").appendChild(button);
         }
-        this.selectedUnit = defaultUnit;
-        this.unitButtons[defaultUnit].classList.add("selected");
     }
 
     setDataCallback(callback) {
@@ -38,23 +48,49 @@ class TimeBarDiagram extends Widget {
         this.$("info-text").textContent = text;
     }
 
+    setOptions(options) {
+        const {
+            margin = { top: 15, left: 25, right: 25, bottom: 40 },
+            barWidth = 20, 
+            barSpacing = 10,
+            textMarginTop = 6
+        } = options
+        const d = this.$("diagram")
+        d.margin = margin
+        d.barWidth = barWidth
+        d.barSpacing = barSpacing
+        d.textMarginTop = textMarginTop
+    }
+
+    async selectUnit(unit) {
+        if (this.selectedUnit !== null) {
+            const selectedUnitButton = this.unitButtons[this.selectedUnit];
+            selectedUnitButton.classList.remove("selected");
+        }
+        this.selectedUnit = unit;
+        this.unitButtons[unit].classList.add("selected");
+        await this.drawTimeline()
+    }
+
     async drawTimeline() {
         if (this.getTimeline === undefined) {
             throw new Error("Data callback must be set before drawing!");
         }
-        const unit = this.selectedUnit;
-        const timeline = await this.getTimeline(unit);
-        const {labels,separators} = utility.getTimelineMarkers(timeline, unit);
+        if (this.selectedUnit === null) return
+        const unit = this.selectedUnit
+        const { timeline, options } = await this.getTimeline(unit);
+        this.setOptions(options)
+        const { reverse=false, minMaxValue=null } = options
+        const { labels, separators } = utility.getTimelineMarkers(timeline, unit);
         const dataList = timeline.map(({data}) => data);
         const colors = dataList.length > 0 ?
-                utility.getDistantColors(dataList[0].length) : null;
+            utility.getDistantColors(dataList[0].length) : null;
         this.$("diagram").setValues(dataList, {
             descriptions: labels, separators, colors, showValueLabels: true,
             showSmallSeparators: true, stackBars: true, stackSpacing: 1,
-            reverse: this.reverse, minMaxValue: this.minMaxValue });
-        if (this.reverse && !this.$("diagram").isHidden()) {
-            this.moveViewToRightEnd();
-        }
+            reverse, minMaxValue });
+        this.resetViewBox();
+        this.clearResizeTimeout()
     }
 
     setLegend(labels) {
@@ -75,8 +111,12 @@ class TimeBarDiagram extends Widget {
         else this.hideLegend();
     }
 
-    moveViewToRightEnd() {
-        this.$("diagram").moveViewToRightEnd();
+    updateViewBox() {
+        this.$("diagram").updateViewBox();
+    }
+
+    resetViewBox() {
+        this.$("diagram").resetViewBox();
     }
 
     incrementLastValue(index) {

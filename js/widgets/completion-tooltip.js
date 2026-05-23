@@ -113,7 +113,7 @@ class CompletionTooltip extends Widget {
                 this.selectedItem = this.selectedItem === null ?
                         this.items.lastElementChild :
                         this.selectedItem.previousSibling;
-            } else if (event.key === "Enter" && !event.ctrlKey) {
+            } else if (event.key === "Enter" && !(event.ctrlKey || event.metaKey)) {
                 if (this.selectedItem !== null) {
                     if (node instanceof HTMLInputElement) {
                         node.value = this.selectedItem.textContent;

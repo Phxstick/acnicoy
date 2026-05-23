@@ -1,28 +1,33 @@
 "use strict";
 
-// const dateFormat = require("dateformat");
 const schedule = require("node-schedule");
 
 class StatsSection extends Section {
     constructor() {
         super("stats");
-        const numSteps = { "days": 61, "months": 36 };
+        const numSteps = { "days": 61, "months": 60, "years": 30 };
+        const units = ["days", "months", "years"]
+        const makeTimelineCallback = (getTimeline, minMaxValue) => async (unit) => ({
+            timeline: await getTimeline(
+                dataManager.languages.visible, unit, numSteps[unit]),
+            options: {
+                barWidth: unit === "years" ? 30 : 20,
+                minMaxValue,
+                reverse: true
+            }
+        })
 
-        this.$("words-added-timeline").reverse = true;
-        this.$("words-added-timeline").minMaxValue = 20;
-        this.$("words-added-timeline").setUnits(["days", "months"], "days");
-        this.$("words-added-timeline").setInfoText("Items added in the last");
-        this.$("words-added-timeline").setDataCallback((unit) =>
-            dataManager.stats.getItemsAddedTimelineFor(
-                dataManager.languages.visible, unit, numSteps[unit]));
+        const wordsAddedTimeline = this.$("words-added-timeline")
+        wordsAddedTimeline.setUnits(units);
+        wordsAddedTimeline.setInfoText("Items added in the last");
+        wordsAddedTimeline.setDataCallback(
+            makeTimelineCallback(dataManager.stats.getItemsAddedTimelineFor, 20))
 
-        this.$("srs-reviews-timeline").reverse = true;
-        this.$("srs-reviews-timeline").minMaxValue = 50;
-        this.$("srs-reviews-timeline").setUnits(["days", "months"], "days");
-        this.$("srs-reviews-timeline").setInfoText("Items reviewed in the last")
-        this.$("srs-reviews-timeline").setDataCallback((unit) =>
-            dataManager.stats.getItemsTestedTimelineFor(
-                dataManager.languages.visible, unit, numSteps[unit]));
+        const srsReviewTimeline = this.$("srs-reviews-timeline")
+        srsReviewTimeline.setUnits(units);
+        srsReviewTimeline.setInfoText("Items reviewed in the last")
+        srsReviewTimeline.setDataCallback(
+            makeTimelineCallback(dataManager.stats.getItemsTestedTimelineFor, 50))
 
         const settingsLinks = this.$$(".settings-link");
         for (const link of settingsLinks) {
@@ -59,8 +64,11 @@ class StatsSection extends Section {
 
     open() {
         if (this.recentlyInitialized) {
-            this.$("words-added-timeline").moveViewToRightEnd();
-            this.$("srs-reviews-timeline").moveViewToRightEnd();
+            this.$("words-added-timeline").resetViewBox();
+            this.$("srs-reviews-timeline").resetViewBox();
+        } else {
+            this.$("words-added-timeline").updateViewBox();
+            this.$("srs-reviews-timeline").updateViewBox();
         }
         this.recentlyInitialized = false;
     }
@@ -71,8 +79,6 @@ class StatsSection extends Section {
         schedule.scheduleJob("0 0 * * *", () => {
             this.$("words-added-timeline").drawTimeline();
             this.$("srs-reviews-timeline").drawTimeline();
-            this.$("words-added-timeline").moveViewToRightEnd();
-            this.$("srs-reviews-timeline").moveViewToRightEnd();
         });
     }
 
@@ -91,8 +97,8 @@ class StatsSection extends Section {
         this.$("srs-reviews-timeline").setLegend(languages);
         this.$("words-added-timeline").toggleLegend(languages.length > 1);
         this.$("srs-reviews-timeline").toggleLegend(languages.length > 1);
-        await this.$("words-added-timeline").drawTimeline();
-        await this.$("srs-reviews-timeline").drawTimeline();
+        await this.$("words-added-timeline").selectUnit("days");
+        await this.$("srs-reviews-timeline").selectUnit("days");
         await this.initKanjiStats();
         await this.initHanziStats();
         this.recentlyInitialized = true;

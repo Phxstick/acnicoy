@@ -21,7 +21,7 @@ class SrsStatusOverview extends PinwallWidget {
 
         // Make fields light up on hovering while pressing Ctrl or Shift
         window.addEventListener("keydown", (event) => {
-            if (event.ctrlKey || event.metaKey || event.shiftKey)
+            if (event.ctrlKey || event.metaKey || event.shiftKey)
                 this.$("container").classList.add("modifier-pressed");
         });
         window.addEventListener("keyup", (event) => {

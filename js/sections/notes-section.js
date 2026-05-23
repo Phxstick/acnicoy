@@ -326,7 +326,7 @@ class NotesSection extends Section {
         // Start dragging a note when pressing mouse button while pressing CTRL
         this.$("notes").addEventListener("mousedown", (event) => {
             if (this.currentlyHoveredNote === null) return;
-            if (!event.ctrlKey) return;
+            if (!event.ctrlKey && !event.metaKey) return;
             startDraggingNote(event);
             event.preventDefault();
         });

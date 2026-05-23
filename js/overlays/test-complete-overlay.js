@@ -104,7 +104,7 @@ class TestCompleteOverlay extends Overlay {
         window.addEventListener("keydown", (event) => {
             if (!this.opened) return;
             if (!this.moreLanguagesReady) return;
-            if (!choosingNextLanguage && event.key === "Tab" && event.ctrlKey) {
+            if (!choosingNextLanguage && event.key === "Tab" && (event.ctrlKey || event.metaKey)) {
                 choosingNextLanguage = true;
                 this.$("languages-ready-for-testing").open();
             }
@@ -120,7 +120,7 @@ class TestCompleteOverlay extends Overlay {
         }, true);
         window.addEventListener("keyup", (event) => {
             if (!this.opened) return;
-            if (choosingNextLanguage && !event.ctrlKey) {
+            if (choosingNextLanguage && !(event.ctrlKey || event.metaKey)) {
                 choosingNextLanguage = false;
                 this.$("languages-ready-for-testing").invokeSelectedItem();
                 this.$("languages-ready-for-testing").close();

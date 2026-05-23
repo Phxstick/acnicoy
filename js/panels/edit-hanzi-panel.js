@@ -132,7 +132,7 @@ class EditHanziPanel extends EditPanel {
         this.$("srs-level-meanings").setAttribute("tabindex", "-1");
         this.$("srs-level-readings").setAttribute("tabindex", "-1");
         this.root.addEventListener("keydown", (event) => {
-            if (event.ctrlKey && "1" <= event.key && event.key <= "9") {
+            if ((event.ctrlKey || event.metaKey) && "1" <= event.key && event.key <= "9") {
                 const focussedElement = this.root.activeElement;
                 const newLevel = parseInt(event.key);
                 if (this.$("meanings").contains(focussedElement)) {

@@ -417,7 +417,7 @@ class VocabSection extends Section {
                 let target = event.target;
                 while (target.parentNode !== viewNode)
                     target = target.parentNode;
-                const modifierUsed = event.ctrlKey || event.shiftKey;
+                const modifierUsed = event.ctrlKey || event.metaKey || event.shiftKey;
 
                 // Clear selection if it's in a different view, or no ctrl/shift
                 if (this.selectionTarget !== viewName || !modifierUsed)
@@ -434,7 +434,7 @@ class VocabSection extends Section {
                 // If ctrl is pressed (but not shift), add/remove from selection
                 const next = target.nextSibling;
                 const prev = target.previousSibling;
-                if (event.ctrlKey && !event.shiftKey) {
+                if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
                     if (!this.currentSelection.has(target)) {
                         this.currentSelection.add(target);
                         target.classList.add("selected");
@@ -520,22 +520,22 @@ class VocabSection extends Section {
         // Edit clicked vocabulary items
         this.$("vocab").addEventListener("click", (event) => {
             if (event.target.parentNode !== this.$("vocab")) return;
-            if (event.ctrlKey || event.shiftKey) return;
+            if (event.ctrlKey || event.metaKey || event.shiftKey) return;
             this.editItem(event.target.textContent, "vocab");
         });
         this.$("list-contents").addEventListener("click", (event) => {
             if (event.target.parentNode !== this.$("list-contents")) return;
-            if (event.ctrlKey || event.shiftKey) return;
+            if (event.ctrlKey || event.metaKey || event.shiftKey) return;
             this.editItem(event.target.textContent, "list-contents");
         });
         this.$("kanji").addEventListener("click", (event) => {
             if (event.target.parentNode !== this.$("kanji")) return;
-            if (event.ctrlKey || event.shiftKey) return;
+            if (event.ctrlKey || event.metaKey || event.shiftKey) return;
             this.editItem(event.target.textContent, "kanji");
         });
         this.$("hanzi").addEventListener("click", (event) => {
             if (event.target.parentNode !== this.$("hanzi")) return;
-            if (event.ctrlKey || event.shiftKey) return;
+            if (event.ctrlKey || event.metaKey || event.shiftKey) return;
             this.editItem(event.target.textContent, "hanzi");
         });
 
@@ -546,7 +546,7 @@ class VocabSection extends Section {
             while (node.parentNode !== this.$("vocab-lists"))
                 node = node.parentNode;
             if (node.classList.contains("edit-mode")) return;
-            if (event.ctrlKey || event.shiftKey) {
+            if (event.ctrlKey || event.metaKey || event.shiftKey) {
                 const selected = this.selectedListNode;
                 this.deselectVocabList();
                 if (selected !== null && this.currentSelection.has(selected)) {

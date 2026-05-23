@@ -6,6 +6,9 @@ class PinwallWidget extends Widget {
         this.widgetType = type;
     }
 
+    open() {
+    }
+
     adjustToLanguage(language, secondary) {
     }
 }

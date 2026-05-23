@@ -231,7 +231,7 @@ class MainWindow extends Window {
         // Switching language using Ctrl+Tab
         let switchingLanguage = false;
         window.addEventListener("keydown", (event) => {
-            if (!switchingLanguage && event.key === "Tab" && event.ctrlKey) {
+            if (!switchingLanguage && event.key === "Tab" && (event.ctrlKey || event.metaKey)) {
                 switchingLanguage = true;
                 this.$("language-popup").open();
             }
@@ -245,7 +245,7 @@ class MainWindow extends Window {
             }
         });
         window.addEventListener("keyup", (event) => {
-            if (switchingLanguage && !event.ctrlKey) {
+            if (switchingLanguage && !(event.ctrlKey || event.metaKey)) {
                 switchingLanguage = false;
                 this.$("language-popup").invokeSelectedItem();
                 this.$("language-popup").close();

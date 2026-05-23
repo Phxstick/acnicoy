@@ -305,7 +305,7 @@ module.exports = function (paths, modules) {
                 for (let i = numUnitsNonzero; i < numUnits; ++i) {
                     list[i][j] = 0;
                 }
-            } else if (unit === "months") {
+            } else if (unit === "months" || unit === "years") {
                 const d = new Date();
                 let offset = 0;
                 for (let i = 0; i < numUnits; ++i) {
@@ -314,12 +314,18 @@ module.exports = function (paths, modules) {
                         list[i][j] = 0;
                         continue;
                     }
-                    const nDays = utility.daysInMonth(d.getMonth(), d.getYear())
+                    const nDays = unit === "years" ?
+                        utility.daysInYear(d.getFullYear()) :
+                        utility.daysInMonth(d.getMonth(), d.getFullYear());
                     const start = Math.max(0, end - nDays);
                     list[i][j] = dailyData.slice(start, end)
                         .reduce((total, dayObj) => total += dayObj.tested, 0);
                     offset += nDays;
-                    d.setMonth(d.getMonth() - 1);
+                    if (unit === "months") {
+                        d.setMonth(d.getMonth() - 1);
+                    } else if (unit === "years") {
+                        d.setFullYear(d.getFullYear() - 1);
+                    }
                 }
             }
         }
